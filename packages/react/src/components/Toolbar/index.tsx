@@ -34,7 +34,7 @@ import {
   createFilter,
   clearFilter,
   applyLocation,
-} from "@fortune-sheet/core";
+} from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import WorkbookContext from "../../context";
 import "./index.css";
@@ -310,18 +310,6 @@ const Toolbar: React.FC<{
                                   <FormatSearch
                                     onCancel={hideDialog}
                                     type="currency"
-                                  />
-                                );
-                                setOpen(false);
-                              },
-                            },
-                            {
-                              text: toolbarFormat.moreNumber,
-                              onclick: () => {
-                                showDialog(
-                                  <FormatSearch
-                                    onCancel={hideDialog}
-                                    type="number"
                                   />
                                 );
                                 setOpen(false);
@@ -1459,19 +1447,18 @@ const Toolbar: React.FC<{
       customColor,
       customStyle,
       toolbarFormat.moreCurrency,
-      toolbarFormat.moreNumber,
     ]
   );
 
   return (
-    <header>
-      <div
-        ref={containerRef}
-        className="fortune-toolbar"
-        role="toolbar"
-        aria-label={toolbar.toolbar}
-      >
-        {settings.customToolbarItems.map((n) => {
+    <div
+      ref={containerRef}
+      className="fortune-toolbar"
+      aria-label={toolbar.toolbar}
+    >
+      {settings.customToolbarItems
+        .filter((n) => n.key !== "templates")
+        .map((n) => {
           return (
             <CustomButton
               tooltip={n.tooltip}
@@ -1484,33 +1471,48 @@ const Toolbar: React.FC<{
             </CustomButton>
           );
         })}
-        {settings.customToolbarItems?.length > 0 ? (
-          <Divider key="customDivider" />
-        ) : null}
-        {(toolbarWrapIndex === -1
-          ? settings.toolbarItems
-          : settings.toolbarItems.slice(0, toolbarWrapIndex + 1)
-        ).map((name, i) => getToolbarItem(name, i))}
-        {toolbarWrapIndex !== -1 &&
-        toolbarWrapIndex < settings.toolbarItems.length - 1 ? (
-          <Button
-            iconId="more"
-            tooltip={toolbar.toolMore}
-            onClick={() => {
-              if (moreItemsOpen) {
-                setMoreItems(null);
-              } else {
-                setMoreItems(
-                  settings.toolbarItems
-                    .slice(toolbarWrapIndex + 1)
-                    .map((name, i) => getToolbarItem(name, i))
-                );
-              }
-            }}
-          />
-        ) : null}
-      </div>
-    </header>
+      {settings.customToolbarItems?.length > 0 ? (
+        <Divider key="customDivider" />
+      ) : null}
+      {(toolbarWrapIndex === -1
+        ? settings.toolbarItems
+        : settings.toolbarItems.slice(0, toolbarWrapIndex + 1)
+      ).map((name, i) => getToolbarItem(name, i))}
+      {toolbarWrapIndex !== -1 &&
+      toolbarWrapIndex < settings.toolbarItems.length - 1 ? (
+        <Button
+          iconId="more"
+          tooltip={toolbar.toolMore}
+          onClick={() => {
+            if (moreItemsOpen) {
+              setMoreItems(null);
+            } else {
+              setMoreItems(
+                settings.toolbarItems
+                  .slice(toolbarWrapIndex + 1)
+                  .map((name, i) => getToolbarItem(name, i))
+              );
+            }
+          }}
+        />
+      ) : null}
+      <Divider key="templateDivider" />
+      {settings.customToolbarItems
+        .filter((n) => n.key === "templates")
+        .map((n) => {
+          return (
+            <CustomButton
+              tooltip={n.tooltip}
+              onClick={n.onClick}
+              key={n.key}
+              icon={n.icon}
+              iconName={n.iconName}
+            >
+              {n.children}
+            </CustomButton>
+          );
+        })}
+    </div>
   );
 };
 

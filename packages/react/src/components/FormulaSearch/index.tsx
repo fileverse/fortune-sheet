@@ -3,7 +3,7 @@ import {
   cancelNormalSelected,
   locale,
   setCaretPosition,
-} from "@fortune-sheet/core";
+} from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import WorkbookContext from "../../context";
 import "./index.css";
@@ -16,13 +16,15 @@ export const FormulaSearch: React.FC<{ onCancel: () => void }> = ({
     setContext,
     refs: { cellInput, globalCache },
   } = useContext(WorkbookContext);
-  const [selectedType, setSelectedType] = useState(0);
+  const [selectedType, setSelectedType] = useState(20);
   const [selectedFuncIndex, setSelectedFuncIndex] = useState(0);
   const [searchText, setSearchText] = useState("");
   const { formulaMore, functionlist, button } = locale(context);
 
   const typeList = useMemo(
     () => [
+      // @ts-ignore
+      { t: 20, n: formulaMore.Crypto },
       { t: 0, n: formulaMore.Math },
       { t: 1, n: formulaMore.Statistical },
       { t: 2, n: formulaMore.Lookup },

@@ -1,4 +1,4 @@
-import { locale } from "@fortune-sheet/core";
+import { locale } from "@fileverse-dev/fortune-core";
 import React, { useContext, useState } from "react";
 import WorkbookContext from "../../context";
 import ColorPicker from "../Toolbar/ColorPicker";

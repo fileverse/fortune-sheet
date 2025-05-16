@@ -18,7 +18,9 @@ import {
   Sheet,
   CellMatrix,
   CellWithRowAndCol,
-} from "@fortune-sheet/core";
+  locale,
+  setCaretPosition,
+} from "@fileverse-dev/fortune-core";
 import { applyPatches } from "immer";
 import _ from "lodash";
 import { SetContextOptions } from "../../context";
@@ -113,6 +115,51 @@ export function generateAPIs(
       column: number,
       options: api.CommonOptions & { type?: keyof Cell } = {}
     ) => api.getCellValue(context, row, column, options),
+
+    onboardingActiveCell: (functionName: string) => {
+      const { functionlist } = locale(context);
+      const last =
+        context.luckysheet_select_save?.[
+          context.luckysheet_select_save.length - 1
+        ];
+      let row_index = last?.row_focus;
+      let col_index = last?.column_focus;
+      if (!last) {
+        row_index = 0;
+        col_index = 0;
+      } else {
+        if (row_index == null) {
+          [row_index] = last.row;
+        }
+        if (col_index == null) {
+          [col_index] = last.column;
+        }
+      }
+      const formulaTxt = `<span>=</span><span>${functionName}</span><span>(</span>`;
+      setContext((ctx) => {
+        if (cellInput != null) {
+          ctx.luckysheetCellUpdate = [row_index, col_index];
+          cellInput.innerHTML = formulaTxt;
+          const spans = cellInput.childNodes;
+          if (!_.isEmpty(spans)) {
+            setCaretPosition(
+              ctx,
+              spans[spans.length - 1] as HTMLSpanElement,
+              0,
+              1
+            );
+          }
+          ctx.functionHint = functionName;
+          ctx.functionCandidates = [];
+          if (_.isEmpty(ctx.formulaCache.functionlistMap)) {
+            for (let i = 0; i < functionlist.length; i += 1) {
+              ctx.formulaCache.functionlistMap[functionlist[i].n] =
+                functionlist[i];
+            }
+          }
+        }
+      });
+    },
 
     setCellValue: (
       row: number,

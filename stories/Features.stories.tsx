@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { Meta, StoryFn } from "@storybook/react";
-import { Sheet } from "@fortune-sheet/core";
+import { Sheet } from "@fileverse-dev/fortune-core";
 import { Workbook } from "@fortune-sheet/react";
 import cell from "./data/cell";
 import formula from "./data/formula";

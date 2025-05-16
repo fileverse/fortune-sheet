@@ -1,4 +1,4 @@
-import * as formulajs from "@formulajs/formulajs";
+import * as formulajs from "@fileverse-dev/formulajs";
 
 const SUPPORTED_FORMULAS = Object.keys(formulajs);
 

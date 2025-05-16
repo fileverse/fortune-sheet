@@ -6,7 +6,7 @@ import {
   Settings,
   GlobalCache,
   PatchOptions,
-} from "@fortune-sheet/core";
+} from "@fileverse-dev/fortune-core";
 
 export type RefValues = {
   globalCache: GlobalCache;

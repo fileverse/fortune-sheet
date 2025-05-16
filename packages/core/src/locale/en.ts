@@ -1,3 +1,6 @@
+// @ts-ignore
+import { FUNCTION_LOCALE } from "@fileverse-dev/formulajs/crypto-constants";
+
 export default {
   generalDialog: {
     partiallyError: "Cannot perform this operation on partially merged cells",
@@ -7,6 +10,7 @@ export default {
     cannotSelectMultiple: "Cannot select multiple selections",
   },
   functionlist: [
+    ...FUNCTION_LOCALE,
     {
       n: "SUMIF",
       t: 0,
@@ -11260,8 +11264,8 @@ export default {
     { name: "Ohms", pos: "after", value: "Ω" },
   ],
   defaultFmt: (currency: string) => [
-    { text: "Automatic", value: "General", example: "" },
-    { text: "Plain text", value: "@", example: "" },
+    { text: "Auto", value: "General", example: "" },
+    { text: "Plain", value: "@", example: "" },
     { text: "", value: "split", example: "" },
     { text: "Number", value: "##0.00", example: "1000.12" },
     { text: "Percent", value: "#0.00%", example: "12.21%" },
@@ -11346,7 +11350,7 @@ export default {
   fontFamily: {
     MicrosoftYaHei: "YaHei",
   },
-  fontarray: ["Times New Roman", "Arial", "Tahoma", "Verdana"],
+  fontarray: ["Arial", "Times New Roman", "Tahoma", "Verdana"],
   fontjson: { "times new roman": 0, arial: 1, tahoma: 2, verdana: 3 },
   border: {
     borderTop: "Top border",
@@ -12022,6 +12026,7 @@ export default {
     Date: "Date",
     Engineering: "Engineering",
     Filter: "Filter",
+    Crypto: "Crypto",
     Financial: "Financial",
     luckysheet: "Luckysheet",
     other: "Other",

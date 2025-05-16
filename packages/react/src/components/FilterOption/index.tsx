@@ -3,7 +3,7 @@ import {
   fixColumnStyleOverflowInFreeze,
   fixRowStyleOverflowInFreeze,
   getSheetIndex,
-} from "@fortune-sheet/core";
+} from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, { useCallback, useContext, useEffect } from "react";
 import WorkbookContext from "../../context";

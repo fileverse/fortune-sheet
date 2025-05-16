@@ -4,7 +4,7 @@ import {
   cancelNormalSelected,
   cancelActiveImgItem,
   locale,
-} from "@fortune-sheet/core";
+} from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, {
   useContext,

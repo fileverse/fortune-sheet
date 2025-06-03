@@ -68,6 +68,12 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
+              <SVGIcon
+                name="freeze-flv"
+                width={18}
+                height={18}
+                style={{ marginTop: "4px", marginRight: "4px" }}
+              />
               {isFrozen ? "Unfreeze row" : "Freeze to current row"}
             </div>
           </Menu>
@@ -98,6 +104,12 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
+              <SVGIcon
+                name="freeze-flv"
+                width={18}
+                height={18}
+                style={{ marginTop: "4px", marginRight: "4px" }}
+              />
               <p>{isFrozen ? "Unfreeze column" : "Freeze to current column"}</p>
             </div>
           </Menu>

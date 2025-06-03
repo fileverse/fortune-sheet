@@ -67,7 +67,9 @@ const ContextMenu: React.FC = () => {
               });
             }}
           >
-            {isFrozen ? "Unfreeze Row" : "Freeze Row"}
+            <div className="context-item">
+              {isFrozen ? "Unfreeze row" : "Freeze to current row"}
+            </div>
           </Menu>
         );
       }
@@ -95,7 +97,9 @@ const ContextMenu: React.FC = () => {
               });
             }}
           >
-            {isFrozen ? "Unfreeze Column" : "Freeze Column"}
+            <div className="context-item">
+              <p>{isFrozen ? "Unfreeze column" : "Freeze to current column"}</p>
+            </div>
           </Menu>
         );
       }

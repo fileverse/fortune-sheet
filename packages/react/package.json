@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-react",
-  "version": "1.0.2-mod-23",
+  "version": "1.0.2-mod-24",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.esm.js",

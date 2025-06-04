@@ -35,7 +35,9 @@ const Option: React.FC<React.PropsWithChildren<OptionProps>> = ({
       onMouseEnter={(e) => onMouseEnter?.(e)}
     >
       {iconId && <SVGIcon name={iconId} />}
-      <div className="fortuen-toolbar-text">{children}</div>
+      <div className="fortuen-toolbar-text color-text-default text-body-sm">
+        {children}
+      </div>
     </div>
   );
 };

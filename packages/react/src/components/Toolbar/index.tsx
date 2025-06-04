@@ -1369,7 +1369,7 @@ const Toolbar: React.FC<{
         return (
           <Combo iconId="filter" key={name} tooltip={toolbar.sortAndFilter}>
             {(setOpen) => (
-              <Select>
+              <Select style={{ minWidth: "11.25rem" }}>
                 {items.map(({ text, iconId, value, onClick }, index) =>
                   value !== "divider" ? (
                     <Option
@@ -1379,9 +1379,12 @@ const Toolbar: React.FC<{
                         setOpen(false);
                       }}
                     >
-                      <div className="fortune-toolbar-menu-line">
-                        {text}
+                      <div
+                        className="fortune-toolbar-menu-line gap-1"
+                        style={{ justifyContent: "start" }}
+                      >
                         <SVGIcon name={iconId} />
+                        {text}
                       </div>
                     </Option>
                   ) : (

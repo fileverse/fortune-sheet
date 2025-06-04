@@ -10966,6 +10966,7 @@ export default {
   },
   button: {
     confirm: "確定",
+    apply: "應用",
     cancel: "取消",
     close: "關閉",
     update: "Update",

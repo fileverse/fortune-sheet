@@ -10994,6 +10994,7 @@ export default {
   },
   button: {
     confirm: "确定",
+    apply: "应用",
     cancel: "取消",
     close: "关闭",
     update: "Update",
@@ -11559,6 +11560,7 @@ export default {
     cannotInsertOnColumnReadOnly: "无法对只读列插入",
     rowOverLimit: "超出10000行限制",
     columnOverLimit: "超出1000列限制",
+    conditionFormat: "条件格式",
   },
   comment: {
     insert: "新建批注",

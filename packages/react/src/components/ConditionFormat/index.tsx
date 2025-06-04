@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from "react";
+import React, { useCallback, useContext, useEffect, useRef } from "react";
 import "./index.css";
 import { locale, updateItem } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
@@ -11,13 +11,32 @@ import { MenuDivider } from "../Toolbar/Divider";
 
 const ConditionalFormat: React.FC<{
   items: string[];
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }> = ({ items, setOpen }) => {
   const { context, setContext, refs } = useContext(WorkbookContext);
   const { showDialog } = useDialog();
   const { conditionformat } = locale(context);
+  const activeSubMenuRef = useRef<HTMLDivElement | null>(null);
 
-  // 子菜单溢出屏幕时，重新定位子菜单位置
+  const updateSubMenuPosition = useCallback(
+    (subMenu: HTMLDivElement, menuItem: HTMLDivElement) => {
+      const menuItemRect = menuItem.getBoundingClientRect();
+      const workbookContainerRect =
+        refs.workbookContainer.current!.getBoundingClientRect();
+      const subMenuWidth = subMenu.offsetWidth;
+      const availableSpace = workbookContainerRect.right - menuItemRect.right;
+
+      if (availableSpace < subMenuWidth) {
+        // Not enough space on the right, position to the left
+        subMenu.style.right = "108%";
+      } else {
+        // Enough space on the right, position to the right
+        subMenu.style.right = "-100%";
+      }
+    },
+    [refs.workbookContainer]
+  );
+
   // re-position the subMenu if it oveflows the window
   const showSubMenu = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -26,33 +45,16 @@ const ConditionalFormat: React.FC<{
         target.className === "fortune-toolbar-menu-line"
           ? target.parentElement!
           : target;
-      const menuItemRect = menuItem.getBoundingClientRect();
-      const workbookContainerRect =
-        refs.workbookContainer.current!.getBoundingClientRect();
       const subMenu = menuItem.querySelector(
         ".condition-format-sub-menu"
       ) as HTMLDivElement;
       if (_.isNil(subMenu)) return;
-      const menuItemStyle = window.getComputedStyle(menuItem);
-      const menuItemPaddingRight = parseFloat(
-        menuItemStyle.getPropertyValue("padding-right").replace("px", "")
-      );
 
-      if (
-        workbookContainerRect.right - menuItemRect.right <
-        parseFloat(subMenu.style.width.replace("px", ""))
-      ) {
-        subMenu.style.display = "block";
-        subMenu.style.right = `${menuItemRect.width - menuItemPaddingRight}px`;
-      } else {
-        subMenu.style.display = "block";
-        subMenu.style.right = `${-(
-          parseFloat(subMenu.style.width.replace("px", "")) +
-          menuItemPaddingRight
-        )}px`;
-      }
+      subMenu.style.display = "block";
+      activeSubMenuRef.current = subMenu;
+      updateSubMenuPosition(subMenu, menuItem as HTMLDivElement);
     },
-    [refs.workbookContainer]
+    [updateSubMenuPosition]
   );
 
   const hideSubMenu = useCallback(
@@ -61,6 +63,7 @@ const ConditionalFormat: React.FC<{
 
       if (target.className === "condition-format-sub-menu") {
         target.style.display = "none";
+        activeSubMenuRef.current = null;
         return;
       }
 
@@ -71,9 +74,27 @@ const ConditionalFormat: React.FC<{
       ) as HTMLDivElement;
       if (_.isNil(subMenu)) return;
       subMenu.style.display = "none";
+      activeSubMenuRef.current = null;
     },
     []
   );
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (activeSubMenuRef.current) {
+        const menuItem = activeSubMenuRef.current
+          .parentElement as HTMLDivElement;
+        if (menuItem) {
+          updateSubMenuPosition(activeSubMenuRef.current, menuItem);
+        }
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [updateSubMenuPosition]);
 
   // 获得条件格式
   const getConditionFormatItem = useCallback(
@@ -95,7 +116,6 @@ const ConditionalFormat: React.FC<{
                 className="condition-format-sub-menu"
                 style={{
                   display: "none",
-                  width: 150,
                 }}
               >
                 {[
@@ -111,11 +131,15 @@ const ConditionalFormat: React.FC<{
                   { text: "duplicateValue", value: "##" },
                 ].map((v) => (
                   <div
-                    className="condition-format-item"
+                    className="condition-format-item text-body-sm color-text-default"
                     key={v.text}
                     onClick={() => {
-                      setOpen(false);
-                      showDialog(<ConditionRules type={v.text} />);
+                      setOpen?.(false);
+                      showDialog(
+                        <ConditionRules type={v.text} />,
+                        undefined,
+                        (conditionformat as any)[`conditionformat_${v.text}`]
+                      );
                     }}
                     tabIndex={0}
                   >
@@ -140,10 +164,7 @@ const ConditionalFormat: React.FC<{
               <SVGIcon name="rightArrow" width={18} />
               <div
                 className="condition-format-sub-menu"
-                style={{
-                  display: "none",
-                  width: 180,
-                }}
+                style={{ display: "none" }}
               >
                 {[
                   { text: "top10", value: conditionformat.top10 },
@@ -160,11 +181,15 @@ const ConditionalFormat: React.FC<{
                   { text: "belowAverage", value: conditionformat.below },
                 ].map((v) => (
                   <div
-                    className="condition-format-item"
+                    className="condition-format-item text-body-sm color-text-default"
                     key={v.text}
                     onClick={() => {
-                      setOpen(false);
-                      showDialog(<ConditionRules type={v.text} />);
+                      setOpen?.(false);
+                      showDialog(
+                        <ConditionRules type={v.text} />,
+                        undefined,
+                        (conditionformat as any)[`conditionformat_${v.text}`]
+                      );
                     }}
                     tabIndex={0}
                   >
@@ -219,14 +244,11 @@ const ConditionalFormat: React.FC<{
               <SVGIcon name="rightArrow" width={18} />
               <div
                 className="condition-format-sub-menu"
-                style={{
-                  display: "none",
-                  width: 150,
-                }}
+                style={{ display: "none" }}
               >
                 {["deleteSheetRule"].map((v) => (
                   <div
-                    className="condition-format-item"
+                    className="condition-format-item text-body-sm color-text-default"
                     key={v}
                     style={{ padding: "6px 10px" }}
                     onClick={() => {

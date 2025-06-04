@@ -11013,6 +11013,7 @@ export default {
   },
   button: {
     confirm: "ठीक है",
+    apply: "लागू करें",
     cancel: "रद्द करें",
     close: "बंद करें",
     update: "अपडेट करें",

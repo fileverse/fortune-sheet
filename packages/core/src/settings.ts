@@ -224,6 +224,7 @@ export const defaultSettings: Required<Settings> = {
   cellContextMenu: [
     "copy", // 复制
     "paste", // 粘贴
+    "clear", // 清除内容
     "|",
     "insert-row", // 插入行
     "insert-column", // 插入列
@@ -235,11 +236,12 @@ export const defaultSettings: Required<Settings> = {
     "set-row-height", // 设置行高
     "set-column-width", // 设置列宽
     "|",
-    "clear", // 清除内容
+    "conditionFormat",
     "sort", // 排序选区
     "orderAZ", // 升序
     "orderZA", // 降序
     "filter", // 筛选选区
+    "|",
     "chart", // 图表生成
     "image", // 插入图片
     "link", // 插入链接

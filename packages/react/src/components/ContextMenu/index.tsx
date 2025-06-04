@@ -17,6 +17,8 @@ import {
   isAllowEdit,
   jfrefreshgrid,
   newComment,
+  getFreezeState,
+  toggleFreeze,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, { useContext, useRef, useCallback, useLayoutEffect } from "react";
@@ -37,11 +39,81 @@ const ContextMenu: React.FC = () => {
   const { contextMenu } = context;
   const { showAlert } = useAlert();
   const { rightclick, drag, generalDialog, info } = locale(context);
+
   const getMenuElement = useCallback(
     (name: string, i: number) => {
       const selection = context.luckysheet_select_save?.[0];
       if (name === "|") {
         return <Divider key={`divider-${i}`} />;
+      }
+      if (name === "freeze-row") {
+        const freezeState = getFreezeState(context);
+        const isFrozen = freezeState.isRowFrozen;
+        const isEntireRowSelected = selection?.row_select === true;
+
+        if (!isEntireRowSelected) return null;
+
+        return (
+          <Menu
+            key="freeze-row"
+            onClick={() => {
+              setContext((draftCtx) => {
+                if (isFrozen) {
+                  toggleFreeze(draftCtx, "unfreeze-row");
+                } else {
+                  toggleFreeze(draftCtx, "row");
+                }
+                draftCtx.contextMenu = {};
+              });
+            }}
+          >
+            <div className="context-item">
+              <SVGIcon
+                name="freeze-flv"
+                width={18}
+                height={18}
+                style={{ marginTop: "4px", marginRight: "4px" }}
+              />
+              {isFrozen ? "Unfreeze row" : "Freeze to current row"}
+            </div>
+          </Menu>
+        );
+      }
+
+      if (name === "freeze-column") {
+        const freezeState = getFreezeState(context);
+        const isFrozen = freezeState.isColFrozen;
+        const isEntireColumnSelected = selection?.column_select === true;
+
+        if (!isEntireColumnSelected) return null;
+
+        return (
+          <Menu
+            key="freeze-column"
+            onClick={() => {
+              setContext((draftCtx) => {
+                if (isFrozen) {
+                  toggleFreeze(draftCtx, "unfreeze-column");
+                } else {
+                  toggleFreeze(draftCtx, "column");
+                  // Force a refresh of the grid after freezing
+                  jfrefreshgrid(draftCtx, null, undefined, false);
+                }
+                draftCtx.contextMenu = {};
+              });
+            }}
+          >
+            <div className="context-item">
+              <SVGIcon
+                name="freeze-flv"
+                width={18}
+                height={18}
+                style={{ marginTop: "4px", marginRight: "4px" }}
+              />
+              <p>{isFrozen ? "Unfreeze column" : "Freeze to current column"}</p>
+            </div>
+          </Menu>
+        );
       }
       if (name === "comment") {
         return (

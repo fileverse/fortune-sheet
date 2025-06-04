@@ -48,7 +48,7 @@ export const SplitColumn: React.FC<{}> = () => {
       }
     }
     if (dataCover) {
-      showDialog(splitText.splitConfirmToExe, "yesno", () => {
+      showDialog(splitText.splitConfirmToExe, "yesno", undefined, () => {
         hideDialog();
         setContext((ctx) => {
           updateMoreCell(r, c, dataArr, ctx);

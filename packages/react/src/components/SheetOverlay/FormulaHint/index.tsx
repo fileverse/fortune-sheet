@@ -33,7 +33,7 @@ function lightenHexColor(hex: string) {
 const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   const { context } = useContext(WorkbookContext);
   const { formulaMore } = locale(context);
-  //if (!context.functionHint) return null;
+  // if (!context.functionHint) return null;
   // @ts-ignore
   const fn = context.formulaCache.functionlistMap[context.functionHint];
   const [API_KEY, setAPI_KEY] = useState(localStorage.getItem(fn?.API_KEY));
@@ -47,8 +47,9 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
       className="luckysheet-formula-help-c"
       style={{
         border: `1px solid ${fn.BRAND_COLOR}`,
-        backgroundColor: `${fn.BRAND_COLOR ? lightenHexColor(fn.BRAND_COLOR) : "#F8F9FA"
-          }`,
+        backgroundColor: `${
+          fn.BRAND_COLOR ? lightenHexColor(fn.BRAND_COLOR) : "#F8F9FA"
+        }`,
       }}
     >
       <div className="luckysheet-formula-help-close" title="关闭">
@@ -60,8 +61,9 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
       <div
         className="luckysheet-formula-help-title formula-title"
         style={{
-          backgroundColor: `${fn.BRAND_COLOR ? lightenHexColor(fn.BRAND_COLOR) : "#F8F9FA"
-            }`,
+          backgroundColor: `${
+            fn.BRAND_COLOR ? lightenHexColor(fn.BRAND_COLOR) : "#F8F9FA"
+          }`,
         }}
       >
         <div className="luckysheet-formula-help-title-formula">
@@ -102,8 +104,9 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
                 borderRadius: "4px",
                 width: "20px",
                 height: "20px",
-                backgroundColor: `${localStorage.getItem(fn.API_KEY) ? "#177E23" : "#F9A92B"
-                  }`,
+                backgroundColor: `${
+                  localStorage.getItem(fn.API_KEY) ? "#177E23" : "#F9A92B"
+                }`,
               }}
             >
               <LucideIcon name="Key" style={{ color: "white" }} />
@@ -114,8 +117,9 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
       <div
         className="luckysheet-formula-help-content"
         style={{
-          backgroundColor: `${fn.BRAND_COLOR ? lightenHexColor(fn.BRAND_COLOR) : "#F8F9FA"
-            }`,
+          backgroundColor: `${
+            fn.BRAND_COLOR ? lightenHexColor(fn.BRAND_COLOR) : "#F8F9FA"
+          }`,
         }}
       >
         {fn.API_KEY && (

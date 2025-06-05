@@ -701,7 +701,8 @@ const ContextMenu: React.FC = () => {
                     >
                       <SVGIcon
                         name="sort-asc"
-                        width={22}
+                        width={24}
+                        height={18}
                         style={{ marginRight: "4px" }}
                       />
                       <p>{sort.asc}</p>
@@ -721,7 +722,8 @@ const ContextMenu: React.FC = () => {
                     >
                       <SVGIcon
                         name="sort-desc"
-                        width={22}
+                        width={24}
+                        height={18}
                         style={{ marginRight: "4px" }}
                       />
                       <p>{sort.desc}</p>
@@ -804,7 +806,7 @@ const ContextMenu: React.FC = () => {
                     >
                       <SVGIcon
                         name="filter"
-                        width={22}
+                        width={24}
                         style={{ marginRight: "4px" }}
                       />
                       <p>{filter.filter}</p>
@@ -824,8 +826,9 @@ const ContextMenu: React.FC = () => {
                     >
                       <SVGIcon
                         name="eraser"
-                        width={22}
-                        style={{ marginRight: "4px" }}
+                        width={24}
+                        height={22}
+                        style={{ marginRight: "4px", marginLeft: "2px" }}
                       />
                       <p>{filter.clearFilter}</p>
                     </div>
@@ -842,7 +845,7 @@ const ContextMenu: React.FC = () => {
                   <div className="context-item">
                     <SVGIcon
                       name="filter"
-                      width={22}
+                      width={24}
                       style={{ marginRight: "4px" }}
                     />
                     <p>{rightclick.filterSelection}</p>

@@ -1385,7 +1385,7 @@ const Toolbar: React.FC<{
                         className="fortune-toolbar-menu-line gap-1"
                         style={{ justifyContent: "start" }}
                       >
-                        <SVGIcon name={iconId} />
+                        <SVGIcon name={iconId} width={24} height={18} />
                         {text}
                       </div>
                     </Option>

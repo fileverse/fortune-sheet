@@ -371,6 +371,7 @@ const ConditionRules: React.FC<{ type: string }> = ({ type }) => {
             <div className="condition-rules-color">
               <span id="checkTextColor">
                 <Checkbox
+                  className="border-2"
                   checked={context.conditionRules.textColor.check}
                   onCheckedChange={(e) => {
                     const { checked } = e.target;
@@ -402,6 +403,7 @@ const ConditionRules: React.FC<{ type: string }> = ({ type }) => {
             <div className="condition-rules-color">
               <span id="checkCellColor">
                 <Checkbox
+                  className="border-2"
                   checked={context.conditionRules.cellColor.check}
                   onCheckedChange={(e) => {
                     const { checked } = e.target;

@@ -281,9 +281,9 @@ export const defaultSettings: Required<Settings> = {
   filterContextMenu: [
     "sort-by-asc",
     "sort-by-desc",
-    "|",
-    "filter-by-color",
-    "|",
+    // "|",
+    // "filter-by-color",
+    // "|",
     // "filter-by-condition",
     // "|",
     "filter-by-value",

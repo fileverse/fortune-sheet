@@ -1517,7 +1517,7 @@ const Toolbar: React.FC<{
             </CustomButton>
           );
         })}
-        <Divider key="templateDivider" />
+        <Divider key="customDivider" />
         {settings.customToolbarItems
         .filter((n) => (n.key !== "templates" && n.key !== "import-export"))
         .map((n) => {

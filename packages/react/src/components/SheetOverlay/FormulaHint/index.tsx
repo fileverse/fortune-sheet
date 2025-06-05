@@ -52,7 +52,10 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
         <i className="fa fa-angle-up" aria-hidden="true" />
       </div>
       <div
-        className="flex roun items-center justify-between"
+        onClick={() => {
+          setShouldShowFunctionBody(!showFunctionBody);
+        }}
+        className="flex cursor-pointer items-center justify-between"
         style={{
           backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"}`,
           padding: "10px",
@@ -124,12 +127,12 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
               />
             </div>
           )}
-          <div
-            onClick={() => {
-              setShouldShowFunctionBody(!showFunctionBody);
-            }}
-          >
-            <LucideIcon name="ChevronDown" width={16} height={16} />
+          <div>
+            <LucideIcon
+              name={showFunctionBody ? "ChevronUp" : "ChevronDown"}
+              width={16}
+              height={16}
+            />
           </div>
         </div>
       </div>
@@ -166,7 +169,11 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
                 >
                   {isKeyAdded ? "API key provided" : "API key is required"}
                 </h3>
-                <LucideIcon name="ChevronDown" width={24} height={24} />
+                <LucideIcon
+                  name={showAPInput ? "ChevronUp" : "ChevronDown"}
+                  width={24}
+                  height={24}
+                />
               </div>
               {showAPInput && (
                 <div>

@@ -698,9 +698,17 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           mergedSettings,
           cellInput.current,
           scrollbarX.current,
-          scrollbarY.current
+          scrollbarY.current,
+          globalCache.current
         ),
-      [context, setContextWithProduce, handleUndo, handleRedo, mergedSettings]
+      [
+        context,
+        setContextWithProduce,
+        handleUndo,
+        handleRedo,
+        mergedSettings,
+        globalCache,
+      ]
     );
 
     const i = getSheetIndex(context, context.currentSheetId);

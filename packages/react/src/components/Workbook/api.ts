@@ -21,6 +21,7 @@ import {
   CellMatrix,
   CellWithRowAndCol,
   newComment,
+  GlobalCache,
 } from "@fileverse-dev/fortune-core";
 import { applyPatches } from "immer";
 import _ from "lodash";
@@ -37,7 +38,8 @@ export function generateAPIs(
   settings: Required<Settings>,
   cellInput: HTMLDivElement | null,
   scrollbarX: HTMLDivElement | null,
-  scrollbarY: HTMLDivElement | null
+  scrollbarY: HTMLDivElement | null,
+  globalCache: GlobalCache | null
 ) {
   return {
     applyOp: (ops: Op[]) => {
@@ -380,6 +382,62 @@ export function generateAPIs(
       colCount?: number
     ) => {
       return api.celldataToData(celldata, rowCount, colCount);
+    },
+    insertFunction: (
+      selectedFuncIndex: number,
+      filteredFunctionList: any[],
+      callback?: () => void
+    ) => {
+      const last =
+        context.luckysheet_select_save?.[
+          context.luckysheet_select_save.length - 1
+        ];
+      let row_index = last?.row_focus;
+      let col_index = last?.column_focus;
+      if (!last) {
+        row_index = 0;
+        col_index = 0;
+      } else {
+        if (row_index == null) {
+          [row_index] = last.row;
+        }
+        if (col_index == null) {
+          [col_index] = last.column;
+        }
+      }
+      const formulaTxt = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-color">${filteredFunctionList[
+        selectedFuncIndex
+      ].n.toUpperCase()}</span><span dir="auto" class="luckysheet-formula-text-color">(</span>`;
+      const { functionlist } = locale(context);
+      setContext((ctx) => {
+        if (cellInput != null && globalCache != null) {
+          ctx.luckysheetCellUpdate = [row_index, col_index];
+          globalCache.doNotUpdateCell = true;
+          cellInput.innerHTML = formulaTxt;
+          const spans = cellInput.childNodes;
+          if (!_.isEmpty(spans)) {
+            setCaretPosition(
+              ctx,
+              spans[spans.length - 1] as HTMLSpanElement,
+              0,
+              1
+            );
+          }
+          ctx.functionHint =
+            filteredFunctionList[selectedFuncIndex].n.toUpperCase();
+          ctx.functionCandidates = [];
+          if (_.isEmpty(ctx.formulaCache.functionlistMap)) {
+            for (let i = 0; i < functionlist.length; i += 1) {
+              ctx.formulaCache.functionlistMap[functionlist[i].n] =
+                functionlist[i];
+            }
+          }
+          callback?.();
+        }
+      });
+    },
+    getLocaleContext: () => {
+      return locale(context);
     },
   };
 }

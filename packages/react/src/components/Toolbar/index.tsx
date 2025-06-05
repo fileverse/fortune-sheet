@@ -44,7 +44,6 @@ import Combo from "./Combo";
 import Select, { Option } from "./Select";
 import SVGIcon from "../SVGIcon";
 import { useDialog } from "../../hooks/useDialog";
-import { FormulaSearch } from "../FormulaSearch";
 import { SplitColumn } from "../SplitColumn";
 import { LocationCondition } from "../LocationCondition";
 import DataVerification from "../DataVerification";
@@ -1002,7 +1001,10 @@ const Toolbar: React.FC<{
                 <Option
                   key="formula"
                   onClick={() => {
-                    showDialog(<FormulaSearch onCancel={hideDialog} />);
+                    const button = document.getElementById("function-button");
+                    if (button) {
+                      button.click();
+                    }
                     setOpen(false);
                   }}
                 >{`${formula.find}...`}</Option>

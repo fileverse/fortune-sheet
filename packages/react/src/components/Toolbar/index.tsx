@@ -52,6 +52,7 @@ import ConditionalFormat from "../ConditionFormat";
 import CustomButton from "./CustomButton";
 import { CustomColor } from "./CustomColor";
 import { FormatSearch } from "../FormatSearch";
+import InputModal from "../InputModal/InputModal";
 
 const Toolbar: React.FC<{
   setMoreItems: React.Dispatch<React.SetStateAction<React.ReactNode>>;
@@ -61,8 +62,9 @@ const Toolbar: React.FC<{
     useContext(WorkbookContext);
   const contextRef = useRef(context);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [toolbarWrapIndex, setToolbarWrapIndex] = useState(-1); // -1 means pending for item location calculation
+  const [toolbarWrapIndex, setToolbarWrapIndex] = useState(-1);
   const [itemLocations, setItemLocations] = useState<number[]>([]);
+  const [showDuneModal, setShowDuneModal] = useState(false);
   const { showDialog, hideDialog } = useDialog();
   const firstSelection = context.luckysheet_select_save?.[0];
   const flowdata = getFlowdata(context);
@@ -1447,8 +1449,7 @@ const Toolbar: React.FC<{
       handleRedo,
       flowdata,
       formula,
-      showDialog,
-      hideDialog,
+      showDuneModal,
       merge,
       border,
       freezen,
@@ -1558,29 +1559,23 @@ const Toolbar: React.FC<{
         key="dune-charts"
         onClick={() => {
           if (context.allowEdit === false) return;
-          showDialog(
-            <div>
-              <div>Enter Dune Chart URL:</div>
-              <input
-                type="text"
-                style={{ width: "100%", marginTop: "8px" }}
-                placeholder="https://dune.com/embeds/1234567/7654321"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    const src = e.currentTarget.value;
-                    if (src) {
-                      setContext((draftCtx) => {
-                        insertDuneChart(draftCtx, src);
-                      });
-                      hideDialog();
-                    }
-                  }
-                }}
-              />
-            </div>
-          );
+          setShowDuneModal(true);
         }}
       />
+      {showDuneModal && (
+        <InputModal
+          isOpen={showDuneModal}
+          onSubmit={(url) => {
+            setContext((draftCtx) => {
+              insertDuneChart(draftCtx, url);
+            });
+            setShowDuneModal(false);
+          }}
+          onClose={() => setShowDuneModal(false)}
+          icon="dune-logo"
+          placeholder="Enter Dune Chart URL"
+        />
+      )}
     </div>
   );
 };

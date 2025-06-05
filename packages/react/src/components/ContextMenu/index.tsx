@@ -17,18 +17,24 @@ import {
   isAllowEdit,
   jfrefreshgrid,
   newComment,
+  getFreezeState,
+  toggleFreeze,
+  clearFilter,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, { useContext, useRef, useCallback, useLayoutEffect } from "react";
 import regeneratorRuntime from "regenerator-runtime";
+import Tippy from "@tippyjs/react";
 import WorkbookContext, { SetContextOptions } from "../../context";
 import { useAlert } from "../../hooks/useAlert";
 import { useDialog } from "../../hooks/useDialog";
 import Divider from "./Divider";
 import "./index.css";
 import Menu from "./Menu";
-import CustomSort from "../CustomSort";
+// import CustomSort from "../CustomSort";
 import SVGIcon from "../SVGIcon";
+import "tippy.js/dist/tippy.css";
+import ConditionalFormat from "../ConditionFormat";
 
 const ContextMenu: React.FC = () => {
   const { showDialog } = useDialog();
@@ -37,11 +43,81 @@ const ContextMenu: React.FC = () => {
   const { contextMenu } = context;
   const { showAlert } = useAlert();
   const { rightclick, drag, generalDialog, info } = locale(context);
+
   const getMenuElement = useCallback(
     (name: string, i: number) => {
       const selection = context.luckysheet_select_save?.[0];
       if (name === "|") {
         return <Divider key={`divider-${i}`} />;
+      }
+      if (name === "freeze-row") {
+        const freezeState = getFreezeState(context);
+        const isFrozen = freezeState.isRowFrozen;
+        const isEntireRowSelected = selection?.row_select === true;
+
+        if (!isEntireRowSelected) return null;
+
+        return (
+          <Menu
+            key="freeze-row"
+            onClick={() => {
+              setContext((draftCtx) => {
+                if (isFrozen) {
+                  toggleFreeze(draftCtx, "unfreeze-row");
+                } else {
+                  toggleFreeze(draftCtx, "row");
+                }
+                draftCtx.contextMenu = {};
+              });
+            }}
+          >
+            <div className="context-item">
+              <SVGIcon
+                name="freeze-flv"
+                width={18}
+                height={18}
+                style={{ marginTop: "4px", marginRight: "4px" }}
+              />
+              {isFrozen ? "Unfreeze row" : "Freeze to current row"}
+            </div>
+          </Menu>
+        );
+      }
+
+      if (name === "freeze-column") {
+        const freezeState = getFreezeState(context);
+        const isFrozen = freezeState.isColFrozen;
+        const isEntireColumnSelected = selection?.column_select === true;
+
+        if (!isEntireColumnSelected) return null;
+
+        return (
+          <Menu
+            key="freeze-column"
+            onClick={() => {
+              setContext((draftCtx) => {
+                if (isFrozen) {
+                  toggleFreeze(draftCtx, "unfreeze-column");
+                } else {
+                  toggleFreeze(draftCtx, "column");
+                  // Force a refresh of the grid after freezing
+                  jfrefreshgrid(draftCtx, null, undefined, false);
+                }
+                draftCtx.contextMenu = {};
+              });
+            }}
+          >
+            <div className="context-item">
+              <SVGIcon
+                name="freeze-flv"
+                width={18}
+                height={18}
+                style={{ marginTop: "4px", marginRight: "4px" }}
+              />
+              <p>{isFrozen ? "Unfreeze column" : "Freeze to current column"}</p>
+            </div>
+          </Menu>
+        );
       }
       if (name === "comment") {
         return (
@@ -171,26 +247,18 @@ const ContextMenu: React.FC = () => {
                 }}
               >
                 <>
-                  <SVGIcon
-                    name="insert-flv"
-                    width={18}
-                    height={18}
-                    style={{
-                      marginRight: "8px",
-                      position: "relative",
-                      top: "3px",
-                    }}
-                  />
-                  {_.startsWith(context.lang ?? "", "zh") && (
-                    <>
-                      {rightclick.to}
-                      <span className={`luckysheet-cols-rows-shift-${dir}`}>
-                        {(rightclick as any)[dir]}
-                      </span>
-                    </>
-                  )}
-                  {`${rightclick.insert}  `}
-                  {/* <input
+                  <SVGIcon name="insert-flv" width={18} height={18} />
+                  <div>
+                    {_.startsWith(context.lang ?? "", "zh") && (
+                      <>
+                        {rightclick.to}
+                        <span className={`luckysheet-cols-rows-shift-${dir}`}>
+                          {(rightclick as any)[dir]}
+                        </span>
+                      </>
+                    )}
+                    {`${rightclick.insert}  `}
+                    {/* <input
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                   tabIndex={0}
@@ -199,15 +267,16 @@ const ContextMenu: React.FC = () => {
                   placeholder={rightclick.number}
                   defaultValue="1"
                 /> */}
-                  1
-                  <span className="luckysheet-cols-rows-shift-word luckysheet-mousedown-cancel">
-                    {` ${rightclick.column}  `}
-                  </span>
-                  {!_.startsWith(context.lang ?? "", "zh") && (
-                    <span className={`luckysheet-cols-rows-shift-${dir}`}>
-                      {(rightclick as any)[dir]}
+                    1
+                    <span className="luckysheet-cols-rows-shift-word luckysheet-mousedown-cancel">
+                      {` ${rightclick.column}  `}
                     </span>
-                  )}
+                    {!_.startsWith(context.lang ?? "", "zh") && (
+                      <span className={`luckysheet-cols-rows-shift-${dir}`}>
+                        {(rightclick as any)[dir]}
+                      </span>
+                    )}
+                  </div>
                 </>
               </Menu>
             ));
@@ -253,26 +322,18 @@ const ContextMenu: React.FC = () => {
                 }}
               >
                 <>
-                  <SVGIcon
-                    name="insert-flv"
-                    width={18}
-                    height={18}
-                    style={{
-                      marginRight: "8px",
-                      position: "relative",
-                      top: "3px",
-                    }}
-                  />
-                  {_.startsWith(context.lang ?? "", "zh") && (
-                    <>
-                      {rightclick.to}
-                      <span className={`luckysheet-cols-rows-shift-${dir}`}>
-                        {(rightclick as any)[dir]}
-                      </span>
-                    </>
-                  )}
-                  {`${rightclick.insert}  `}1
-                  {/* <input
+                  <SVGIcon name="insert-flv" width={18} height={18} />
+                  <div>
+                    {_.startsWith(context.lang ?? "", "zh") && (
+                      <>
+                        {rightclick.to}
+                        <span className={`luckysheet-cols-rows-shift-${dir}`}>
+                          {(rightclick as any)[dir]}
+                        </span>
+                      </>
+                    )}
+                    {`${rightclick.insert}  `}1
+                    {/* <input
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                   tabIndex={0}
@@ -281,14 +342,15 @@ const ContextMenu: React.FC = () => {
                   placeholder={rightclick.number}
                   defaultValue="1"
                 /> */}
-                  <span className="luckysheet-cols-rows-shift-word luckysheet-mousedown-cancel">
-                    {` ${rightclick.row}  `}
-                  </span>
-                  {!_.startsWith(context.lang ?? "", "zh") && (
-                    <span className={`luckysheet-cols-rows-shift-${dir}`}>
-                      {(rightclick as any)[dir]}
+                    <span className="luckysheet-cols-rows-shift-word luckysheet-mousedown-cancel">
+                      {` ${rightclick.row}  `}
                     </span>
-                  )}
+                    {!_.startsWith(context.lang ?? "", "zh") && (
+                      <span className={`luckysheet-cols-rows-shift-${dir}`}>
+                        {(rightclick as any)[dir]}
+                      </span>
+                    )}
+                  </div>
                 </>
               </Menu>
             ));
@@ -607,64 +669,189 @@ const ContextMenu: React.FC = () => {
           </Menu>
         );
       }
-      if (name === "orderAZ") {
-        return (
-          <Menu
-            key={name}
-            onClick={() => {
-              setContext((draftCtx) => {
-                sortSelection(draftCtx, true);
-                draftCtx.contextMenu = {};
-              });
-            }}
-          >
-            {rightclick.orderAZ}
-          </Menu>
-        );
-      }
-      if (name === "orderZA") {
-        return (
-          <Menu
-            key={name}
-            onClick={() => {
-              setContext((draftCtx) => {
-                sortSelection(draftCtx, false);
-                draftCtx.contextMenu = {};
-              });
-            }}
-          >
-            {rightclick.orderZA}
-          </Menu>
-        );
-      }
       if (name === "sort") {
+        const { sort } = locale(context);
         return (
-          <Menu
+          <Tippy
             key={name}
-            onClick={() => {
-              setContext((draftCtx) => {
-                showDialog(<CustomSort />);
-                draftCtx.contextMenu = {};
-              });
-            }}
+            placement="right-start"
+            interactive
+            interactiveBorder={50}
+            offset={[0, 0]}
+            arrow={false}
+            zIndex={3000}
+            appendTo={document.body}
+            content={
+              <div
+                className="fortune-toolbar-select"
+                style={{ minWidth: "11.25rem" }}
+              >
+                <div className="flex flex-col color-text-default text-body-sm">
+                  <Menu
+                    onClick={() => {
+                      setContext((draftCtx) => {
+                        sortSelection(draftCtx, true);
+                        draftCtx.contextMenu = {};
+                      });
+                    }}
+                  >
+                    <div
+                      className="context-item p-2 w-full"
+                      style={{ height: "40px" }}
+                    >
+                      <SVGIcon
+                        name="sort-asc"
+                        width={22}
+                        style={{ marginRight: "4px" }}
+                      />
+                      <p>{sort.asc}</p>
+                    </div>
+                  </Menu>
+                  <Menu
+                    onClick={() => {
+                      setContext((draftCtx) => {
+                        sortSelection(draftCtx, false);
+                        draftCtx.contextMenu = {};
+                      });
+                    }}
+                  >
+                    <div
+                      className="context-item p-2 w-full"
+                      style={{ height: "40px" }}
+                    >
+                      <SVGIcon
+                        name="sort-desc"
+                        width={22}
+                        style={{ marginRight: "4px" }}
+                      />
+                      <p>{sort.desc}</p>
+                    </div>
+                  </Menu>
+                  {/* <Menu
+                    onClick={() => {
+                      setContext((draftCtx) => {
+                        showDialog(<CustomSort />);
+                        draftCtx.contextMenu = {};
+                      });
+                    }}
+                  >
+                    <div
+                      className="context-item p-2 w-full"
+                      style={{ height: "40px" }}
+                    >
+                      <SVGIcon
+                        name="sort"
+                        width={22}
+                        style={{ marginRight: "4px" }}
+                      />
+                      <p>{sort.custom}</p>
+                    </div>
+                  </Menu> */}
+                </div>
+              </div>
+            }
+            trigger="mouseenter focus"
+            hideOnClick={false}
           >
-            {rightclick.sortSelection}
-          </Menu>
+            <div>
+              <Menu>
+                <div className="flex items-center justify-between w-full">
+                  <div className="context-item">
+                    <SVGIcon
+                      name="sort-flv"
+                      width={18}
+                      height={18}
+                      style={{ marginRight: "8px" }}
+                    />
+                    <p>{rightclick.sortSelection}</p>
+                  </div>
+                  <SVGIcon name="rightArrow" width={18} />
+                </div>
+              </Menu>
+            </div>
+          </Tippy>
         );
       }
       if (name === "filter") {
+        const { filter } = locale(context);
         return (
-          <Menu
+          <Tippy
             key={name}
-            onClick={() => {
-              setContext((draftCtx) => {
-                createFilter(draftCtx);
-                draftCtx.contextMenu = {};
-              });
-            }}
+            placement="right-start"
+            interactive
+            interactiveBorder={50}
+            offset={[0, 0]}
+            arrow={false}
+            zIndex={3000}
+            appendTo={document.body}
+            content={
+              <div
+                className="fortune-toolbar-select"
+                style={{ minWidth: "11.25rem" }}
+              >
+                <div className="flex flex-col color-text-default text-body-sm">
+                  <Menu
+                    onClick={() => {
+                      setContext((draftCtx) => {
+                        createFilter(draftCtx);
+                        draftCtx.contextMenu = {};
+                      });
+                    }}
+                  >
+                    <div
+                      className="context-item p-2 w-full"
+                      style={{ height: "40px" }}
+                    >
+                      <SVGIcon
+                        name="filter"
+                        width={22}
+                        style={{ marginRight: "4px" }}
+                      />
+                      <p>{filter.filter}</p>
+                    </div>
+                  </Menu>
+                  <Menu
+                    onClick={() => {
+                      setContext((draftCtx) => {
+                        clearFilter(draftCtx);
+                        draftCtx.contextMenu = {};
+                      });
+                    }}
+                  >
+                    <div
+                      className="context-item p-2 w-full"
+                      style={{ height: "40px" }}
+                    >
+                      <SVGIcon
+                        name="eraser"
+                        width={22}
+                        style={{ marginRight: "4px" }}
+                      />
+                      <p>{filter.clearFilter}</p>
+                    </div>
+                  </Menu>
+                </div>
+              </div>
+            }
+            trigger="mouseenter focus"
+            hideOnClick={false}
           >
-            {rightclick.filterSelection}
-          </Menu>
+            <div>
+              <Menu>
+                <div className="flex items-center justify-between w-full">
+                  <div className="context-item">
+                    <SVGIcon
+                      name="filter"
+                      width={22}
+                      style={{ marginRight: "4px" }}
+                    />
+                    <p>{rightclick.filterSelection}</p>
+                  </div>
+                  <SVGIcon name="rightArrow" width={18} />
+                </div>
+              </Menu>
+            </div>
+          </Tippy>
         );
       }
       if (name === "image") {
@@ -697,21 +884,67 @@ const ContextMenu: React.FC = () => {
           </Menu>
         );
       }
+      if (name === "conditionFormat") {
+        // Helper to close context menu
+        const closeContextMenu = () =>
+          setContext((ctx) => {
+            ctx.contextMenu = {};
+          });
+        return (
+          <Tippy
+            key={name}
+            placement="right-start"
+            interactive
+            interactiveBorder={50}
+            offset={[0, 0]}
+            arrow={false}
+            zIndex={3000}
+            appendTo={document.body}
+            content={
+              <div style={{ minWidth: 220 }}>
+                <ConditionalFormat
+                  items={[
+                    "highlightCellRules",
+                    "itemSelectionRules",
+                    "-",
+                    "deleteRule",
+                  ]}
+                  setOpen={closeContextMenu}
+                />
+              </div>
+            }
+            trigger="mouseenter focus"
+            hideOnClick={false}
+          >
+            <div>
+              <Menu>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <SVGIcon name="conditionFormat" width={18} />
+                    <p>{rightclick.conditionFormat || "Conditional Format"}</p>
+                  </div>
+                  <SVGIcon name="rightArrow" width={18} />
+                </div>
+              </Menu>
+            </div>
+          </Tippy>
+        );
+      }
       return null;
     },
     [
-      context.currentSheetId,
-      context.lang,
-      context.luckysheet_select_save,
-      context.defaultrowlen,
-      context.defaultcollen,
-      rightclick,
-      info,
+      context,
       setContext,
+      refs.globalCache,
+      rightclick,
       showAlert,
       showDialog,
-      drag,
-      generalDialog,
+      drag.noMulti,
+      info.tipRowHeightLimit,
+      info.tipColumnWidthLimit,
+      generalDialog.partiallyError,
+      generalDialog.readOnlyError,
+      generalDialog.dataNullError,
     ]
   );
 

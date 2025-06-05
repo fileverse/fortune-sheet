@@ -5,6 +5,7 @@ import { Sheet } from "../types";
 import { checkCellIsLocked } from "../modules";
 
 export * from "./patch";
+export * from "./freeze";
 
 export function generateRandomSheetName(
   file: Sheet[],

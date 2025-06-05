@@ -27,7 +27,6 @@ const Combo: React.FC<Props> = ({
   iconId,
   children,
 }) => {
-  // console.log("Combo", iconId);
   // const { context } = useContext(WorkbookContext);
   const style: CSSProperties = { userSelect: "none" };
   const [open, setOpen] = useState(false);
@@ -41,7 +40,6 @@ const Combo: React.FC<Props> = ({
   useOutsideClick(
     popupRef,
     () => {
-      console.log("Combo useOutsideClick", openState.current);
       setOpen(false);
       openState.current = false;
     },
@@ -73,26 +71,8 @@ const Combo: React.FC<Props> = ({
           ref={triggerRef}
           className="fortune-toolbar-combo-button"
           onClick={(e) => {
-            console.log(
-              "Combo onClick pop ref",
-              popupRef.current,
-              "ll",
-              document.getElementsByClassName("fortune-toolbar-combo-popup")
-            );
             openState.current = !openState.current;
             setOpen(openState.current);
-            console.log(
-              "Combo onClick",
-              iconId,
-              onClick,
-              open,
-              openState.current,
-              e,
-              e.target
-            );
-            // if(open){
-            //   if (onClick) onClick(e);
-            // }
             if (onClick) onClick(e);
             else setOpen(openState.current);
           }}
@@ -124,7 +104,7 @@ const Combo: React.FC<Props> = ({
       {open && (
         <div
           ref={popupRef}
-          className="fortune-toolbar-combo-popup"
+          className="fortune-toolbar-combo-popup color-text-default"
           style={popupPosition}
         >
           {children?.(setOpen)}

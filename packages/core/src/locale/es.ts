@@ -10985,6 +10985,7 @@ export default {
   },
   button: {
     confirm: "Vale",
+    apply: "Aplicar",
     cancel: "Cancelar",
     close: "Cerrar",
     update: "Actualizar",

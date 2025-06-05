@@ -311,3 +311,26 @@
   background: #efefef;
   cursor: pointer;
 }
+
+.fortune-border-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 8px;
+  min-width: 200px;
+}
+
+.fortune-border-grid-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.fortune-border-grid-item:hover {
+  background-color: hsl(var(--color-bg-default-hover));
+}

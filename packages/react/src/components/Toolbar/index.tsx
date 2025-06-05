@@ -1462,7 +1462,7 @@ const Toolbar: React.FC<{
       aria-label={toolbar.toolbar}
     >
       {settings.customToolbarItems
-        .filter((n) => n.key !== "templates")
+        .filter((n) => n.key === "import-export")
         .map((n) => {
           return (
             <CustomButton
@@ -1504,6 +1504,22 @@ const Toolbar: React.FC<{
       <Divider key="templateDivider" />
       {settings.customToolbarItems
         .filter((n) => n.key === "templates")
+        .map((n) => {
+          return (
+            <CustomButton
+              tooltip={n.tooltip}
+              onClick={n.onClick}
+              key={n.key}
+              icon={n.icon}
+              iconName={n.iconName}
+            >
+              {n.children}
+            </CustomButton>
+          );
+        })}
+        <Divider key="templateDivider" />
+        {settings.customToolbarItems
+        .filter((n) => (n.key !== "templates" && n.key !== "import-export"))
         .map((n) => {
           return (
             <CustomButton

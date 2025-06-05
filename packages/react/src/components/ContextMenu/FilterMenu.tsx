@@ -21,8 +21,14 @@ import React, {
 } from "react";
 import _ from "lodash";
 import produce from "immer";
+import {
+  Button,
+  Checkbox,
+  Divider,
+  LucideIcon,
+  TextField,
+} from "@fileverse/ui";
 import WorkbookContext from "../../context";
-import Divider from "./Divider";
 import Menu from "./Menu";
 import SVGIcon from "../SVGIcon";
 import { useAlert } from "../../hooks/useAlert";
@@ -37,16 +43,17 @@ const SelectItem: React.FC<{
   const checked = useMemo(() => isChecked(item.key), [isChecked, item.key]);
   return isItemVisible(item) ? (
     <div className="select-item">
-      <input
-        className="filter-checkbox"
-        type="checkbox"
-        checked={checked}
-        onChange={() => {
-          onChange(item, !checked);
-        }}
-      />
-      <div>{item.text}</div>
-      <span className="count">{`( ${item.rows.length} )`}</span>
+      <div className="flex items-center gap-2">
+        <Checkbox
+          className="border-2"
+          checked={checked}
+          onCheckedChange={(e) => {
+            onChange(item, e.target.checked);
+          }}
+        />
+        <span>{item.text}</span>
+      </div>
+      <span className="count">{`${item.rows.length}`}</span>
     </div>
   ) : null;
 };
@@ -72,36 +79,40 @@ const DateSelectTreeItem: React.FC<{
   const checked = useMemo(() => isChecked(item.key), [isChecked, item.key]);
 
   return isItemVisible(item) ? (
-    <div>
+    <div className="flex flex-col gap-2">
       <div
         className="select-item"
         style={{ marginLeft: -2 + depth * 20 }}
-        onClick={() => {
-          onExpand?.(item.key, !expand);
-          setExpand(!expand);
-        }}
         tabIndex={0}
       >
-        {_.isEmpty(item.children) ? (
-          <div style={{ width: 10 }} />
-        ) : (
-          <div
-            className={`filter-caret ${expand ? "down" : "right"}`}
-            style={{ cursor: "pointer" }}
-          />
-        )}
-        <input
-          className="filter-checkbox"
-          type="checkbox"
-          checked={checked}
-          onChange={() => {
-            onChange(item, !checked);
-          }}
+        <div
+          className="flex items-center gap-2"
+          style={{ flex: 1 }}
           onClick={(e) => e.stopPropagation()}
-          tabIndex={0}
-        />
-        <div>{item.text}</div>
-        <span className="count">{`( ${item.rows.length} )`}</span>
+        >
+          {_.isEmpty(item.children) ? (
+            <div style={{ width: 10 }} />
+          ) : (
+            <LucideIcon
+              name={expand ? "ChevronDown" : "ChevronRight"}
+              className="cursor-pointer"
+              size="sm"
+              onClick={() => {
+                onExpand?.(item.key, !expand);
+                setExpand(!expand);
+              }}
+            />
+          )}
+          <Checkbox
+            className="border-2"
+            checked={checked}
+            onCheckedChange={(e) => {
+              onChange(item, e.target.checked);
+            }}
+          />
+          <span>{item.text}</span>
+        </div>
+        <span className="count">{`${item.rows.length}`}</span>
       </div>
       {expand &&
         item.children.map((v) => (
@@ -151,15 +162,14 @@ const FilterMenu: React.FC = () => {
   const byColorMenuRef = useRef<HTMLDivElement>(null);
   const subMenuRef = useRef<HTMLDivElement>(null);
   const { filterContextMenu } = context;
-  const { startRow, startCol, endRow, endCol, col, listBoxMaxHeight } =
-    filterContextMenu || {
-      startRow: null,
-      startCol: null,
-      endRow: null,
-      endCol: null,
-      col: null,
-      listBoxMaxHeight: 400,
-    };
+  const { startRow, startCol, endRow, endCol, col } = filterContextMenu || {
+    startRow: null,
+    startCol: null,
+    endRow: null,
+    endCol: null,
+    col: null,
+    listBoxMaxHeight: 400,
+  };
   const { filter } = locale(context);
   const [data, setData] = useState<{
     dates: FilterDate[];
@@ -231,25 +241,25 @@ const FilterMenu: React.FC = () => {
     [data.flattenValues]
   );
 
-  const selectAll = useCallback(() => {
-    setDatesUncheck([]);
-    setValuesUncheck([]);
-    hiddenRows.current = [];
-  }, []);
+  // const selectAll = useCallback(() => {
+  //   setDatesUncheck([]);
+  //   setValuesUncheck([]);
+  //   hiddenRows.current = [];
+  // }, []);
 
-  const clearAll = useCallback(() => {
-    setDatesUncheck(_.keys(data.dateRowMap));
-    setValuesUncheck(_.keys(data.valueRowMap));
-    hiddenRows.current = data.visibleRows;
-  }, [data.dateRowMap, data.valueRowMap, data.visibleRows]);
+  // const clearAll = useCallback(() => {
+  //   setDatesUncheck(_.keys(data.dateRowMap));
+  //   setValuesUncheck(_.keys(data.valueRowMap));
+  //   hiddenRows.current = data.visibleRows;
+  // }, [data.dateRowMap, data.valueRowMap, data.visibleRows]);
 
-  const inverseSelect = useCallback(() => {
-    setDatesUncheck(produce((draft) => _.xor(draft, _.keys(data.dateRowMap))));
-    setValuesUncheck(
-      produce((draft) => _.xor(draft, _.keys(data.valueRowMap)))
-    );
-    hiddenRows.current = _.xor(hiddenRows.current, data.visibleRows);
-  }, [data.dateRowMap, data.valueRowMap, data.visibleRows]);
+  // const inverseSelect = useCallback(() => {
+  //   setDatesUncheck(produce((draft) => _.xor(draft, _.keys(data.dateRowMap))));
+  //   setValuesUncheck(
+  //     produce((draft) => _.xor(draft, _.keys(data.valueRowMap)))
+  //   );
+  //   hiddenRows.current = _.xor(hiddenRows.current, data.visibleRows);
+  // }, [data.dateRowMap, data.valueRowMap, data.visibleRows]);
 
   const onColorSelectChange = useCallback(
     (key: string, color: string, checked: boolean) => {
@@ -437,7 +447,11 @@ const FilterMenu: React.FC = () => {
         className="fortune-context-menu luckysheet-cols-menu fortune-filter-menu"
         id="luckysheet-\${menuid}-menu"
         ref={containerRef}
-        style={{ left: filterContextMenu.x, top: filterContextMenu.y }}
+        style={{
+          left: filterContextMenu.x,
+          top: filterContextMenu.y,
+          minWidth: "280px !important",
+        }}
       >
         {settings.filterContextMenu?.map((name, i) => {
           if (name === "|") {
@@ -446,14 +460,30 @@ const FilterMenu: React.FC = () => {
           if (name === "sort-by-asc") {
             return (
               <Menu key={name} onClick={() => sortData(true)}>
-                {filter.sortByAsc}
+                <div className="context-item w-full">
+                  <SVGIcon
+                    name="sort-asc"
+                    width={24}
+                    height={18}
+                    style={{ marginRight: "4px" }}
+                  />
+                  <p>{filter.sortByAsc}</p>
+                </div>
               </Menu>
             );
           }
           if (name === "sort-by-desc") {
             return (
               <Menu key={name} onClick={() => sortData(false)}>
-                {filter.sortByDesc}
+                <div className="context-item w-full">
+                  <SVGIcon
+                    name="sort-desc"
+                    width={24}
+                    height={18}
+                    style={{ marginRight: "4px" }}
+                  />
+                  <p>{filter.sortByDesc}</p>
+                </div>
               </Menu>
             );
           }
@@ -482,104 +512,66 @@ const FilterMenu: React.FC = () => {
               </div>
             );
           }
-          if (name === "filter-by-condition") {
-            return (
-              <div key="name">
-                <Menu onClick={() => {}}>
-                  <div className="filter-caret right" />
-                  {filter.filterByCondition}
-                </Menu>
-                <div
-                  className="luckysheet-\${menuid}-bycondition"
-                  style={{ display: "none" }}
-                >
-                  <div
-                    className="luckysheet-flat-menu-button luckysheet-mousedown-cancel"
-                    id="luckysheet-\${menuid}-selected"
-                  >
-                    <span
-                      className="luckysheet-mousedown-cancel"
-                      data-value="null"
-                      data-type="0"
-                    >
-                      {filter.filiterInputNone}
-                    </span>
-                    <div className="luckysheet-mousedown-cancel">
-                      <i className="fa fa-sort" aria-hidden="true" />
-                    </div>
-                  </div>
-                  {/* <div className="luckysheet-\${menuid}-selected-input">
-          <input
-            type="text"
-            placeholder="${filter.filiterInputTip}"
-            className="luckysheet-mousedown-cancel"
-          />
-        </div>
-        <div className="luckysheet-\${menuid}-selected-input luckysheet-\${menuid}-selected-input2">
-          <span>{filter.filiterRangeStart}</span>
-          <input
-            type="text"
-            placeholder="${filter.filiterRangeStartTip}"
-            className="luckysheet-mousedown-cancel"
-          />
-          <span>{filter.filiterRangeEnd}</span>
-          <input
-            type="text"
-            placeholder="${filter.filiterRangeEndTip}"
-            className="luckysheet-mousedown-cancel"
-          />
-        </div> */}
-                </div>
-              </div>
-            );
-          }
+          // if (name === "filter-by-condition") {
+          //   return (
+          //     <div key="name">
+          //       <Menu onClick={() => {}}>
+          //         <div className="filter-caret right" />
+          //         {filter.filterByCondition}
+          //       </Menu>
+          //       <div
+          //         className="luckysheet-\${menuid}-bycondition"
+          //         style={{ display: "none" }}
+          //       >
+          //         <div
+          //           className="luckysheet-flat-menu-button luckysheet-mousedown-cancel"
+          //           id="luckysheet-\${menuid}-selected"
+          //         >
+          //           <span
+          //             className="luckysheet-mousedown-cancel"
+          //             data-value="null"
+          //             data-type="0"
+          //           >
+          //             {filter.filiterInputNone}
+          //           </span>
+          //           <div className="luckysheet-mousedown-cancel">
+          //             <i className="fa fa-sort" aria-hidden="true" />
+          //           </div>
+          //         </div>
+          //         {/* <div className="luckysheet-\${menuid}-selected-input">
+          //          <input
+          //            type="text"
+          //            placeholder="${filter.filiterInputTip}"
+          //            className="luckysheet-mousedown-cancel"
+          //          />
+          //        </div>
+          //       <div className="luckysheet-\${menuid}-selected-input luckysheet-\${menuid}-selected-input2">
+          //         <span>{filter.filiterRangeStart}</span>
+          //         <input
+          //           type="text"
+          //           placeholder="${filter.filiterRangeStartTip}"
+          //           className="luckysheet-mousedown-cancel"
+          //         />
+          //         <span>{filter.filiterRangeEnd}</span>
+          //         <input
+          //           type="text"
+          //           placeholder="${filter.filiterRangeEndTip}"
+          //           className="luckysheet-mousedown-cancel"
+          //         />
+          //       </div> */}
+          //       </div>
+          //     </div>
+          //   );
+          // }
           if (name === "filter-by-value") {
             return (
               <div key={name}>
-                <Menu onClick={() => {}}>
-                  <div className="filter-caret right" />
-                  {filter.filterByValues}
-                </Menu>
-                <div className="luckysheet-filter-byvalue">
-                  <div className="fortune-menuitem-row byvalue-btn-row">
-                    <div>
-                      <span
-                        className="fortune-byvalue-btn"
-                        onClick={selectAll}
-                        tabIndex={0}
-                      >
-                        {filter.filterValueByAllBtn}
-                      </span>
-                      {" - "}
-                      <span
-                        className="fortune-byvalue-btn"
-                        onClick={clearAll}
-                        tabIndex={0}
-                      >
-                        {filter.filterValueByClearBtn}
-                      </span>
-                      {" - "}
-                      <span
-                        className="fortune-byvalue-btn"
-                        onClick={inverseSelect}
-                        tabIndex={0}
-                      >
-                        {filter.filterValueByInverseBtn}
-                      </span>
-                    </div>
-                    <div className="byvalue-filter-icon">
-                      <SVGIcon
-                        name="filter-fill"
-                        style={{ width: 20, height: 20 }}
-                      />
-                    </div>
-                  </div>
+                <div className="luckysheet-filter-byvalue flex flex-col gap-2 mt-2">
                   <div className="filtermenu-input-container">
-                    <input
-                      type="text"
+                    <TextField
+                      leftIcon={<LucideIcon name="Search" size="sm" />}
                       onKeyDown={(e) => e.stopPropagation()}
                       placeholder={filter.filterValueByTip}
-                      className="luckysheet-mousedown-cancel"
                       id="luckysheet-\${menuid}-byvalue-input"
                       value={searchText}
                       onChange={(e) => {
@@ -588,10 +580,7 @@ const FilterMenu: React.FC = () => {
                       }}
                     />
                   </div>
-                  <div
-                    id="luckysheet-filter-byvalue-select"
-                    style={{ maxHeight: listBoxMaxHeight }}
-                  >
+                  <div id="luckysheet-filter-byvalue-select">
                     <DateSelectTree
                       dates={data.dates}
                       onExpand={onExpand}
@@ -624,6 +613,37 @@ const FilterMenu: React.FC = () => {
                             ) > -1;
                       }}
                     />
+                    <SelectItem
+                      item={{
+                        key: "all",
+                        text: filter.filterValueByAllBtn,
+                        value: "",
+                        mask: "",
+                        rows: data.values
+                          .filter((v) => showValues.includes(v.text))
+                          .flatMap((v) => v.rows),
+                      }}
+                      isChecked={() => {
+                        // Check if all items are checked by verifying no items are in the uncheck arrays
+                        const allDatesChecked = datesUncheck.length === 0;
+                        const allValuesChecked = valuesUncheck.length === 0;
+                        return allDatesChecked && allValuesChecked;
+                      }}
+                      onChange={(item, checked) => {
+                        if (checked) {
+                          // If checking "all", clear all unchecked items
+                          setDatesUncheck([]);
+                          setValuesUncheck([]);
+                          hiddenRows.current = [];
+                        } else {
+                          // If unchecking "all", uncheck all items
+                          setDatesUncheck(_.keys(data.dateRowMap));
+                          setValuesUncheck(_.keys(data.valueRowMap));
+                          hiddenRows.current = data.visibleRows;
+                        }
+                      }}
+                      isItemVisible={() => true}
+                    />
                     {data.values.map((v) => (
                       <SelectItem
                         key={v.key}
@@ -633,18 +653,23 @@ const FilterMenu: React.FC = () => {
                         }
                         onChange={(item: FilterValue, checked: boolean) => {
                           const rows = hiddenRows.current;
-                          hiddenRows.current = checked
-                            ? _.without(rows, ...item.rows)
-                            : _.concat(rows, item.rows);
-                          setValuesUncheck(
-                            produce((draft) => {
-                              if (checked) {
+                          if (checked) {
+                            // If checking an item, remove it from uncheck arrays and hidden rows
+                            hiddenRows.current = _.without(rows, ...item.rows);
+                            setValuesUncheck(
+                              produce((draft) => {
                                 _.pull(draft, item.key);
-                              } else {
+                              })
+                            );
+                          } else {
+                            // If unchecking an item, add it to uncheck arrays and hidden rows
+                            hiddenRows.current = _.concat(rows, item.rows);
+                            setValuesUncheck(
+                              produce((draft) => {
                                 draft.push(item.key);
-                              }
-                            })
-                          );
+                              })
+                            );
+                          }
                         }}
                         isItemVisible={(item) => {
                           return showValues.length === data.flattenValues.length
@@ -660,10 +685,34 @@ const FilterMenu: React.FC = () => {
           }
           return null;
         })}
-        <Divider />
-        <div className="fortune-menuitem-row">
-          <div
-            className="button-basic button-primary"
+        <div className="fortune-menuitem-row mt-2">
+          <Button
+            variant="ghost"
+            style={{ minWidth: "80px" }}
+            onClick={() => {
+              setContext((draftCtx) => {
+                clearFilter(draftCtx);
+              });
+            }}
+            tabIndex={0}
+          >
+            {filter.clearFilter}
+          </Button>
+          <Button
+            variant="secondary"
+            style={{ minWidth: "80px" }}
+            onClick={() => {
+              setContext((draftCtx) => {
+                draftCtx.filterContextMenu = undefined;
+              });
+            }}
+            tabIndex={0}
+          >
+            {filter.filterCancel}
+          </Button>
+          <Button
+            variant="default"
+            style={{ minWidth: "80px" }}
             onClick={() => {
               if (col == null) return;
               setContext((draftCtx) => {
@@ -692,30 +741,8 @@ const FilterMenu: React.FC = () => {
             }}
             tabIndex={0}
           >
-            {filter.filterConform}
-          </div>
-          <div
-            className="button-basic button-default"
-            onClick={() => {
-              setContext((draftCtx) => {
-                draftCtx.filterContextMenu = undefined;
-              });
-            }}
-            tabIndex={0}
-          >
-            {filter.filterCancel}
-          </div>
-          <div
-            className="button-basic button-danger"
-            onClick={() => {
-              setContext((draftCtx) => {
-                clearFilter(draftCtx);
-              });
-            }}
-            tabIndex={0}
-          >
-            {filter.clearFilter}
-          </div>
+            {filter.filterConfirm}
+          </Button>
         </div>
       </div>
       {showSubMenu && (
@@ -787,7 +814,7 @@ const FilterMenu: React.FC = () => {
                 }}
                 tabIndex={0}
               >
-                {filter.filterConform}
+                {filter.filterConfirm}
               </div>
             </>
           )}

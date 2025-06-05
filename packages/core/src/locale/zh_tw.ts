@@ -11414,7 +11414,7 @@ export default {
     filterValueByClearBtn: "清除",
     filterValueByInverseBtn: "反選",
     filterValueByTip: "按照值進行篩選",
-    filterConform: "確 認",
+    filterConfirm: "確 認",
     filterCancel: "取 消",
 
     conditionNone: "無",

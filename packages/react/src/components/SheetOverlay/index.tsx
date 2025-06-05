@@ -48,6 +48,7 @@ import RangeDialog from "../DataVerification/RangeDialog";
 import { useDialog } from "../../hooks/useDialog";
 import SVGIcon from "../SVGIcon";
 import DropDownList from "../DataVerification/DropdownList";
+import IframeBoxs from "../IFrameBoxs/iFrameBoxs";
 
 const SheetOverlay: React.FC = () => {
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
@@ -734,6 +735,7 @@ const SheetOverlay: React.FC = () => {
           <div id="luckysheet-multipleRange-show" />
           <div id="luckysheet-dynamicArray-hightShow" />
           <ImgBoxs />
+          <IframeBoxs />
           <div
             id="luckysheet-dataVerification-dropdown-btn"
             onClick={() => {

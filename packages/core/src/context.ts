@@ -46,6 +46,15 @@ export type Context = {
   insertedImgs?: Image[];
   editingInsertedImgs?: Image;
   activeImg?: string;
+  insertedIframes?: {
+    id: string;
+    src: string;
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  }[];
+  activeIframe?: string;
   presences?: Presence[];
   showSearch?: boolean;
   showReplace?: boolean;
@@ -441,7 +450,8 @@ export function defaultContext(refs: RefValues): Context {
 
     iscopyself: true,
     activeImg: undefined,
-
+    insertedIframes: [],
+    activeIframe: undefined,
     orderbyindex: 0, // 排序下标
 
     luckysheet_model_move_state: false, // 模态框拖动

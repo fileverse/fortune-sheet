@@ -1560,7 +1560,6 @@ const SVGDefines: React.FC<{ currency: string }> = ({ currency }) => (
           p-id="36983"
         />
       </symbol>
-
       <symbol
         id="sort-flv"
         width="18"
@@ -1592,6 +1591,31 @@ const SVGDefines: React.FC<{ currency: string }> = ({ currency }) => (
           d="M12.75 2.25C13.1642 2.25 13.5 2.58579 13.5 3V15C13.5 15.4142 13.1642 15.75 12.75 15.75C12.3358 15.75 12 15.4142 12 15V3C12 2.58579 12.3358 2.25 12.75 2.25Z"
           fill="#363B3F"
         />
+      </symbol>
+      <symbol id="dune-logo" viewBox="0 0 18 16" fill="none">
+        <svg
+          width="18"
+          height="16"
+          viewBox="0 0 18 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g clip-path="url(#clip0_80_246690)">
+            <path
+              d="M7.99485 15.9875C12.4102 15.9875 15.9896 12.4085 15.9896 7.99373C15.9896 3.57891 12.4102 0 7.99485 0C3.57941 0 0 3.57891 0 7.99373C0 12.4085 3.57941 15.9875 7.99485 15.9875Z"
+              fill="#F4603E"
+            />
+            <path
+              d="M1.39258 12.5028C1.39258 12.5028 6.67562 10.7723 15.9868 7.73633C15.9868 7.73633 16.4968 12.7082 11.3424 15.3015C11.3424 15.3015 8.80068 16.5197 6.01215 15.7383C6.01215 15.7383 3.23545 15.2142 1.39258 12.5028Z"
+              fill="#1E1870"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_80_246690">
+              <rect width="16" height="16" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
       </symbol>
     </defs>
   </svg>

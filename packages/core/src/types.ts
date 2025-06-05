@@ -127,6 +127,14 @@ export type Sheet = {
   celldata?: CellWithRowAndCol[];
   id?: string;
   images?: Image[];
+  iframes?: {
+    id: string;
+    src: string;
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  }[];
   zoomRatio?: number;
   column?: number;
   row?: number;
@@ -269,6 +277,11 @@ export type GlobalCache = {
   freezen?: Record<string, Freezen>;
   image?: {
     imgInitialPosition: Rect | undefined;
+    cursorMoveStartPosition: { x: number; y: number } | undefined;
+    resizingSide: string | undefined;
+  };
+  iframe?: {
+    iframeInitialPosition: Rect | undefined;
     cursorMoveStartPosition: { x: number; y: number } | undefined;
     resizingSide: string | undefined;
   };

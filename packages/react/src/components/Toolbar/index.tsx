@@ -34,6 +34,7 @@ import {
   createFilter,
   clearFilter,
   applyLocation,
+  insertDuneChart,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import WorkbookContext from "../../context";
@@ -1550,6 +1551,36 @@ const Toolbar: React.FC<{
             </CustomButton>
           );
         })}
+
+      <Button
+        iconId="dune-logo"
+        tooltip="Insert Dune Chart"
+        key="dune-charts"
+        onClick={() => {
+          if (context.allowEdit === false) return;
+          showDialog(
+            <div>
+              <div>Enter Dune Chart URL:</div>
+              <input
+                type="text"
+                style={{ width: "100%", marginTop: "8px" }}
+                placeholder="https://dune.com/embeds/1234567/7654321"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const src = e.currentTarget.value;
+                    if (src) {
+                      setContext((draftCtx) => {
+                        insertDuneChart(draftCtx, src);
+                      });
+                      hideDialog();
+                    }
+                  }
+                }}
+              />
+            </div>
+          );
+        }}
+      />
     </div>
   );
 };

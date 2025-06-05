@@ -227,6 +227,13 @@ export type Context = {
   forceFormulaRef?: Boolean;
 
   getRefs: () => RefValues;
+  showDunePreview?: {
+    url: string;
+    position: {
+      left: number;
+      top: number;
+    };
+  };
 };
 
 export function defaultContext(refs: RefValues): Context {
@@ -237,6 +244,13 @@ export function defaultContext(refs: RefValues): Context {
     addDefaultRows: 50,
     fullscreenmode: true,
     devicePixelRatio: (globalThis || window).devicePixelRatio,
+    showDunePreview: {
+      url: "",
+      position: {
+        left: 0,
+        top: 0,
+      },
+    },
 
     contextMenu: {},
     sheetTabContextMenu: {},

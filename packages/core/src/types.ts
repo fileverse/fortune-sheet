@@ -3,13 +3,13 @@ import { PatchOptions } from "./utils";
 
 export type Op = {
   op:
-    | "replace"
-    | "remove"
-    | "add"
-    | "insertRowCol"
-    | "deleteRowCol"
-    | "addSheet"
-    | "deleteSheet";
+  | "replace"
+  | "remove"
+  | "add"
+  | "insertRowCol"
+  | "deleteRowCol"
+  | "addSheet"
+  | "deleteSheet";
   id?: string;
   path: (string | number)[];
   value?: any;

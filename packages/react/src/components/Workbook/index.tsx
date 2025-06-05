@@ -20,6 +20,7 @@ import {
   locale,
   calcSelectionInfo,
   groupValuesRefresh,
+  insertDuneChart,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useMemo,
@@ -50,6 +51,7 @@ import { generateAPIs } from "./api";
 import { ModalProvider } from "../../context/modal";
 import FilterMenu from "../ContextMenu/FilterMenu";
 import SheetList from "../SheetList";
+import DunePreview from "../DunePreview/DunePreview";
 
 enablePatches();
 
@@ -796,6 +798,29 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
                 )}
               </div>
             </div>
+            {context.showDunePreview && (
+              <DunePreview
+                url={context.showDunePreview.url}
+                position={context.showDunePreview.position}
+                onKeepAsLink={() => {
+                  setContextWithProduce(
+                    (draftCtx) => {
+                      draftCtx.showDunePreview = undefined;
+                    },
+                    { noHistory: true }
+                  );
+                }}
+                onEmbed={() => {
+                  setContextWithProduce(
+                    (draftCtx) => {
+                      insertDuneChart(draftCtx, context.showDunePreview!.url);
+                      draftCtx.showDunePreview = undefined;
+                    },
+                    { noHistory: true }
+                  );
+                }}
+              />
+            )}
           </div>
         </ModalProvider>
       </WorkbookContext.Provider>

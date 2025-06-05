@@ -17,7 +17,7 @@ import { getBorderInfoCompute } from "../modules/border";
 import { expandRowsAndColumns, storeSheetParamALL } from "../modules/sheet";
 import { jfrefreshgrid } from "../modules/refresh";
 import { setRowHeight } from "../api";
-import { CFSplitRange } from "../modules";
+import { CFSplitRange, sanitizeDuneUrl } from "../modules";
 import clipboard from "../modules/clipboard";
 
 function postPasteCut(
@@ -1712,7 +1712,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
         const patternName = _.initial(styleInner.match(nameReg));
         const allStyleList =
           patternName.length === patternStyle?.length &&
-          typeof patternName === typeof patternStyle
+            typeof patternName === typeof patternStyle
             ? _.fromPairs(_.zip(patternName, patternStyle))
             : {};
 
@@ -1738,7 +1738,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             if (
               (_.has(ctx.luckysheetfile[index].config!.rowlen, targetR) &&
                 ctx.luckysheetfile[index].config!.rowlen![targetR] !==
-                  targetRowHeight) ||
+                targetRowHeight) ||
               (!_.has(ctx.luckysheetfile[index].config!.rowlen, targetR) &&
                 ctx.luckysheetfile[index].defaultRowHeight !== targetRowHeight)
             ) {
@@ -1761,8 +1761,8 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
               const styleString =
                 typeof allStyleList[`.${className}`] === "string"
                   ? allStyleList[`.${className}`]
-                      .substring(1, allStyleList[`.${className}`].length - 1)
-                      .split("\n\t")
+                    .substring(1, allStyleList[`.${className}`].length - 1)
+                    .split("\n\t")
                   : [];
               const styles: Record<string, string> = {};
               _.forEach(styleString, (s) => {
@@ -1783,15 +1783,15 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
                 (fontWight.toString() === "400" ||
                   fontWight === "normal" ||
                   _.isEmpty(fontWight)) &&
-                !_.includes(styles["font-style"], "bold") &&
-                (!styles["font-weight"] || styles["font-weight"] === "400")
+                  !_.includes(styles["font-style"], "bold") &&
+                  (!styles["font-weight"] || styles["font-weight"] === "400")
                   ? 0
                   : 1;
 
               cell.it =
                 (td.style.fontStyle === "normal" ||
                   _.isEmpty(td.style.fontStyle)) &&
-                !_.includes(styles["font-style"], "italic")
+                  !_.includes(styles["font-style"], "italic")
                   ? 0
                   : 1;
 
@@ -2013,6 +2013,34 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
           handleFormulaStringPaste(ctx, txtdata);
         } else {
           pasteHandler(ctx, txtdata);
+
+          const _txtdata =
+            clipboardData.getData("text/html") ||
+            clipboardData.getData("text/plain");
+          // Check if it's a Dune link after pasting
+          const embedUrl = sanitizeDuneUrl(_txtdata);
+          if (embedUrl) {
+            // Get the cell position
+            const last =
+              ctx.luckysheet_select_save?.[
+              ctx.luckysheet_select_save.length - 1
+              ];
+            if (last) {
+              const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
+              const colIndex = last.column_focus ?? last.column?.[0] ?? 0;
+
+              // Calculate position for the preview
+              const left =
+                colIndex === 0 ? 0 : ctx.visibledatacolumn[colIndex - 1];
+              const top = rowIndex === 0 ? 0 : ctx.visibledatarow[rowIndex - 1];
+
+              // Show the preview
+              ctx.showDunePreview = {
+                url: txtdata,
+                position: { left, top },
+              };
+            }
+          }
         }
       }
     }

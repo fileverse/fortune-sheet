@@ -37,8 +37,7 @@ const NotationBoxes: React.FC = () => {
         [context.editingCommentBox, context.hoveredCommentBox]
       ).map((commentBox, index) => {
         if (!commentBox) return null;
-        const { r, c, rc, left, top, width, height, size } =
-          commentBox;
+        const { r, c, rc, left, top, width, height, size } = commentBox;
         const isEditing = context.editingCommentBox?.rc === rc;
         const commentId = `comment-box-${rc}`;
         return (

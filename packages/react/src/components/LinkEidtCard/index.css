@@ -3,10 +3,108 @@
   overflow: hidden;
   background-color: #fff;
   z-index: 300;
-  padding: 6px 20px 10px 20px;
-  box-shadow: 0 2px 6px 0 rgb(0 0 0 / 16%);
-  border: solid 0.5px #e5e5e5;
-  border-radius: 6px;
+  padding: 16px 20px 20px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  min-width: 320px;
+}
+
+.fortune-link-cards-container {
+  position: absolute;
+  display: flex;
+  gap: 16px;
+  z-index: 300;
+}
+
+.fortune-link-card {
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 16px;
+  width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 300;
+}
+
+.fortune-link-type-select {
+  width: 100% !important;
+}
+
+.fortune-link-type-dropdown {
+  z-index: 999999 !important;
+}
+
+.fortune-sheet-dropdown {
+  z-index: 999999 !important;
+}
+
+.fortune-input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fortune-input-with-icon .input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #666;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fortune-input-with-icon .input-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.fortune-link-input {
+  width: 100% !important;
+  padding-left: 36px !important;
+}
+
+.fortune-sheet-select {
+  width: 100% !important;
+  padding-left: 36px !important;
+}
+
+/* Ensure Select dropdowns appear above everything */
+[data-radix-portal] {
+  z-index: 999999 !important;
+}
+
+.fortune-insert-button {
+  width: 100% !important;
+  background-color: #000 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 12px !important;
+  font-weight: 500 !important;
+}
+
+.fortune-insert-button:hover {
+  background-color: #333 !important;
+}
+
+.fortune-insert-button:disabled {
+  background-color: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed !important;
+}
+
+.fortune-insert-button:disabled:hover {
+  background-color: #ccc !important;
 }
 
 .fortune-link-modify-modal.link-toolbar {
@@ -50,82 +148,72 @@
 }
 
 .fortune-link-modify-line {
-  padding-top: 10px;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fortune-link-modify-line:first-child {
+  padding-top: 0;
 }
 
 .fortune-link-modify-title {
-  font-size: 12px;
-  display: inline-block;
-  height: 16px;
-  width: 74px;
-  line-height: 16px;
-  padding: 7px 0;
+  font-size: 14px;
+  font-weight: 500;
   color: #333333;
-  margin-right: 6px;
+  margin-bottom: 4px;
 }
 
-.fortune-link-modify-input,
+.fortune-link-modify-input {
+  width: 100% !important;
+}
+
 .fortune-link-modify-select {
-  width: 232px;
-  box-sizing: border-box;
-  height: 26px;
-  border-radius: 5px;
-  border: 1px solid #d9d9d9;
-  font-size: 12px;
-  padding: 1px 8px;
-  outline: none;
-  -webkit-user-select: auto;
-  -moz-user-select: auto;
-  -ms-user-select: auto;
-  user-select: auto;
+  width: 100% !important;
 }
 
-.fortune-link-modify-input:focus,
-.fortune-link-modify-modal .range-selection-input:focus {
-  border-color: #4d90fe;
+.input-with-selector {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.fortune-link-modify-input.error-input,
-.fortune-link-modify-modal .range-selection-input.error-input {
-  border: 1px solid #ef4e2f !important;
+.input-with-selector .fortune-link-modify-input {
+  padding-right: 32px !important;
 }
 
 .fortune-link-modify-cell-selector {
-  width: 20px;
-  right: 24px;
-  padding: 4px;
   position: absolute;
-  display: inline-block;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   cursor: pointer;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
+  background: transparent;
+  border-radius: 4px;
+}
+
+.fortune-link-modify-cell-selector:hover {
+  background-color: rgba(0, 0, 0, 0.06);
 }
 
 .fortune-link-modify-modal .modal-title {
-  font-weight: 500;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 18px;
   color: rgba(0, 0, 0, 0.88);
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   line-height: 24px;
 }
 
 .fortune-link-modify-modal .range-selection-input {
-  display: block;
-  outline: none;
-  font-size: 14px;
-  height: 32px;
-  width: 100%;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  padding: 7px 11px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  margin: 0;
+  width: 100% !important;
 }
 
 .fortune-link-modify-modal .modal-icon-close {
@@ -133,50 +221,51 @@
   right: 22px;
   top: 22px;
   cursor: pointer;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.fortune-link-modify-modal .modal-icon-close:hover {
+  background-color: rgba(0, 0, 0, 0.06);
 }
 
 .fortune-link-modify-modal .validation-input-tip {
-  height: 17px;
   font-size: 12px;
   color: #ef4e2f;
-  margin: 3px 0px;
+  margin-top: 4px;
 }
 
 .fortune-link-modify-modal .button-group {
   display: flex;
+  gap: 12px;
+  justify-content: flex-end;
 }
 
 .fortune-link-modify-modal .modal-footer {
   display: flex;
   justify-content: flex-end;
-  padding: 0px 0px 5px 0px;
+  padding-top: 20px;
+  margin-top: 8px;
+  border-top: 1px solid #f0f0f0;
 }
 
 .fortune-link-modify-modal.range-selection-modal .modal-footer {
-  padding: 0px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
 }
 
-.fortune-link-modify-modal .button-basic {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;
-  align-items: center;
-  font-size: 14px;
-  height: 32px;
-  width: 88px;
-  padding: 0;
-  border-radius: 4px;
-  cursor: pointer;
+/* Error state styling for fileverse/ui components */
+.fortune-link-modify-modal .error-input input,
+.fortune-link-card .error-input input {
+  border-color: #ef4e2f !important;
 }
 
-.fortune-link-modify-modal .button-default {
-  color: rgb(38, 42, 51);
-  background-color: rgb(255, 255, 255);
-  border: 1px solid rgb(235, 235, 235);
-}
-
-.fortune-link-modify-modal .button-primary {
-  color: white;
-  background-color: #0188fb;
-  margin-left: 14px;
+.fortune-link-modify-modal .error-input input:focus,
+.fortune-link-card .error-input input:focus {
+  border-color: #ef4e2f !important;
+  box-shadow: 0 0 0 2px rgba(239, 78, 47, 0.2) !important;
 }

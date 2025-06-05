@@ -3,7 +3,6 @@ import React, {
   useState,
   useMemo,
   useCallback,
-  useRef,
   useLayoutEffect,
 } from "react";
 import {
@@ -12,12 +11,19 @@ import {
   LinkCardProps,
   removeHyperlink,
   replaceHtml,
-  getRangetxt,
   goToLink,
   isLinkValid,
-  normalizeSelection,
-  onRangeSelectionModalMoveStart,
 } from "@fileverse-dev/fortune-core";
+import {
+  Button,
+  TextField,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  LucideIcon,
+} from "@fileverse/ui";
 import "./index.css";
 import _ from "lodash";
 import WorkbookContext from "../../context";
@@ -32,22 +38,27 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
   originAddress,
   isEditing,
   position,
-  selectingCellRange,
 }) => {
   const { context, setContext, refs } = useContext(WorkbookContext);
   const [linkText, setLinkText] = useState<string>(originText);
   const [linkAddress, setLinkAddress] = useState<string>(originAddress);
   const [linkType, setLinkType] = useState<string>(originType);
-  const { insertLink, linkTypeList, button } = locale(context);
-  const lastCell = useRef(
-    normalizeSelection(context, [{ row: [r, r], column: [c, c] }])
-  );
-  const skipCellRangeSet = useRef(true);
+  const { insertLink, linkTypeList } = locale(context);
   const isLinkAddressValid = isLinkValid(context, linkType, linkAddress);
 
-  const tooltip = (
-    <div className="validation-input-tip">{isLinkAddressValid.tooltip}</div>
-  );
+  const isButtonDisabled = useMemo(() => {
+    if (!linkText.trim()) return true;
+
+    if (linkType === "webpage") {
+      return !linkAddress.trim() || !isLinkAddressValid.isValid;
+    }
+
+    if (linkType === "sheet") {
+      return !linkAddress.trim();
+    }
+
+    return false;
+  }, [linkText, linkAddress, linkType, isLinkAddressValid.isValid]);
 
   const hideLinkCard = useCallback(() => {
     _.set(refs.globalCache, "linkCard.mouseEnter", false);
@@ -55,16 +66,6 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
       draftCtx.linkCard = undefined;
     });
   }, [refs.globalCache, setContext]);
-
-  const setRangeModalVisible = useCallback(
-    (visible: boolean) =>
-      setContext((draftCtx) => {
-        draftCtx.luckysheet_select_save! = lastCell.current!;
-        if (draftCtx.linkCard != null)
-          draftCtx.linkCard.selectingCellRange = visible;
-      }),
-    [setContext]
-  );
 
   const containerEvent = useMemo(
     () => ({
@@ -84,28 +85,6 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
     [refs.globalCache]
   );
 
-  const renderBottomButton = useCallback(
-    (onOk: () => void, onCancel: () => void) => (
-      <div className="button-group">
-        <div
-          className="button-basic button-default"
-          onClick={onCancel}
-          tabIndex={0}
-        >
-          {button.cancel}
-        </div>
-        <div
-          className="button-basic button-primary"
-          onClick={onOk}
-          tabIndex={0}
-        >
-          {button.confirm}
-        </div>
-      </div>
-    ),
-    [button]
-  );
-
   const renderToolbarButton = useCallback(
     (iconId: string, onClick: () => void) => (
       <div className="fortune-toolbar-button" onClick={onClick} tabIndex={0}>
@@ -120,32 +99,6 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
     setLinkText(originText);
     setLinkType(originType);
   }, [rc, originAddress, originText, originType]);
-
-  useLayoutEffect(() => {
-    if (selectingCellRange) {
-      skipCellRangeSet.current = true;
-    }
-  }, [selectingCellRange]);
-
-  useLayoutEffect(() => {
-    if (skipCellRangeSet.current) {
-      skipCellRangeSet.current = false;
-      return;
-    }
-    if (selectingCellRange) {
-      const len = _.size(context.luckysheet_select_save);
-      if (len > 0) {
-        setLinkAddress(
-          getRangetxt(
-            context,
-            context.currentSheetId,
-            context.luckysheet_select_save![len - 1],
-            ""
-          )
-        );
-      }
-    }
-  }, [context, selectingCellRange]);
 
   if (!isEditing) {
     return (
@@ -205,164 +158,110 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
     );
   }
 
-  return selectingCellRange ? (
+  return (
     <div
-      className="fortune-link-modify-modal range-selection-modal"
-      style={{ left: position.cellLeft, top: position.cellBottom + 5 }}
-      {..._.omit(containerEvent, ["onMouseDown", "onMouseMove", "onMouseUp"])}
-      onMouseDown={(e) => {
-        const { nativeEvent } = e;
-        onRangeSelectionModalMoveStart(context, refs.globalCache, nativeEvent);
-        e.stopPropagation();
-      }}
-    >
-      <div
-        className="modal-icon-close"
-        onClick={() => setRangeModalVisible(false)}
-        tabIndex={0}
-      >
-        <SVGIcon name="close" />
-      </div>
-      <div className="modal-title">{insertLink.selectCellRange}</div>
-      <input
-        {...containerEvent}
-        className={`range-selection-input ${
-          !linkAddress || isLinkAddressValid.isValid ? "" : "error-input"
-        }`}
-        placeholder={insertLink.cellRangePlaceholder}
-        onChange={(e) => setLinkAddress(e.target.value)}
-        value={linkAddress}
-      />
-      {tooltip}
-      <div className="modal-footer">
-        {renderBottomButton(
-          () => {
-            if (isLinkAddressValid.isValid) setRangeModalVisible(false);
-          },
-          () => {
-            setLinkAddress(originAddress);
-            setRangeModalVisible(false);
-          }
-        )}
-      </div>
-    </div>
-  ) : (
-    <div
-      className="fortune-link-modify-modal"
+      className="fortune-link-card"
       style={{
         left: position.cellLeft + 20,
         top: position.cellBottom,
       }}
       {...containerEvent}
     >
-      <div className="fortune-link-modify-line">
-        <div className="fortune-link-modify-title">{insertLink.linkText}</div>
-        <input
-          className="fortune-link-modify-input"
-          spellCheck="false"
-          // eslint-disable-next-line jsx-a11y/no-autofocus
-          autoFocus
+      <Select
+        value={linkType}
+        onValueChange={(value) => {
+          if (value === "sheet") {
+            if (!linkText) {
+              setLinkText(context.luckysheetfile[0].name);
+            }
+            setLinkAddress(context.luckysheetfile[0].name);
+          } else {
+            setLinkAddress("");
+          }
+          setLinkType(value);
+        }}
+      >
+        <SelectTrigger className="fortune-link-type-select">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="fortune-link-type-dropdown">
+          {linkTypeList
+            .filter((type) => type.value !== "cellrange")
+            .map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.text}
+              </SelectItem>
+            ))}
+        </SelectContent>
+      </Select>
+
+      <div className="fortune-input-with-icon">
+        <div className="input-icon">
+          <LucideIcon name="ALargeSmall" />
+        </div>
+        <TextField
+          placeholder="Display text"
           value={linkText}
           onChange={(e) => setLinkText(e.target.value)}
+          className="fortune-link-input"
         />
       </div>
-      <div className="fortune-link-modify-line">
-        <div className="fortune-link-modify-title">{insertLink.linkType}</div>
-        <select
-          className="fortune-link-modify-select"
-          value={linkType}
-          onChange={(e) => {
-            if (e.target.value === "sheet") {
-              if (!linkText) {
-                setLinkText(context.luckysheetfile[0].name);
-              }
-              setLinkAddress(context.luckysheetfile[0].name);
-            } else {
-              setLinkAddress("");
-            }
-            if (e.target.value === "cellrange") setRangeModalVisible(true);
-            setLinkType(e.target.value);
-          }}
-        >
-          {linkTypeList.map((type) => (
-            <option key={type.value} value={type.value}>
-              {type.text}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="fortune-link-modify-line">
-        {linkType === "webpage" && (
-          <>
-            <div className="fortune-link-modify-title">
-              {insertLink.linkAddress}
-            </div>
-            <input
-              className={`fortune-link-modify-input ${
-                !linkAddress || isLinkAddressValid.isValid ? "" : "error-input"
-              }`}
-              spellCheck="false"
-              value={linkAddress}
-              onChange={(e) => setLinkAddress(e.target.value)}
-            />
-            {tooltip}
-          </>
-        )}
-        {linkType === "cellrange" && (
-          <>
-            <div className="fortune-link-modify-title">
-              {insertLink.linkCell}
-            </div>
-            <input
-              className={`fortune-link-modify-input ${
-                !linkAddress || isLinkAddressValid.isValid ? "" : "error-input"
-              }`}
-              spellCheck="false"
-              value={linkAddress}
-              onChange={(e) => setLinkAddress(e.target.value)}
-            />
-            <div
-              className="fortune-link-modify-cell-selector"
-              onClick={() => setRangeModalVisible(true)}
-              tabIndex={0}
-            >
-              <SVGIcon name="border-all" />
-            </div>
-            {tooltip}
-          </>
-        )}
-        {linkType === "sheet" && (
-          <>
-            <div className="fortune-link-modify-title">
-              {insertLink.linkSheet}
-            </div>
-            <select
-              className="fortune-link-modify-select"
-              onChange={(e) => {
-                if (!linkText) setLinkText(e.target.value);
-                setLinkAddress(e.target.value);
-              }}
-              value={linkAddress}
-            >
+
+      {linkType === "webpage" && (
+        <div className="fortune-input-with-icon">
+          <div className="input-icon">
+            <SVGIcon name="link" />
+          </div>
+          <TextField
+            placeholder="Paste URL"
+            value={linkAddress}
+            onChange={(e) => setLinkAddress(e.target.value)}
+            className={`fortune-link-input ${
+              !linkAddress || isLinkAddressValid.isValid ? "" : "error-input"
+            }`}
+          />
+        </div>
+      )}
+
+      {linkType === "sheet" && (
+        <div className="fortune-input-with-icon">
+          <div className="input-icon">
+            <SVGIcon name="link" />
+          </div>
+          <Select
+            onValueChange={(value) => {
+              if (!linkText) setLinkText(value);
+              setLinkAddress(value);
+            }}
+            value={linkAddress}
+          >
+            <SelectTrigger className="fortune-sheet-select">
+              <SelectValue placeholder="[Sheet name]" />
+            </SelectTrigger>
+            <SelectContent className="fortune-sheet-dropdown">
               {context.luckysheetfile.map((sheet) => (
-                <option key={sheet.id} value={sheet.name}>
+                <SelectItem key={sheet.id} value={sheet.name}>
                   {sheet.name}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            {tooltip}
-          </>
-        )}
-      </div>
-      <div className="modal-footer">
-        {renderBottomButton(() => {
-          if (!isLinkAddressValid.isValid) return;
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <Button
+        className="fortune-insert-button"
+        disabled={isButtonDisabled}
+        onClick={() => {
+          if (isButtonDisabled) return;
           _.set(refs.globalCache, "linkCard.mouseEnter", false);
           setContext((draftCtx) =>
             saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress)
           );
-        }, hideLinkCard)}
-      </div>
+        }}
+      >
+        Insert link
+      </Button>
     </div>
   );
 };

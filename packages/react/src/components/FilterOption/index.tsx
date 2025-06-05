@@ -174,14 +174,7 @@ const FilterOptions: React.FC<{ getContainer: () => HTMLDivElement }> = ({
               filterParam == null ? "" : "luckysheet-filter-options-active"
             }`}
           >
-            {filterParam == null ? (
-              <div className="caret down" />
-            ) : (
-              <SVGIcon
-                name="filter-fill-white"
-                style={{ width: 15, height: 15 }}
-              />
-            )}
+            <SVGIcon name="filter" width={15} height={15} />
           </div>
         );
       })}

@@ -50,7 +50,6 @@ import DataVerification from "../DataVerification";
 import ConditionalFormat from "../ConditionFormat";
 import CustomButton from "./CustomButton";
 import { CustomColor } from "./CustomColor";
-import CustomBorder from "./CustomBorder";
 import { FormatSearch } from "../FormatSearch";
 
 const Toolbar: React.FC<{
@@ -95,8 +94,8 @@ const Toolbar: React.FC<{
   const { currency } = settings;
   const defaultFormat = defaultFmt(currency);
 
-  const [customColor, setcustomColor] = useState("#000000");
-  const [customStyle, setcustomStyle] = useState("1");
+  const [customColor] = useState("#000000");
+  const [customStyle] = useState("1");
 
   const showSubMenu = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>, className: string) => {
@@ -239,6 +238,7 @@ const Toolbar: React.FC<{
             <Combo
               iconId={name}
               tooltip={tooltip}
+              showArrow={false}
               onClick={() => {
                 const color =
                   name === "font-color"
@@ -274,7 +274,12 @@ const Toolbar: React.FC<{
           }
         }
         return (
-          <Combo text={currentFmt} key={name} tooltip={tooltip}>
+          <Combo
+            text={currentFmt}
+            key={name}
+            tooltip={tooltip}
+            showArrow={false}
+          >
             {(setOpen) => (
               <Select>
                 {defaultFormat.map(({ text, value, example }, ii) => {
@@ -371,7 +376,7 @@ const Toolbar: React.FC<{
           }
         }
         return (
-          <Combo text={current} key={name} tooltip={tooltip}>
+          <Combo text={current} key={name} tooltip={tooltip} showArrow={false}>
             {(setOpen) => (
               <Select>
                 {fontarray.map((o) => (
@@ -405,6 +410,7 @@ const Toolbar: React.FC<{
             }
             key={name}
             tooltip={tooltip}
+            showArrow={false}
           >
             {(setOpen) => (
               <Select>
@@ -459,6 +465,7 @@ const Toolbar: React.FC<{
             }
             key={name}
             tooltip={toolbar.horizontalAlign}
+            showArrow={false}
           >
             {(setOpen) => (
               <Select>
@@ -513,6 +520,7 @@ const Toolbar: React.FC<{
             }
             key={name}
             tooltip={toolbar.verticalAlign}
+            showArrow={false}
           >
             {(setOpen) => (
               <Select>
@@ -672,6 +680,7 @@ const Toolbar: React.FC<{
             iconId="locationCondition"
             key={name}
             tooltip={findAndReplace.location}
+            showArrow={false}
           >
             {(setOpen) => (
               <Select>
@@ -833,6 +842,7 @@ const Toolbar: React.FC<{
             iconId="conditionFormat"
             key={name}
             tooltip={toolbar.conditionalFormat}
+            showArrow={false}
           >
             {(setOpen) => <ConditionalFormat items={items} setOpen={setOpen} />}
           </Combo>
@@ -922,7 +932,7 @@ const Toolbar: React.FC<{
           ];
         }
         return (
-          <Combo iconId={name} key={name} tooltip={tooltip}>
+          <Combo iconId={name} key={name} tooltip={tooltip} showArrow={false}>
             {(setOpen) => (
               <Select>
                 {itemData.map(({ key, text, onClick }) => (
@@ -962,6 +972,7 @@ const Toolbar: React.FC<{
             iconId="formula-sum"
             key={name}
             tooltip={toolbar.autoSum}
+            showArrow={false}
             onClick={() =>
               setContext((ctx) => {
                 handleSum(
@@ -1044,8 +1055,10 @@ const Toolbar: React.FC<{
                       setOpen(false);
                     }}
                   >
-                    <div className="fortune-toolbar-menu-line">
-                      <SVGIcon name={value} style={{ marginRight: 4 }} />
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}
+                    >
+                      <SVGIcon name={value} />
                       {text}
                     </div>
                   </Option>
@@ -1073,7 +1086,7 @@ const Toolbar: React.FC<{
             text: border.borderRight,
             value: "border-right",
           },
-          { text: "", value: "divider" },
+
           {
             text: border.borderNone,
             value: "border-none",
@@ -1086,7 +1099,7 @@ const Toolbar: React.FC<{
             text: border.borderOutside,
             value: "border-outside",
           },
-          { text: "", value: "divider" },
+
           {
             text: border.borderInside,
             value: "border-inside",
@@ -1103,7 +1116,6 @@ const Toolbar: React.FC<{
             text: border.borderSlash,
             value: "border-slash",
           },
-          { text: "", value: "divider" },
         ];
         return (
           <Combo
@@ -1111,6 +1123,7 @@ const Toolbar: React.FC<{
             key={name}
             tooltip={tooltip}
             text="边框设置"
+            showArrow={false}
             onClick={() =>
               setContext((ctx) => {
                 handleBorder(ctx, "border-all", customColor, customStyle);
@@ -1118,34 +1131,22 @@ const Toolbar: React.FC<{
             }
           >
             {(setOpen) => (
-              <Select>
-                {items.map(({ text, value }, ii) =>
-                  value !== "divider" ? (
-                    <Option
-                      key={value}
-                      onClick={() => {
-                        setContext((ctx) => {
-                          handleBorder(ctx, value, customColor, customStyle);
-                        });
-                        setOpen(false);
-                      }}
-                    >
-                      <div className="fortune-toolbar-menu-line">
-                        {text}
-                        <SVGIcon name={value} />
-                      </div>
-                    </Option>
-                  ) : (
-                    <MenuDivider key={ii} />
-                  )
-                )}
-                <CustomBorder
-                  onPick={(color, style) => {
-                    setcustomColor(color as string);
-                    setcustomStyle(style as string);
-                  }}
-                />
-              </Select>
+              <div className="fortune-toolbar-select fortune-border-grid">
+                {items.map(({ value }) => (
+                  <div
+                    key={value}
+                    className="fortune-border-grid-item"
+                    onClick={() => {
+                      setContext((ctx) => {
+                        handleBorder(ctx, value, customColor, customStyle);
+                      });
+                      setOpen(false);
+                    }}
+                  >
+                    <SVGIcon name={value} />
+                  </div>
+                ))}
+              </div>
             )}
           </Combo>
         );
@@ -1175,6 +1176,7 @@ const Toolbar: React.FC<{
             iconId="freeze-row-col"
             key={name}
             tooltip={tooltip}
+            showArrow={false}
             onClick={() =>
               setContext((ctx) => {
                 handleFreeze(ctx, "freeze-row-col");
@@ -1227,7 +1229,12 @@ const Toolbar: React.FC<{
           curr = _.get(items, cell.tb);
         }
         return (
-          <Combo iconId={curr.iconId} key={name} tooltip={toolbar.textWrap}>
+          <Combo
+            iconId={curr.iconId}
+            key={name}
+            tooltip={toolbar.textWrap}
+            showArrow={false}
+          >
             {(setOpen) => (
               <Select>
                 {items.map(({ text, iconId, value }) => (
@@ -1293,7 +1300,12 @@ const Toolbar: React.FC<{
           curr = _.get(items, cell.tr);
         }
         return (
-          <Combo iconId={curr.iconId} key={name} tooltip={toolbar.textRotate}>
+          <Combo
+            iconId={curr.iconId}
+            key={name}
+            tooltip={toolbar.textRotate}
+            showArrow={false}
+          >
             {(setOpen) => (
               <Select>
                 {items.map(({ text, iconId, value }) => (
@@ -1369,7 +1381,12 @@ const Toolbar: React.FC<{
           },
         ];
         return (
-          <Combo iconId="filter" key={name} tooltip={toolbar.sortAndFilter}>
+          <Combo
+            iconId="filter"
+            key={name}
+            tooltip={toolbar.sortAndFilter}
+            showArrow={false}
+          >
             {(setOpen) => (
               <Select style={{ minWidth: "11.25rem" }}>
                 {items.map(({ text, iconId, value, onClick }, index) =>
@@ -1385,7 +1402,7 @@ const Toolbar: React.FC<{
                         className="fortune-toolbar-menu-line gap-1"
                         style={{ justifyContent: "start" }}
                       >
-                        <SVGIcon name={iconId} />
+                        <SVGIcon name={iconId} width={24} height={18} />
                         {text}
                       </div>
                     </Option>
@@ -1462,7 +1479,7 @@ const Toolbar: React.FC<{
       aria-label={toolbar.toolbar}
     >
       {settings.customToolbarItems
-        .filter((n) => n.key !== "templates")
+        .filter((n) => n.key === "import-export")
         .map((n) => {
           return (
             <CustomButton
@@ -1504,6 +1521,22 @@ const Toolbar: React.FC<{
       <Divider key="templateDivider" />
       {settings.customToolbarItems
         .filter((n) => n.key === "templates")
+        .map((n) => {
+          return (
+            <CustomButton
+              tooltip={n.tooltip}
+              onClick={n.onClick}
+              key={n.key}
+              icon={n.icon}
+              iconName={n.iconName}
+            >
+              {n.children}
+            </CustomButton>
+          );
+        })}
+      <Divider key="customDivider" />
+      {settings.customToolbarItems
+        .filter((n) => n.key !== "templates" && n.key !== "import-export")
         .map((n) => {
           return (
             <CustomButton

@@ -2,13 +2,12 @@
   min-width: 240px;
   max-height: 100%;
   overflow-y: auto;
-  border-radius: 4px;
+  border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
   transition: opacity 0.218s;
   background: #fff;
   border: 1px solid hsl(var(--color-border-default));
   cursor: default;
-  font-size: 13px;
   margin: 0;
   outline: none;
   padding: 8px;
@@ -18,9 +17,8 @@
   user-select: none;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
-  max-width: 250px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1), 0px 1px 3px rgba(0, 0, 0, 0.08);
-  color: #363b3f;
+  /* max-width: 250px; */
+  color: hsl(var(--color-text-default));
   line-height: 20px;
 }
 
@@ -98,9 +96,10 @@
 
 .fortune-menuitem-row {
   display: flex;
-  padding: 7px 24px;
   white-space: pre;
   align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .fortune-byvalue-btn {
@@ -226,21 +225,32 @@
 }
 
 #luckysheet-filter-byvalue-select {
+  position: relative;
   min-height: 100px;
+  max-height: 210px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 4px 24px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 4px;
+  border: 1px solid hsl(var(--color-border-default));
 }
 
 #luckysheet-filter-byvalue-select .count,
 #luckysheet-pivotTableFilter-byvalue-select .count {
-  color: gray;
-  margin-left: 5px;
+  color: hsl(var(--color-text-secondary));
+  font-size: 14px;
 }
 
 #luckysheet-filter-byvalue-select .select-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+
 }
 
 /*颜色筛选 -- pan*/

@@ -11409,8 +11409,8 @@ export default {
   filter: {
     filter: "Create filter",
 
-    sortByAsc: "Ascending sort",
-    sortByDesc: "Descending sort",
+    sortByAsc: "Ascending",
+    sortByDesc: "Descending",
     filterByColor: "Filter by color",
     filterByCondition: "Filter by condition",
     filterByValues: "Filter by values",
@@ -11424,8 +11424,8 @@ export default {
     filterValueByAllBtn: "Check all",
     filterValueByClearBtn: "Clear",
     filterValueByInverseBtn: "Inverse",
-    filterValueByTip: "filter By Values",
-    filterConform: "Confirm",
+    filterValueByTip: "Filter By Values",
+    filterConfirm: "Filter",
     filterCancel: "Cancel",
     clearFilter: "Clear filter",
 

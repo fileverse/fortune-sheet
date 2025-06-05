@@ -1,19 +1,13 @@
-import React, {
-  CSSProperties,
-  useLayoutEffect,
-  useRef,
-  useState,
-  // useContext,
-} from "react";
-// import { locale } from "@fortune-sheet/core";
+import React, { CSSProperties, useLayoutEffect, useRef, useState } from "react";
+import { LucideIcon } from "@fileverse/ui";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import SVGIcon from "../SVGIcon";
-// import WorkbookContext from "../../context";
 
 type Props = {
   tooltip: string;
   iconId?: string;
   text?: string;
+  showArrow?: boolean;
   onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
   children: (
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
@@ -25,27 +19,18 @@ const Combo: React.FC<Props> = ({
   onClick,
   text,
   iconId,
+  showArrow = true,
   children,
 }) => {
-  // const { context } = useContext(WorkbookContext);
   const style: CSSProperties = { userSelect: "none" };
   const [open, setOpen] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ left: 0 });
   const popupRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
-  const openState = useRef(false);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  // const { info } = locale(context);
 
-  useOutsideClick(
-    popupRef,
-    () => {
-      setOpen(false);
-      openState.current = false;
-    },
-    [],
-    triggerRef as React.RefObject<HTMLElement>
-  );
+  useOutsideClick(popupRef, () => {
+    setOpen(false);
+  });
 
   useLayoutEffect(() => {
     // re-position the popup menu if it overflows the window
@@ -68,43 +53,49 @@ const Combo: React.FC<Props> = ({
     <div className="fortune-toobar-combo-container fortune-toolbar-item">
       <div ref={buttonRef} className="fortune-toolbar-combo">
         <div
-          ref={triggerRef}
           className="fortune-toolbar-combo-button"
           onClick={(e) => {
-            openState.current = !openState.current;
-            setOpen(openState.current);
-            if (onClick) onClick(e);
-            else setOpen(openState.current);
+            if (onClick) {
+              onClick(e);
+              // If there's no arrow, also toggle dropdown after executing onClick
+              if (!showArrow) setOpen(!open);
+            } else {
+              setOpen(!open);
+            }
           }}
           tabIndex={0}
           data-tips={tooltip}
           role="button"
-          aria-label={tooltip}
+          aria-label={`${tooltip}: ${text !== undefined ? text : ""}`}
           style={style}
         >
           {iconId ? (
             <SVGIcon name={iconId} />
           ) : (
-            <span className="fortune-toolbar-combo-text">{text}</span>
+            <span className="fortune-toolbar-combo-text">
+              {text !== undefined ? text : ""}
+            </span>
           )}
         </div>
-        {/* <div
-          className="fortune-toolbar-combo-arrow"
-          onClick={() => setOpen(!open)}
-          tabIndex={0}
-          data-tips={tooltip}
-          role="button"
-          aria-label={tooltip}
-          style={style}
-        >
-          <SVGIcon name="combo-arrow" width={10} />
-        </div> */}
+        {showArrow && (
+          <div
+            className="fortune-toolbar-combo-arrow"
+            onClick={() => setOpen(!open)}
+            tabIndex={0}
+            data-tips={tooltip}
+            role="button"
+            aria-label={tooltip}
+            style={style}
+          >
+            <LucideIcon name="ChevronDown" width={14} height={14} />
+          </div>
+        )}
         {tooltip && <div className="fortune-tooltip">{tooltip}</div>}
       </div>
       {open && (
         <div
           ref={popupRef}
-          className="fortune-toolbar-combo-popup color-text-default"
+          className="fortune-toolbar-combo-popup"
           style={popupPosition}
         >
           {children?.(setOpen)}

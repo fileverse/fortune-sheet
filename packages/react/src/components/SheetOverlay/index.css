@@ -869,32 +869,25 @@
 }
 
 .luckysheet-filter-options {
-  color: #897bff;
   cursor: pointer;
   position: absolute;
   z-index: 200;
-  border: 1px solid #897bff;
-  border-radius: 3px;
-  top: 3px;
-  margin-left: 0px;
-  display: "block";
-  padding: 0px 4px;
+  border-radius: 2px;
+  top: 4px;
+  margin-right: 2px;
+  margin-top: 2px;
   font-size: 12px;
   height: 15px;
-  background: #fff;
+  padding: 1px;
+  background: hsl(var(--color-bg-tertiary));
 }
 
 .luckysheet-filter-options:hover {
-  color: #fff;
-  border: 1px solid #fff;
-  background: #897bff;
+  background: hsl(var(--color-bg-default-hover));
 }
 
 .luckysheet-filter-options-active {
-  color: #fff;
-  border: 1px solid #897bff;
-  padding: 0px 1px;
-  background: #897bff;
+  background: hsl(var(--color-bg-tertiary));
 }
 
 .caret {

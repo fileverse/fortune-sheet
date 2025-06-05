@@ -314,8 +314,9 @@ const SearchReplace: React.FC<{
                 {searchResult.map((v) => {
                   return (
                     <TableRow
-                      className={`${_.isEqual(selectedCell, { r: v.r, c: v.c }) ? "on" : ""
-                        }`}
+                      className={`${
+                        _.isEqual(selectedCell, { r: v.r, c: v.c }) ? "on" : ""
+                      }`}
                       key={v.cellPosition}
                       onClick={() => {
                         setContext((draftCtx) => {

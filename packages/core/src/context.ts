@@ -46,6 +46,15 @@ export type Context = {
   insertedImgs?: Image[];
   editingInsertedImgs?: Image;
   activeImg?: string;
+  insertedIframes?: {
+    id: string;
+    src: string;
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  }[];
+  activeIframe?: string;
   presences?: Presence[];
   showSearch?: boolean;
   showReplace?: boolean;
@@ -218,6 +227,13 @@ export type Context = {
   forceFormulaRef?: Boolean;
 
   getRefs: () => RefValues;
+  showDunePreview?: {
+    url: string;
+    position: {
+      left: number;
+      top: number;
+    };
+  };
 };
 
 export function defaultContext(refs: RefValues): Context {
@@ -228,6 +244,13 @@ export function defaultContext(refs: RefValues): Context {
     addDefaultRows: 50,
     fullscreenmode: true,
     devicePixelRatio: (globalThis || window).devicePixelRatio,
+    showDunePreview: {
+      url: "",
+      position: {
+        left: 0,
+        top: 0,
+      },
+    },
 
     contextMenu: {},
     sheetTabContextMenu: {},
@@ -441,7 +464,8 @@ export function defaultContext(refs: RefValues): Context {
 
     iscopyself: true,
     activeImg: undefined,
-
+    insertedIframes: [],
+    activeIframe: undefined,
     orderbyindex: 0, // 排序下标
 
     luckysheet_model_move_state: false, // 模态框拖动

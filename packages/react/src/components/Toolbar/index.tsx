@@ -34,6 +34,7 @@ import {
   createFilter,
   clearFilter,
   applyLocation,
+  insertDuneChart,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import { IconButton } from "@fileverse/ui";
@@ -52,6 +53,7 @@ import ConditionalFormat from "../ConditionFormat";
 import CustomButton from "./CustomButton";
 import { CustomColor } from "./CustomColor";
 import { FormatSearch } from "../FormatSearch";
+import DuneChartsInputModal from "../DuneChartsInputModal/DuneChartsInputModal";
 
 export const getIcon = (title: string) => {
   switch (title) {
@@ -86,8 +88,9 @@ const Toolbar: React.FC<{
     useContext(WorkbookContext);
   const contextRef = useRef(context);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [toolbarWrapIndex, setToolbarWrapIndex] = useState(-1); // -1 means pending for item location calculation
+  const [toolbarWrapIndex, setToolbarWrapIndex] = useState(-1);
   const [itemLocations, setItemLocations] = useState<number[]>([]);
+  const [showDuneModal, setShowDuneModal] = useState(false);
   const { showDialog, hideDialog } = useDialog();
   const firstSelection = context.luckysheet_select_save?.[0];
   const flowdata = getFlowdata(context);
@@ -1506,8 +1509,7 @@ const Toolbar: React.FC<{
       handleRedo,
       flowdata,
       formula,
-      showDialog,
-      hideDialog,
+      showDuneModal,
       merge,
       border,
       freezen,
@@ -1610,6 +1612,31 @@ const Toolbar: React.FC<{
             </CustomButton>
           );
         })}
+
+      <Button
+        iconId="dune-logo"
+        tooltip="Insert Dune Chart"
+        key="dune-charts"
+        onClick={() => {
+          if (context.allowEdit === false) return;
+          setShowDuneModal(true);
+        }}
+      />
+      {showDuneModal && (
+        <DuneChartsInputModal
+          isOpen={showDuneModal}
+          onSubmit={(url) => {
+            setContext((draftCtx) => {
+              insertDuneChart(draftCtx, url);
+            });
+            setShowDuneModal(false);
+          }}
+          onClose={() => setShowDuneModal(false)}
+          icon="dune-logo"
+          placeholder="Add Dune chart link to embed"
+          submitText="Embed Dune chart"
+        />
+      )}
     </div>
   );
 };

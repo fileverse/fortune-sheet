@@ -4433,7 +4433,7 @@ export default {
           name: "start_date",
           detail:
             "The start date to consider in the calculation. Must be a reference to a cell containing a date, a function returning a date type, or a number.",
-          example: "DATE(1969",
+          example: `"1969-07-16"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4442,7 +4442,7 @@ export default {
           name: "end_date",
           detail:
             "The end date to consider in the calculation. Must be a reference to a cell containing a date, a function returning a date type, or a number.",
-          example: "7",
+          example: `"1969-07-24"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4451,7 +4451,7 @@ export default {
           name: "unit",
           detail:
             'A string abbreviation for unit of time. For example, "M" for month. Accepted values are "Y","M","D","MD","YM","YD".',
-          example: "16)",
+          example: `"D"`,
           require: "m",
           repeat: "n",
           type: "rangeall",

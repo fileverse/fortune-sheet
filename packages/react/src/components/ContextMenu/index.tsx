@@ -74,8 +74,8 @@ const ContextMenu: React.FC = () => {
             <div className="context-item">
               <SVGIcon
                 name="freeze-flv"
-                width={18}
-                height={18}
+                width={16}
+                height={16}
                 style={{ marginTop: "4px", marginRight: "4px" }}
               />
               {isFrozen ? "Unfreeze row" : "Freeze to current row"}
@@ -923,10 +923,10 @@ const ContextMenu: React.FC = () => {
               <Menu>
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2">
-                    <SVGIcon name="conditionFormat" width={18} />
+                    <SVGIcon name="conditionFormat" width={16} height={16} />
                     <p>{rightclick.conditionFormat || "Conditional Format"}</p>
                   </div>
-                  <SVGIcon name="rightArrow" width={18} />
+                  <SVGIcon name="rightArrow" width={16} height={16} />
                 </div>
               </Menu>
             </div>

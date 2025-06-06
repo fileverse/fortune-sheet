@@ -85,7 +85,7 @@ const Combo: React.FC<Props> = ({
             style={style}
           >
             {iconId ? (
-              <SVGIcon name={iconId} />
+              <SVGIcon name={iconId} width={16} height={16} />
             ) : (
               <span className="fortune-toolbar-combo-text">
                 {text !== undefined ? text : ""}

@@ -24,12 +24,55 @@ const Template: StoryFn<typeof Workbook> = ({
   }, []);
   return (
     <div style={{ width: "100%", height: "100vh" }}>
-      <Workbook {...args} data={data} onChange={onChange} 
-      customToolbarItems={[{
-        key: 'templates',
-        tooltip: "Templates",
-        // onClick: toggleTemplateSidebar,
-      }]}
+      <Workbook
+        {...args}
+        data={data}
+        onChange={onChange}
+        customToolbarItems={[
+          {
+            key: "templates",
+            tooltip: "Templates",
+            // onClick: toggleTemplateSidebar,
+          },
+        ]}
+        toolbarItems={[
+          "undo",
+          "redo",
+          "|",
+          "font",
+          "|",
+          "font-size",
+          "|",
+          "bold",
+          "italic",
+          "strike-through",
+          "|",
+          "font-color",
+          "background",
+          "|",
+          "border",
+          "merge-cell",
+          "|",
+          "horizontal-align",
+          "text-wrap",
+          "vertical-align",
+          "|",
+          "currency-format",
+          "percentage-format",
+          "number-decrease",
+          "number-increase",
+          "format",
+          "|",
+          "conditionFormat",
+          "filter",
+          "|",
+          "link",
+          "comment",
+          "image",
+          "quick-formula",
+          "dataVerification",
+          "search",
+        ]}
       />
     </div>
   );

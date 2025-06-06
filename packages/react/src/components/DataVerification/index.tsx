@@ -8,26 +8,41 @@ import {
   setCellValue,
   confirmMessage,
 } from "@fileverse-dev/fortune-core";
+import {
+  Button,
+  Checkbox,
+  Divider,
+  LucideIcon,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  TextField,
+} from "@fileverse/ui";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import WorkbookContext from "../../context";
 import { useDialog } from "../../hooks/useDialog";
-import SVGIcon from "../SVGIcon";
+import { injectDatepickerStyles } from "../../utils/datepickerStyles";
 import "./index.css";
+
+// Initialize datepicker styles
+injectDatepickerStyles();
 
 const DataVerification: React.FC = () => {
   const { context, setContext } = useContext(WorkbookContext);
   const { showDialog, hideDialog } = useDialog();
-  const { dataVerification, toolbar, button, generalDialog } = locale(context);
-  const [numberCondition] = useState<string[]>([
-    "between",
-    "notBetween",
-    "equal",
-    "notEqualTo",
-    "moreThanThe",
-    "lessThan",
-    "greaterOrEqualTo",
-    "lessThanOrEqualTo",
-  ]);
+  const { dataVerification, button, generalDialog } = locale(context);
+  // const [numberCondition] = useState<string[]>([
+  //   "between",
+  //   "notBetween",
+  //   "equal",
+  //   "notEqualTo",
+  //   "moreThanThe",
+  //   "lessThan",
+  //   "greaterOrEqualTo",
+  //   "lessThanOrEqualTo",
+  // ]);
 
   const [dateCondition] = useState<string[]>([
     "between",
@@ -224,47 +239,39 @@ const DataVerification: React.FC = () => {
 
   return (
     <div id="fortune-data-verification">
-      <div className="title">{toolbar.dataVerification}</div>
-      <div className="box">
-        <div className="box-item" style={{ borderTop: "1px solid #E1E4E8" }}>
-          <div className="box-item-title">{dataVerification.cellRange}</div>
-          <div className="data-verification-range">
-            <input
-              className="formulaInputFocus"
-              spellCheck="false"
-              value={context.dataVerification!.dataRegulation?.rangeTxt}
-              onChange={(e) => {
-                const { value } = e.target;
-                setContext((ctx) => {
-                  ctx.dataVerification!.dataRegulation!.rangeTxt = value;
-                });
-              }}
-            />
-            <i
-              className="icon"
-              aria-hidden="true"
-              onClick={() => {
-                hideDialog();
-                dataSelectRange(
-                  "rangeTxt",
-                  context.dataVerification!.dataRegulation!.value1
-                );
-              }}
-              tabIndex={0}
-            >
-              <SVGIcon name="tab" width={18} />
-            </i>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col">
+          <div className="text-heading-xsm mb-2">
+            {dataVerification.cellRange}
           </div>
-        </div>
-        <div className="box-item">
-          <div className="box-item-title">
-            {dataVerification.verificationCondition}
-          </div>
-          <select
-            className="data-verification-type-select"
-            value={context.dataVerification!.dataRegulation!.type}
+          <TextField
+            rightIcon={<LucideIcon name="Grid2x2" size="sm" />}
+            aria-hidden="true"
+            readOnly
+            value={context.dataVerification!.dataRegulation?.rangeTxt}
             onChange={(e) => {
               const { value } = e.target;
+              setContext((ctx) => {
+                ctx.dataVerification!.dataRegulation!.rangeTxt = value;
+              });
+            }}
+            onClick={() => {
+              hideDialog();
+              dataSelectRange(
+                "rangeTxt",
+                context.dataVerification!.dataRegulation!.value1
+              );
+            }}
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <div className="text-heading-xsm mb-2">
+            {dataVerification.verificationCondition}
+          </div>
+          <Select
+            value={context.dataVerification!.dataRegulation!.type}
+            onValueChange={(value) => {
               setContext((ctx) => {
                 ctx.dataVerification!.dataRegulation!.type = value;
                 if (value === "dropdown" || value === "checkbox") {
@@ -288,80 +295,76 @@ const DataVerification: React.FC = () => {
               });
             }}
           >
-            {[
-              "dropdown",
-              "checkbox",
-              "number",
-              "number_integer",
-              "number_decimal",
-              "text_content",
-              "text_length",
-              "date",
-              "validity",
-            ].map((v) => (
-              <option value={v} key={v}>
-                {(dataVerification as any)[v]}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[
+                "dropdown",
+                "checkbox",
+                // "number",
+                // "number_integer",
+                // "number_decimal",
+                // "text_content",
+                // "text_length",
+                "date",
+                // "validity",
+              ].map((v) => (
+                <SelectItem value={v} key={v}>
+                  {(dataVerification as any)[v]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {context.dataVerification?.dataRegulation?.type === "dropdown" && (
-            <div className="show-box-item">
-              <div className="data-verification-range">
-                <input
-                  className="formulaInputFocus"
-                  spellCheck="false"
-                  value={context.dataVerification!.dataRegulation!.value1}
-                  placeholder={dataVerification.placeholder1}
-                  onChange={(e) => {
-                    const { value } = e.target;
-                    setContext((ctx) => {
-                      ctx.dataVerification!.dataRegulation!.value1 = value;
-                    });
-                  }}
-                />
-                <i
-                  className="icon"
-                  aria-hidden="true"
-                  onClick={() =>
-                    dataSelectRange(
-                      "dropDown",
-                      context.dataVerification!.dataRegulation!.value1
-                    )
-                  }
-                  tabIndex={0}
-                >
-                  <SVGIcon name="tab" width={18} />
-                </i>
-              </div>
-              <div className="check">
-                <input
-                  type="checkbox"
+            <div className="mt-4">
+              <TextField
+                // rightIcon={<LucideIcon name="Grid2x2" size="sm" />}
+                value={context.dataVerification!.dataRegulation!.value1}
+                placeholder={dataVerification.placeholder1}
+                onChange={(e) => {
+                  const { value } = e.target;
+                  setContext((ctx) => {
+                    ctx.dataVerification!.dataRegulation!.value1 = value;
+                  });
+                }}
+                // onClick={() =>
+                //   dataSelectRange(
+                //     "dropDown",
+                //     context.dataVerification!.dataRegulation!.value1
+                //   )
+                // }
+              />
+              <div className="mt-4 flex items-center">
+                <Checkbox
+                  className="border-2"
                   checked={
                     context.dataVerification!.dataRegulation!.type2 === "true"
                   }
-                  id="mul"
-                  onChange={(e) => {
+                  onCheckedChange={(e) => {
                     const { checked } = e.target;
                     setContext((ctx) => {
                       ctx.dataVerification!.dataRegulation!.type2 = `${checked}`;
                     });
                   }}
                 />
-                <label htmlFor="mul">{dataVerification.allowMultiSelect}</label>
+                <span className="ml-2">
+                  {dataVerification.allowMultiSelect}
+                </span>
               </div>
             </div>
           )}
 
           {context.dataVerification?.dataRegulation?.type === "checkbox" && (
-            <div className="show-box-item">
-              <div className="check-box">
-                <span>{dataVerification.selected} —— </span>
-                <input
-                  type="text"
-                  className="data-verification-value1"
-                  placeholder={dataVerification.placeholder2}
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="data-verification-checkbox-label">
+                  {dataVerification.selected}
+                </span>
+                <TextField
                   value={context.dataVerification?.dataRegulation?.value1}
+                  placeholder={dataVerification.placeholder2}
                   onChange={(e) => {
                     const { value } = e.target;
                     setContext((ctx) => {
@@ -370,13 +373,13 @@ const DataVerification: React.FC = () => {
                   }}
                 />
               </div>
-              <div className="check-box">
-                <span>{dataVerification.notSelected} —— </span>
-                <input
-                  type="text"
-                  className="data-verification-value2"
-                  placeholder={dataVerification.placeholder2}
+              <div className="flex items-center gap-2">
+                <span className="data-verification-checkbox-label">
+                  {dataVerification.notSelected}
+                </span>
+                <TextField
                   value={context.dataVerification?.dataRegulation?.value2}
+                  placeholder={dataVerification.placeholder2}
                   onChange={(e) => {
                     const { value } = e.target;
                     setContext((ctx) => {
@@ -388,19 +391,17 @@ const DataVerification: React.FC = () => {
             </div>
           )}
 
-          {(context.dataVerification?.dataRegulation?.type === "number" ||
+          {/* {(context.dataVerification?.dataRegulation?.type === "number" ||
             context.dataVerification?.dataRegulation?.type ===
               "number_integer" ||
             context.dataVerification?.dataRegulation?.type ===
               "number_decimal" ||
             context.dataVerification?.dataRegulation?.type ===
               "text_length") && (
-            <div className="show-box-item">
-              <select
-                className="data-verification-type-select"
+            <div className="mt-4">
+              <Select
                 value={context.dataVerification.dataRegulation.type2}
-                onChange={(e) => {
-                  const { value } = e.target;
+                onValueChange={(value) => {
                   setContext((ctx) => {
                     ctx.dataVerification!.dataRegulation!.type2 = value;
                     ctx.dataVerification!.dataRegulation!.value1 = "";
@@ -408,16 +409,22 @@ const DataVerification: React.FC = () => {
                   });
                 }}
               >
-                {numberCondition.map((v) => (
-                  <option value={v} key={v}>
-                    {(dataVerification as any)[v]}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {numberCondition.map((v) => (
+                    <SelectItem value={v} key={v}>
+                      {(dataVerification as any)[v]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               {context.dataVerification.dataRegulation.type2 === "between" ||
               context.dataVerification.dataRegulation.type2 === "notBetween" ? (
-                <div className="input-box">
-                  <input
+                <div className="mt-4 flex gap-2 items-center">
+                  <TextField
                     type="number"
                     placeholder="1"
                     value={context.dataVerification.dataRegulation.value1}
@@ -429,7 +436,7 @@ const DataVerification: React.FC = () => {
                     }}
                   />
                   <span>-</span>
-                  <input
+                  <TextField
                     type="number"
                     placeholder="100"
                     value={context.dataVerification.dataRegulation.value2}
@@ -442,10 +449,9 @@ const DataVerification: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div className="input-box">
-                  <input
+                <div className="mt-4">
+                  <TextField
                     type="number"
-                    style={{ width: "100%" }}
                     placeholder={dataVerification.placeholder3}
                     value={context.dataVerification.dataRegulation.value1}
                     onChange={(e) => {
@@ -458,16 +464,14 @@ const DataVerification: React.FC = () => {
                 </div>
               )}
             </div>
-          )}
+          )} */}
 
-          {context.dataVerification?.dataRegulation?.type ===
+          {/* {context.dataVerification?.dataRegulation?.type ===
             "text_content" && (
-            <div className="show-box-item">
-              <select
-                className="data-verification-type-select"
+            <div className="mt-4">
+              <Select
                 value={context.dataVerification.dataRegulation.type2}
-                onChange={(e) => {
-                  const { value } = e.target;
+                onValueChange={(value) => {
                   setContext((ctx) => {
                     ctx.dataVerification!.dataRegulation!.type2 = value;
                     ctx.dataVerification!.dataRegulation!.value1 = "";
@@ -475,16 +479,19 @@ const DataVerification: React.FC = () => {
                   });
                 }}
               >
-                {["include", "exclude", "equal"].map((v) => (
-                  <option value={v} key={v}>
-                    {(dataVerification as any)[v]}
-                  </option>
-                ))}
-              </select>
-              <div className="input-box">
-                <input
-                  type="text"
-                  style={{ width: "100%" }}
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["include", "exclude", "equal"].map((v) => (
+                    <SelectItem value={v} key={v}>
+                      {(dataVerification as any)[v]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="mt-4">
+                <TextField
                   placeholder={dataVerification.placeholder4}
                   value={context.dataVerification.dataRegulation.value1}
                   onChange={(e) => {
@@ -496,15 +503,13 @@ const DataVerification: React.FC = () => {
                 />
               </div>
             </div>
-          )}
+          )} */}
 
           {context.dataVerification?.dataRegulation?.type === "date" && (
-            <div className="show-box-item">
-              <select
-                className="data-verification-type-select"
+            <div className="mt-4">
+              <Select
                 value={context.dataVerification.dataRegulation.type2}
-                onChange={(e) => {
-                  const { value } = e.target;
+                onValueChange={(value) => {
                   setContext((ctx) => {
                     ctx.dataVerification!.dataRegulation!.type2 = value;
                     ctx.dataVerification!.dataRegulation!.value1 = "";
@@ -512,65 +517,78 @@ const DataVerification: React.FC = () => {
                   });
                 }}
               >
-                {dateCondition.map((v) => (
-                  <option value={v} key={v}>
-                    {(dataVerification as any)[v]}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {dateCondition.map((v) => (
+                    <SelectItem value={v} key={v}>
+                      {(dataVerification as any)[v]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               {context.dataVerification.dataRegulation.type2 === "between" ||
-              context.dataVerification.dataRegulation.type2 === "notBetween" ? (
-                <div className="input-box">
-                  <input
-                    type="date"
-                    placeholder="1"
-                    value={context.dataVerification.dataRegulation.value1}
-                    onChange={(e) => {
-                      const { value } = e.target;
-                      setContext((ctx) => {
-                        ctx.dataVerification!.dataRegulation!.value1 = value;
-                      });
-                    }}
-                  />
+                context.dataVerification.dataRegulation.type2 === "notBetween" ? (
+                <div className="mt-4 flex gap-2 items-center">
+                  <div className="datepicker-toggle">
+                    <input
+                      type="date"
+                      className="datepicker-input"
+                      value={context.dataVerification.dataRegulation.value1}
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        setContext((ctx) => {
+                          ctx.dataVerification!.dataRegulation!.value1 = value;
+                        });
+                      }}
+                    />
+                    <span className="datepicker-toggle-button" />
+                  </div>
                   <span>-</span>
-                  <input
-                    type="date"
-                    placeholder="100"
-                    value={context.dataVerification.dataRegulation.value2}
-                    onChange={(e) => {
-                      const { value } = e.target;
-                      setContext((ctx) => {
-                        ctx.dataVerification!.dataRegulation!.value2 = value;
-                      });
-                    }}
-                  />
+                  <div className="datepicker-toggle">
+                    <input
+                      type="date"
+                      className="datepicker-input"
+                      value={context.dataVerification.dataRegulation.value2}
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        setContext((ctx) => {
+                          ctx.dataVerification!.dataRegulation!.value2 = value;
+                        });
+                      }}
+                    />
+                    <span className="datepicker-toggle-button" />
+                  </div>
                 </div>
               ) : (
-                <div className="input-box">
-                  <input
-                    type="date"
-                    style={{ width: "100%" }}
-                    placeholder={dataVerification.placeholder3}
-                    value={context.dataVerification.dataRegulation.value1}
-                    onChange={(e) => {
-                      const { value } = e.target;
-                      setContext((ctx) => {
-                        ctx.dataVerification!.dataRegulation!.value1 = value;
-                      });
-                    }}
-                  />
+                <div className="mt-4">
+                  <div className="datepicker-toggle">
+                    <input
+                      type="date"
+                      className="datepicker-input"
+                      placeholder={dataVerification.placeholder3}
+                      value={context.dataVerification.dataRegulation.value1}
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        setContext((ctx) => {
+                          ctx.dataVerification!.dataRegulation!.value1 = value;
+                        });
+                      }}
+                    />
+                    <span className="datepicker-toggle-button" />
+                  </div>
                 </div>
               )}
             </div>
           )}
 
-          {context.dataVerification?.dataRegulation?.type === "validity" && (
-            <div className="show-box-item">
-              <select
-                className="data-verification-type-select"
+          {/* {context.dataVerification?.dataRegulation?.type === "validity" && (
+            <div className="mt-4">
+              <Select
                 value={context.dataVerification.dataRegulation.type2}
-                onChange={(e) => {
-                  const { value } = e.target;
+                onValueChange={(value) => {
                   setContext((ctx) => {
                     ctx.dataVerification!.dataRegulation!.type2 = value;
                     ctx.dataVerification!.dataRegulation!.value1 = "";
@@ -578,53 +596,47 @@ const DataVerification: React.FC = () => {
                   });
                 }}
               >
-                {["identificationNumber", "phoneNumber"].map((v) => (
-                  <option value={v} key={v}>
-                    {(dataVerification as any)[v]}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["identificationNumber", "phoneNumber"].map((v) => (
+                    <SelectItem value={v} key={v}>
+                      {(dataVerification as any)[v]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          )}
+          )} */}
         </div>
 
-        <div className="box-item">
-          {
-            // (["remote", "prohibitInput", "hintShow"] as const)
-            (["prohibitInput", "hintShow"] as const).map((v) => (
-              <div className="check" key={`div${v}`}>
-                <input
-                  type="checkbox"
-                  id={v}
-                  key={`input${v}`}
-                  checked={context.dataVerification!.dataRegulation![v]}
-                  onChange={() => {
-                    setContext((ctx) => {
-                      const dataRegulation =
-                        ctx.dataVerification?.dataRegulation;
-                      // if (v === "remote") {
-                      //   dataRegulation!.remote = !dataRegulation!.remote;
-                      // } else
-                      if (v === "prohibitInput") {
-                        dataRegulation!.prohibitInput =
-                          !dataRegulation!.prohibitInput;
-                      } else if (v === "hintShow") {
-                        dataRegulation!.hintShow = !dataRegulation!.hintShow;
-                      }
-                    });
-                  }}
-                />
-                <label htmlFor={v} key={`label${v}`}>
-                  {(dataVerification as any)[v]}
-                </label>
-              </div>
-            ))
-          }
+        <Divider className="w-full border-t-[1px]" />
+
+        <div className="flex flex-col gap-2">
+          {(["prohibitInput", "hintShow"] as const).map((v) => (
+            <div key={v} className="flex items-center">
+              <Checkbox
+                className="border-2"
+                checked={context.dataVerification!.dataRegulation![v]}
+                onCheckedChange={(e) => {
+                  const { checked } = e.target;
+                  setContext((ctx) => {
+                    const dataRegulation = ctx.dataVerification?.dataRegulation;
+                    if (v === "prohibitInput") {
+                      dataRegulation!.prohibitInput = checked;
+                    } else if (v === "hintShow") {
+                      dataRegulation!.hintShow = checked;
+                    }
+                  });
+                }}
+              />
+              <span className="ml-2">{(dataVerification as any)[v]}</span>
+            </div>
+          ))}
           {context.dataVerification?.dataRegulation?.hintShow && (
-            <div className="input-box">
-              <input
-                type="text"
-                style={{ width: "100%" }}
+            <div>
+              <TextField
                 placeholder={dataVerification.placeholder5}
                 value={context.dataVerification!.dataRegulation!.hintValue}
                 onChange={(e) => {
@@ -639,33 +651,43 @@ const DataVerification: React.FC = () => {
         </div>
       </div>
 
-      <div
-        className="button-basic button-primary"
-        onClick={() => {
-          // hideDialog();
-          btn("confirm");
-        }}
-        tabIndex={0}
-      >
-        {button.confirm}
-      </div>
-      <div
-        className="button-basic button-close"
-        onClick={() => {
-          btn("delete");
-        }}
-        tabIndex={0}
-      >
-        {dataVerification.deleteVerification}
-      </div>
-      <div
-        className="button-basic button-close"
-        onClick={() => {
-          btn("close");
-        }}
-        tabIndex={0}
-      >
-        {button.cancel}
+      <Divider className="w-full border-t-[1px] my-4" />
+      <div className="flex gap-2 justify-between items-center">
+        <Button
+          variant="secondary"
+          style={{
+            minWidth: "80px",
+          }}
+          onClick={() => {
+            btn("close");
+          }}
+        >
+          {button.cancel}
+        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            style={{
+              minWidth: "80px",
+            }}
+            onClick={() => {
+              btn("delete");
+            }}
+          >
+            {dataVerification.deleteVerification}
+          </Button>
+          <Button
+            variant="default"
+            style={{
+              minWidth: "80px",
+            }}
+            onClick={() => {
+              btn("confirm");
+            }}
+          >
+            {button.confirm}
+          </Button>
+        </div>
       </div>
     </div>
   );

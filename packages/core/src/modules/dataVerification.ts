@@ -518,14 +518,14 @@ export function getFailureText(ctx: Context, item: any) {
     // default language english (en, en-US, en-GB, etc.)
     const optionLabel_en = ctx.dataVerification?.optionLabel_en;
     if (type === "dropdown") {
-      failureText += "what you selected is not an option in the drop-down list";
+      failureText += "What you selected is not an option in the drop-down list";
     } else if (type === "checkbox") {
     } else if (
       type === "number" ||
       type === "number_integer" ||
       type === "number_decimal"
     ) {
-      failureText += `what you entered is not a ${optionLabel_en[item.type]} ${
+      failureText += `What you entered is not a ${optionLabel_en[item.type]} ${
         optionLabel_en[item.type2]
       } ${item.value1}`;
 
@@ -533,11 +533,11 @@ export function getFailureText(ctx: Context, item: any) {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "text_content") {
-      failureText += `what you entered is not text that ${
+      failureText += `What you entered is not text that ${
         optionLabel_en[item.type2]
       } ${item.value1}`;
     } else if (type === "text_length") {
-      failureText += `the text you entered is not length ${
+      failureText += `The text you entered is not length ${
         optionLabel_en[item.type2]
       } ${item.value1}`;
 
@@ -545,7 +545,7 @@ export function getFailureText(ctx: Context, item: any) {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "date") {
-      failureText += `the date you entered is not ${
+      failureText += `The date you entered is not ${
         optionLabel_en[item.type2]
       } ${item.value1}`;
 
@@ -553,7 +553,7 @@ export function getFailureText(ctx: Context, item: any) {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "validity") {
-      failureText += `what you entered is not a correct ${
+      failureText += `What you entered is not a correct ${
         optionLabel_en[item.type2]
       }`;
     }
@@ -796,6 +796,9 @@ export function cellFocus(
   if (!validate) {
     let failureText = "";
     const { lang } = ctx;
+    // Add 'Invalid' text in orange and bold before the failureText
+    const invalidText =
+      '<div style="color:#F4874A;font-weight:500;font-size:14px;margin-bottom:4px;">Invalid</div>';
     if (lang === "en") {
       failureText = '<span style="color:#f72626;">Failure: </span>';
     } else if (lang === "zh" || lang === "zh-CN") {
@@ -807,7 +810,7 @@ export function cellFocus(
     } else if (lang === "hi") {
       failureText = '<span style="color:#f72626;">असफलता: </span>';
     }
-    failureText += getFailureText(ctx, item);
+    failureText = invalidText + failureText + getFailureText(ctx, item);
     showHintBox.innerHTML = failureText;
     showHintBox.style.display = "block";
     showHintBox.style.left = `${col_pre}px`;
@@ -816,7 +819,7 @@ export function cellFocus(
 }
 
 // 设置下拉列表的值
-export function setDropcownValue(ctx: Context, value: string, arr: any) {
+export function setDropdownValue(ctx: Context, value: string, arr: any) {
   if (!ctx.luckysheet_select_save) return;
   const d = getFlowdata(ctx);
   if (!d) return;

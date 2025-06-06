@@ -11995,7 +11995,7 @@ export default {
     Date: "Date",
     Engineering: "Engineering",
     Filter: "Filter",
-    Crypto: "Crypto",
+    Crypto: "Datablock",
     Financial: "Financial",
     luckysheet: "Luckysheet",
     other: "Other",

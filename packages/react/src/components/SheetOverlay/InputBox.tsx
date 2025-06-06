@@ -218,6 +218,74 @@ const InputBox: React.FC = () => {
     [getActiveFormula, setContext]
   );
 
+  const selectActiveFormulaOnClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      const activeFormula = getActiveFormula();
+      const formulaNameDiv = activeFormula?.querySelector(
+        ".luckysheet-formula-search-func"
+      );
+      if (formulaNameDiv) {
+        const formulaName = formulaNameDiv.textContent;
+        const textEditor = document.getElementById(
+          "luckysheet-rich-text-editor"
+        );
+        if (textEditor) {
+          // text for which suggestions have been listed
+          const searchTxt = getrangeseleciton()?.textContent || "";
+          const deleteCount = searchTxt.length;
+          textEditor.focus();
+
+          const selection = window.getSelection();
+          if (selection?.rangeCount === 0) return;
+
+          const range = selection?.getRangeAt(0);
+          if (deleteCount !== 0 && range) {
+            const startOffset = Math.max(range.startOffset - deleteCount, 0);
+            const endOffset = range.startOffset;
+
+            // remove searchTxt
+            range.setStart(range.startContainer, startOffset);
+            range.setEnd(range.startContainer, endOffset);
+            range.deleteContents();
+          }
+
+          const functionStr = `<span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span>`;
+          const lParStr = `<span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
+
+          const functionNode = new DOMParser().parseFromString(
+            functionStr,
+            "text/html"
+          ).body.childNodes[0];
+
+          const lParNode = new DOMParser().parseFromString(lParStr, "text/html")
+            .body.childNodes[0];
+
+          if (range?.startContainer.parentNode) {
+            range?.setStart(range.startContainer.parentNode, 1);
+          }
+
+          range?.insertNode(lParNode);
+          range?.insertNode(functionNode);
+
+          // move the cursor to the end of the inserted text node
+          range?.collapse();
+          selection?.removeAllRanges();
+
+          if (range) selection?.addRange(range);
+
+          setContext((draftCtx) => {
+            // clear functionCandidates and set functionHint
+            draftCtx.functionCandidates = [];
+            draftCtx.functionHint = formulaName;
+          });
+        }
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+    [getActiveFormula, setContext]
+  );
+
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
@@ -461,6 +529,23 @@ const InputBox: React.FC = () => {
           <FormulaSearch
             style={{
               top: (firstSelection?.height_move || 0) + 4,
+            }}
+            onMouseOver={(e) => {
+              if (document.getElementById("luckysheet-formula-search-c")) {
+                const hoveredItem = (e.target as HTMLElement).closest(
+                  ".luckysheet-formula-search-item"
+                ) as HTMLElement | null;
+                if (!hoveredItem) return;
+
+                clearSearchItemActiveClass();
+                hoveredItem.classList.add(
+                  "luckysheet-formula-search-item-active"
+                );
+              }
+              e.preventDefault();
+            }}
+            onClick={(e) => {
+              selectActiveFormulaOnClick(e);
             }}
           />
           <FormulaHint

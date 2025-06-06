@@ -1,34 +1,8 @@
 import { locale } from "@fileverse-dev/fortune-core";
 import { Button, TextField, LucideIcon } from "@fileverse/ui";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import WorkbookContext from "../../../context";
 import "./index.css";
-
-function lightenHexColor(hex: string) {
-  const amount = 100;
-  // Ensure the hex color starts with '#' and is 7 characters long (including the '#')
-  if (hex.startsWith("#")) {
-    hex = hex.slice(1);
-  }
-
-  // Convert hex to RGB
-  let r = parseInt(hex.slice(0, 2), 16);
-  let g = parseInt(hex.slice(2, 4), 16);
-  let b = parseInt(hex.slice(4, 6), 16);
-
-  // Increase the RGB values to lighten the color (amount is a percentage of change)
-  r = Math.min(255, r + amount);
-  g = Math.min(255, g + amount);
-  b = Math.min(255, b + amount);
-
-  // Convert RGB back to Hex
-  const newHex = `#${((1 << 24) | (r << 16) | (g << 8) | b)
-    .toString(16)
-    .slice(1)
-    .toUpperCase()}`;
-
-  return newHex;
-}
 
 const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   const { context } = useContext(WorkbookContext);
@@ -38,6 +12,22 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   const fn = context.formulaCache.functionlistMap[context.functionHint];
   const [API_KEY, setAPI_KEY] = useState(localStorage.getItem(fn?.API_KEY));
   const [showAPInput, setShowAPInput] = useState(!API_KEY);
+  const [isKeyAdded, setApiKeyAdded] = useState(
+    !!localStorage.getItem(fn?.API_KEY)
+  );
+  const [showFunctionBody, setShouldShowFunctionBody] = useState(false);
+
+  useEffect(() => {
+    if (fn) {
+      setApiKeyAdded(!!localStorage.getItem(fn?.API_KEY));
+      setAPI_KEY(localStorage.getItem(fn?.API_KEY) || "");
+      setShowAPInput(!localStorage.getItem(fn?.API_KEY));
+    }
+  }, [fn]);
+  const apiKeyPlaceholder: Record<string, string> = {
+    ETHERSCAN_API_KEY: "Etherscan API key",
+  };
+
   if (!fn) return null;
 
   return (
@@ -46,10 +36,13 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
       id="luckysheet-formula-help-c"
       className="luckysheet-formula-help-c"
       style={{
-        border: `1px solid ${fn.BRAND_COLOR}`,
-        backgroundColor: `${
-          fn.BRAND_COLOR ? lightenHexColor(fn.BRAND_COLOR) : "#F8F9FA"
-        }`,
+        borderWidth: "1px",
+        borderColor: fn?.BRAND_SECONDARY_COLOR
+          ? fn?.BRAND_SECONDARY_COLOR
+          : "#F8F9FA",
+        backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"}`,
+        width: "340px",
+        padding: "0px",
       }}
     >
       <div className="luckysheet-formula-help-close" title="关闭">
@@ -59,19 +52,25 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
         <i className="fa fa-angle-up" aria-hidden="true" />
       </div>
       <div
-        className="luckysheet-formula-help-title formula-title"
+        onClick={() => {
+          setShouldShowFunctionBody(!showFunctionBody);
+        }}
+        className="flex cursor-pointer items-center justify-between"
         style={{
-          backgroundColor: `${
-            fn.BRAND_COLOR ? lightenHexColor(fn.BRAND_COLOR) : "#F8F9FA"
-          }`,
+          backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"}`,
+          padding: "10px",
+          borderRadius: "10px",
         }}
       >
-        <div className="luckysheet-formula-help-title-formula">
-          <span className="luckysheet-arguments-help-function-name">
+        <div className=" flex-grow  color-text-default">
+          <code
+            style={{ fontWeight: 500 }}
+            className="luckysheet-arguments-help-function-name"
+          >
             {fn.n}
-          </span>
-          <span className="luckysheet-arguments-paren">(</span>
-          <span className="luckysheet-arguments-parameter-holder">
+          </code>
+          <code className="luckysheet-arguments-paren">(</code>
+          <code className="luckysheet-arguments-parameter-holder">
             {fn.p.map((param: any, i: number) => {
               let { name } = param;
               if (param.repeat === "y") {
@@ -81,201 +80,259 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
                 name = `[${name}]`;
               }
               return (
-                <span
+                <code
                   className="luckysheet-arguments-help-parameter"
                   dir="auto"
                   key={name}
                 >
                   {name}
                   {i !== fn.p.length - 1 && ", "}
-                </span>
+                </code>
               );
             })}
-          </span>
-          <span className="luckysheet-arguments-paren">)</span>
+          </code>
+          <code className="luckysheet-arguments-paren">)</code>
         </div>
-        <div style={{ display: "flex", gap: "4px" }}>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "end",
+            width: "68px",
+            height: "20px",
+            alignItems: "center",
+            gap: "4px",
+          }}
+        >
           {fn.LOGO && (
-            <img src={fn.LOGO} alt="Service Logo" width={32} height={32} />
+            <img src={fn.LOGO} alt="Service Logo" style={{ width: "20px" }} />
           )}
           {fn.API_KEY && (
             <div
               style={{
                 borderRadius: "4px",
-                width: "20px",
-                height: "20px",
-                backgroundColor: `${
-                  localStorage.getItem(fn.API_KEY) ? "#177E23" : "#F9A92B"
-                }`,
+                backgroundColor: `${isKeyAdded ? "#177E23" : "#e8ebec"}`,
+                width: "16px",
+                height: "16px",
               }}
+              className="flex justify-center"
             >
-              <LucideIcon name="Key" style={{ color: "white" }} />
+              <LucideIcon
+                name="Key"
+                style={{
+                  color: isKeyAdded ? "white" : "#77818A",
+                  width: "12px",
+                  height: "12px",
+                }}
+              />
             </div>
           )}
+          <div>
+            <LucideIcon
+              name={showFunctionBody ? "ChevronUp" : "ChevronDown"}
+              width={16}
+              height={16}
+            />
+          </div>
         </div>
       </div>
-      <div
-        className="luckysheet-formula-help-content"
-        style={{
-          backgroundColor: `${
-            fn.BRAND_COLOR ? lightenHexColor(fn.BRAND_COLOR) : "#F8F9FA"
-          }`,
-        }}
-      >
-        {fn.API_KEY && (
+      {showFunctionBody && (
+        <div
+          className="luckysheet-formula-help-content"
+          style={{
+            backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"}`,
+          }}
+        >
+          {fn.API_KEY && (
+            <div
+              style={{
+                borderLeft: `4px solid ${isKeyAdded ? "#177E23" : "#fb923c"}`,
+                backgroundColor: "white",
+                padding: "16px",
+                margin: "4px 4px 0px 4px",
+                borderRadius: "4px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                }}
+                onClick={() => setShowAPInput(!showAPInput)}
+              >
+                <h3
+                  style={{
+                    margin: "0 0 8px 0",
+                  }}
+                  className="text-heading-xsm color-text-default"
+                >
+                  {isKeyAdded ? "API key provided" : "API key is required"}
+                </h3>
+                <LucideIcon
+                  name={showAPInput ? "ChevronUp" : "ChevronDown"}
+                  width={24}
+                  height={24}
+                />
+              </div>
+              {showAPInput && (
+                <div>
+                  <p
+                    style={{
+                      margin: "0 0 16px 0",
+                    }}
+                    className="text-body-sm color-text-default"
+                  >
+                    {`This function requires an API key. Please paste it below and
+                  press 'Ok'.`}
+                  </p>
+                  <div className="w-full">
+                    <TextField
+                      // @ts-ignore
+                      value={API_KEY}
+                      id="function-api-key"
+                      type="text"
+                      placeholder={apiKeyPlaceholder[fn.API_KEY]}
+                      onChange={(e) => {
+                        setAPI_KEY(e.target.value);
+                        setApiKeyAdded(false);
+                      }}
+                    />
+                    <div className="flex justify-end mt-2">
+                      <Button
+                        onClick={() => {
+                          // @ts-ignore
+                          localStorage.setItem(fn.API_KEY, API_KEY);
+                          setApiKeyAdded(true);
+                          setShowAPInput(false);
+                        }}
+                        disabled={!API_KEY}
+                        className="min-w-[80px]"
+                      >
+                        Ok
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div
             style={{
-              borderLeft: `4px solid ${API_KEY ? "#177E23" : "#fb923c"}`,
               backgroundColor: "white",
-              padding: "16px",
+              padding: "6px",
               margin: "4px 4px 0px 4px",
               borderRadius: "4px",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                cursor: "pointer",
-              }}
-              onClick={() => setShowAPInput(!showAPInput)}
-            >
-              <h3
+            <div className="">
+              <div
                 style={{
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  color: "#1f2937",
-                  margin: "0 0 8px 0",
+                  lineHeight: "16px",
+                  fontSize: "12px",
                 }}
+                className="text-body-sm-bold mb-1 color-text-secondary"
               >
-                API key is required
-              </h3>
-              <LucideIcon name="ChevronDown" width={24} height={24} />
-            </div>
-            {showAPInput && (
+                {formulaMore.helpExample}
+              </div>
               <div>
-                <p
+                <code
                   style={{
-                    color: "#6b7280",
-                    margin: "0 0 16px 0",
+                    overflowWrap: "break-word",
                   }}
+                  className="example-value-code"
                 >
-                  {`This function is require API key. Please paste it below and
-                  press 'Ok'.`}
-                </p>
+                  <span className="luckysheet-arguments-help-function-name">
+                    {fn.n}
+                  </span>
+                  <span className="luckysheet-arguments-paren">(</span>
+                  <span className="luckysheet-arguments-parameter-holder">
+                    {fn.p.map((param: any, i: number) => (
+                      <span
+                        key={param.name}
+                        className="luckysheet-arguments-help-parameter"
+                        dir="auto"
+                      >
+                        {param.example}
+                        {i !== fn.p.length - 1 && ", "}
+                      </span>
+                    ))}
+                  </span>
+                  <span className="luckysheet-arguments-paren">)</span>
+                </code>
+              </div>
+            </div>
+            <div
+              className="luckysheet-formula-help-content-detail"
+              style={{ paddingBottom: "16px" }}
+            >
+              <div className="">
                 <div
                   style={{
-                    display: "flex",
-                    gap: "12px",
+                    lineHeight: "16px",
+                    fontSize: "12px",
+                    padding: "0px",
                   }}
+                  className="text-body-sm-bold mb-1 mt-2 color-text-secondary"
                 >
-                  <TextField
-                    // @ts-ignore
-                    value={API_KEY}
-                    id="function-api-key"
-                    type="text"
-                    placeholder="API key"
-                    // value={apiKey}
-                    onChange={(e) => {
-                      setAPI_KEY(e.target.value);
-                    }}
-                  />
-                  <Button
-                    onClick={() => {
-                      // @ts-ignore
-                      localStorage.setItem(fn.API_KEY, API_KEY);
-                    }}
-                  >
-                    Ok
-                  </Button>
+                  About
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "6px",
-            margin: "4px 4px 0px 4px",
-            borderRadius: "4px",
-          }}
-        >
-          <div className="luckysheet-formula-help-content-example">
-            <div className="luckysheet-arguments-help-section-title example-title">
-              {formulaMore.helpExample}
-            </div>
-            <div className="luckysheet-arguments-help-formula">
-              <span className="luckysheet-arguments-help-function-name example-value">
-                {fn.n}
-              </span>
-              <span className="luckysheet-arguments-paren">(</span>
-              <span className="luckysheet-arguments-parameter-holder">
-                {fn.p.map((param: any, i: number) => (
-                  <span
-                    key={param.name}
-                    className="luckysheet-arguments-help-parameter"
-                    dir="auto"
-                  >
-                    {param.example}
-                    {i !== fn.p.length - 1 && ", "}
-                  </span>
-                ))}
-              </span>
-              <span className="luckysheet-arguments-paren">)</span>
-            </div>
-          </div>
-          <div
-            className="luckysheet-formula-help-content-detail"
-            style={{ paddingBottom: "6px" }}
-          >
-            <div className="luckysheet-arguments-help-section">
-              <div className="luckysheet-arguments-help-section-title luckysheet-arguments-help-parameter-name example-title">
-                About
-              </div>
-              <span className="luckysheet-arguments-help-parameter-content example-value">
-                {fn.d}
-              </span>
-            </div>
-          </div>
-          <div className="luckysheet-formula-help-content-param">
-            {fn.p.map((param: any) => (
-              <div
-                className="luckysheet-arguments-help-section"
-                key={param.name}
-              >
-                <div className="luckysheet-arguments-help-section-title example-title">
-                  {param.name}
-                  {param.repeat === "y" && (
-                    <span
-                      className="luckysheet-arguments-help-argument-info example-value"
-                      style={{ marginTop: "2px" }}
-                    >
-                      ...-{formulaMore.allowRepeatText}
-                    </span>
-                  )}
-                  {param.require === "o" && (
-                    <span
-                      className="luckysheet-arguments-help-argument-info example-value"
-                      style={{ marginTop: "2px" }}
-                    >
-                      -[{formulaMore.allowOptionText}]
-                    </span>
-                  )}
-                </div>
-                <span
-                  className="luckysheet-arguments-help-parameter-content example-value"
-                  style={{ marginTop: "2px" }}
-                >
-                  {param.detail}
+                <span className="luckysheet-arguments-help-parameter-content text-helper-text-sm">
+                  {fn.d}
                 </span>
               </div>
-            ))}
+            </div>
+            <div
+              style={{ paddingTop: "16px" }}
+              className="luckysheet-formula-help-content-param"
+            >
+              {fn.p.map((param: any) => (
+                <div className="" key={param.name}>
+                  <div>
+                    <code>
+                      {param.name}
+                      {param.repeat === "y" && (
+                        <span
+                          className="luckysheet-arguments-help-argument-info example-value"
+                          style={{ marginTop: "2px" }}
+                        >
+                          ...-{formulaMore.allowRepeatText}
+                        </span>
+                      )}
+                      {param.require === "o" && (
+                        <span
+                          className="luckysheet-arguments-help-argument-info example-value"
+                          style={{ marginTop: "2px" }}
+                        >
+                          -[{formulaMore.allowOptionText}]
+                        </span>
+                      )}
+                    </code>
+                  </div>
+                  <span
+                    className="luckysheet-arguments-help-parameter-content text-helper-text-sm"
+                    style={{ marginTop: "2px" }}
+                  >
+                    {param.detail}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+      )}
+      <div
+        style={{
+          backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"}`,
+          padding: "8px",
+          borderBottomLeftRadius: "10px",
+          borderBottomRightRadius: "10px",
+        }}
+        className="w-full"
+      >
+        <p className="color-text-link text-helper-text-sm">Learn More</p>
       </div>
-      <div className="luckysheet-formula-help-foot" />
     </div>
   );
 };

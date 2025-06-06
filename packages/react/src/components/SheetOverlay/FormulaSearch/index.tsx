@@ -26,28 +26,55 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
             }`}
           >
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div className="luckysheet-formula-search-func">{v.n}</div>
-              <div style={{ display: "flex", gap: "4px" }}>
+              <div className="luckysheet-formula-search-func text-body-sm">
+                {v.n}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "end",
+                  width: "68px",
+                  height: "20px",
+                  alignItems: "center",
+                  gap: "4px",
+                }}
+              >
                 {v.LOGO && (
-                  <img src={v.LOGO} alt="Service Logo" width={32} height={32} />
+                  <img
+                    src={v.LOGO}
+                    alt="Service Logo"
+                    style={{ width: "20px" }}
+                  />
                 )}
                 {v.API_KEY && (
                   <div
                     style={{
                       borderRadius: "4px",
-                      width: "20px",
-                      height: "20px",
                       backgroundColor: `${
-                        localStorage.getItem(v.API_KEY) ? "#177E23" : "#F9A92B"
+                        localStorage.getItem(v.API_KEY) ? "#177E23" : "#e8ebec"
                       }`,
+                      width: "16px",
+                      height: "16px",
                     }}
+                    className="flex justify-center"
                   >
-                    <LucideIcon name="Key" style={{ color: "white" }} />
+                    <LucideIcon
+                      name="Key"
+                      style={{
+                        color: localStorage.getItem(v.API_KEY)
+                          ? "white"
+                          : "#77818A",
+                        width: "12px",
+                        height: "12px",
+                      }}
+                    />
                   </div>
                 )}
               </div>
             </div>
-            <div className="luckysheet-formula-search-detail">{v.d}</div>
+            <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm">
+              {v.d}
+            </div>
           </div>
         );
       })}

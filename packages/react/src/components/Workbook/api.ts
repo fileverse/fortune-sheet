@@ -439,5 +439,8 @@ export function generateAPIs(
     getLocaleContext: () => {
       return locale(context);
     },
+    getWorkbookContect: () => {
+      return context;
+    },
   };
 }

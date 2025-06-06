@@ -52,7 +52,7 @@ import ConditionalFormat from "../ConditionFormat";
 import CustomButton from "./CustomButton";
 import { CustomColor } from "./CustomColor";
 import { FormatSearch } from "../FormatSearch";
-import InputModal from "../InputModal/InputModal";
+import DuneChartsInputModal from "../DuneChartsInputModal/DuneChartsInputModal";
 
 const Toolbar: React.FC<{
   setMoreItems: React.Dispatch<React.SetStateAction<React.ReactNode>>;
@@ -1563,7 +1563,7 @@ const Toolbar: React.FC<{
         }}
       />
       {showDuneModal && (
-        <InputModal
+        <DuneChartsInputModal
           isOpen={showDuneModal}
           onSubmit={(url) => {
             setContext((draftCtx) => {

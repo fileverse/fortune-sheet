@@ -1573,7 +1573,8 @@ const Toolbar: React.FC<{
           }}
           onClose={() => setShowDuneModal(false)}
           icon="dune-logo"
-          placeholder="Enter Dune Chart URL"
+          placeholder="Add Dune chart link to embed"
+          submitText="Embed Dune chart"
         />
       )}
     </div>

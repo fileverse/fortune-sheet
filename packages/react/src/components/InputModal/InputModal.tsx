@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./inputModa.css";
+import { Button } from "@fileverse/ui";
 import SVGIcon from "../SVGIcon";
 
 interface InputModalProps {
@@ -7,6 +8,7 @@ interface InputModalProps {
   onClose: () => void;
   onSubmit: (value: string) => void;
   icon: string;
+  submitText?: string;
   placeholder?: string;
 }
 
@@ -15,6 +17,7 @@ const InputModal: React.FC<InputModalProps> = ({
   onClose,
   onSubmit,
   icon,
+  submitText = "Submit",
   placeholder = "Enter a value...",
 }) => {
   const [url, setUrl] = useState<string>("");
@@ -50,6 +53,13 @@ const InputModal: React.FC<InputModalProps> = ({
             }}
           />
         </div>
+        {url.length > 0 && (
+          <div className="modal-footer">
+            <Button onClick={handleSubmit} className="modal-button">
+              {submitText}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

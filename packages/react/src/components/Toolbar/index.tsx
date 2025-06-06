@@ -37,6 +37,7 @@ import {
   insertDuneChart,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
+import { IconButton } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import "./index.css";
 import Button from "./Button";
@@ -53,6 +54,31 @@ import CustomButton from "./CustomButton";
 import { CustomColor } from "./CustomColor";
 import { FormatSearch } from "../FormatSearch";
 import DuneChartsInputModal from "../DuneChartsInputModal/DuneChartsInputModal";
+
+export const getIcon = (title: string) => {
+  switch (title) {
+    case "align-left":
+      return "AlignLeft";
+    case "align-center":
+      return "AlignCenter";
+    case "align-right":
+      return "AlignRight";
+    case "align-top":
+      return "ArrowUpFromLine";
+    case "align-middle":
+      return "AlignVerticalMiddle";
+    case "align-bottom":
+      return "ArrowDownFromLine";
+    case "text-overflow":
+      return "TextOverflow";
+    case "text-wrap":
+      return "WrapText";
+    case "text-clip":
+      return "TextClip";
+    default:
+      return "";
+  }
+};
 
 const Toolbar: React.FC<{
   setMoreItems: React.Dispatch<React.SetStateAction<React.ReactNode>>;
@@ -129,9 +155,9 @@ const Toolbar: React.FC<{
           className === "more-format"
             ? `${-(parseFloat(subMenu.style.width.replace("px", "")) + 0)}px`
             : `${-(
-                parseFloat(subMenu.style.width.replace("px", "")) +
-                menuItemPaddingRight
-              )}px`;
+              parseFloat(subMenu.style.width.replace("px", "")) +
+              menuItemPaddingRight
+            )}px`;
       }
     },
     [refs.workbookContainer]
@@ -471,10 +497,25 @@ const Toolbar: React.FC<{
             showArrow={false}
           >
             {(setOpen) => (
-              <Select>
-                {items.map(({ text, title }) => (
-                  <Option
+              <Select
+                style={{
+                  minWidth: "fit-content",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                }}
+              >
+                {items.map(({ title }) => (
+                  <IconButton
                     key={title}
+                    isActive={
+                      _.find(items, (item) => `${item.value}` === `${cell?.ht}`)
+                        ?.title === title
+                    }
+                    icon={getIcon(title)}
+                    variant="ghost"
                     onClick={() => {
                       setContext((ctx) => {
                         handleHorizontalAlign(
@@ -485,12 +526,8 @@ const Toolbar: React.FC<{
                       });
                       setOpen(false);
                     }}
-                  >
-                    <div className="fortune-toolbar-menu-line">
-                      {text}
-                      <SVGIcon name={title} />
-                    </div>
-                  </Option>
+                    tabIndex={0}
+                  />
                 ))}
               </Select>
             )}
@@ -526,10 +563,25 @@ const Toolbar: React.FC<{
             showArrow={false}
           >
             {(setOpen) => (
-              <Select>
-                {items.map(({ text, title }) => (
-                  <Option
+              <Select
+                style={{
+                  minWidth: "fit-content",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                }}
+              >
+                {items.map(({ title }) => (
+                  <IconButton
                     key={title}
+                    isActive={
+                      _.find(items, (item) => `${item.value}` === `${cell?.vt}`)
+                        ?.title === title
+                    }
+                    icon={getIcon(title)}
+                    variant="ghost"
                     onClick={() => {
                       setContext((ctx) => {
                         handleVerticalAlign(
@@ -540,12 +592,8 @@ const Toolbar: React.FC<{
                       });
                       setOpen(false);
                     }}
-                  >
-                    <div className="fortune-toolbar-menu-line">
-                      {text}
-                      <SVGIcon name={title} />
-                    </div>
-                  </Option>
+                    tabIndex={0}
+                  />
                 ))}
               </Select>
             )}
@@ -633,7 +681,11 @@ const Toolbar: React.FC<{
             key={name}
             onClick={() => {
               if (context.allowEdit === false) return;
-              showDialog(<DataVerification />);
+              showDialog(
+                <DataVerification />,
+                undefined,
+                toolbar.dataVerification
+              );
             }}
           />
         );
@@ -775,7 +827,7 @@ const Toolbar: React.FC<{
                           context.luckysheet_select_save?.length === 0 ||
                           (context.luckysheet_select_save?.length === 1 &&
                             context.luckysheet_select_save[0].row[0] ===
-                              context.luckysheet_select_save[0].row[1])
+                            context.luckysheet_select_save[0].row[1])
                         ) {
                           showDialog(
                             findAndReplace.locationTiplessTwoRow,
@@ -797,7 +849,7 @@ const Toolbar: React.FC<{
                           context.luckysheet_select_save?.length === 0 ||
                           (context.luckysheet_select_save?.length === 1 &&
                             context.luckysheet_select_save[0].column[0] ===
-                              context.luckysheet_select_save[0].column[1])
+                            context.luckysheet_select_save[0].column[1])
                         ) {
                           showDialog(
                             findAndReplace.locationTiplessTwoColumn,
@@ -893,7 +945,7 @@ const Toolbar: React.FC<{
       if (name === "comment") {
         const last =
           context.luckysheet_select_save?.[
-            context.luckysheet_select_save.length - 1
+          context.luckysheet_select_save.length - 1
           ];
         let row_index = last?.row_focus;
         let col_index = last?.column_focus;
@@ -1239,10 +1291,22 @@ const Toolbar: React.FC<{
             showArrow={false}
           >
             {(setOpen) => (
-              <Select>
-                {items.map(({ text, iconId, value }) => (
-                  <Option
+              <Select
+                style={{
+                  minWidth: "fit-content",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                }}
+              >
+                {items.map(({ iconId, value }) => (
+                  <IconButton
                     key={value}
+                    isActive={curr.value === value}
+                    icon={getIcon(iconId)}
+                    variant="ghost"
                     onClick={() => {
                       setContext((ctx) => {
                         const d = getFlowdata(ctx);
@@ -1257,12 +1321,8 @@ const Toolbar: React.FC<{
                       });
                       setOpen(false);
                     }}
-                  >
-                    <div className="fortune-toolbar-menu-line">
-                      {text}
-                      <SVGIcon name={iconId} />
-                    </div>
-                  </Option>
+                    tabIndex={0}
+                  />
                 ))}
               </Select>
             )}
@@ -1503,7 +1563,7 @@ const Toolbar: React.FC<{
         : settings.toolbarItems.slice(0, toolbarWrapIndex + 1)
       ).map((name, i) => getToolbarItem(name, i))}
       {toolbarWrapIndex !== -1 &&
-      toolbarWrapIndex < settings.toolbarItems.length - 1 ? (
+        toolbarWrapIndex < settings.toolbarItems.length - 1 ? (
         <Button
           iconId="more"
           tooltip={toolbar.toolMore}

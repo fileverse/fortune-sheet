@@ -912,24 +912,28 @@
 
 #luckysheet-dataVerification-showHintBox {
   display: none;
-  padding: 10px;
-  background-color: #ffffff;
-  border: 1px solid #ccc;
+  padding: 8px;
+  min-width: 132px;
+  background-color: hsl(var(--color-bg-default));
+  border: 1px solid hsl(var(--color-border-default));
+  border-left: 4px solid #f4874a !important;
+  border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   position: absolute;
+  transform: translateY(4px);
   z-index: 1000;
   user-select: none;
   cursor: default;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 #luckysheet-dataVerification-dropdown-btn {
   display: none;
-  width: 20px;
-  height: 20px;
-  background-color: #ffffff;
+  padding: 1px;
   position: absolute;
+  transform: translateY(15%);
   z-index: 10;
   overflow: hidden;
+  cursor: pointer !important;
 }

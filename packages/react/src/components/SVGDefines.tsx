@@ -1648,6 +1648,19 @@ const SVGDefines: React.FC<{ currency: string }> = ({ currency }) => (
           </defs>
         </svg>
       </symbol>
+      <symbol
+        id="caret-down-fill"
+        width="14"
+        height="14"
+        viewBox="0 0 14 14"
+        fill="none"
+      >
+        <rect width="14" height="14" rx="4" fill="black" fill-opacity="0.1" />
+        <path
+          d="M6.64775 8.97978L3.77152 6.10355C3.45654 5.78857 3.67962 5.25 4.12507 5.25H9.87753C10.323 5.25 10.5461 5.78857 10.2311 6.10355L7.35486 8.97978C7.15959 9.17504 6.84301 9.17504 6.64775 8.97978Z"
+          fill="#363B3F"
+        />
+      </symbol>
     </defs>
   </svg>
 );

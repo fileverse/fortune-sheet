@@ -747,7 +747,7 @@ const SheetOverlay: React.FC = () => {
             tabIndex={0}
             style={{ display: "none" }}
           >
-            <SVGIcon name="combo-arrow" width={16} />
+            <SVGIcon name="caret-down-fill" width={16} height={16} />
           </div>
           {context.dataVerificationDropDownList && <DropDownList />}
           {/* <div

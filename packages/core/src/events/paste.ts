@@ -2032,8 +2032,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
               // Calculate position for the preview
               const left =
                 colIndex === 0 ? 0 : ctx.visibledatacolumn[colIndex - 1];
-              const top = rowIndex === 0 ? 0 : ctx.visibledatarow[rowIndex - 1];
-
+              const top = rowIndex === 0 ? 0 : ctx.visibledatarow[rowIndex + 5];
               // Show the preview
               ctx.showDunePreview = {
                 url: txtdata,

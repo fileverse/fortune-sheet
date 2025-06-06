@@ -1,7 +1,14 @@
-import React, { CSSProperties, useLayoutEffect, useRef, useState } from "react";
-import { LucideIcon } from "@fileverse/ui";
+import React, {
+  CSSProperties,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { IconButton, LucideIcon } from "@fileverse/ui";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import SVGIcon from "../SVGIcon";
+import { getIcon } from ".";
 
 type Props = {
   tooltip: string;
@@ -28,6 +35,13 @@ const Combo: React.FC<Props> = ({
   const popupRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
 
+  const isLucideIcon = useMemo(() => {
+    return (
+      iconId?.startsWith("align-") ||
+      ["text-overflow", "text-wrap", "text-clip"].includes(iconId as string)
+    );
+  }, [iconId]);
+
   useOutsideClick(popupRef, () => {
     setOpen(false);
   });
@@ -52,31 +66,39 @@ const Combo: React.FC<Props> = ({
   return (
     <div className="fortune-toobar-combo-container fortune-toolbar-item">
       <div ref={buttonRef} className="fortune-toolbar-combo">
-        <div
-          className="fortune-toolbar-combo-button"
-          onClick={(e) => {
-            if (onClick) {
-              onClick(e);
-              // If there's no arrow, also toggle dropdown after executing onClick
-              if (!showArrow) setOpen(!open);
-            } else {
-              setOpen(!open);
-            }
-          }}
-          tabIndex={0}
-          data-tips={tooltip}
-          role="button"
-          aria-label={`${tooltip}: ${text !== undefined ? text : ""}`}
-          style={style}
-        >
-          {iconId ? (
-            <SVGIcon name={iconId} />
-          ) : (
-            <span className="fortune-toolbar-combo-text">
-              {text !== undefined ? text : ""}
-            </span>
-          )}
-        </div>
+        {!isLucideIcon ? (
+          <div
+            className="fortune-toolbar-combo-button"
+            onClick={(e) => {
+              if (onClick) {
+                onClick(e);
+                // If there's no arrow, also toggle dropdown after executing onClick
+                if (!showArrow) setOpen(!open);
+              } else {
+                setOpen(!open);
+              }
+            }}
+            tabIndex={0}
+            data-tips={tooltip}
+            role="button"
+            aria-label={`${tooltip}: ${text !== undefined ? text : ""}`}
+            style={style}
+          >
+            {iconId ? (
+              <SVGIcon name={iconId} />
+            ) : (
+              <span className="fortune-toolbar-combo-text">
+                {text !== undefined ? text : ""}
+              </span>
+            )}
+          </div>
+        ) : (
+          <IconButton
+            icon={getIcon(iconId as string)}
+            variant="ghost"
+            onClick={() => setOpen(!open)}
+          />
+        )}
         {showArrow && (
           <div
             className="fortune-toolbar-combo-arrow"

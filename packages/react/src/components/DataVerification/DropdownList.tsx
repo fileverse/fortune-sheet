@@ -4,7 +4,7 @@ import {
   getFlowdata,
   getSheetIndex,
   mergeBorder,
-  setDropcownValue,
+  setDropdownValue,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useCallback,
@@ -119,7 +119,7 @@ const DropDownList: React.FC = () => {
                 arr.splice(index, 1);
               }
               setSelected(arr);
-              setDropcownValue(ctx, v, arr);
+              setDropdownValue(ctx, v, arr);
             });
           }}
           tabIndex={0}

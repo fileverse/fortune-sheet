@@ -2020,9 +2020,9 @@ export class Canvas {
       verticalAlignPos_checkbox /= this.sheetCtx.zoomRatio;
 
       // 复选框
-      renderCtx.lineWidth = 1;
+      renderCtx.lineWidth = 2;
       renderCtx.strokeStyle = "#000";
-      renderCtx.strokeRect(horizonAlignPos, verticalAlignPos_checkbox, 10, 10);
+      renderCtx.strokeRect(horizonAlignPos, verticalAlignPos_checkbox, 12, 12);
 
       if (dataVerification[`${r}_${c}`].checked) {
         renderCtx.beginPath();
@@ -2037,7 +2037,7 @@ export class Canvas {
       renderCtx.fillStyle = normalizedAttr(flowdata, r, c, "fc");
       renderCtx.fillText(
         _.isNil(value) ? "" : value,
-        horizonAlignPos + 14,
+        horizonAlignPos + 18,
         verticalAlignPos_text
       );
 

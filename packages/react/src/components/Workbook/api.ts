@@ -439,7 +439,7 @@ export function generateAPIs(
     getLocaleContext: () => {
       return locale(context);
     },
-    getWorkbookContect: () => {
+    getWorkbookContext: () => {
       return context;
     },
   };

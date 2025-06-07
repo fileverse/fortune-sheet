@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { LucideIcon } from "@fileverse/ui";
 import WorkbookContext from "../../../context";
 import "./index.css";
@@ -8,13 +8,37 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
   props
 ) => {
   const { context } = useContext(WorkbookContext);
+  const firstSelection = context.luckysheet_select_save?.[0];
+  const hintRef = useRef<HTMLDivElement>(null);
+  const [top, setTop] = useState(0);
+  const calcuatePopUpPlacement = () => {
+    if (!firstSelection?.top || !firstSelection.height_move || !hintRef.current)
+      return;
+    const hintHeight = hintRef.current.offsetHeight;
+    const inputBottom = firstSelection.top + firstSelection.height_move;
+    const availableBelow = window.innerHeight - inputBottom;
+    const hintAbove = hintHeight > availableBelow;
+    const selectionHeight = firstSelection?.height_move || 0;
+    const divOffset = hintRef.current?.offsetHeight || 0;
+    setTop(
+      hintAbove ? selectionHeight - (divOffset + 70) : selectionHeight + 4
+    );
+  };
+
+  useEffect(() => {
+    calcuatePopUpPlacement();
+  });
   if (_.isEmpty(context.functionCandidates)) return null;
 
   return (
     <div
       {...props}
+      ref={hintRef}
       id="luckysheet-formula-search-c"
       className="luckysheet-formula-search-c"
+      style={{
+        top,
+      }}
     >
       {context.functionCandidates.map((v, index) => {
         return (

@@ -239,6 +239,9 @@ const Sheet: React.FC<Props> = ({ sheet }) => {
 
   const onWheel = useCallback(
     (e: WheelEvent) => {
+      const el = document.getElementById("function-details");
+      const isMouseOver = el?.matches(":hover");
+      if (el && isMouseOver) return;
       setContext((draftCtx) => {
         handleGlobalWheel(
           draftCtx,

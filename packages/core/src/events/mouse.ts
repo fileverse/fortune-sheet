@@ -1233,12 +1233,13 @@ export function handleCellAreaDoubleClick(
   e: MouseEvent,
   container: HTMLElement
 ) {
-  console.log("handleCellAreaDoubleClick");
   // if ($(event.target).hasClass("luckysheet-mousedown-cancel")) {
   //   return;
   // }
   const flowdata = getFlowdata(ctx);
-  if (!flowdata) return;
+
+  if (!flowdata || ctx.formulaCache.functionlistMap[ctx.functionHint || ""])
+    return;
 
   if (
     (ctx.luckysheetCellUpdate.length > 0 && ctx.formulaCache.rangestart) ||

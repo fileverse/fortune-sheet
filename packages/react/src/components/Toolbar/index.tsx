@@ -37,7 +37,7 @@ import {
   insertDuneChart,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
-import { IconButton } from "@fileverse/ui";
+import { IconButton, LucideIcon } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import "./index.css";
 import Button from "./Button";
@@ -1084,10 +1084,22 @@ const Toolbar: React.FC<{
       }
       if (name === "merge-cell") {
         const itemdata = [
-          { text: merge.mergeAll, value: "merge-all" },
-          { text: merge.mergeV, value: "merge-vertical" },
-          { text: merge.mergeH, value: "merge-horizontal" },
-          { text: merge.mergeCancel, value: "merge-cancel" },
+          { text: merge.mergeAll, value: "merge-all", icon: "MergeAll" },
+          {
+            text: merge.mergeV,
+            value: "merge-vertical",
+            icon: "MergeVertical",
+          },
+          {
+            text: merge.mergeH,
+            value: "merge-horizontal",
+            icon: "MergeHorizontal",
+          },
+          {
+            text: merge.mergeCancel,
+            value: "merge-cancel",
+            icon: "Unmerge",
+          },
         ];
         return (
           <Combo
@@ -1103,7 +1115,7 @@ const Toolbar: React.FC<{
           >
             {(setOpen) => (
               <Select>
-                {itemdata.map(({ text, value }) => (
+                {itemdata.map(({ text, value, icon }) => (
                   <Option
                     key={value}
                     onClick={() => {
@@ -1116,7 +1128,7 @@ const Toolbar: React.FC<{
                     <div
                       style={{ display: "flex", alignItems: "center", gap: 6 }}
                     >
-                      <SVGIcon name={value} width={16} height={16} />
+                      <LucideIcon name={icon} width={16} height={16} />
                       {text}
                     </div>
                   </Option>
@@ -1131,49 +1143,59 @@ const Toolbar: React.FC<{
           {
             text: border.borderTop,
             value: "border-top",
+            icon: "BorderTop",
           },
           {
             text: border.borderBottom,
             value: "border-bottom",
+            icon: "BorderBottom",
           },
           {
             text: border.borderLeft,
             value: "border-left",
+            icon: "BorderLeft",
           },
           {
             text: border.borderRight,
             value: "border-right",
+            icon: "BorderRight",
           },
 
           {
             text: border.borderNone,
             value: "border-none",
+            icon: "NoBorder",
           },
           {
             text: border.borderAll,
             value: "border-all",
+            icon: "Border",
           },
           {
             text: border.borderOutside,
             value: "border-outside",
+            icon: "BorderOutside",
           },
 
           {
             text: border.borderInside,
             value: "border-inside",
+            icon: "BorderInside",
           },
           {
             text: border.borderHorizontal,
             value: "border-horizontal",
+            icon: "BorderHorizontal",
           },
           {
             text: border.borderVertical,
             value: "border-vertical",
+            icon: "BorderVertical",
           },
-          {
-            text: border.borderSlash,
-            value: "border-slash",
-          },
+          // {
+          //   text: border.borderSlash,
+          //   value: "border-slash",
+          // },
         ];
         return (
           <Combo
@@ -1190,7 +1212,7 @@ const Toolbar: React.FC<{
           >
             {(setOpen) => (
               <div className="fortune-toolbar-select fortune-border-grid">
-                {items.map(({ value }) => (
+                {items.map(({ value, icon }) => (
                   <div
                     key={value}
                     className="fortune-border-grid-item"
@@ -1201,7 +1223,7 @@ const Toolbar: React.FC<{
                       setOpen(false);
                     }}
                   >
-                    <SVGIcon name={value} width={16} height={16} />
+                    <LucideIcon name={icon} width={16} height={16} />
                   </div>
                 ))}
               </div>

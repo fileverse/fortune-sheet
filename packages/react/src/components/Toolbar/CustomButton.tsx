@@ -28,7 +28,7 @@ const CustomButton: React.FC<Props> = ({
       role="button"
       style={selected ? { backgroundColor: "#E7E5EB" } : {}}
     >
-      <CustomIcon iconName={iconName} content={icon} />
+      <CustomIcon width={16} height={16} iconName={iconName} content={icon} />
       {tooltip && <div className="fortune-tooltip">{tooltip}</div>}
       {children}
     </div>

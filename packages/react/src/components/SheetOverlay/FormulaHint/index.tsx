@@ -1,11 +1,12 @@
 import { locale } from "@fileverse-dev/fortune-core";
 import { Button, TextField, LucideIcon } from "@fileverse/ui";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import WorkbookContext from "../../../context";
 import "./index.css";
 
 const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   const { context } = useContext(WorkbookContext);
+  const firstSelection = context.luckysheet_select_save?.[0];
   const { formulaMore } = locale(context);
   // if (!context.functionHint) return null;
   // @ts-ignore
@@ -15,7 +16,7 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   const [isKeyAdded, setApiKeyAdded] = useState(
     !!localStorage.getItem(fn?.API_KEY)
   );
-  const [showFunctionBody, setShouldShowFunctionBody] = useState(false);
+  const [showFunctionBody, setShouldShowFunctionBody] = useState(true);
 
   useEffect(() => {
     if (fn) {
@@ -27,15 +28,73 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   const apiKeyPlaceholder: Record<string, string> = {
     ETHERSCAN_API_KEY: "Etherscan API key",
   };
+  const hintRef = useRef<HTMLDivElement>(null);
+  const [top, setTop] = useState(0);
+  const calcuatePopUpPlacement = () => {
+    if (!firstSelection?.top || !firstSelection.height_move || !hintRef.current)
+      return;
+    const hintHeight = 422;
+    const inputBottom = firstSelection.top + firstSelection.height_move;
+    const availableBelow = window.innerHeight - inputBottom;
+    const hintAbove = hintHeight > availableBelow;
+    const selectionHeight = firstSelection?.height_move || 0;
+    const divOffset = hintRef.current?.offsetHeight || 0;
+    setTop(
+      hintAbove ? selectionHeight - (divOffset + 70) : selectionHeight + 4
+    );
+  };
 
+  useEffect(() => {
+    calcuatePopUpPlacement();
+  });
+  useEffect(() => {
+    // this handle scroll for function details section
+    const el = document.getElementById("function-details");
+    let handleWheel: any;
+    if (el) {
+      let scrollLockTimeout: any = null;
+      const cache = {
+        verticalScrollLock: false,
+        horizontalScrollLock: false,
+      };
+
+      handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+
+        const step = 40;
+        const ratio = 1;
+
+        if (e.deltaY !== 0 && !cache.verticalScrollLock) {
+          cache.horizontalScrollLock = true;
+          el.scrollTop += (e.deltaY > 0 ? 1 : -1) * step * ratio;
+        } else if (e.deltaX !== 0 && !cache.horizontalScrollLock) {
+          cache.verticalScrollLock = true;
+          el.scrollLeft += (e.deltaX > 0 ? 1 : -1) * step * ratio;
+        }
+
+        clearTimeout(scrollLockTimeout);
+        scrollLockTimeout = setTimeout(() => {
+          cache.verticalScrollLock = false;
+          cache.horizontalScrollLock = false;
+        }, 50);
+      };
+
+      el.addEventListener("wheel", handleWheel, { passive: false });
+    }
+    return () => {
+      if (el && handleWheel) el.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
   if (!fn) return null;
 
   return (
     <div
       {...props}
+      ref={hintRef}
       id="luckysheet-formula-help-c"
       className="luckysheet-formula-help-c"
       style={{
+        top,
         borderWidth: "1px",
         borderColor: fn?.BRAND_SECONDARY_COLOR
           ? fn?.BRAND_SECONDARY_COLOR
@@ -139,8 +198,11 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
       {showFunctionBody && (
         <div
           className="luckysheet-formula-help-content"
+          id="function-details"
           style={{
             backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"}`,
+            maxHeight: "318px",
+            overflowY: "scroll",
           }}
         >
           {fn.API_KEY && (
@@ -331,7 +393,14 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
         }}
         className="w-full"
       >
-        <p className="color-text-link text-helper-text-sm">Learn More</p>
+        <div
+          onClick={() => {
+            document.getElementById("function-button")?.click();
+          }}
+          className="color-text-link cursor-pointer text-helper-text-sm"
+        >
+          Learn More
+        </div>
       </div>
     </div>
   );

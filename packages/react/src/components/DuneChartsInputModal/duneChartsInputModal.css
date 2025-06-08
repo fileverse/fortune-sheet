@@ -11,7 +11,7 @@
 
 .input-modal {
   position: fixed;
-  top: 25%;
+  top: 16%;
   left: 50%;
   transform: translateX(-50%);
   border-radius: 0.75rem;

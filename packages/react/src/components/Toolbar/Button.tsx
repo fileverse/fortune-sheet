@@ -8,6 +8,7 @@ type Props = {
   disabled?: boolean;
   selected?: boolean;
   children?: React.ReactNode;
+  style?: React.CSSProperties;
 };
 
 const Button: React.FC<Props> = ({
@@ -17,6 +18,7 @@ const Button: React.FC<Props> = ({
   disabled,
   selected,
   children,
+  style,
 }) => {
   // const style: CSSProperties = { userSelect: "none" };
   return (
@@ -27,7 +29,7 @@ const Button: React.FC<Props> = ({
       data-tips={tooltip}
       role="button"
       aria-label={tooltip}
-      style={selected ? { backgroundColor: "#E7E5EB" } : {}}
+      style={selected ? { backgroundColor: "#E7E5EB" } : style}
     >
       <SVGIcon
         name={iconId}

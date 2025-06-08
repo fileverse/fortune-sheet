@@ -1647,6 +1647,10 @@ const Toolbar: React.FC<{
             if (context.allowEdit === false) return;
             setShowDuneModal(true);
           }}
+          style={{
+            backgroundColor: "#F4603E2E",
+            borderRadius: "8px",
+          }}
         />
         {showDuneModal && (
           <DuneChartsInputModal

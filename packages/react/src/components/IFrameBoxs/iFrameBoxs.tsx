@@ -2,6 +2,10 @@ import React, { useContext, useEffect, useRef, useMemo } from "react";
 import {
   onIframeMoveStart,
   onIframeResizeStart,
+  onIframeMove,
+  onIframeMoveEnd,
+  onIframeResize,
+  onIframeResizeEnd,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../context";
 
@@ -73,6 +77,16 @@ const IframeBoxs: React.FC = () => {
             onMouseDown={(e) => {
               if (isActive) {
                 onIframeMoveStart(context, refs.globalCache, e.nativeEvent);
+                const handleMouseMove = (moveEvent: MouseEvent) => {
+                  onIframeMove(context, refs.globalCache, moveEvent);
+                };
+                const handleMouseUp = () => {
+                  onIframeMoveEnd(context, refs.globalCache);
+                  document.removeEventListener("mousemove", handleMouseMove);
+                  document.removeEventListener("mouseup", handleMouseUp);
+                };
+                document.addEventListener("mousemove", handleMouseMove);
+                document.addEventListener("mouseup", handleMouseUp);
               }
               e.stopPropagation();
             }}
@@ -98,25 +112,38 @@ const IframeBoxs: React.FC = () => {
             {isActive && (
               <>
                 <div className="luckysheet-modal-dialog-resize">
-                  {["lt", "mt", "lm", "rm", "rt", "lb", "mb", "rb"].map(
-                    (dir) => (
-                      <div
-                        key={dir}
-                        className={`luckysheet-modal-dialog-resize-item luckysheet-modal-dialog-resize-item-${dir}`}
-                        data-type={dir}
-                        style={{ zIndex: 300, position: "absolute" }}
-                        onMouseDown={(e) => {
-                          onIframeResizeStart(
-                            context,
-                            refs.globalCache,
-                            e.nativeEvent,
-                            dir
+                  {["lt", "mt", "lm", "rm", "rt", "lb", "mb", "rb"].map((v) => (
+                    <div
+                      key={v}
+                      className={`luckysheet-modal-dialog-resize-item luckysheet-modal-dialog-resize-item-${v}`}
+                      data-type={v}
+                      onMouseDown={(e) => {
+                        onIframeResizeStart(
+                          context,
+                          refs.globalCache,
+                          e.nativeEvent,
+                          v
+                        );
+                        const handleMouseMove = (moveEvent: MouseEvent) => {
+                          onIframeResize(context, refs.globalCache, moveEvent);
+                        };
+                        const handleMouseUp = () => {
+                          onIframeResizeEnd(context, refs.globalCache);
+                          document.removeEventListener(
+                            "mousemove",
+                            handleMouseMove
                           );
-                          e.stopPropagation();
-                        }}
-                      />
-                    )
-                  )}
+                          document.removeEventListener(
+                            "mouseup",
+                            handleMouseUp
+                          );
+                        };
+                        document.addEventListener("mousemove", handleMouseMove);
+                        document.addEventListener("mouseup", handleMouseUp);
+                        e.stopPropagation();
+                      }}
+                    />
+                  ))}
                 </div>
 
                 <div className="luckysheet-modal-dialog-controll">

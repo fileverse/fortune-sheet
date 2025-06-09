@@ -27,6 +27,8 @@ import {
   onCellsMove,
   cellFocus,
   editComment,
+  onIframeMoveEnd,
+  onIframeResizeEnd,
 } from "../modules";
 import {
   getFrozenHandleLeft,
@@ -3680,6 +3682,8 @@ export function handleOverlayMouseUp(
   // 批注框 移动结束
   onImageMoveEnd(ctx, globalCache);
   onImageResizeEnd(ctx, globalCache);
+  onIframeMoveEnd(ctx, globalCache);
+  onIframeResizeEnd(ctx, globalCache);
   onCommentBoxMoveEnd(ctx, globalCache);
   onCommentBoxResizeEnd(ctx, globalCache);
   onFormulaRangeDragEnd(ctx);

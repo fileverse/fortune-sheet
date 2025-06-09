@@ -28,9 +28,6 @@ export function sanitizeDuneUrl(input: string): string | null {
   return null; // Not a supported chart
 }
 
-let sharedCtx: Context;
-let sharedGlobalCache: GlobalCache;
-
 export function saveIframe(ctx: Context) {
   const index = getSheetIndex(ctx, ctx.currentSheetId);
   if (index == null) return;
@@ -65,8 +62,12 @@ export function insertIframe(ctx: Context, src: string) {
       height: 300,
     };
 
-    ctx.insertedIframes = (ctx.insertedIframes || []).concat(iframe);
-    saveIframe(ctx);
+    const index = getSheetIndex(ctx, ctx.currentSheetId);
+    if (index == null) return;
+    const file = ctx.luckysheetfile[index];
+
+    file.iframes = (file.iframes || []).concat(iframe);
+    ctx.insertedIframes = file.iframes;
   } catch (err) {
     console.info(err);
   }
@@ -153,16 +154,6 @@ export function onIframeMoveEnd(ctx: Context, globalCache: GlobalCache) {
   }
 }
 
-function onIframeMoveWrapped(e: MouseEvent) {
-  onIframeMove(sharedCtx, sharedGlobalCache, e);
-}
-
-function onIframeMoveEndWrapped() {
-  onIframeMoveEnd(sharedCtx, sharedGlobalCache);
-  document.removeEventListener("mousemove", onIframeMoveWrapped);
-  document.removeEventListener("mouseup", onIframeMoveEndWrapped);
-}
-
 export function onIframeMoveStart(
   ctx: Context,
   globalCache: GlobalCache,
@@ -175,12 +166,6 @@ export function onIframeMoveStart(
       cursorMoveStartPosition: { x: e.pageX, y: e.pageY },
       iframeInitialPosition: { left, top },
     });
-
-    sharedCtx = ctx;
-    sharedGlobalCache = globalCache;
-
-    document.addEventListener("mousemove", onIframeMoveWrapped);
-    document.addEventListener("mouseup", onIframeMoveEndWrapped);
   }
 }
 
@@ -248,16 +233,6 @@ export function onIframeResize(
   return true;
 }
 
-function onIframeResizeWrapped(e: MouseEvent) {
-  onIframeResize(sharedCtx, sharedGlobalCache, e);
-}
-
-function onIframeResizeEndWrapped() {
-  onIframeResizeEnd(sharedCtx, sharedGlobalCache);
-  document.removeEventListener("mousemove", onIframeResizeWrapped);
-  document.removeEventListener("mouseup", onIframeResizeEndWrapped);
-}
-
 export function onIframeResizeStart(
   ctx: Context,
   globalCache: GlobalCache,
@@ -271,11 +246,5 @@ export function onIframeResizeStart(
       resizingSide,
       iframeInitialPosition: position,
     });
-
-    sharedCtx = ctx;
-    sharedGlobalCache = globalCache;
-
-    document.addEventListener("mousemove", onIframeResizeWrapped);
-    document.addEventListener("mouseup", onIframeResizeEndWrapped);
   }
 }

@@ -452,7 +452,7 @@ const ContextMenu: React.FC = () => {
       }
       if (name === "delete-column") {
         return (
-          true && (
+          selection?.column_select && (
             <Menu
               key="delete-col"
               onClick={() => {
@@ -513,11 +513,134 @@ const ContextMenu: React.FC = () => {
           )
         );
       }
+      if (name === "cell-delete-column") {
+        return (
+          !selection?.row_select && (
+            <Menu
+              key="cell-delete-col"
+              onClick={() => {
+                if (!selection) return;
+                const [st_index, ed_index] = selection.column;
+                const deleteRowColOp: SetContextOptions["deleteRowColOp"] = {
+                  type: "column",
+                  start: st_index,
+                  end: ed_index,
+                  id: context.currentSheetId,
+                };
+                setContext(
+                  (draftCtx) => {
+                    if (draftCtx.luckysheet_select_save?.length! > 1) {
+                      showAlert(rightclick.noMulti, "ok");
+                      draftCtx.contextMenu = {};
+                      draftCtx.dataVerificationDropDownList = false;
+                      return;
+                    }
+                    const slen = ed_index - st_index + 1;
+                    const index = getSheetIndex(
+                      draftCtx,
+                      context.currentSheetId
+                    ) as number;
+                    if (
+                      draftCtx.luckysheetfile[index].data?.[0]?.length! <= slen
+                    ) {
+                      showAlert(rightclick.cannotDeleteAllColumn, "ok");
+                      draftCtx.contextMenu = {};
+                      return;
+                    }
+                    try {
+                      deleteRowCol(draftCtx, deleteRowColOp);
+                    } catch (e: any) {
+                      if (e.message === "readOnly") {
+                        showAlert(rightclick.cannotDeleteColumnReadOnly, "ok");
+                      }
+                    }
+                    draftCtx.contextMenu = {};
+                  },
+                  { deleteRowColOp }
+                );
+              }}
+            >
+              <div className="context-item">
+                <SVGIcon
+                  name="delete-flv"
+                  width={18}
+                  height={18}
+                  style={{ marginRight: "8px" }}
+                />
+                <div>
+                  {rightclick.deleteSelected}
+                  {rightclick.column}
+                </div>
+              </div>
+            </Menu>
+          )
+        );
+      }
       if (name === "delete-row") {
         return (
-          true && (
+          selection?.row_select && (
             <Menu
               key="delete-row"
+              onClick={() => {
+                if (!selection) return;
+                const [st_index, ed_index] = selection.row;
+                const deleteRowColOp: SetContextOptions["deleteRowColOp"] = {
+                  type: "row",
+                  start: st_index,
+                  end: ed_index,
+                  id: context.currentSheetId,
+                };
+                setContext(
+                  (draftCtx) => {
+                    if (draftCtx.luckysheet_select_save?.length! > 1) {
+                      showAlert(rightclick.noMulti, "ok");
+                      draftCtx.contextMenu = {};
+                      return;
+                    }
+                    const slen = ed_index - st_index + 1;
+                    const index = getSheetIndex(
+                      draftCtx,
+                      context.currentSheetId
+                    ) as number;
+                    if (draftCtx.luckysheetfile[index].data?.length! <= slen) {
+                      showAlert(rightclick.cannotDeleteAllRow, "ok");
+                      draftCtx.contextMenu = {};
+                      return;
+                    }
+                    try {
+                      deleteRowCol(draftCtx, deleteRowColOp);
+                    } catch (e: any) {
+                      if (e.message === "readOnly") {
+                        showAlert(rightclick.cannotDeleteRowReadOnly, "ok");
+                      }
+                    }
+                    draftCtx.contextMenu = {};
+                  },
+                  { deleteRowColOp }
+                );
+              }}
+            >
+              <div className="context-item">
+                <SVGIcon
+                  name="delete-flv"
+                  width={18}
+                  height={18}
+                  style={{ marginRight: "8px" }}
+                />
+                <div>
+                  {rightclick.deleteSelected}
+                  {rightclick.row}
+                </div>
+              </div>
+            </Menu>
+          )
+        );
+      }
+      if (name === "cell-delete-row") {
+        return (
+          !selection?.column_select && (
+            <Menu
+              key="cell-delete-row"
               onClick={() => {
                 if (!selection) return;
                 const [st_index, ed_index] = selection.row;

@@ -7,6 +7,7 @@
   border-bottom: 1px solid #d4d4d4;
   white-space: nowrap;
   align-items: center;
+  gap: 4px;
 }
 
 .fortune-toolbar-divider {
@@ -42,13 +43,21 @@
   user-select: none;
   background: 0;
   outline: none;
-  padding: 0;
+  padding: 2px;
   list-style: none;
   text-decoration: none;
   display: flex;
+  justify-content: center;
   align-items: center;
-  padding: 2px;
-  margin: 2px 8px;
+  min-width: 30px;
+  height: 30px;
+  margin: 0;
+}
+
+.fortune-toolbar-button svg,
+.fortune-toolbar-combo svg {
+  width: 16px !important;
+  height: 16px !important;
 }
 
 .fortune-toolbar-combo-button,
@@ -59,12 +68,12 @@
 
 .fortune-toolbar-button:hover,
 .fortune-toolbar-combo:hover {
-  background-color: rgba(0, 0, 0, 0.06);
+  background-color: #f2f4f5;
   cursor: pointer;
 }
 
 .fortune-toolbar-combo-arrow:hover {
-  background-color: rgba(0, 0, 0, 0.06);
+  background-color: #f2f4f5;
   cursor: pointer;
 }
 
@@ -136,6 +145,7 @@
   margin: 0 4px;
   font-weight: 500;
   font-size: 14px;
+  line-height: 20px;
 }
 
 .fortune-toolbar-color-picker-item {
@@ -333,4 +343,18 @@
 
 .fortune-border-grid-item:hover {
   background-color: hsl(var(--color-bg-default-hover));
+}
+
+.fortune-toolbar-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.fortune-toolbar-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
 }

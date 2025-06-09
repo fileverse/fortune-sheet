@@ -37,7 +37,7 @@ import {
   insertDuneChart,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
-import { IconButton } from "@fileverse/ui";
+import { IconButton, LucideIcon } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import "./index.css";
 import Button from "./Button";
@@ -68,7 +68,7 @@ export const getIcon = (title: string) => {
     case "align-middle":
       return "AlignVerticalMiddle";
     case "align-bottom":
-      return "ArrowDownFromLine";
+      return "ArrowDownToLine";
     case "text-overflow":
       return "TextOverflow";
     case "text-wrap":
@@ -155,9 +155,9 @@ const Toolbar: React.FC<{
           className === "more-format"
             ? `${-(parseFloat(subMenu.style.width.replace("px", "")) + 0)}px`
             : `${-(
-              parseFloat(subMenu.style.width.replace("px", "")) +
-              menuItemPaddingRight
-            )}px`;
+                parseFloat(subMenu.style.width.replace("px", "")) +
+                menuItemPaddingRight
+              )}px`;
       }
     },
     [refs.workbookContainer]
@@ -212,9 +212,12 @@ const Toolbar: React.FC<{
     const container = containerRef.current!;
     if (!container) return;
     const moreButtonWidth = 50;
+    const containerWidth = container.getBoundingClientRect().width;
+    const availableWidth = containerWidth - 30; // Account for padding
+
     for (let i = itemLocations.length - 1; i >= 0; i -= 1) {
       const loc = itemLocations[i];
-      if (loc + moreButtonWidth < container.clientWidth) {
+      if (loc + moreButtonWidth < availableWidth) {
         setToolbarWrapIndex(
           i - itemLocations.length + settings.toolbarItems.length
         );
@@ -324,7 +327,7 @@ const Toolbar: React.FC<{
                       >
                         <div className="fortune-toolbar-menu-line">
                           <div>{text}</div>
-                          <SVGIcon name="rightArrow" width={14} />
+                          <SVGIcon name="rightArrow" width={16} height={16} />
                         </div>
                         <div
                           className="more-format toolbar-item-sub-menu fortune-toolbar-select"
@@ -827,7 +830,7 @@ const Toolbar: React.FC<{
                           context.luckysheet_select_save?.length === 0 ||
                           (context.luckysheet_select_save?.length === 1 &&
                             context.luckysheet_select_save[0].row[0] ===
-                            context.luckysheet_select_save[0].row[1])
+                              context.luckysheet_select_save[0].row[1])
                         ) {
                           showDialog(
                             findAndReplace.locationTiplessTwoRow,
@@ -849,7 +852,7 @@ const Toolbar: React.FC<{
                           context.luckysheet_select_save?.length === 0 ||
                           (context.luckysheet_select_save?.length === 1 &&
                             context.luckysheet_select_save[0].column[0] ===
-                            context.luckysheet_select_save[0].column[1])
+                              context.luckysheet_select_save[0].column[1])
                         ) {
                           showDialog(
                             findAndReplace.locationTiplessTwoColumn,
@@ -945,7 +948,7 @@ const Toolbar: React.FC<{
       if (name === "comment") {
         const last =
           context.luckysheet_select_save?.[
-          context.luckysheet_select_save.length - 1
+            context.luckysheet_select_save.length - 1
           ];
         let row_index = last?.row_focus;
         let col_index = last?.column_focus;
@@ -1081,10 +1084,22 @@ const Toolbar: React.FC<{
       }
       if (name === "merge-cell") {
         const itemdata = [
-          { text: merge.mergeAll, value: "merge-all" },
-          { text: merge.mergeV, value: "merge-vertical" },
-          { text: merge.mergeH, value: "merge-horizontal" },
-          { text: merge.mergeCancel, value: "merge-cancel" },
+          { text: merge.mergeAll, value: "merge-all", icon: "MergeAll" },
+          {
+            text: merge.mergeV,
+            value: "merge-vertical",
+            icon: "MergeVertical",
+          },
+          {
+            text: merge.mergeH,
+            value: "merge-horizontal",
+            icon: "MergeHorizontal",
+          },
+          {
+            text: merge.mergeCancel,
+            value: "merge-cancel",
+            icon: "Unmerge",
+          },
         ];
         return (
           <Combo
@@ -1100,7 +1115,7 @@ const Toolbar: React.FC<{
           >
             {(setOpen) => (
               <Select>
-                {itemdata.map(({ text, value }) => (
+                {itemdata.map(({ text, value, icon }) => (
                   <Option
                     key={value}
                     onClick={() => {
@@ -1113,7 +1128,7 @@ const Toolbar: React.FC<{
                     <div
                       style={{ display: "flex", alignItems: "center", gap: 6 }}
                     >
-                      <SVGIcon name={value} />
+                      <LucideIcon name={icon} width={16} height={16} />
                       {text}
                     </div>
                   </Option>
@@ -1128,49 +1143,59 @@ const Toolbar: React.FC<{
           {
             text: border.borderTop,
             value: "border-top",
+            icon: "BorderTop",
           },
           {
             text: border.borderBottom,
             value: "border-bottom",
+            icon: "BorderBottom",
           },
           {
             text: border.borderLeft,
             value: "border-left",
+            icon: "BorderLeft",
           },
           {
             text: border.borderRight,
             value: "border-right",
+            icon: "BorderRight",
           },
 
           {
             text: border.borderNone,
             value: "border-none",
+            icon: "NoBorder",
           },
           {
             text: border.borderAll,
             value: "border-all",
+            icon: "Border",
           },
           {
             text: border.borderOutside,
             value: "border-outside",
+            icon: "BorderOutside",
           },
 
           {
             text: border.borderInside,
             value: "border-inside",
+            icon: "BorderInside",
           },
           {
             text: border.borderHorizontal,
             value: "border-horizontal",
+            icon: "BorderHorizontal",
           },
           {
             text: border.borderVertical,
             value: "border-vertical",
+            icon: "BorderVertical",
           },
-          {
-            text: border.borderSlash,
-            value: "border-slash",
-          },
+          // {
+          //   text: border.borderSlash,
+          //   value: "border-slash",
+          // },
         ];
         return (
           <Combo
@@ -1187,7 +1212,7 @@ const Toolbar: React.FC<{
           >
             {(setOpen) => (
               <div className="fortune-toolbar-select fortune-border-grid">
-                {items.map(({ value }) => (
+                {items.map(({ value, icon }) => (
                   <div
                     key={value}
                     className="fortune-border-grid-item"
@@ -1198,7 +1223,7 @@ const Toolbar: React.FC<{
                       setOpen(false);
                     }}
                   >
-                    <SVGIcon name={value} />
+                    <LucideIcon name={icon} width={16} height={16} />
                   </div>
                 ))}
               </div>
@@ -1252,7 +1277,7 @@ const Toolbar: React.FC<{
                   >
                     <div className="fortune-toolbar-menu-line">
                       {text}
-                      <SVGIcon name={value} />
+                      <SVGIcon name={value} width={16} height={16} />
                     </div>
                   </Option>
                 ))}
@@ -1391,7 +1416,7 @@ const Toolbar: React.FC<{
                   >
                     <div className="fortune-toolbar-menu-line">
                       {text}
-                      <SVGIcon name={iconId} />
+                      <SVGIcon name={iconId} width={16} height={16} />
                     </div>
                   </Option>
                 ))}
@@ -1465,7 +1490,7 @@ const Toolbar: React.FC<{
                         className="fortune-toolbar-menu-line gap-1"
                         style={{ justifyContent: "start" }}
                       >
-                        <SVGIcon name={iconId} width={24} height={18} />
+                        <SVGIcon name={iconId} width={16} height={16} />
                         {text}
                       </div>
                     </Option>
@@ -1540,103 +1565,109 @@ const Toolbar: React.FC<{
       className="fortune-toolbar"
       aria-label={toolbar.toolbar}
     >
-      {settings.customToolbarItems
-        .filter((n) => n.key === "import-export")
-        .map((n) => {
-          return (
-            <CustomButton
-              tooltip={n.tooltip}
-              onClick={n.onClick}
-              key={n.key}
-              icon={n.icon}
-              iconName={n.iconName}
-            >
-              {n.children}
-            </CustomButton>
-          );
-        })}
-      {settings.customToolbarItems?.length > 0 ? (
-        <Divider key="customDivider" />
-      ) : null}
-      {(toolbarWrapIndex === -1
-        ? settings.toolbarItems
-        : settings.toolbarItems.slice(0, toolbarWrapIndex + 1)
-      ).map((name, i) => getToolbarItem(name, i))}
-      {toolbarWrapIndex !== -1 &&
+      <div className="fortune-toolbar-left">
+        {settings.customToolbarItems
+          .filter((n) => n.key === "import-export")
+          .map((n) => {
+            return (
+              <CustomButton
+                tooltip={n.tooltip}
+                onClick={n.onClick}
+                key={n.key}
+                icon={n.icon}
+                iconName={n.iconName}
+              >
+                {n.children}
+              </CustomButton>
+            );
+          })}
+        {settings.customToolbarItems?.length > 0 ? (
+          <Divider key="customDivider" />
+        ) : null}
+        {(toolbarWrapIndex === -1
+          ? settings.toolbarItems
+          : settings.toolbarItems.slice(0, toolbarWrapIndex + 1)
+        ).map((name, i) => getToolbarItem(name, i))}
+        {toolbarWrapIndex !== -1 &&
         toolbarWrapIndex < settings.toolbarItems.length - 1 ? (
-        <Button
-          iconId="more"
-          tooltip={toolbar.toolMore}
-          onClick={() => {
-            if (moreItemsOpen) {
-              setMoreItems(null);
-            } else {
-              setMoreItems(
-                settings.toolbarItems
-                  .slice(toolbarWrapIndex + 1)
-                  .map((name, i) => getToolbarItem(name, i))
-              );
-            }
-          }}
-        />
-      ) : null}
-      <Divider key="templateDivider" />
-      {settings.customToolbarItems
-        .filter((n) => n.key === "templates")
-        .map((n) => {
-          return (
-            <CustomButton
-              tooltip={n.tooltip}
-              onClick={n.onClick}
-              key={n.key}
-              icon={n.icon}
-              iconName={n.iconName}
-            >
-              {n.children}
-            </CustomButton>
-          );
-        })}
-      <Divider key="customDivider" />
-      {settings.customToolbarItems
-        .filter((n) => n.key !== "templates" && n.key !== "import-export")
-        .map((n) => {
-          return (
-            <CustomButton
-              tooltip={n.tooltip}
-              onClick={n.onClick}
-              key={n.key}
-              icon={n.icon}
-              iconName={n.iconName}
-            >
-              {n.children}
-            </CustomButton>
-          );
-        })}
+          <Button
+            iconId="more"
+            tooltip={toolbar.toolMore}
+            onClick={() => {
+              if (moreItemsOpen) {
+                setMoreItems(null);
+              } else {
+                setMoreItems(
+                  settings.toolbarItems
+                    .slice(toolbarWrapIndex + 1)
+                    .map((name, i) => getToolbarItem(name, i))
+                );
+              }
+            }}
+          />
+        ) : null}
+      </div>
+      <div className="fortune-toolbar-right">
+        {settings.customToolbarItems
+          .filter((n) => n.key === "templates")
+          .map((n) => {
+            return (
+              <CustomButton
+                tooltip={n.tooltip}
+                onClick={n.onClick}
+                key={n.key}
+                icon={n.icon}
+                iconName={n.iconName}
+              >
+                {n.children}
+              </CustomButton>
+            );
+          })}
+        {settings.customToolbarItems
+          .filter((n) => n.key !== "templates" && n.key !== "import-export")
+          .map((n) => {
+            return (
+              <CustomButton
+                tooltip={n.tooltip}
+                onClick={n.onClick}
+                key={n.key}
+                icon={n.icon}
+                iconName={n.iconName}
+              >
+                {n.children}
+              </CustomButton>
+            );
+          })}
 
-      <Button
-        iconId="dune-logo"
-        tooltip="Insert Dune Chart"
-        key="dune-charts"
-        onClick={() => {
-          if (context.allowEdit === false) return;
-          setShowDuneModal(true);
-        }}
-      />
-      {showDuneModal && (
-        <DuneChartsInputModal
-          isOpen={showDuneModal}
-          onSubmit={(url) => {
-            setContext((draftCtx) => {
-              insertDuneChart(draftCtx, url);
-            });
-            setShowDuneModal(false);
+        <Button
+          iconId="dune-logo"
+          tooltip="Insert Dune Chart"
+          key="dune-charts"
+          onClick={() => {
+            if (context.allowEdit === false) return;
+            setShowDuneModal(true);
           }}
-          onClose={() => setShowDuneModal(false)}
-          icon="dune-logo"
-          placeholder="Add Dune chart link to embed"
-          submitText="Embed Dune chart"
+          style={{
+            backgroundColor: "#F4603E2E",
+            borderRadius: "8px",
+          }}
         />
-      )}
+        {showDuneModal && (
+          <DuneChartsInputModal
+            isOpen={showDuneModal}
+            onSubmit={(url) => {
+              setContext((draftCtx) => {
+                insertDuneChart(draftCtx, url);
+              });
+              setShowDuneModal(false);
+            }}
+            onClose={() => setShowDuneModal(false)}
+            icon="dune-logo"
+            placeholder="Add Dune chart link to embed"
+            submitText="Embed Dune chart"
+          />
+        )}
+      </div>
     </div>
   );
 };

@@ -222,6 +222,7 @@ export const defaultSettings: Required<Settings> = {
     "search",
   ], // 自定义工具栏
   cellContextMenu: [
+    "cut",
     "copy", // 复制
     "paste", // 粘贴
     "clear", // 清除内容
@@ -238,9 +239,13 @@ export const defaultSettings: Required<Settings> = {
     "|",
     "conditionFormat",
     "sort", // 排序选区
+    "ascSort",
+    "desSort",
     "orderAZ", // 升序
     "orderZA", // 降序
     "filter", // 筛选选区
+    "searchReplace",
+    "dataVerification",
     "|",
     "chart", // 图表生成
     "image", // 插入图片

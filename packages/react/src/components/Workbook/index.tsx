@@ -504,6 +504,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
 
           draftCtx.config = _.isNil(sheet.config) ? {} : sheet.config;
           draftCtx.insertedImgs = sheet.images;
+          draftCtx.insertedIframes = sheet.iframes;
           draftCtx.currency = mergedSettings.currency || "¥";
 
           draftCtx.zoomRatio = _.isNil(sheet.zoomRatio) ? 1 : sheet.zoomRatio;

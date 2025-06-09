@@ -88,7 +88,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
   const renderToolbarButton = useCallback(
     (iconId: string, onClick: () => void) => (
       <div className="fortune-toolbar-button" onClick={onClick} tabIndex={0}>
-        <SVGIcon name={iconId} style={{ width: 18, height: 18 }} />
+        <SVGIcon name={iconId} style={{ width: 16, height: 16 }} />
       </div>
     ),
     []
@@ -210,7 +210,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
       {linkType === "webpage" && (
         <div className="fortune-input-with-icon">
           <div className="input-icon">
-            <SVGIcon name="link" />
+            <SVGIcon name="link" width={16} height={16} />
           </div>
           <TextField
             placeholder="Paste URL"
@@ -226,7 +226,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
       {linkType === "sheet" && (
         <div className="fortune-input-with-icon">
           <div className="input-icon">
-            <SVGIcon name="link" />
+            <SVGIcon name="link" width={16} height={16} />
           </div>
           <Select
             onValueChange={(value) => {

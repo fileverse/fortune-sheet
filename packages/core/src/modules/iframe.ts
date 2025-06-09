@@ -36,6 +36,7 @@ export function saveIframe(ctx: Context) {
   if (index == null) return;
   const file = ctx.luckysheetfile[index];
   file.iframes = ctx.insertedIframes;
+  ctx.insertedIframes = file.iframes;
 }
 
 export function insertIframe(ctx: Context, src: string) {
@@ -65,8 +66,12 @@ export function insertIframe(ctx: Context, src: string) {
       height: 300,
     };
 
-    ctx.insertedIframes = (ctx.insertedIframes || []).concat(iframe);
-    saveIframe(ctx);
+    const index = getSheetIndex(ctx, ctx.currentSheetId);
+    if (index == null) return;
+    const file = ctx.luckysheetfile[index];
+
+    file.iframes = (file.iframes || []).concat(iframe);
+    ctx.insertedIframes = file.iframes;
   } catch (err) {
     console.info(err);
   }

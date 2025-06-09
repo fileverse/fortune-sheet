@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useMemo } from "react";
 import {
   onIframeMoveStart,
   onIframeResizeStart,
@@ -8,6 +8,14 @@ import WorkbookContext from "../../context";
 const IframeBoxs: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Get current sheet's iframes
+  const currentSheetIframes = useMemo(() => {
+    const currentSheet = context.luckysheetfile.find(
+      (sheet) => sheet.id === context.currentSheetId
+    );
+    return currentSheet?.iframes || [];
+  }, [context.luckysheetfile, context.currentSheetId]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -36,7 +44,7 @@ const IframeBoxs: React.FC = () => {
 
   return (
     <div id="fortune-iframe-boxes" ref={containerRef}>
-      {context.insertedIframes?.map((frame: any) => {
+      {currentSheetIframes?.map((frame: any) => {
         const isActive = frame.id === context.activeIframe;
         const style = {
           width: frame.width * context.zoomRatio,
@@ -119,9 +127,14 @@ const IframeBoxs: React.FC = () => {
                     title="Delete"
                     onClick={() => {
                       setContext((ctx) => {
-                        ctx.insertedIframes = ctx?.insertedIframes?.filter(
-                          (f: any) => f.id !== frame.id
+                        const currentSheet = ctx.luckysheetfile.find(
+                          (sheet) => sheet.id === ctx.currentSheetId
                         );
+                        if (currentSheet) {
+                          currentSheet.iframes = currentSheet.iframes?.filter(
+                            (f: any) => f.id !== frame.id
+                          );
+                        }
                         ctx.activeIframe = undefined;
                       });
                     }}

@@ -222,6 +222,7 @@ export const defaultSettings: Required<Settings> = {
     "search",
   ], // 自定义工具栏
   cellContextMenu: [
+    "split-text",
     "cut",
     "copy", // 复制
     "paste", // 粘贴
@@ -268,6 +269,7 @@ export const defaultSettings: Required<Settings> = {
     "set-row-height", // 设置行高
     "set-column-width", // 设置列宽
     "|",
+    "split-text",
     "clear", // 清除内容
     "sort", // 排序选区
     "orderAZ", // 升序

@@ -200,7 +200,7 @@ export function patchToOp(
         path: ["hyperlink", `${p.path[1]}_${p.path![2]}`],
         value:
           ctx.luckysheetfile[index].hyperlink![
-          `${p.value!.hl!.r!}_${p.value!.hl.c!}`
+            `${p.value!.hl!.r!}_${p.value!.hl.c!}`
           ],
       });
     }
@@ -236,8 +236,8 @@ export function patchToOp(
               (options.insertRowColOp.type === "row" &&
                 i >= options.insertRowColOp.index &&
                 i <
-                options.insertRowColOp.index +
-                options.insertRowColOp.count) ||
+                  options.insertRowColOp.index +
+                    options.insertRowColOp.count) ||
               (options.insertRowColOp.type === "column" &&
                 j >= options.insertRowColOp.index &&
                 j < options.insertRowColOp.index + options.insertRowColOp.count)

@@ -2199,18 +2199,6 @@
     esbuild "^0.25.4"
     jstat "^1.9.6"
 
-"@fileverse-dev/fortune-core@1.0.2-mod-48":
-  version "1.0.2-mod-48"
-  resolved "https://registry.yarnpkg.com/@fileverse-dev/fortune-core/-/fortune-core-1.0.2-mod-48.tgz#99dbfbb7996035e86d69fc585b85e23d521eb309"
-  integrity sha512-rUB1hf1X6aoIAoQqUMFardLuuI9a7todu6V78Elb7k3ECh6H2kj1ImxWeVFdJ/iRoWhrn5sMrQR5g/NafLUBmg==
-  dependencies:
-    "@fileverse-dev/formula-parser" "0.2.13-mod-9"
-    dayjs "^1.11.0"
-    immer "^9.0.12"
-    lodash "^4.17.21"
-    numeral "^2.0.6"
-    uuid "^8.3.2"
-
 "@fileverse/ui@^4.1.7-patch-14":
   version "4.1.7-patch-14"
   resolved "https://registry.yarnpkg.com/@fileverse/ui/-/ui-4.1.7-patch-14.tgz#4f1c45d3f3be4403562b0536f55e40bfa72ccd9f"

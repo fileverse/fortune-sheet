@@ -9,11 +9,20 @@ export function useDialog() {
       content: string | React.ReactNode,
       type?: "ok" | "yesno",
       title?: string | React.ReactNode,
+      okLabel?: string,
+      cancelLabel?: string,
       onOk: () => void = hideModal,
       onCancel: () => void = hideModal
     ) => {
       showModal(
-        <Dialog type={type} onOk={onOk} onCancel={onCancel} title={title}>
+        <Dialog
+          type={type}
+          onOk={onOk}
+          onCancel={onCancel}
+          title={title}
+          okLabel={okLabel}
+          cancelLabel={cancelLabel}
+        >
           {content}
         </Dialog>
       );

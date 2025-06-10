@@ -4,7 +4,7 @@ export default {
       "आंशिक रूप से विलय किए गए सेल पर यह कार्य नहीं किया जा सकता",
     readOnlyError: "पठन मोड में यह कार्य नहीं किया जा सकता",
     dataNullError: "डेटा जो मौजूद नहीं है उस पर यह कार्य नहीं किया जा सकता",
-    noSeletionError: "चयन कार्य अभी तक नहीं किया गया है",
+    noSelectionError: "चयन कार्य अभी तक नहीं किया गया है",
     cannotSelectMultiple: "एकाधिक चयन नहीं किया जा सकता",
   },
   functionlist: [
@@ -11375,7 +11375,7 @@ export default {
     freezenRCRange: "वर्तमान सेल तक फ्रीज़ करें",
     freezenCancel: "फ्रीज़िंग रद्द करें",
 
-    noSeletionError: "कोई रेंज चयनित नहीं है",
+    noSelectionError: "कोई रेंज चयनित नहीं है",
     rangeRCOverErrorTitle: "फ्रीज़ अनुस्मारक",
     rangeRCOverError:
       "फ्रोज़न पेन दृश्यमान सीमा से परे है, जो असामान्य संचालन का कारण बनेगा। कृपया फ्रोज़न क्षेत्र को रीसेट करें।",

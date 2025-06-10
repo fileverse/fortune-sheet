@@ -326,11 +326,13 @@ const SheetOverlay: React.FC = () => {
   useEffect(() => {
     if (context.warnDialog) {
       setTimeout(() => {
-        showDialog(context.warnDialog, "ok");
+        showDialog(context.warnDialog, "yesno", "Invalid data", "Retry");
+        setContext((ctx) => {
+          ctx.warnDialog = undefined;
+        });
       }, 240);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [context.warnDialog]);
+  }, [context.warnDialog, setContext, showDialog]);
 
   useEffect(() => {
     refs.cellArea.current!.scrollLeft = context.scrollLeft;
@@ -749,14 +751,17 @@ const SheetOverlay: React.FC = () => {
           >
             <SVGIcon name="caret-down-fill" width={16} height={16} />
           </div>
-          {context.dataVerificationDropDownList && <DropDownList />}
+          {context.dataVerificationDropDownList &&
+            (context.dataVerification!.dataRegulation!.value1 !== "" ||
+              context.dataVerification!.dataRegulation!.value2 !== "") && (
+              <DropDownList />
+            )}
           {/* <div
             id="luckysheet-dataVerification-dropdown-List"
             className="luckysheet-mousedown-cancel"
           /> */}
           <div
             id="luckysheet-dataVerification-showHintBox"
-            className="luckysheet-mousedown-cancel"
             ref={dataVerificationHintBoxRef}
           />
           <div className="luckysheet-cell-copy" />

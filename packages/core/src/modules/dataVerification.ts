@@ -854,7 +854,7 @@ export function confirmMessage(
     ctx.dataVerification?.dataRegulation?.rangeTxt as string
   );
   if (range.length === 0) {
-    ctx.warnDialog = generalDialog.noSeletionError;
+    ctx.warnDialog = generalDialog.noSelectionError;
     return false;
   }
   let str = range[range.length - 1].row[0];

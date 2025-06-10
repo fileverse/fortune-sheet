@@ -49,12 +49,19 @@ export const SplitColumn: React.FC<{}> = () => {
       }
     }
     if (dataCover) {
-      showDialog(splitText.splitConfirmToExe, "yesno", undefined, () => {
-        hideDialog();
-        setContext((ctx) => {
-          updateMoreCell(r, c, dataArr, ctx);
-        });
-      });
+      showDialog(
+        splitText.splitConfirmToExe,
+        "yesno",
+        undefined,
+        undefined,
+        undefined,
+        () => {
+          hideDialog();
+          setContext((ctx) => {
+            updateMoreCell(r, c, dataArr, ctx);
+          });
+        }
+      );
     } else {
       setContext((ctx) => {
         updateMoreCell(r, c, dataArr, ctx);

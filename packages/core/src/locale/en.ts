@@ -6,7 +6,7 @@ export default {
     partiallyError: "Cannot perform this operation on partially merged cells",
     readOnlyError: "Cannot perform this operation in read-only mode",
     dataNullError: "Cannot perform this operation on data that does not exist",
-    noSeletionError: "The selection operation has not been performed yet",
+    noSelectionError: "The selection operation has not been performed yet",
     cannotSelectMultiple: "Cannot select multiple selections",
   },
   functionlist: [
@@ -11404,7 +11404,7 @@ export default {
     freezenRCRange: "Freeze to current cell",
     freezenCancel: "Cancel freezing",
 
-    noSeletionError: "No Range to be selected",
+    noSelectionError: "No Range to be selected",
     rangeRCOverErrorTitle: "Freeze reminder",
     rangeRCOverError:
       "The frozen pane is beyond the visible range, which will lead to abnormal operation. Please reset the frozen area.",

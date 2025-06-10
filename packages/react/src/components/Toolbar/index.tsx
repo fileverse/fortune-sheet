@@ -1720,19 +1720,21 @@ const Toolbar: React.FC<{
             );
           })}
 
-        <Button
-          iconId="dune"
-          tooltip="Insert Dune Chart"
-          key="dune-charts"
-          onClick={() => {
-            if (context.allowEdit === false) return;
-            setShowDuneModal(true);
-          }}
-          style={{
-            backgroundColor: "#F4603E2E",
-            borderRadius: "8px",
-          }}
-        />
+        {settings.customToolbarItems.length > 0 && (
+          <Button
+            iconId="dune"
+            tooltip="Insert Dune Chart"
+            key="dune-charts"
+            onClick={() => {
+              if (context.allowEdit === false) return;
+              setShowDuneModal(true);
+            }}
+            style={{
+              backgroundColor: "#F4603E2E",
+              borderRadius: "8px",
+            }}
+          />
+        )}
         {showDuneModal && (
           <DuneChartsInputModal
             isOpen={showDuneModal}

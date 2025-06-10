@@ -6,7 +6,7 @@ import {
   locale,
   updateMoreCell,
 } from "@fileverse-dev/fortune-core";
-import { Button } from "@fileverse/ui";
+import { Button, TextField } from "@fileverse/ui";
 import _ from "lodash";
 import React, {
   useContext,
@@ -148,7 +148,8 @@ export const SplitColumn: React.FC<{}> = () => {
         />
         {/* eslint-disable-next-line */}
         <label htmlFor="other">Custom</label>
-        <input
+        <TextField
+          placeholder="Custom separator"
           id="otherValue"
           name="otherValue"
           type="text"

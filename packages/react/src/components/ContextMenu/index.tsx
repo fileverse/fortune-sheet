@@ -25,6 +25,7 @@ import _ from "lodash";
 import React, { useContext, useRef, useCallback, useLayoutEffect } from "react";
 import regeneratorRuntime from "regenerator-runtime";
 import Tippy from "@tippyjs/react";
+import { SplitColumn } from "../SplitColumn";
 import DataVerification from "../DataVerification";
 import WorkbookContext, { SetContextOptions } from "../../context";
 import { useAlert } from "../../hooks/useAlert";
@@ -43,13 +44,56 @@ const ContextMenu: React.FC = () => {
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
   const { contextMenu } = context;
   const { showAlert } = useAlert();
-  const { rightclick, drag, generalDialog, info, toolbar } = locale(context);
+  const { rightclick, drag, generalDialog, info, toolbar, splitText } =
+    locale(context);
 
   const getMenuElement = useCallback(
     (name: string, i: number) => {
       const selection = context.luckysheet_select_save?.[0];
       if (name === "|") {
         return <Divider key={`divider-${i}`} />;
+      }
+      if (name === "split-text") {
+        return (
+          <Menu
+            key="split-text"
+            onClick={() => {
+              if (context.allowEdit === false) return;
+              if (_.isUndefined(context.luckysheet_select_save)) {
+                showDialog(splitText.tipNoSelect, "ok");
+              } else {
+                const currentColumn =
+                  context.luckysheet_select_save[
+                    context.luckysheet_select_save.length - 1
+                  ].column;
+                if (context.luckysheet_select_save.length > 1) {
+                  showDialog(splitText.tipNoMulti, "ok");
+                } else if (currentColumn[0] !== currentColumn[1]) {
+                  showDialog(splitText.tipNoMultiColumn, "ok");
+                } else {
+                  showDialog(
+                    <SplitColumn />,
+                    undefined,
+                    "Split text to columns"
+                  );
+                }
+              }
+              setContext((draftCtx) => {
+                draftCtx.contextMenu = {};
+              });
+            }}
+          >
+            <div className="context-item">
+              <SVGIcon
+                name="split-flv"
+                width={16}
+                height={16}
+                style={{ marginTop: "4px", marginRight: "4px" }}
+              />
+              Split text to columns
+            </div>
+          </Menu>
+        );
       }
       if (name === "freeze-row") {
         const freezeState = getFreezeState(context);
@@ -165,10 +209,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="dataVerification"
-                style={{ marginRight: "4px" }}
-              />
+              <SVGIcon name="dataVerification" style={{ marginRight: "4px" }} />
               <p>Data Verification</p>
             </div>
           </Menu>
@@ -188,10 +229,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="search"
-                style={{ marginRight: "4px" }}
-              />
+              <SVGIcon name="search" style={{ marginRight: "4px" }} />
               <p>Find and Replace</p>
             </div>
           </Menu>
@@ -296,54 +334,54 @@ const ContextMenu: React.FC = () => {
         return selection?.row_select
           ? null
           : ["left"].map((dir) => (
-            <Menu
-              key={`add-col-${dir}`}
-              onClick={() => {
-                const position =
-                  context.luckysheet_select_save?.[0]?.column?.[0];
-                if (position == null) return;
-                // const countStr = (e.target as HTMLDivElement).querySelector(
-                //   "input"
-                // )?.value;
-                // if (countStr == null) return;
-                // const count = parseInt(countStr, 10);
-                const count = 1;
-                if (count < 1) return;
-                const direction = dir === "left" ? "lefttop" : "rightbottom";
-                const insertRowColOp: SetContextOptions["insertRowColOp"] = {
-                  type: "column",
-                  index: position,
-                  count,
-                  direction,
-                  id: context.currentSheetId,
-                };
-                setContext(
-                  (draftCtx) => {
-                    try {
-                      insertRowCol(draftCtx, insertRowColOp);
-                      draftCtx.contextMenu = {};
-                    } catch (err: any) {
-                      if (err.message === "maxExceeded")
-                        showAlert(rightclick.columnOverLimit, "ok");
-                      else if (err.message === "readOnly")
-                        showAlert(
-                          rightclick.cannotInsertOnColumnReadOnly,
-                          "ok"
-                        );
-                      draftCtx.contextMenu = {};
+              <Menu
+                key={`add-col-${dir}`}
+                onClick={() => {
+                  const position =
+                    context.luckysheet_select_save?.[0]?.column?.[0];
+                  if (position == null) return;
+                  // const countStr = (e.target as HTMLDivElement).querySelector(
+                  //   "input"
+                  // )?.value;
+                  // if (countStr == null) return;
+                  // const count = parseInt(countStr, 10);
+                  const count = 1;
+                  if (count < 1) return;
+                  const direction = dir === "left" ? "lefttop" : "rightbottom";
+                  const insertRowColOp: SetContextOptions["insertRowColOp"] = {
+                    type: "column",
+                    index: position,
+                    count,
+                    direction,
+                    id: context.currentSheetId,
+                  };
+                  setContext(
+                    (draftCtx) => {
+                      try {
+                        insertRowCol(draftCtx, insertRowColOp);
+                        draftCtx.contextMenu = {};
+                      } catch (err: any) {
+                        if (err.message === "maxExceeded")
+                          showAlert(rightclick.columnOverLimit, "ok");
+                        else if (err.message === "readOnly")
+                          showAlert(
+                            rightclick.cannotInsertOnColumnReadOnly,
+                            "ok"
+                          );
+                        draftCtx.contextMenu = {};
+                      }
+                    },
+                    {
+                      insertRowColOp,
                     }
-                  },
-                  {
-                    insertRowColOp,
-                  }
-                );
-              }}
-            >
-              <>
-                <SVGIcon name="insert-flv" width={18} height={18} />
-                <div>
-                  Insert column to the left
-                  {/* {_.startsWith(context.lang ?? "", "zh") && (
+                  );
+                }}
+              >
+                <>
+                  <SVGIcon name="insert-flv" width={18} height={18} />
+                  <div>
+                    Insert column to the left
+                    {/* {_.startsWith(context.lang ?? "", "zh") && (
                       <>
                         {rightclick.to}
                         <span className={`luckysheet-cols-rows-shift-${dir}`}>
@@ -352,7 +390,7 @@ const ContextMenu: React.FC = () => {
                       </>
                     )}
                     {`${rightclick.insert}  `} */}
-                  {/* <input
+                    {/* <input
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                   tabIndex={0}
@@ -361,7 +399,7 @@ const ContextMenu: React.FC = () => {
                   placeholder={rightclick.number}
                   defaultValue="1"
                 /> */}
-                  {/* 1
+                    {/* 1
                     <span className="luckysheet-cols-rows-shift-word luckysheet-mousedown-cancel">
                       {` ${rightclick.column}  `}
                     </span>
@@ -370,56 +408,56 @@ const ContextMenu: React.FC = () => {
                         {(rightclick as any)[dir]}
                       </span>
                     )} */}
-                </div>
-              </>
-            </Menu>
-          ));
+                  </div>
+                </>
+              </Menu>
+            ));
       }
       if (name === "insert-row") {
         return selection?.column_select
           ? null
           : ["bottom"].map((dir) => (
-            <Menu
-              key={`add-row-${dir}`}
-              onClick={() => {
-                const position =
-                  context.luckysheet_select_save?.[0]?.row?.[0];
-                if (position == null) return;
-                // const countStr = container.querySelector("input")?.value;
-                // if (countStr == null) return;
-                const count = 1;
-                // const count = parseInt(countStr, 10);
-                if (count < 1) return;
-                const direction = dir === "top" ? "lefttop" : "rightbottom";
-                const insertRowColOp: SetContextOptions["insertRowColOp"] = {
-                  type: "row",
-                  index: position,
-                  count,
-                  direction,
-                  id: context.currentSheetId,
-                };
-                setContext(
-                  (draftCtx) => {
-                    try {
-                      insertRowCol(draftCtx, insertRowColOp);
-                      draftCtx.contextMenu = {};
-                    } catch (err: any) {
-                      if (err.message === "maxExceeded")
-                        showAlert(rightclick.rowOverLimit, "ok");
-                      else if (err.message === "readOnly")
-                        showAlert(rightclick.cannotInsertOnRowReadOnly, "ok");
-                      draftCtx.contextMenu = {};
-                    }
-                  },
-                  { insertRowColOp }
-                );
-              }}
-            >
-              <>
-                <SVGIcon name="insert-flv" width={18} height={18} />
-                <div>
-                  Insert row below
-                  {/* {_.startsWith(context.lang ?? "", "zh") && (
+              <Menu
+                key={`add-row-${dir}`}
+                onClick={() => {
+                  const position =
+                    context.luckysheet_select_save?.[0]?.row?.[0];
+                  if (position == null) return;
+                  // const countStr = container.querySelector("input")?.value;
+                  // if (countStr == null) return;
+                  const count = 1;
+                  // const count = parseInt(countStr, 10);
+                  if (count < 1) return;
+                  const direction = dir === "top" ? "lefttop" : "rightbottom";
+                  const insertRowColOp: SetContextOptions["insertRowColOp"] = {
+                    type: "row",
+                    index: position,
+                    count,
+                    direction,
+                    id: context.currentSheetId,
+                  };
+                  setContext(
+                    (draftCtx) => {
+                      try {
+                        insertRowCol(draftCtx, insertRowColOp);
+                        draftCtx.contextMenu = {};
+                      } catch (err: any) {
+                        if (err.message === "maxExceeded")
+                          showAlert(rightclick.rowOverLimit, "ok");
+                        else if (err.message === "readOnly")
+                          showAlert(rightclick.cannotInsertOnRowReadOnly, "ok");
+                        draftCtx.contextMenu = {};
+                      }
+                    },
+                    { insertRowColOp }
+                  );
+                }}
+              >
+                <>
+                  <SVGIcon name="insert-flv" width={18} height={18} />
+                  <div>
+                    Insert row below
+                    {/* {_.startsWith(context.lang ?? "", "zh") && (
                       <>
                         {rightclick.to}
                         <span className={`luckysheet-cols-rows-shift-${dir}`}>
@@ -428,7 +466,7 @@ const ContextMenu: React.FC = () => {
                       </>
                     )}
                     {`${rightclick.insert}  `}1 */}
-                  {/* <input
+                    {/* <input
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                   tabIndex={0}
@@ -437,7 +475,7 @@ const ContextMenu: React.FC = () => {
                   placeholder={rightclick.number}
                   defaultValue="1"
                 /> */}
-                  {/* <span className="luckysheet-cols-rows-shift-word luckysheet-mousedown-cancel">
+                    {/* <span className="luckysheet-cols-rows-shift-word luckysheet-mousedown-cancel">
                       {` ${rightclick.row}  `}
                     </span>
                     {!_.startsWith(context.lang ?? "", "zh") && (
@@ -445,10 +483,10 @@ const ContextMenu: React.FC = () => {
                         {(rightclick as any)[dir]}
                       </span>
                     )} */}
-                </div>
-              </>
-            </Menu>
-          ));
+                  </div>
+                </>
+              </Menu>
+            ));
       }
       if (name === "delete-column") {
         return (
@@ -724,9 +762,7 @@ const ContextMenu: React.FC = () => {
                   height={18}
                   style={{ marginRight: "8px" }}
                 />
-                <div>
-                  {(rightclick as any)[item] + rightclick.row}
-                </div>
+                <div>{(rightclick as any)[item] + rightclick.row}</div>
               </div>
             </Menu>
           ))
@@ -760,9 +796,7 @@ const ContextMenu: React.FC = () => {
                   height={18}
                   style={{ marginRight: "8px" }}
                 />
-                <div>
-                  {(rightclick as any)[item] + rightclick.column}
-                </div>
+                <div>{(rightclick as any)[item] + rightclick.column}</div>
               </div>
             </Menu>
           ))
@@ -895,17 +929,17 @@ const ContextMenu: React.FC = () => {
                 {/* {rightclick.row + ""}
                   {rightclick.height} */}
                 <input
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-              tabIndex={0}
-              type="number"
-              min={1}
-              max={545}
-              className="luckysheet-mousedown-cancel"
-              placeholder={rightclick.number}
-              defaultValue={shownColWidth}
-              style={{ width: "40px" }}
-            />
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  tabIndex={0}
+                  type="number"
+                  min={1}
+                  max={545}
+                  className="luckysheet-mousedown-cancel"
+                  placeholder={rightclick.number}
+                  defaultValue={shownColWidth}
+                  style={{ width: "40px" }}
+                />
                 px
               </div>
             </div>
@@ -972,7 +1006,7 @@ const ContextMenu: React.FC = () => {
                 name="asc-sort-flv"
                 width={18}
                 height={18}
-                style={{ marginTop: "4px", marginRight: "4px" }}
+                style={{ marginTop: "4px", marginRight: "8px" }}
               />
               <p>Ascending sort</p>
             </div>
@@ -1002,7 +1036,7 @@ const ContextMenu: React.FC = () => {
                 name="des-sort-flv"
                 width={18}
                 height={18}
-                style={{ marginTop: "4px", marginRight: "4px" }}
+                style={{ marginTop: "4px", marginRight: "8px" }}
               />
               <p>Descending sort</p>
             </div>
@@ -1224,10 +1258,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="link"
-                style={{ marginRight: "4px" }}
-              />
+              <SVGIcon name="link" style={{ marginRight: "4px" }} />
               <p>{rightclick.link}</p>
             </div>
           </Menu>

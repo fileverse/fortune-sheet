@@ -26,6 +26,7 @@ import React, { useContext, useRef, useCallback, useLayoutEffect } from "react";
 import regeneratorRuntime from "regenerator-runtime";
 import Tippy from "@tippyjs/react";
 import { SplitColumn } from "../SplitColumn";
+import { ResetColumnWidth } from "../ResetColumnWidth";
 import DataVerification from "../DataVerification";
 import WorkbookContext, { SetContextOptions } from "../../context";
 import { useAlert } from "../../hooks/useAlert";
@@ -875,44 +876,22 @@ const ContextMenu: React.FC = () => {
         ) : null;
       }
       if (name === "set-column-width") {
-        const colWidth = selection?.width || context.defaultcollen;
-        const shownColWidth = context.luckysheet_select_save?.some(
-          (section) =>
-            section.width_move !==
-            (colWidth + 1) * (section.column[1] - section.column[0] + 1) - 1
-        )
-          ? ""
-          : colWidth;
+        // const colWidth = selection?.width || context.defaultcollen;
+        // const shownColWidth = context.luckysheet_select_save?.some(
+        //   (section) =>
+        //     section.width_move !==
+        //     (colWidth + 1) * (section.column[1] - section.column[0] + 1) - 1
+        // )
+        //   ? ""
+        //   : colWidth;
         return context.luckysheet_select_save?.some(
           (section) => section.column_select
         ) ? (
           <Menu
             key="set-column-width"
-            onClick={(e, container) => {
-              const targetColWidth = container.querySelector("input")?.value;
+            onClick={() => {
+              showDialog(<ResetColumnWidth />, undefined, "Resize column");
               setContext((draftCtx) => {
-                if (
-                  _.isUndefined(targetColWidth) ||
-                  targetColWidth === "" ||
-                  parseInt(targetColWidth, 10) <= 0 ||
-                  parseInt(targetColWidth, 10) > 2038
-                ) {
-                  showAlert(info.tipColumnWidthLimit, "ok");
-                  draftCtx.contextMenu = {};
-                  return;
-                }
-                const numColWidth = parseInt(targetColWidth, 10);
-                const colWidthList: Record<string, number> = {};
-                _.forEach(draftCtx.luckysheet_select_save, (section) => {
-                  for (
-                    let colNum = section.column[0];
-                    colNum <= section.column[1];
-                    colNum += 1
-                  ) {
-                    colWidthList[colNum] = numColWidth;
-                  }
-                });
-                api.setColumnWidth(draftCtx, colWidthList, {}, true);
                 draftCtx.contextMenu = {};
               });
             }}
@@ -924,24 +903,7 @@ const ContextMenu: React.FC = () => {
                 height={18}
                 style={{ marginRight: "8px" }}
               />
-              <div>
-                Resize column height
-                {/* {rightclick.row + ""}
-                  {rightclick.height} */}
-                <input
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  tabIndex={0}
-                  type="number"
-                  min={1}
-                  max={545}
-                  className="luckysheet-mousedown-cancel"
-                  placeholder={rightclick.number}
-                  defaultValue={shownColWidth}
-                  style={{ width: "40px" }}
-                />
-                px
-              </div>
+              <div>Resize column width</div>
             </div>
           </Menu>
         ) : null;

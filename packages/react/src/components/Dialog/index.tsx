@@ -12,6 +12,8 @@ type Props = {
   contentStyle?: React.CSSProperties;
   children?: React.ReactNode;
   title?: string | React.ReactNode;
+  okLabel?: string;
+  cancelLabel?: string;
 };
 
 const Dialog: React.FC<Props> = ({
@@ -22,6 +24,8 @@ const Dialog: React.FC<Props> = ({
   containerStyle,
   contentStyle,
   title,
+  okLabel,
+  cancelLabel,
 }) => {
   const { context } = useContext(WorkbookContext);
   const { button } = locale(context);
@@ -52,7 +56,7 @@ const Dialog: React.FC<Props> = ({
               onClick={onOk}
               tabIndex={0}
             >
-              {button.confirm}
+              {okLabel || button.confirm}
             </Button>
           ) : (
             <>
@@ -64,7 +68,7 @@ const Dialog: React.FC<Props> = ({
                 onClick={onCancel}
                 tabIndex={0}
               >
-                {button.cancel}
+                {cancelLabel || button.cancel}
               </Button>
               <Button
                 variant="default"
@@ -74,7 +78,7 @@ const Dialog: React.FC<Props> = ({
                 onClick={onOk}
                 tabIndex={0}
               >
-                {button.confirm}
+                {okLabel || button.confirm}
               </Button>
             </>
           )}

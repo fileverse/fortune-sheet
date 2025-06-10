@@ -125,7 +125,7 @@ const DataVerification: React.FC = () => {
             ctx.dataVerification?.dataRegulation?.rangeTxt as string
           );
           if (range.length === 0) {
-            showDialog(generalDialog.noSeletionError, "ok");
+            showDialog(generalDialog.noSelectionError, "ok");
             return;
           }
           const currentDataVerification =

@@ -3,7 +3,7 @@ export default {
     partiallyError: "無法對部分合併儲存格執行此操作",
     readOnlyError: "無法對只讀模式執行此操作",
     dataNullError: "無法對不存在的數據執行此操作",
-    noSeletionError: "還未進行選區操作",
+    noSelectionError: "還未進行選區操作",
     cannotSelectMultiple: "無法選擇多選區",
   },
   functionlist: [
@@ -11367,7 +11367,7 @@ export default {
     freezenRCRange: "凍結至當前行列",
     freezenCancel: "取消凍結",
 
-    noSeletionError: "没有選區",
+    noSelectionError: "没有選區",
     rangeRCOverErrorTitle: "凍結提醒",
     rangeRCOverError:
       "凍結窗格超過可見範圍，會導致無法正常操作，請重新設定凍結區域。",

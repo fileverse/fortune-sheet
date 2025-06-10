@@ -2022,15 +2022,43 @@ export class Canvas {
       // 复选框
       renderCtx.lineWidth = 2;
       renderCtx.strokeStyle = "#000";
-      renderCtx.strokeRect(horizonAlignPos, verticalAlignPos_checkbox, 12, 12);
+      renderCtx.beginPath();
+      renderCtx.roundRect(
+        horizonAlignPos,
+        verticalAlignPos_checkbox,
+        12,
+        12,
+        2
+      );
+      renderCtx.stroke();
 
       if (dataVerification[`${r}_${c}`].checked) {
+        // Fill the checkbox with black
+        renderCtx.save();
         renderCtx.beginPath();
-        renderCtx.lineTo(horizonAlignPos + 1, verticalAlignPos_checkbox + 6);
-        renderCtx.lineTo(horizonAlignPos + 4, verticalAlignPos_checkbox + 9);
-        renderCtx.lineTo(horizonAlignPos + 9, verticalAlignPos_checkbox + 2);
+        renderCtx.roundRect(
+          horizonAlignPos,
+          verticalAlignPos_checkbox,
+          12,
+          12,
+          2
+        );
+        renderCtx.fillStyle = "#000";
+        renderCtx.fill();
+        renderCtx.restore();
+
+        // Draw the white tick
+        renderCtx.save();
+        renderCtx.beginPath();
+        renderCtx.strokeStyle = "#fff";
+        renderCtx.lineWidth = 2;
+        renderCtx.lineJoin = "round";
+        renderCtx.moveTo(horizonAlignPos + 3, verticalAlignPos_checkbox + 6);
+        renderCtx.lineTo(horizonAlignPos + 5.5, verticalAlignPos_checkbox + 9);
+        renderCtx.lineTo(horizonAlignPos + 9, verticalAlignPos_checkbox + 3.5);
         renderCtx.stroke();
         renderCtx.closePath();
+        renderCtx.restore();
       }
 
       // 文本

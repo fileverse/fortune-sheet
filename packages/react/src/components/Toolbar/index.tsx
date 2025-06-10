@@ -503,11 +503,27 @@ const Toolbar: React.FC<{
             showArrow={false}
           >
             {(setOpen) => (
-              <Select>
+              <Select
+                style={{
+                  minWidth: "fit-content",
+                  width: "50px",
+                }}
+              >
                 {[
                   9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72,
                 ].map((num) => (
-                  <Option
+                  <div
+                    className="fortune-toolbar-select-option text-body-sm text-center color-text-default"
+                    style={{
+                      minWidth: "fit-content",
+                      padding: "0px",
+                      width: "36px",
+                      height: "36px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "14px",
+                    }}
                     key={num}
                     onClick={() => {
                       setContext((draftContext) =>
@@ -522,7 +538,7 @@ const Toolbar: React.FC<{
                     }}
                   >
                     {num}
-                  </Option>
+                  </div>
                 ))}
               </Select>
             )}
@@ -805,7 +821,7 @@ const Toolbar: React.FC<{
                     key={value}
                     onClick={() => {
                       if (context.luckysheet_select_save == null) {
-                        showDialog(freezen.noSeletionError, "ok");
+                        showDialog(freezen.noSelectionError, "ok");
                         return;
                       }
                       const last = context.luckysheet_select_save[0];

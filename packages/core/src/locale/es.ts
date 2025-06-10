@@ -4,7 +4,7 @@ export default {
       "No se puede realizar esta operación en celdas parcialmente unidas",
     readOnlyError: "No se puede realizar esto en modo de solo lectura",
     dataNullError: "No se puede hacer esto con datos que no existen",
-    noSeletionError:
+    noSelectionError:
       "The selection operation has not been performed yetLa operación de selección aún no se ha realizado",
     cannotSelectMultiple:
       "No se puede seleccionar la zona de selección múltiple",
@@ -11336,7 +11336,7 @@ export default {
     freezenRCRange: "Fijar ambos rangos",
     freezenCancel: "Cancelar",
 
-    noSeletionError: "No hay rango para seleccionar",
+    noSelectionError: "No hay rango para seleccionar",
     rangeRCOverErrorTitle: "Recordatorio de congelación",
     rangeRCOverError:
       "El panel de congelación excede el rango visible y puede causar que no funcione correctamente. Reinicie el área de congelación.",

@@ -3,7 +3,7 @@ export default {
     partiallyError: "无法对部分合并单元格执行此操作",
     readOnlyError: "无法对只读模式执行此操作",
     dataNullError: "无法对不存在的数据执行此操作",
-    noSeletionError: "还未进行选区操作",
+    noSelectionError: "还未进行选区操作",
     cannotSelectMultiple: "无法选择多选区",
   },
   functionlist: [
@@ -11407,7 +11407,7 @@ export default {
     freezenRCRange: "冻结至当前行列",
     freezenCancel: "取消冻结",
 
-    noSeletionError: "没有选区",
+    noSelectionError: "没有选区",
     rangeRCOverErrorTitle: "冻结提醒",
     rangeRCOverError:
       "冻结窗格超过可见范围，会导致无法正常操作，请重新设置冻结区域。",

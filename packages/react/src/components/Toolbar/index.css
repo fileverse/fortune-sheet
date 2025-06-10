@@ -99,14 +99,26 @@
   display: none;
 }
 
-.fortune-toolbar-select,
-.fortune-toolbar-color-picker {
+.fortune-toolbar-select {
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
   padding: 0.5rem;
   border: 1px solid hsl(var(--color-border-default));
   border-radius: 8px;
   background: white;
   min-width: 240px;
+}
+
+.fortune-toolbar-color-picker {
+  z-index: 50;
+  height: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  background: rgb(255, 255, 255);
+  transition: all 0.2s ease;
+  border-radius: 0px 0px 4px 4px;
 }
 
 .fortune-toolbar-select {
@@ -149,9 +161,19 @@
 }
 
 .fortune-toolbar-color-picker-item {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease-in;
   margin: 1px;
+}
+
+.fortune-toolbar-color-picker-item:hover {
+  transform: scale(1.05);
   cursor: pointer;
 }
 
@@ -224,11 +246,17 @@
 
 #fortune-custom-color {
   min-width: 164px;
-  background: rgb(240, 240, 240);
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+  background: #fff;
+  border-radius: 4px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   font-size: 12px;
+  padding: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  max-height: 400px;
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 #fortune-custom-color .color-reset {
@@ -236,14 +264,19 @@
   color: #333;
   cursor: pointer;
   list-style: none;
-  padding: 10px;
   white-space: nowrap;
-  padding-left: 8px;
   vertical-align: middle;
-  padding-right: 24px;
   user-select: none;
-  border-radius: 6px;
   background: white;
+  padding: 4px 8px;
+  height: 30px;
+  border-radius: 4px 4px 0px 0px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
 }
 
 #fortune-custom-color .color-reset:hover {

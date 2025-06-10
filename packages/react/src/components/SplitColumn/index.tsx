@@ -79,8 +79,6 @@ export const SplitColumn: React.FC<{}> = () => {
 
   return (
     <div id="fortune-split-column">
-      {/* <div className="title">{splitText.splitTextTitle}</div> */}
-
       <div className="splitDataPreview text-heading-xsm">
         {splitText.splitDataPreview}
       </div>
@@ -117,9 +115,6 @@ export const SplitColumn: React.FC<{}> = () => {
               type="checkbox"
               onClick={() => {
                 setSplitOperate((regStr) => {
-                  console.log(
-                    getRegStr(regStr, splitSymbols.current?.childNodes)
-                  );
                   return getRegStr(regStr, splitSymbols.current?.childNodes);
                 });
               }}

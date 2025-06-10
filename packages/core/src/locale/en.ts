@@ -15,7 +15,7 @@ export default {
       n: "PnL",
       t: 0,
       d: "Subtract each element from A column from B column and return the total sum.",
-      a: "Returns the total of B - A element-wise subtraction across two ranges.",
+      a: "Returns the total of A - B element-wise subtraction across two ranges.",
       m: [2],
       p: [
         {

@@ -46,7 +46,6 @@ import SheetTab from "../SheetTab";
 import ContextMenu from "../ContextMenu";
 import SVGDefines from "../SVGDefines";
 import SheetTabContextMenu from "../ContextMenu/SheetTab";
-import MoreItemsContaier from "../Toolbar/MoreItemsContainer";
 import { generateAPIs } from "./api";
 import { ModalProvider } from "../../context/modal";
 import FilterMenu from "../ContextMenu/FilterMenu";
@@ -737,6 +736,8 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
                 <Toolbar
                   moreItemsOpen={moreToolbarItems !== null}
                   setMoreItems={setMoreToolbarItems}
+                  onMoreToolbarItemsClose={onMoreToolbarItemsClose}
+                  moreToolbarItems={moreToolbarItems}
                 />
               )}
               {mergedSettings.showFormulaBar && <FxEditor />}
@@ -747,11 +748,6 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             <FilterMenu />
             <SheetTabContextMenu />
             {context.showSheetList && <SheetList />}
-            {moreToolbarItems && (
-              <MoreItemsContaier onClose={onMoreToolbarItemsClose}>
-                {moreToolbarItems}
-              </MoreItemsContaier>
-            )}
             {!_.isEmpty(context.contextMenu) && (
               <div
                 onMouseDown={() => {

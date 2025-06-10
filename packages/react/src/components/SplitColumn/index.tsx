@@ -6,8 +6,8 @@ import {
   locale,
   updateMoreCell,
 } from "@fileverse-dev/fortune-core";
-import { Checkbox, Button } from "@fileverse/ui";
-import _, { get } from "lodash";
+import { Button } from "@fileverse/ui";
+import _ from "lodash";
 import React, {
   useContext,
   useEffect,
@@ -81,7 +81,9 @@ export const SplitColumn: React.FC<{}> = () => {
     <div id="fortune-split-column">
       {/* <div className="title">{splitText.splitTextTitle}</div> */}
 
-      <div className="splitDataPreview text-heading-xsm">{splitText.splitDataPreview}</div>
+      <div className="splitDataPreview text-heading-xsm">
+        {splitText.splitDataPreview}
+      </div>
       <div className="splitColumnData">
         <table>
           <tbody>
@@ -105,8 +107,6 @@ export const SplitColumn: React.FC<{}> = () => {
         </table>
       </div>
 
-
-
       <div className="splitDelimiters text-heading-xsm !mt-4">Separator</div>
       <div className="splitSymbols flex gap-3 flex-wrap" ref={splitSymbols}>
         {splitText.splitSymbols.map((o) => (
@@ -115,82 +115,85 @@ export const SplitColumn: React.FC<{}> = () => {
               id={o.value}
               name={o.value}
               type="checkbox"
-              onClick={() =>
-              {
+              onClick={() => {
                 setSplitOperate((regStr) => {
-                  console.log(getRegStr(regStr, splitSymbols.current?.childNodes));
+                  console.log(
+                    getRegStr(regStr, splitSymbols.current?.childNodes)
+                  );
                   return getRegStr(regStr, splitSymbols.current?.childNodes);
-                })
-              }
-              }
+                });
+              }}
               tabIndex={0}
             />
-            <label htmlFor={o.value} className="text-body-sm">{o.name}</label>
+            <label htmlFor={o.value} className="text-body-sm">
+              {o.name}
+            </label>
           </div>
         ))}
       </div>
       <div className="splitSymbol flex gap-2 items-center pb-4 mb-4  border-b">
-          <input
-            id="other"
-            name="other"
-            type="checkbox"
-            onClick={() => {
-              setOtherFlag(!otherFlag);
+        <input
+          id="other"
+          name="other"
+          type="checkbox"
+          onClick={() => {
+            setOtherFlag(!otherFlag);
+            setSplitOperate((regStr) => {
+              return getRegStr(regStr, splitSymbols.current?.childNodes);
+            });
+          }}
+          tabIndex={0}
+        />
+        {/* eslint-disable-next-line */}
+        <label htmlFor="other">Custom</label>
+        <input
+          id="otherValue"
+          name="otherValue"
+          type="text"
+          onBlur={() => {
+            if (otherFlag) {
               setSplitOperate((regStr) => {
                 return getRegStr(regStr, splitSymbols.current?.childNodes);
               });
-            }}
-            tabIndex={0}
-          />
-          <label htmlFor="other">Custom</label>
-          <input
-            id="otherValue"
-            name="otherValue"
-            type="text"
-            onBlur={() => {
-              if (otherFlag) {
-                setSplitOperate((regStr) => {
-                  return getRegStr(regStr, splitSymbols.current?.childNodes);
-                });
-              }
-            }}
-          />
-        </div>
+            }
+          }}
+        />
+      </div>
       <div className="splitSymbol flex gap-2 mb-4 items-center">
-          <input
-            id="splitsimple"
-            name="splitsimple"
-            type="checkbox"
-            onClick={() => {
-              setSplitOperate((regStr) => {
-                return getRegStr(regStr, splitSymbols.current?.childNodes);
-              });
-            }}
-            tabIndex={0}
-          />
-          <label htmlFor="splitsimple">{splitText.splitContinueSymbol}</label>
-        </div>
-        <div className="flex justify-end gap-2">
-      <Button
-        className=""
-        variant="secondary"
-        onClick={() => {
-          hideDialog();
-        }}
-        tabIndex={0}
-      >
-        {button.cancel}
-      </Button>
-      <Button
-        className=""
-        onClick={() => {
-          certainBtn();
-        }}
-        tabIndex={0}
-      >
-        Split
-        {/* {button.confirm} */}
-      </Button>
+        <input
+          id="splitsimple"
+          name="splitsimple"
+          type="checkbox"
+          onClick={() => {
+            setSplitOperate((regStr) => {
+              return getRegStr(regStr, splitSymbols.current?.childNodes);
+            });
+          }}
+          tabIndex={0}
+        />
+        <label htmlFor="splitsimple">{splitText.splitContinueSymbol}</label>
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button
+          className=""
+          variant="secondary"
+          onClick={() => {
+            hideDialog();
+          }}
+          tabIndex={0}
+        >
+          {button.cancel}
+        </Button>
+        <Button
+          className=""
+          onClick={() => {
+            certainBtn();
+          }}
+          tabIndex={0}
+        >
+          Split
+          {/* {button.confirm} */}
+        </Button>
       </div>
     </div>
   );

@@ -2,7 +2,8 @@
   /* position: absolute;
     padding: 30px 42px;
     z-index: 1002; */
-  min-width: 500px;
+  /* min-width: 500px; */
+  width: 464px;
 }
 #fortune-split-column label {
   user-select: none;
@@ -11,12 +12,47 @@
   font-size: 16px;
 }
 #fortune-split-column .splitDelimiters {
-  margin-top: 10px;
+  margin-top: 20px;
+}
+
+
+
+input[type="checkbox"] {
+  accent-color: black;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid black;
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+  background-color: black;
+  border-color: black;
+}
+
+/* Smaller tick mark */
+input[type="checkbox"]:checked::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  width: 4px;      /* Reduced from default */
+  height: 7px;     /* Reduced from default */
+  border: solid white;
+  border-width: 0 1px 1px 0;
+  transform: rotate(45deg);
+}
+.splitSymbols {
+  width: 464px
 }
 #fortune-split-column .splitSymbols {
   position: relative;
-  border: 1px solid #dfdfdf;
-  padding: 5px;
+  /* border: 1px solid #dfdfdf; */
+  padding: 5px 5px 5px 0;
   margin: 5px 0px;
 }
 #fortune-split-column .splitSymbol {
@@ -34,10 +70,13 @@
 }
 #fortune-split-column .splitDataPreview {
   font-size: 14px;
-  margin-top: 26px;
+  /* margin-top: 26px; */
+  margin-bottom: 12px;
 }
 #fortune-split-column .splitColumnData {
   border: 1px solid #dfdfdf;
+  border-radius: 4px;
+  background-color: #F8F9FA;
   padding: 5px;
   margin: 5px 0px;
   height: 100px;

@@ -25,6 +25,7 @@ import _ from "lodash";
 import React, { useContext, useRef, useCallback, useLayoutEffect } from "react";
 import regeneratorRuntime from "regenerator-runtime";
 import Tippy from "@tippyjs/react";
+import { SplitColumn } from "../SplitColumn";
 import DataVerification from "../DataVerification";
 import WorkbookContext, { SetContextOptions } from "../../context";
 import { useAlert } from "../../hooks/useAlert";
@@ -43,13 +44,52 @@ const ContextMenu: React.FC = () => {
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
   const { contextMenu } = context;
   const { showAlert } = useAlert();
-  const { rightclick, drag, generalDialog, info, toolbar } = locale(context);
+  const { rightclick, drag, generalDialog, info, toolbar, splitText } = locale(context);
 
   const getMenuElement = useCallback(
     (name: string, i: number) => {
       const selection = context.luckysheet_select_save?.[0];
       if (name === "|") {
         return <Divider key={`divider-${i}`} />;
+      }
+      if (name === "split-text") {
+        return (
+          <Menu
+            key="split-text"
+            onClick={() => {
+              if (context.allowEdit === false) return;
+              if (_.isUndefined(context.luckysheet_select_save)) {
+                showDialog(splitText.tipNoSelect, "ok");
+              } else {
+                const currentColumn =
+                  context.luckysheet_select_save[
+                    context.luckysheet_select_save.length - 1
+                  ].column;
+                if (context.luckysheet_select_save.length > 1) {
+                  showDialog(splitText.tipNoMulti, "ok");
+                } else if (currentColumn[0] !== currentColumn[1]) {
+                  showDialog(splitText.tipNoMultiColumn, "ok");
+                } else {
+                  showDialog(<SplitColumn />, undefined, "Split text to columns");
+                }
+              }
+              setContext((draftCtx) => {
+
+                draftCtx.contextMenu = {};
+              });
+            }}
+          >
+            <div className="context-item">
+              <SVGIcon
+                name="split-flv"
+                width={16}
+                height={16}
+                style={{ marginTop: "4px", marginRight: "4px" }}
+              />
+              Split text to columns
+            </div>
+          </Menu>
+        );
       }
       if (name === "freeze-row") {
         const freezeState = getFreezeState(context);
@@ -895,17 +935,17 @@ const ContextMenu: React.FC = () => {
                 {/* {rightclick.row + ""}
                   {rightclick.height} */}
                 <input
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-              tabIndex={0}
-              type="number"
-              min={1}
-              max={545}
-              className="luckysheet-mousedown-cancel"
-              placeholder={rightclick.number}
-              defaultValue={shownColWidth}
-              style={{ width: "40px" }}
-            />
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  tabIndex={0}
+                  type="number"
+                  min={1}
+                  max={545}
+                  className="luckysheet-mousedown-cancel"
+                  placeholder={rightclick.number}
+                  defaultValue={shownColWidth}
+                  style={{ width: "40px" }}
+                />
                 px
               </div>
             </div>
@@ -972,7 +1012,7 @@ const ContextMenu: React.FC = () => {
                 name="asc-sort-flv"
                 width={18}
                 height={18}
-                style={{ marginTop: "4px", marginRight: "4px" }}
+                style={{ marginTop: "4px", marginRight: "8px" }}
               />
               <p>Ascending sort</p>
             </div>
@@ -1002,7 +1042,7 @@ const ContextMenu: React.FC = () => {
                 name="des-sort-flv"
                 width={18}
                 height={18}
-                style={{ marginTop: "4px", marginRight: "4px" }}
+                style={{ marginTop: "4px", marginRight: "8px" }}
               />
               <p>Descending sort</p>
             </div>

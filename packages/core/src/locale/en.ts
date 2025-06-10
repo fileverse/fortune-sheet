@@ -11569,9 +11569,9 @@ export default {
     splitConfirmToExe: "There is already data here, do you want to replace it?",
     splitSymbols: [
       { name: "Tab", value: "Tab" },
-      { name: "semicolon", value: "semicolon" },
-      { name: "comma", value: "comma" },
-      { name: "space", value: "space" },
+      { name: "Semicolon", value: "semicolon" },
+      { name: "Comma", value: "comma" },
+      { name: "Space", value: "space" },
     ],
 
     tipNoMulti:

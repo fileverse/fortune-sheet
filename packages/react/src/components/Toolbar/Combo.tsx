@@ -114,6 +114,9 @@ const Combo: React.FC<Props> = ({
               icon={getLucideIcon(iconId as string)}
               variant="ghost"
               onClick={() => setOpen(!open)}
+              className={
+                showArrow ? "fortune-toolbar-combo-button show-arrow" : ""
+              }
             />
           </Tooltip>
         )}

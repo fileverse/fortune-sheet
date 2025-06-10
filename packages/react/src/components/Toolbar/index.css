@@ -67,6 +67,10 @@
   align-items: center;
 }
 
+.fortune-toolbar-combo-button.show-arrow {
+  border-radius: 4px 0px 0px 4px;
+}
+
 .fortune-toolbar-button:hover {
   background-color: #f2f4f5;
   cursor: pointer;

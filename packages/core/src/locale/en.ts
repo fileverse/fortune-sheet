@@ -11018,6 +11018,8 @@ export default {
 
     cellFormat: "Cell format config",
     print: "Print",
+    link: "Link",
+    search: "Search",
   },
   alternatingColors: {
     applyRange: "Apply to range",

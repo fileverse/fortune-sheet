@@ -37,7 +37,7 @@ import {
   insertDuneChart,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
-import { IconButton, LucideIcon } from "@fileverse/ui";
+import { IconButton, LucideIcon, Tooltip } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import "./index.css";
 import Button from "./Button";
@@ -54,9 +54,22 @@ import CustomButton from "./CustomButton";
 import { CustomColor } from "./CustomColor";
 import { FormatSearch } from "../FormatSearch";
 import DuneChartsInputModal from "../DuneChartsInputModal/DuneChartsInputModal";
+import MoreItemsContaier from "./MoreItemsContainer";
 
-export const getIcon = (title: string) => {
+export const getLucideIcon = (title: string) => {
   switch (title) {
+    case "undo":
+      return "Undo";
+    case "redo":
+      return "Redo";
+    case "bold":
+      return "Bold";
+    case "italic":
+      return "Italic";
+    case "strike-through":
+      return "Strikethrough";
+    case "underline":
+      return "Underline";
     case "align-left":
       return "AlignLeft";
     case "align-center":
@@ -75,6 +88,44 @@ export const getIcon = (title: string) => {
       return "WrapText";
     case "text-clip":
       return "TextClip";
+    case "font-color":
+      return "Baseline";
+    case "background":
+      return "PaintBucket";
+    case "border-all":
+      return "Border";
+    case "merge-all":
+      return "MergeHorizontal";
+    case "format":
+      return "JapaneseYen";
+    case "currency-format":
+      return "JapaneseYen";
+    case "percentage-format":
+      return "Percent";
+    case "number-decrease":
+      return "DecimalsArrowLeft";
+    case "number-increase":
+      return "DecimalsArrowRight";
+    case "conditionFormat":
+      return "PaintbrushVertical";
+    case "filter":
+      return "Filter";
+    case "link":
+      return "Link";
+    case "comment":
+      return "MessageSquarePlus";
+    case "image":
+      return "Image";
+    case "formula-sum":
+      return "Sigma";
+    case "dataVerification":
+      return "ShieldCheck";
+    case "search":
+      return "Search";
+    case "dune":
+      return "DuneChart";
+    case "Ellipsis":
+      return "Ellipsis";
     default:
       return "";
   }
@@ -83,7 +134,14 @@ export const getIcon = (title: string) => {
 const Toolbar: React.FC<{
   setMoreItems: React.Dispatch<React.SetStateAction<React.ReactNode>>;
   moreItemsOpen: boolean;
-}> = ({ setMoreItems, moreItemsOpen }) => {
+  onMoreToolbarItemsClose?: () => void;
+  moreToolbarItems?: React.ReactNode;
+}> = ({
+  setMoreItems,
+  moreItemsOpen,
+  onMoreToolbarItemsClose,
+  moreToolbarItems,
+}) => {
   const { context, setContext, refs, settings, handleUndo, handleRedo } =
     useContext(WorkbookContext);
   const contextRef = useRef(context);
@@ -517,7 +575,7 @@ const Toolbar: React.FC<{
                       _.find(items, (item) => `${item.value}` === `${cell?.ht}`)
                         ?.title === title
                     }
-                    icon={getIcon(title)}
+                    icon={getLucideIcon(title)}
                     variant="ghost"
                     onClick={() => {
                       setContext((ctx) => {
@@ -583,7 +641,7 @@ const Toolbar: React.FC<{
                       _.find(items, (item) => `${item.value}` === `${cell?.vt}`)
                         ?.title === title
                     }
-                    icon={getIcon(title)}
+                    icon={getLucideIcon(title)}
                     variant="ghost"
                     onClick={() => {
                       setContext((ctx) => {
@@ -1330,7 +1388,7 @@ const Toolbar: React.FC<{
                   <IconButton
                     key={value}
                     isActive={curr.value === value}
-                    icon={getIcon(iconId)}
+                    icon={getLucideIcon(iconId)}
                     variant="ghost"
                     onClick={() => {
                       setContext((ctx) => {
@@ -1504,21 +1562,23 @@ const Toolbar: React.FC<{
         );
       }
       return (
-        <Button
-          iconId={name}
-          tooltip={tooltip}
-          key={name}
-          selected={toolbarItemSelectedFunc(name)?.(cell)}
-          onClick={() =>
-            setContext((draftCtx) => {
-              toolbarItemClickHandler(name)?.(
-                draftCtx,
-                refs.cellInput.current!,
-                refs.globalCache
-              );
-            })
-          }
-        />
+        <Tooltip text={tooltip} placement="bottom">
+          <Button
+            iconId={name}
+            tooltip={tooltip}
+            key={name}
+            selected={toolbarItemSelectedFunc(name)?.(cell)}
+            onClick={() =>
+              setContext((draftCtx) => {
+                toolbarItemClickHandler(name)?.(
+                  draftCtx,
+                  refs.cellInput.current!,
+                  refs.globalCache
+                );
+              })
+            }
+          />
+        </Tooltip>
       );
     },
     [
@@ -1591,7 +1651,7 @@ const Toolbar: React.FC<{
         {toolbarWrapIndex !== -1 &&
         toolbarWrapIndex < settings.toolbarItems.length - 1 ? (
           <Button
-            iconId="more"
+            iconId="Ellipsis"
             tooltip={toolbar.toolMore}
             onClick={() => {
               if (moreItemsOpen) {
@@ -1606,6 +1666,11 @@ const Toolbar: React.FC<{
             }}
           />
         ) : null}
+        {moreToolbarItems && (
+          <MoreItemsContaier onClose={onMoreToolbarItemsClose}>
+            {moreToolbarItems}
+          </MoreItemsContaier>
+        )}
       </div>
       <div className="fortune-toolbar-right">
         {settings.customToolbarItems
@@ -1640,7 +1705,7 @@ const Toolbar: React.FC<{
           })}
 
         <Button
-          iconId="dune-logo"
+          iconId="dune"
           tooltip="Insert Dune Chart"
           key="dune-charts"
           onClick={() => {

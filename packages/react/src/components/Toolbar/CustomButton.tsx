@@ -1,4 +1,5 @@
 import React from "react";
+import { Tooltip } from "@fileverse/ui";
 import CustomIcon from "./CustomIcon";
 
 type Props = {
@@ -20,18 +21,18 @@ const CustomButton: React.FC<Props> = ({
 }) => {
   // const style: CSSProperties = { userSelect: "none" };
   return (
-    <div
-      className="fortune-toolbar-button fortune-toolbar-item"
-      onClick={onClick}
-      tabIndex={0}
-      data-tips={tooltip}
-      role="button"
-      style={selected ? { backgroundColor: "#E7E5EB" } : {}}
-    >
-      <CustomIcon width={16} height={16} iconName={iconName} content={icon} />
-      {tooltip && <div className="fortune-tooltip">{tooltip}</div>}
-      {children}
-    </div>
+    <Tooltip text={tooltip} placement="bottom">
+      <div
+        className="fortune-toolbar-button fortune-toolbar-item"
+        onClick={onClick}
+        tabIndex={0}
+        role="button"
+        style={selected ? { backgroundColor: "#E7E5EB" } : {}}
+      >
+        <CustomIcon width={16} height={16} iconName={iconName} content={icon} />
+        {children}
+      </div>
+    </Tooltip>
   );
 };
 

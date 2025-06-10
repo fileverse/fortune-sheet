@@ -1,5 +1,6 @@
 import React from "react";
-import SVGIcon from "../SVGIcon";
+import { LucideIcon, Tooltip } from "@fileverse/ui";
+import { getLucideIcon } from ".";
 
 type Props = {
   tooltip: string;
@@ -22,24 +23,23 @@ const Button: React.FC<Props> = ({
 }) => {
   // const style: CSSProperties = { userSelect: "none" };
   return (
-    <div
-      className="fortune-toolbar-button fortune-toolbar-item"
-      onClick={onClick}
-      tabIndex={0}
-      data-tips={tooltip}
-      role="button"
-      aria-label={tooltip}
-      style={selected ? { backgroundColor: "#E7E5EB" } : style}
-    >
-      <SVGIcon
-        name={iconId}
-        width={16}
-        height={16}
-        style={disabled ? { opacity: 0.3 } : {}}
-      />
-      {tooltip && <div className="fortune-tooltip">{tooltip}</div>}
-      {children}
-    </div>
+    <Tooltip text={tooltip} placement="bottom">
+      <div
+        className="fortune-toolbar-button fortune-toolbar-item"
+        onClick={onClick}
+        tabIndex={0}
+        role="button"
+        style={selected ? { backgroundColor: "#E7E5EB" } : style}
+      >
+        <LucideIcon
+          name={getLucideIcon(iconId)}
+          width={16}
+          height={16}
+          style={disabled ? { opacity: 0.3 } : {}}
+        />
+        {children}
+      </div>
+    </Tooltip>
   );
 };
 

@@ -3,11 +3,12 @@
   flex-direction: row;
   /* background: #fafafc; */
   position: relative;
-  padding: 10px 0px 8px 15px;
+  padding: 4px 8px;
   border-bottom: 1px solid #d4d4d4;
   white-space: nowrap;
   align-items: center;
   gap: 4px;
+  justify-content: space-between;
 }
 
 .fortune-toolbar-divider {
@@ -66,8 +67,7 @@
   align-items: center;
 }
 
-.fortune-toolbar-button:hover,
-.fortune-toolbar-combo:hover {
+.fortune-toolbar-button:hover {
   background-color: #f2f4f5;
   cursor: pointer;
 }
@@ -75,6 +75,8 @@
 .fortune-toolbar-combo-arrow:hover {
   background-color: #f2f4f5;
   cursor: pointer;
+  height: 30px;
+  border-radius: 0px 4px 4px 0px;
 }
 
 .fortune-toolbar-button:active,
@@ -203,8 +205,8 @@
   flex-direction: row;
   align-items: center;
   align-self: flex-end;
-  margin-right: 40px;
   top: 40px;
+  right: 0px;
   max-width: 348px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
   background: white;
@@ -383,6 +385,7 @@
   flex-direction: row;
   align-items: center;
   gap: 4px;
+  position: relative;
 }
 
 .fortune-toolbar-right {

@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@fileverse-dev/fortune-core": "1.0.2-mod-53",
-    "@fileverse/ui": "^4.1.7-patch-15",
+    "@fileverse/ui": "^4.1.7-patch-16",
     "@tippyjs/react": "^4.2.6",
     "@types/regenerator-runtime": "^0.13.6",
     "immer": "^9.0.12",

@@ -97,9 +97,9 @@ export const getLucideIcon = (title: string) => {
     case "merge-all":
       return "MergeHorizontal";
     case "format":
-      return "JapaneseYen";
+      return "DollarSign";
     case "currency-format":
-      return "JapaneseYen";
+      return "DollarSign";
     case "percentage-format":
       return "Percent";
     case "number-decrease":
@@ -149,6 +149,7 @@ const Toolbar: React.FC<{
   const [toolbarWrapIndex, setToolbarWrapIndex] = useState(-1);
   const [itemLocations, setItemLocations] = useState<number[]>([]);
   const [showDuneModal, setShowDuneModal] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1280);
   const { showDialog, hideDialog } = useDialog();
   const firstSelection = context.luckysheet_select_save?.[0];
   const flowdata = getFlowdata(context);
@@ -241,6 +242,16 @@ const Toolbar: React.FC<{
     []
   );
 
+  // Add window resize listener to update desktop state
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1280);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // rerenders the entire toolbar and trigger recalculation of item locations
   useEffect(() => {
     setToolbarWrapIndex(-1);
@@ -266,6 +277,13 @@ const Toolbar: React.FC<{
 
   // calculate the position after which items should be wrapped
   useEffect(() => {
+    // If on desktop, show all items
+    if (isDesktop) {
+      setToolbarWrapIndex(-1);
+      setMoreItems(null);
+      return;
+    }
+
     if (itemLocations.length === 0) return;
     const container = containerRef.current!;
     if (!container) return;
@@ -285,7 +303,13 @@ const Toolbar: React.FC<{
         break;
       }
     }
-  }, [itemLocations, setMoreItems, settings.toolbarItems.length, sheetWidth]);
+  }, [
+    itemLocations,
+    setMoreItems,
+    settings.toolbarItems.length,
+    sheetWidth,
+    isDesktop,
+  ]);
 
   const getToolbarItem = useCallback(
     (name: string, i: number) => {
@@ -404,7 +428,9 @@ const Toolbar: React.FC<{
                                   <FormatSearch
                                     onCancel={hideDialog}
                                     type="currency"
-                                  />
+                                  />,
+                                  undefined,
+                                  "Currency Format"
                                 );
                                 setOpen(false);
                               },
@@ -1660,11 +1686,12 @@ const Toolbar: React.FC<{
         {settings.customToolbarItems?.length > 0 ? (
           <Divider key="customDivider" />
         ) : null}
-        {(toolbarWrapIndex === -1
+        {(toolbarWrapIndex === -1 || isDesktop
           ? settings.toolbarItems
           : settings.toolbarItems.slice(0, toolbarWrapIndex + 1)
         ).map((name, i) => getToolbarItem(name, i))}
-        {toolbarWrapIndex !== -1 &&
+        {!isDesktop &&
+        toolbarWrapIndex !== -1 &&
         toolbarWrapIndex < settings.toolbarItems.length - 1 ? (
           <Button
             iconId="Ellipsis"

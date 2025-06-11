@@ -1,32 +1,42 @@
 #fortune-change-color {
   min-width: 164px;
-  height: 252px;
-  background: rgb(240, 240, 240);
+  background: hsl(var(--color-bg-default));
   position: absolute;
-  bottom: 10px;
-  left: 100px;
+  top: -100px;
+  left: 232px;
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  border: 1px solid hsl(var(--color-border-default));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 #fortune-change-color .color-reset {
   position: relative;
-  color: #333;
+  color: hsl(var(--color-text-default));
   cursor: pointer;
   list-style: none;
-  padding: 10px;
+  padding: 4px 8px;
   white-space: nowrap;
-  padding-left: 8px;
   vertical-align: middle;
   padding-right: 24px;
   user-select: none;
-  border-radius: 6px;
-  background: white;
+  border-radius: 4px;
+  background: hsl(var(--color-bg-default));
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
 }
 
 #fortune-change-color .color-reset:hover {
-  background: rgb(230, 230, 230);
+  background: hsl(var(--color-bg-default-hover));
+  transition: all 0.2s ease-in-out;
 }
 
 #fortune-change-color .custom-color {

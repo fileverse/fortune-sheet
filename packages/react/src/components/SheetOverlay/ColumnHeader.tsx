@@ -5,7 +5,7 @@ import {
   selectTitlesRange,
   handleColSizeHandleMouseDown,
   handleColumnHeaderMouseDown,
-  handleContextMenu,
+  // handleContextMenu,
   isAllowEdit,
   getFlowdata,
   fixColumnStyleOverflowInFreeze,
@@ -26,7 +26,7 @@ import WorkbookContext from "../../context";
 import SVGIcon from "../SVGIcon";
 
 const ColumnHeader: React.FC = () => {
-  const { context, setContext, settings, refs } = useContext(WorkbookContext);
+  const { context, setContext, refs } = useContext(WorkbookContext);
   const containerRef = useRef<HTMLDivElement>(null);
   const colChangeSizeRef = useRef<HTMLDivElement>(null);
   const [hoverLocation, setHoverLocation] = useState({
@@ -158,22 +158,22 @@ const ColumnHeader: React.FC = () => {
     [refs.cellArea, refs.globalCache, refs.workbookContainer, setContext]
   );
 
-  const onContextMenu = useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      const { nativeEvent } = e;
-      setContext((draftCtx) => {
-        handleContextMenu(
-          draftCtx,
-          settings,
-          nativeEvent,
-          refs.workbookContainer.current!,
-          refs.cellArea.current!,
-          "columnHeader"
-        );
-      });
-    },
-    [refs.workbookContainer, setContext, settings, refs.cellArea]
-  );
+  // const onContextMenu = useCallback(
+  //   (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  //     const { nativeEvent } = e;
+  //     setContext((draftCtx) => {
+  //       handleContextMenu(
+  //         draftCtx,
+  //         settings,
+  //         nativeEvent,
+  //         refs.workbookContainer.current!,
+  //         refs.cellArea.current!,
+  //         "columnHeader"
+  //       );
+  //     });
+  //   },
+  //   [refs.workbookContainer, setContext, settings, refs.cellArea]
+  // );
 
   useEffect(() => {
     const s = context.luckysheet_select_save;
@@ -216,7 +216,16 @@ const ColumnHeader: React.FC = () => {
       onMouseMove={onMouseMove}
       onMouseDown={onMouseDown}
       onMouseLeave={onMouseLeave}
-      onContextMenu={onContextMenu}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setContext((ctx) => {
+          ctx.contextMenu = {
+            x: e.pageX,
+            y: 90,
+            headerMenu: true,
+          };
+        });
+      }}
     >
       <div
         className="fortune-cols-freeze-handle"

@@ -249,7 +249,7 @@ export const defaultSettings: Required<Settings> = {
     "dataVerification",
     "|",
     "chart", // 图表生成
-    "image", // 插入图片
+    // "image", // 插入图片
     "link", // 插入链接
     "data", // 数据验证
     "cell-format", // 设置单元格格式

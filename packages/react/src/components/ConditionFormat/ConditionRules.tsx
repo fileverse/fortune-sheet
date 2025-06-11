@@ -44,7 +44,7 @@ const ConditionRules: React.FC<{ type: string }> = ({ type }) => {
         ctx.rangeDialog!.show = true;
         ctx.rangeDialog!.type = selectType;
         ctx.rangeDialog!.rangeTxt = ctx.conditionRules.rulesValue;
-        ctx.rangeDialog!.singleSelect = true;
+        ctx.rangeDialog!.singleSelect = false;
       });
     },
     [colorRules.cellColor, colorRules.textColor, hideDialog, setContext]

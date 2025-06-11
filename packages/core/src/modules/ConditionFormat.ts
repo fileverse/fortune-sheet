@@ -680,7 +680,7 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                 // 符合条件
                 if (
                   conditionName === "greaterThan" &&
-                  cell.v > conditionValue0
+                  Number(cell.v) > Number(conditionValue0)
                 ) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
@@ -690,7 +690,7 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   }
                 } else if (
                   conditionName === "lessThan" &&
-                  cell.v < conditionValue0
+                  Number(cell.v) < Number(conditionValue0)
                 ) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
@@ -703,7 +703,7 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   }
                 } else if (
                   conditionName === "equal" &&
-                  cell.v.toString() === conditionValue0
+                  Number(cell.v) === Number(conditionValue0)
                 ) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
@@ -761,7 +761,10 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   continue;
                 }
                 // 符合条件
-                if (cell.v >= vSmall && cell.v <= vBig) {
+                if (
+                  Number(cell.v) >= Number(vSmall) &&
+                  Number(cell.v) <= Number(vBig)
+                ) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
                     computeMap[`${r}_${c}`].cellColor = cellColor;

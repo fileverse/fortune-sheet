@@ -97,9 +97,9 @@ export const getLucideIcon = (title: string) => {
     case "merge-all":
       return "MergeHorizontal";
     case "format":
-      return "JapaneseYen";
+      return "DollarSign";
     case "currency-format":
-      return "JapaneseYen";
+      return "DollarSign";
     case "percentage-format":
       return "Percent";
     case "number-decrease":
@@ -404,7 +404,9 @@ const Toolbar: React.FC<{
                                   <FormatSearch
                                     onCancel={hideDialog}
                                     type="currency"
-                                  />
+                                  />,
+                                  undefined,
+                                  "Currency Format"
                                 );
                                 setOpen(false);
                               },

@@ -7,11 +7,11 @@ import React, {
   useLayoutEffect,
   useCallback,
 } from "react";
+import { LucideIcon } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import { useAlert } from "../../hooks/useAlert";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { ChangeColor } from "../ChangeColor";
-import SVGIcon from "../SVGIcon";
 import Divider from "./Divider";
 import "./index.css";
 import Menu from "./Menu";
@@ -218,13 +218,13 @@ const SheetTabContextMenu: React.FC = () => {
                 }
               }}
             >
-              {sheetconfig.changeColor}
-              <span className="change-color-triangle">
-                <SVGIcon name="rightArrow" width={18} />
-              </span>
-              {isShowChangeColor && context.allowEdit && (
-                <ChangeColor triggerParentUpdate={updateShowInputColor} />
-              )}
+              <div className="flex items-center justify-between w-full">
+                {sheetconfig.changeColor}
+                <LucideIcon name="ChevronRight" size="sm" />
+                {isShowChangeColor && context.allowEdit && (
+                  <ChangeColor triggerParentUpdate={updateShowInputColor} />
+                )}
+              </div>
             </Menu>
           );
         }

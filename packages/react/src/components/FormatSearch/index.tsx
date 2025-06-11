@@ -5,6 +5,16 @@ import {
   locale,
   update,
 } from "@fileverse-dev/fortune-core";
+import {
+  Button,
+  Divider,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  TextField,
+} from "@fileverse/ui";
 import _ from "lodash";
 import WorkbookContext from "../../context";
 import "./index.css";
@@ -35,7 +45,7 @@ export const FormatSearch: React.FC<{
     () => toolbarFormatAll[type],
     [toolbarFormatAll, type]
   );
-  const tips = _.get(format, type);
+  // const tips = _.get(format, type);
 
   const onConfirm = useCallback(() => {
     if (decimalPlace < 0 || decimalPlace > 9) {
@@ -88,65 +98,78 @@ export const FormatSearch: React.FC<{
   }, [_onCancel, cellInput, setContext]);
 
   return (
-    <div id="luckysheet-search-format">
-      <div className="listbox" style={{ height: 200 }}>
-        <div style={{ marginBottom: 16 }}>
-          {tips}
-          {format.format}：
-        </div>
-        <div
-          className="inpbox"
-          style={
-            type === "currency" ? { display: "block" } : { display: "none" }
-          }
-        >
-          {format.decimalPlaces}：
-          <input
-            className="decimal-places-input"
-            id="decimal-places-input"
-            min={0}
-            max={9}
-            defaultValue={2}
-            type="number"
-            onChange={(e) => {
-              setDecimalPlace(parseInt(e.target.value, 10));
-            }}
-          />
-        </div>
-        <div className="format-list">
-          {toolbarFormat.map((v: any, index: number) => (
-            <div
-              className={`listBox${index === selectedFormatIndex ? " on" : ""}`}
-              key={v.name}
-              onClick={() => {
-                setSelectedFormatIndex(index);
+    <div className="format-search">
+      <div className="flex flex-col gap-4">
+        {type === "currency" && (
+          <div className="flex items-center gap-2">
+            <span className="text-body-sm" style={{ width: "180px" }}>
+              {format.decimalPlaces}：
+            </span>
+            <TextField
+              className="w-full"
+              type="number"
+              min={0}
+              max={9}
+              defaultValue={2}
+              onChange={(e) => {
+                setDecimalPlace(parseInt(e.target.value, 10));
               }}
-              tabIndex={0}
-            >
-              <div>{v.name}</div>
-              <div>{v.value}</div>
-            </div>
-          ))}
+            />
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2">
+          <Select
+            value={String(selectedFormatIndex)}
+            onValueChange={(value) => {
+              setSelectedFormatIndex(Number(value));
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue>
+                {toolbarFormat[selectedFormatIndex]?.name}{" "}
+                {toolbarFormat[selectedFormatIndex]?.value}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {toolbarFormat.map((v: any, index: number) => (
+                <SelectItem key={v.name} value={String(index)}>
+                  <div className="flex justify-between w-full">
+                    <span>{v.name}</span>
+                    <span className="text-body-sm text-icon-secondary">
+                      {v.value}
+                    </span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
-      <div
-        className="fortune-dialog-box-button-container"
-        style={type === "currency" ? { marginTop: 40 } : { marginTop: 30 }}
-      >
-        <div
-          className="fortune-message-box-button button-primary"
-          onClick={onConfirm}
-          tabIndex={0}
-        >
-          {button.confirm}
-        </div>
-        <div
-          className="fortune-message-box-button button-default"
+
+      <Divider className="w-full border-t-[1px] my-4" />
+
+      <div className="flex gap-2 justify-end">
+        <Button
+          variant="secondary"
+          style={{
+            minWidth: "80px",
+          }}
           onClick={onCancel}
           tabIndex={0}
         >
           {button.cancel}
-        </div>
+        </Button>
+        <Button
+          variant="default"
+          style={{
+            minWidth: "80px",
+          }}
+          onClick={onConfirm}
+          tabIndex={0}
+        >
+          {button.confirm}
+        </Button>
       </div>
     </div>
   );

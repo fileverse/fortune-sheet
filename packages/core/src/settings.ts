@@ -298,6 +298,6 @@ export const defaultSettings: Required<Settings> = {
   generateSheetId: () => uuidv4(),
   hooks: {},
   customToolbarItems: [],
-  currency: "¥",
+  currency: "$",
   getCommentCellUI: null,
 };

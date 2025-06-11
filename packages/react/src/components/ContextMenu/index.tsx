@@ -87,9 +87,9 @@ const ContextMenu: React.FC = () => {
             <div className="context-item">
               <SVGIcon
                 name="split-flv"
-                width={16}
-                height={16}
-                style={{ marginTop: "4px", marginRight: "4px" }}
+                width={17}
+                height={17}
+                style={{ marginTop: "4px", marginRight: "8px" }}
               />
               Split text to columns
             </div>
@@ -186,7 +186,7 @@ const ContextMenu: React.FC = () => {
                 name="comment-flv"
                 width={18}
                 height={18}
-                style={{ marginTop: "4px", marginRight: "4px" }}
+                style={{ marginTop: "4px", marginRight: "8px" }}
               />
               <p>Comment</p>
             </div>
@@ -210,7 +210,12 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon name="dataVerification" style={{ marginRight: "4px" }} />
+              <SVGIcon
+                name="dataVerification"
+                width={20}
+                height={20}
+                style={{ marginRight: "7px" }}
+              />
               <p>Data Verification</p>
             </div>
           </Menu>
@@ -230,7 +235,12 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon name="search" style={{ marginRight: "4px" }} />
+              <SVGIcon
+                name="search"
+                width={20}
+                height={20}
+                style={{ marginRight: "7px" }}
+              />
               <p>Find and Replace</p>
             </div>
           </Menu>
@@ -255,9 +265,9 @@ const ContextMenu: React.FC = () => {
             <div className="context-item">
               <SVGIcon
                 name="copy-flv"
-                width={22}
-                height={22}
-                style={{ marginTop: "4px" }}
+                width={21}
+                height={21}
+                style={{ marginTop: "4px", marginRight: "4px" }}
               />
               <p>{rightclick.copy}</p>
             </div>
@@ -298,8 +308,8 @@ const ContextMenu: React.FC = () => {
             <div className="context-item">
               <SVGIcon
                 name="cut-flv"
-                width={18}
-                height={18}
+                width={17}
+                height={17}
                 style={{ marginRight: "8px" }}
               />
               <p>Cut</p>
@@ -322,8 +332,8 @@ const ContextMenu: React.FC = () => {
             <div className="context-item">
               <SVGIcon
                 name="paste-flv"
-                width={16}
-                height={16}
+                width={17}
+                height={17}
                 style={{ marginRight: "8px" }}
               />
               <p>{rightclick.paste}</p>
@@ -936,8 +946,8 @@ const ContextMenu: React.FC = () => {
             <div className="context-item">
               <SVGIcon
                 name="clear-flv"
-                width={18}
-                height={18}
+                width={17}
+                height={17}
                 style={{ marginRight: "8px" }}
               />
               <p>{rightclick.clearContent}</p>
@@ -1142,7 +1152,8 @@ const ContextMenu: React.FC = () => {
                     >
                       <SVGIcon
                         name="filter"
-                        width={24}
+                        width={22}
+                        height={22}
                         style={{ marginRight: "4px" }}
                       />
                       <p>{filter.filter}</p>
@@ -1162,7 +1173,7 @@ const ContextMenu: React.FC = () => {
                     >
                       <SVGIcon
                         name="eraser"
-                        width={24}
+                        width={22}
                         height={22}
                         style={{ marginRight: "4px", marginLeft: "2px" }}
                       />
@@ -1181,8 +1192,9 @@ const ContextMenu: React.FC = () => {
                   <div className="context-item">
                     <SVGIcon
                       name="filter"
-                      width={24}
-                      style={{ marginRight: "4px" }}
+                      width={22}
+                      height={22}
+                      style={{ marginRight: "4px", marginTop: "2px" }}
                     />
                     <p>{rightclick.filterSelection}</p>
                   </div>
@@ -1220,7 +1232,12 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon name="link" style={{ marginRight: "4px" }} />
+              <SVGIcon
+                name="link"
+                width={20}
+                height={20}
+                style={{ marginRight: "7px" }}
+              />
               <p>{rightclick.link}</p>
             </div>
           </Menu>
@@ -1262,7 +1279,12 @@ const ContextMenu: React.FC = () => {
               <Menu>
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2">
-                    <SVGIcon name="conditionFormat" width={16} height={16} />
+                    <SVGIcon
+                      name="conditionFormat"
+                      width={16}
+                      height={16}
+                      style={{ marginRight: "2px" }}
+                    />
                     <p>{rightclick.conditionFormat || "Conditional Format"}</p>
                   </div>
                   <SVGIcon name="rightArrow" width={16} height={16} />

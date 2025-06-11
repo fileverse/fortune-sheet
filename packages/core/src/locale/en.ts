@@ -12,33 +12,6 @@ export default {
   functionlist: [
     ...FUNCTION_LOCALE,
     {
-      n: "PnL",
-      t: 0,
-      d: "Subtract each element from A column from B column and return the total sum.",
-      a: "Returns the total of A - B element-wise subtraction across two ranges.",
-      m: [2],
-      p: [
-        {
-          name: "A",
-          detail:
-            "The column or array of values to subtract from B (e.g. cost).",
-          example: "A1:A10",
-          require: "m",
-          repeat: "n",
-          type: "range",
-        },
-        {
-          name: "B",
-          detail:
-            "The column or array of values to subtract A from (e.g. revenue).",
-          example: "B1:B10",
-          require: "m",
-          repeat: "n",
-          type: "range",
-        },
-      ],
-    },
-    {
       n: "SUMIF",
       t: 0,
       d: "Returns a conditional sum across a range.",
@@ -4120,7 +4093,7 @@ export default {
         {
           name: "time",
           detail: "The time from which to calculate the second component",
-          example: "TIME(11",
+          example: `"11:40:59"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4137,7 +4110,7 @@ export default {
         {
           name: "time",
           detail: "The time from which to calculate the minute component.",
-          example: "TIME(11",
+          example: `"11:40:59"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4154,7 +4127,7 @@ export default {
         {
           name: "time",
           detail: "The time from which to calculate the hour component.",
-          example: "TIME(11",
+          example: `"11:40:59"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4180,7 +4153,7 @@ export default {
           name: "start_date",
           detail:
             "The start date of the period from which to calculate the number of net working days.",
-          example: "DATE(1969",
+          example: `"16/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4189,7 +4162,7 @@ export default {
           name: "end_date",
           detail:
             "The end date of the period from which to calculate the number of net working days.",
-          example: "7",
+          example: `"24/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4198,7 +4171,7 @@ export default {
           name: "holidays",
           detail:
             "A range or array constant containing the date serial numbers to consider holidays.",
-          example: "16)",
+          example: "A1:A10",
           require: "o",
           repeat: "n",
           type: "rangeall",
@@ -4216,7 +4189,7 @@ export default {
           name: "start_date",
           detail:
             "The start date of the period from which to calculate the number of net working days.",
-          example: "DATE(1969",
+          example: `"16/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4225,7 +4198,7 @@ export default {
           name: "end_date",
           detail:
             "The end date of the period from which to calculate the number of net working days.",
-          example: "7",
+          example: `"24/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4234,7 +4207,7 @@ export default {
           name: "weekend",
           detail:
             "A number or string representing which days of the week are considered weekends.",
-          example: "16)",
+          example: "1",
           require: "o",
           repeat: "n",
           type: "rangeall",
@@ -4243,7 +4216,7 @@ export default {
           name: "holidays",
           detail:
             "A range or array constant containing the dates to consider as holidays.",
-          example: "DATE(1969",
+          example: "A1:A10",
           require: "o",
           repeat: "n",
           type: "rangeall",
@@ -4349,7 +4322,7 @@ export default {
         {
           name: "end_date",
           detail: "The end of the date range.",
-          example: "2011-3-15",
+          example: `"24/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4357,7 +4330,7 @@ export default {
         {
           name: "start_date",
           detail: "The start of the date range.",
-          example: "2011-2-1",
+          example: `"24/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4375,7 +4348,7 @@ export default {
           name: "start_date",
           detail:
             "The start date to consider in the calculation. Must be a reference to a cell containing a date, a function returning a date type, or a number.",
-          example: "DATE(1969",
+          example: `"10/06/2025"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4384,7 +4357,7 @@ export default {
           name: "end_date",
           detail:
             "The end date to consider in the calculation. Must be a reference to a cell containing a date, a function returning a date type, or a number.",
-          example: "7",
+          example: `"19/08/2027"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4392,7 +4365,7 @@ export default {
         {
           name: "method",
           detail: "An indicator of what day count method to use.",
-          example: "FALSE()",
+          example: "1",
           require: "o",
           repeat: "n",
           type: "rangeall",
@@ -4460,7 +4433,7 @@ export default {
           name: "start_date",
           detail:
             "The start date to consider in the calculation. Must be a reference to a cell containing a date, a function returning a date type, or a number.",
-          example: `"1969-07-16"`,
+          example: `"16/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4469,7 +4442,7 @@ export default {
           name: "end_date",
           detail:
             "The end date to consider in the calculation. Must be a reference to a cell containing a date, a function returning a date type, or a number.",
-          example: `"1969-07-24"`,
+          example: `"24/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4495,7 +4468,7 @@ export default {
         {
           name: "start_date",
           detail: "The date from which to begin counting.",
-          example: "DATE(1969",
+          example: `"20/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4504,7 +4477,7 @@ export default {
           name: "num_days",
           detail:
             "The number of working days to advance from `start_date`. If negative, counts backwards.",
-          example: "7",
+          example: "4",
           require: "m",
           repeat: "n",
           type: "rangenumber",
@@ -4513,7 +4486,7 @@ export default {
           name: "holidays",
           detail:
             "A range or array constant containing the dates to consider holidays.",
-          example: "16)",
+          example: "A1:A10",
           require: "o",
           repeat: "n",
           type: "rangeall",
@@ -4530,7 +4503,7 @@ export default {
         {
           name: "start_date",
           detail: "The date from which to begin counting.",
-          example: "DATE(1969",
+          example: `"21/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4539,7 +4512,7 @@ export default {
           name: "num_days",
           detail:
             "The number of working days to advance from `start_date`. If negative, counts backwards.",
-          example: "7",
+          example: "4",
           require: "m",
           repeat: "n",
           type: "rangenumber",
@@ -4548,7 +4521,7 @@ export default {
           name: "weekend",
           detail:
             "A number or string representing which days of the week are considered weekends.",
-          example: "16)",
+          example: "1",
           require: "o",
           repeat: "n",
           type: "rangeall",
@@ -4557,7 +4530,7 @@ export default {
           name: "holidays",
           detail:
             "A range or array constant containing the dates to consider holidays.",
-          example: "DATE(1969",
+          example: "A1:A10",
           require: "o",
           repeat: "n",
           type: "rangeall",
@@ -4592,7 +4565,7 @@ export default {
           name: "start_date",
           detail:
             "The start date to consider in the calculation. Must be a reference to a cell containing a date, a function returning a date type, or a number.",
-          example: "DATE(1969",
+          example: `"16/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4601,7 +4574,7 @@ export default {
           name: "end_date",
           detail:
             "The end date to consider in the calculation. Must be a reference to a cell containing a date, a function returning a date type, or a number.",
-          example: "7",
+          example: `"24/07/1969"`,
           require: "m",
           repeat: "n",
           type: "rangeall",
@@ -4609,7 +4582,7 @@ export default {
         {
           name: "day_count_convention",
           detail: "An indicator of what day count method to use.",
-          example: "16)",
+          example: "1",
           require: "o",
           repeat: "n",
           type: "rangenumber",
@@ -10088,7 +10061,7 @@ export default {
       p: [
         {
           name: "value",
-          example: '"1990-01-01"',
+          example: '"20/07/1969"',
           detail: "The value to be verified as a date.",
           require: "m",
           repeat: "n",

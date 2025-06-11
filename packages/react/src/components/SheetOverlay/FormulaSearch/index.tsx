@@ -14,14 +14,14 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
   const calcuatePopUpPlacement = () => {
     if (!firstSelection?.top || !firstSelection.height_move || !hintRef.current)
       return;
-    const hintHeight = hintRef.current.offsetHeight;
+    const hintHeight = 360;
     const inputBottom = firstSelection.top + firstSelection.height_move;
     const availableBelow = window.innerHeight - inputBottom;
     const hintAbove = hintHeight > availableBelow;
     const selectionHeight = firstSelection?.height_move || 0;
     const divOffset = hintRef.current?.offsetHeight || 0;
     setTop(
-      hintAbove ? selectionHeight - (divOffset + 70) : selectionHeight + 4
+      hintAbove ? selectionHeight - (divOffset + 30) : selectionHeight + 4
     );
   };
 

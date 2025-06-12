@@ -196,7 +196,9 @@ export function iscelldata(txt: string) {
     [rangetxt] = val;
   }
 
-  if (/^\d{1,2}:\d{1,2}$/.test(rangetxt)) {
+  const realRangeRegex =
+    /^(\$?[A-Za-z]+\$?\d+|\$?[A-Za-z]+):(\$?[A-Za-z]+\$?\d+|\$?[A-Za-z]+)$/;
+  if (rangetxt.includes(":") && !realRangeRegex.test(rangetxt)) {
     return false;
   }
 

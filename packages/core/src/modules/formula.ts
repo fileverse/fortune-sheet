@@ -196,6 +196,10 @@ export function iscelldata(txt: string) {
     [rangetxt] = val;
   }
 
+  if (/^\d{1,2}:\d{1,2}$/.test(rangetxt)) {
+    return false;
+  }
+
   const reg_cell = /^(([a-zA-Z]+)|([$][a-zA-Z]+))(([0-9]+)|([$][0-9]+))$/g; // 增加正则判断单元格为字母+数字的格式：如 A1:B3
   let reg_cellRange =
     /^(((([a-zA-Z]+)|([$][a-zA-Z]+))(([0-9]+)|([$][0-9]+)))|((([a-zA-Z]+)|([$][a-zA-Z]+))))$/g; // 增加正则判断单元格为字母+数字或字母的格式：如 A1:B3，A:A

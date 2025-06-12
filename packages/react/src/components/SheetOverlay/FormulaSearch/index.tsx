@@ -50,7 +50,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
             }`}
           >
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div className="luckysheet-formula-search-func text-body-sm">
+              <div className="luckysheet-formula-search-func color-text-default text-body-sm">
                 {v.n}
               </div>
               <div
@@ -96,12 +96,20 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                 )}
               </div>
             </div>
-            <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm">
+            <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
               {v.d}
             </div>
           </div>
         );
       })}
+      <hr className="color-border-default mb-2 mt-4 " />
+      <div
+        style={{ paddingLeft: "10px", paddingRight: "10px" }}
+        className="flex gap-1 items-center color-border-default text-helper-sm"
+      >
+        <div className="border p-1 color-text-default rounded">Tab</div>
+        <p className="color-text-secondary">to insert</p>
+      </div>
     </div>
   );
 };

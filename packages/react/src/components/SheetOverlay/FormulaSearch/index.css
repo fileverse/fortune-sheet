@@ -19,13 +19,13 @@
   .luckysheet-formula-search-item
   .luckysheet-formula-search-detail {
   display: none;
-  color: #444;
+  color: #77818A;
 }
 
 .luckysheet-formula-search-c
   .luckysheet-formula-search-item
   .luckysheet-formula-search-func {
-  color: #222;
+  color: #363b3f;
   font-size: 14px;
 }
 
@@ -33,7 +33,7 @@
   display: block;
   border-top: 1px solid #ebebeb;
   border-bottom: 1px solid #ebebeb;
-  background: #f5f5f5;
+  background: #f2f4f5;
 }
 
 .luckysheet-formula-search-c

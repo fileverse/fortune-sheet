@@ -43,7 +43,7 @@
   user-select: text;
   border-radius: 10px;
   top: 25px;
-  background: #f8f9fa;
+  background: #ffff;
   min-width: 300px;
   width: fit-content;
   /* max-width: 450px; */
@@ -54,7 +54,7 @@
 #luckysheet-formula-help-c {
   border-radius: 10px;
   top: 25px;
-  background: #f8f9fa;
+  background: #ffff;
 }
 
 .luckysheet-formula-help-title-formula {

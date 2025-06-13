@@ -28,7 +28,11 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
   useEffect(() => {
     calcuatePopUpPlacement();
   });
-  if (_.isEmpty(context.functionCandidates)) return null;
+  if (
+    _.isEmpty(context.functionCandidates) &&
+    _.isEmpty(context.defaultCandidates)
+  )
+    return null;
 
   return (
     <div
@@ -40,68 +44,234 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
         top,
       }}
     >
-      {context.functionCandidates.map((v, index) => {
-        return (
-          <div
-            key={v.n}
-            data-func={v.n}
-            className={`luckysheet-formula-search-item ${
-              index === 0 ? "luckysheet-formula-search-item-active" : ""
-            }`}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div className="luckysheet-formula-search-func color-text-default text-body-sm">
-                {v.n}
-              </div>
+      {context.defaultCandidates.length > 0 && (
+        <div
+          style={{ marginBottom: "4px" }}
+          className="w-full flex flex-col p-2 gap-1"
+        >
+          <h4 className="text-helper-sm-bold color-text-secondary">
+            Onchain functions
+          </h4>
+          <p className="text-helper-text-sm color-text-secondary">
+            What is data block description lorem ipsum dolor sit
+          </p>
+        </div>
+      )}
+
+      {context.defaultCandidates.length > 0 ? (
+        <>
+          {context.defaultCandidates.slice(0, 5).map((v, index) => {
+            return (
               <div
-                style={{
-                  display: "flex",
-                  justifyContent: "end",
-                  width: "68px",
-                  height: "20px",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
+                key={v.n}
+                data-func={v.n}
+                className={`luckysheet-formula-search-item ${
+                  index === 0 ? "luckysheet-formula-search-item-active" : ""
+                }`}
               >
-                {v.LOGO && (
-                  <img
-                    src={v.LOGO}
-                    alt="Service Logo"
-                    style={{ width: "20px" }}
-                  />
-                )}
-                {v.API_KEY && (
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <div className="luckysheet-formula-search-func color-text-default text-body-sm">
+                    {v.n}
+                  </div>
                   <div
                     style={{
-                      borderRadius: "4px",
-                      backgroundColor: `${
-                        localStorage.getItem(v.API_KEY) ? "#177E23" : "#e8ebec"
-                      }`,
-                      width: "16px",
-                      height: "16px",
+                      display: "flex",
+                      justifyContent: "end",
+                      width: "68px",
+                      height: "20px",
+                      alignItems: "center",
+                      gap: "4px",
                     }}
-                    className="flex justify-center"
                   >
-                    <LucideIcon
-                      name="Key"
-                      style={{
-                        color: localStorage.getItem(v.API_KEY)
-                          ? "white"
-                          : "#77818A",
-                        width: "12px",
-                        height: "12px",
-                      }}
-                    />
+                    {v.LOGO && (
+                      <img
+                        src={v.LOGO}
+                        alt="Service Logo"
+                        style={{ width: "16px" }}
+                      />
+                    )}
+                    {v.API_KEY && (
+                      <div
+                        style={{
+                          borderRadius: "4px",
+                          backgroundColor: `${
+                            localStorage.getItem(v.API_KEY)
+                              ? "#177E23"
+                              : "#e8ebec"
+                          }`,
+                          width: "16px",
+                          height: "16px",
+                        }}
+                        className="flex justify-center"
+                      >
+                        <LucideIcon
+                          name="Key"
+                          style={{
+                            color: localStorage.getItem(v.API_KEY)
+                              ? "white"
+                              : "#77818A",
+                            width: "12px",
+                            height: "12px",
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+                <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
+                  {v.d}
+                </div>
               </div>
-            </div>
-            <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
-              {v.d}
-            </div>
-          </div>
-        );
-      })}
+            );
+          })}
+          <p
+            style={{ padding: "10px" }}
+            className="text-helper-text-sm-bold color-text-secondary"
+          >
+            Functions
+          </p>
+          {context.defaultCandidates
+            .slice(5, context.defaultCandidates.length)
+            .map((v, index) => {
+              return (
+                <div
+                  key={v.n}
+                  data-func={v.n}
+                  className={`luckysheet-formula-search-item ${
+                    index === 0 ? "luckysheet-formula-search-item-active" : ""
+                  }`}
+                >
+                  <div
+                    style={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <div className="luckysheet-formula-search-func color-text-default text-body-sm">
+                      {v.n}
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "end",
+                        width: "68px",
+                        height: "20px",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      {v.LOGO && (
+                        <img
+                          src={v.LOGO}
+                          alt="Service Logo"
+                          style={{ width: "20px" }}
+                        />
+                      )}
+                      {v.API_KEY && (
+                        <div
+                          style={{
+                            borderRadius: "4px",
+                            backgroundColor: `${
+                              localStorage.getItem(v.API_KEY)
+                                ? "#177E23"
+                                : "#e8ebec"
+                            }`,
+                            width: "16px",
+                            height: "16px",
+                          }}
+                          className="flex justify-center"
+                        >
+                          <LucideIcon
+                            name="Key"
+                            style={{
+                              color: localStorage.getItem(v.API_KEY)
+                                ? "white"
+                                : "#77818A",
+                              width: "12px",
+                              height: "12px",
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
+                    {v.d}
+                  </div>
+                </div>
+              );
+            })}
+        </>
+      ) : (
+        <>
+          {context.functionCandidates.map((v, index) => {
+            return (
+              <div
+                key={v.n}
+                data-func={v.n}
+                className={`luckysheet-formula-search-item ${
+                  index === 0 ? "luckysheet-formula-search-item-active" : ""
+                }`}
+              >
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <div className="luckysheet-formula-search-func color-text-default text-body-sm">
+                    {v.n}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "end",
+                      width: "68px",
+                      height: "20px",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    {v.LOGO && (
+                      <img
+                        src={v.LOGO}
+                        alt="Service Logo"
+                        style={{ width: "20px" }}
+                      />
+                    )}
+                    {v.API_KEY && (
+                      <div
+                        style={{
+                          borderRadius: "4px",
+                          backgroundColor: `${
+                            localStorage.getItem(v.API_KEY)
+                              ? "#177E23"
+                              : "#e8ebec"
+                          }`,
+                          width: "16px",
+                          height: "16px",
+                        }}
+                        className="flex justify-center"
+                      >
+                        <LucideIcon
+                          name="Key"
+                          style={{
+                            color: localStorage.getItem(v.API_KEY)
+                              ? "white"
+                              : "#77818A",
+                            width: "12px",
+                            height: "12px",
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
+                  {v.d}
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
+
       <hr className="color-border-default mb-2 mt-4 " />
       <div
         style={{ paddingLeft: "10px", paddingRight: "10px" }}

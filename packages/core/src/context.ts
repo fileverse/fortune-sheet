@@ -140,6 +140,7 @@ export type Context = {
   } & Rect)[];
   formulaRangeSelect: ({ rangeIndex: number } & Rect) | undefined;
   functionCandidates: any[];
+  defaultCandidates: any[];
   functionHint: string | null | undefined;
 
   luckysheet_copy_save?: {
@@ -434,6 +435,7 @@ export function defaultContext(refs: RefValues): Context {
     formulaRangeHighlight: [],
     formulaRangeSelect: undefined,
     functionCandidates: [],
+    defaultCandidates: [],
     functionHint: null,
 
     luckysheet_copy_save: undefined, // 复制粘贴

@@ -468,7 +468,9 @@ const InputBox: React.FC = () => {
         />
       </div>
 
-      {(context.functionCandidates.length > 0 || context.functionHint) && (
+      {(context.functionCandidates.length > 0 ||
+        context.functionHint ||
+        context.defaultCandidates.length > 0) && (
         <>
           <FormulaSearch
             onMouseOver={(e) => {

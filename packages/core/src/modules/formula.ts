@@ -2269,6 +2269,44 @@ function helpFunctionExe(
   return funcName;
 }
 
+function filterAndPickOthers(
+  allItems: Context["functionCandidates"],
+  nameArray: string[]
+) {
+  const nameSet = new Set(nameArray);
+  const matched: Context["functionCandidates"] = [];
+  const unmatched: Context["functionCandidates"] = [];
+
+  allItems.forEach((item) => {
+    if (nameSet.has(item.n)) {
+      matched.push(item);
+    } else {
+      unmatched.push(item);
+    }
+  });
+
+  const shuffled = unmatched.reduce((acc, curr, index) => {
+    const rand = Math.floor(Math.random() * (index + 1));
+    acc[index] = acc[rand];
+    acc[rand] = curr;
+    return acc;
+  }, []);
+
+  const others = shuffled.slice(0, 5);
+
+  const result = [...matched, ...others];
+
+  return result;
+}
+
+export const PROMOTED_CRYPTO_FUNCTIONS = [
+  "ETHERSCAN",
+  "UNISWAP",
+  "COINGECKO",
+  "GNOSIS",
+  "SAFE",
+];
+
 export function rangeHightlightselected(ctx: Context, $editor: HTMLDivElement) {
   const currSelection = getrangeseleciton();
   // $("#luckysheet-formula-search-c, #luckysheet-formula-help-c").hide();
@@ -2284,7 +2322,17 @@ export function rangeHightlightselected(ctx: Context, $editor: HTMLDivElement) {
   if (!currSelection) return;
 
   const currText = _.trim(currSelection.textContent || "");
+
+  if (currText === "=") {
+    const { functionlist } = locale(ctx);
+    ctx.defaultCandidates = filterAndPickOthers(
+      functionlist,
+      PROMOTED_CRYPTO_FUNCTIONS
+    );
+    return;
+  }
   if (currText?.match(/^[a-zA-Z_]+$/)) {
+    ctx.defaultCandidates = [];
     searchFunction(ctx, currText.toUpperCase());
     ctx.functionHint = null;
   } else {

@@ -1,6 +1,6 @@
 import _ from "lodash";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { LucideIcon } from "@fileverse/ui";
+import { LucideIcon, Tooltip } from "@fileverse/ui";
 import WorkbookContext from "../../../context";
 import "./index.css";
 
@@ -71,28 +71,38 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                   />
                 )}
                 {v.API_KEY && (
-                  <div
-                    style={{
-                      borderRadius: "4px",
-                      backgroundColor: `${
-                        localStorage.getItem(v.API_KEY) ? "#177E23" : "#e8ebec"
-                      }`,
-                      width: "16px",
-                      height: "16px",
-                    }}
-                    className="flex justify-center"
+                  <Tooltip
+                    text={
+                      localStorage.getItem(v.API_KEY)
+                        ? "API Key added"
+                        : "API Key required"
+                    }
                   >
-                    <LucideIcon
-                      name="Key"
+                    <div
                       style={{
-                        color: localStorage.getItem(v.API_KEY)
-                          ? "white"
-                          : "#77818A",
-                        width: "12px",
-                        height: "12px",
+                        borderRadius: "4px",
+                        backgroundColor: `${
+                          localStorage.getItem(v.API_KEY)
+                            ? "#177E23"
+                            : "#e8ebec"
+                        }`,
+                        width: "16px",
+                        height: "16px",
                       }}
-                    />
-                  </div>
+                      className="flex justify-center"
+                    >
+                      <LucideIcon
+                        name="Key"
+                        style={{
+                          color: localStorage.getItem(v.API_KEY)
+                            ? "white"
+                            : "#77818A",
+                          width: "12px",
+                          height: "12px",
+                        }}
+                      />
+                    </div>
+                  </Tooltip>
                 )}
               </div>
             </div>

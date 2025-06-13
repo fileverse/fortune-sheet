@@ -1689,38 +1689,7 @@ const Toolbar: React.FC<{
         )}
       </div>
       <div className="fortune-toolbar-right">
-        {settings.customToolbarItems
-          .filter((n) => n.key === "templates")
-          .map((n) => {
-            return (
-              <CustomButton
-                tooltip={n.tooltip}
-                onClick={n.onClick}
-                key={n.key}
-                icon={n.icon}
-                iconName={n.iconName}
-              >
-                {n.children}
-              </CustomButton>
-            );
-          })}
-        {settings.customToolbarItems
-          .filter((n) => n.key !== "templates" && n.key !== "import-export")
-          .map((n) => {
-            return (
-              <CustomButton
-                tooltip={n.tooltip}
-                onClick={n.onClick}
-                key={n.key}
-                icon={n.icon}
-                iconName={n.iconName}
-              >
-                {n.children}
-              </CustomButton>
-            );
-          })}
-
-        {settings.customToolbarItems.length > 0 && (
+      {settings.customToolbarItems.length > 0 && (
           <Button
             iconId="dune"
             tooltip="Insert Dune Chart"
@@ -1735,6 +1704,21 @@ const Toolbar: React.FC<{
             }}
           />
         )}
+        {settings.customToolbarItems
+          .filter((n) => n.key !== "import-export")
+          .map((n) => {
+            return (
+              <CustomButton
+                tooltip={n.tooltip}
+                onClick={n.onClick}
+                key={n.key}
+                icon={n.icon}
+                iconName={n.iconName}
+              >
+                {n.children}
+              </CustomButton>
+            );
+          })}
         {showDuneModal && (
           <DuneChartsInputModal
             isOpen={showDuneModal}

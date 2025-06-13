@@ -114,8 +114,8 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <LucideIcon name="Freeze" />
-              {isFrozen ? "Unfreeze row" : "Freeze to current row"}
+              <LucideIcon name="Snowflake" />
+              <p>{isFrozen ? "Unfreeze row" : "Freeze upto current row"}</p>
             </div>
           </Menu>
         );
@@ -145,8 +145,10 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <LucideIcon name="Freeze" />
-              <p>{isFrozen ? "Unfreeze column" : "Freeze to current column"}</p>
+              <LucideIcon name="Snowflake" />
+              <p>
+                {isFrozen ? "Unfreeze column" : "Freeze upto current column"}
+              </p>
             </div>
           </Menu>
         );
@@ -885,7 +887,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <LucideIcon name="ArrowUp" />
+              <LucideIcon name="ArrowDown01" />
               <p>Ascending sort</p>
             </div>
           </Menu>
@@ -910,7 +912,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <LucideIcon name="ArrowDown" />
+              <LucideIcon name="ArrowDown10" />
               <p>Descending sort</p>
             </div>
           </Menu>

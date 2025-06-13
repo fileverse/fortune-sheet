@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./duneChartsInputModal.css";
-import { Button } from "@fileverse/ui";
+import { Button, LucideIcon } from "@fileverse/ui";
 import { sanitizeDuneUrl } from "@fileverse-dev/fortune-core";
 import SVGIcon from "../SVGIcon";
 
@@ -8,7 +8,6 @@ interface DuneChartsInputModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (value: string) => void;
-  icon: string;
   submitText?: string;
   placeholder?: string;
 }
@@ -17,7 +16,6 @@ const DuneChartsInputModal = ({
   isOpen,
   onClose,
   onSubmit,
-  icon,
   submitText = "Submit",
   placeholder = "Enter a value...",
 }: DuneChartsInputModalProps) => {
@@ -54,6 +52,8 @@ const DuneChartsInputModal = ({
 
     if (e.key === "Enter") {
       handleSubmit();
+    } else if (e.key === "Escape") {
+      onClose();
     }
   };
 
@@ -66,7 +66,7 @@ const DuneChartsInputModal = ({
         onKeyDown={handleKeyDown}
       >
         <div className="modal-header">
-          <SVGIcon name={icon} />
+          <LucideIcon name="DuneChart" />
           <input
             ref={inputRef}
             className="modal-input"

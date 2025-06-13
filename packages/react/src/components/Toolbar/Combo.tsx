@@ -1,12 +1,12 @@
-import React, {
-  CSSProperties,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { IconButton, LucideIcon, Tooltip } from "@fileverse/ui";
-import { useOutsideClick } from "../../hooks/useOutsideClick";
+import React, { CSSProperties, useMemo, useRef, useState } from "react";
+import {
+  IconButton,
+  // LucideIcon,
+  Tooltip,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@fileverse/ui";
 import SVGIcon from "../SVGIcon";
 import { getLucideIcon } from ".";
 
@@ -31,8 +31,6 @@ const Combo: React.FC<Props> = ({
 }) => {
   const style: CSSProperties = { userSelect: "none" };
   const [open, setOpen] = useState(false);
-  const [popupPosition, setPopupPosition] = useState({ left: 0 });
-  const popupRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
 
   const isLucideIcon = useMemo(() => {
@@ -58,89 +56,70 @@ const Combo: React.FC<Props> = ({
     );
   }, [iconId]);
 
-  useOutsideClick(popupRef, () => {
-    setOpen(false);
-  });
-
-  useLayoutEffect(() => {
-    // re-position the popup menu if it overflows the window
-    if (!popupRef.current) {
-      return;
-    }
-    if (!open) {
-      setPopupPosition({ left: 0 });
-    }
-    const winW = window.innerWidth;
-    const rect = popupRef.current.getBoundingClientRect();
-    const menuW = rect.width;
-    const { left } = rect;
-    if (left + menuW > winW) {
-      setPopupPosition({ left: -rect.width + buttonRef.current!.clientWidth });
-    }
-  }, [open]);
-
-  return (
-    <div className="fortune-toobar-combo-container fortune-toolbar-item">
-      <div ref={buttonRef} className="fortune-toolbar-combo">
-        {!isLucideIcon ? (
-          <Tooltip text={tooltip} placement="bottom">
-            <div
-              className="fortune-toolbar-combo-button"
-              onClick={(e) => {
-                if (onClick) {
-                  onClick(e);
-                  // If there's no arrow, also toggle dropdown after executing onClick
-                  if (!showArrow) setOpen(!open);
-                } else {
-                  setOpen(!open);
-                }
-              }}
-              tabIndex={0}
-              role="button"
-              style={style}
-            >
-              {iconId ? (
-                <SVGIcon name={iconId} width={16} height={16} />
-              ) : (
-                <span className="fortune-toolbar-combo-text">
-                  {text !== undefined ? text : ""}
-                </span>
-              )}
-            </div>
-          </Tooltip>
+  const trigger = !isLucideIcon ? (
+    <Tooltip text={tooltip} placement="bottom">
+      <div
+        className="fortune-toolbar-combo-button"
+        onClick={(e) => {
+          if (onClick) {
+            onClick(e);
+            // If there's no arrow, also toggle dropdown after executing onClick
+            if (!showArrow) setOpen(!open);
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        style={style}
+      >
+        {iconId ? (
+          <SVGIcon name={iconId} width={16} height={16} />
         ) : (
-          <Tooltip text={tooltip} placement="bottom">
-            <IconButton
-              icon={getLucideIcon(iconId as string)}
-              variant="ghost"
-              onClick={() => setOpen(!open)}
-              className={
-                showArrow ? "fortune-toolbar-combo-button show-arrow" : ""
-              }
-            />
-          </Tooltip>
-        )}
-        {showArrow && (
-          <div
-            className="fortune-toolbar-combo-arrow"
-            onClick={() => setOpen(!open)}
-            tabIndex={0}
-            role="button"
-            style={style}
-          >
-            <LucideIcon name="ChevronDown" width={14} height={14} />
-          </div>
+          <span className="fortune-toolbar-combo-text">
+            {text !== undefined ? text : ""}
+          </span>
         )}
       </div>
-      {open && (
-        <div
-          ref={popupRef}
-          className="fortune-toolbar-combo-popup"
-          style={popupPosition}
+    </Tooltip>
+  ) : (
+    <Tooltip text={tooltip} placement="bottom">
+      <IconButton
+        icon={getLucideIcon(iconId as string)}
+        variant="ghost"
+        onClick={() => setOpen(!open)}
+        className="fortune-toolbar-combo-button"
+      />
+    </Tooltip>
+  );
+
+  return (
+    <div ref={buttonRef}>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <div className="flex items-center">
+            {trigger}
+            {/* {showArrow && (
+              <div
+                className="fortune-toolbar-combo-arrow"
+                onClick={() => setOpen(!open)}
+                tabIndex={0}
+                role="button"
+                style={style}
+              >
+                <LucideIcon name="ChevronDown" width={14} height={14} />
+              </div>
+            )} */}
+          </div>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          side="bottom"
+          sideOffset={4}
+          alignOffset={-16}
+          className="fortune-toolbar-combo-popup border-none"
         >
           {children?.(setOpen)}
-        </div>
-      )}
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

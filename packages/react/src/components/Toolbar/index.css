@@ -94,11 +94,8 @@
 }
 
 .fortune-toolbar-combo-popup {
-  position: absolute;
   white-space: nowrap;
-  top: 32px;
-  left: 0;
-  z-index: 1004;
+  max-width: 240px;
 }
 
 .fortune-toolbar-select::-webkit-scrollbar {

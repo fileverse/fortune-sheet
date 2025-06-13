@@ -785,7 +785,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <LucideIcon name="Resize" />
+              <SVGIcon name="resize-flv" width={16} height={16} />
               <div>
                 Resize row height
                 {/* {rightclick.row + ""}
@@ -830,7 +830,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <LucideIcon name="Resize" />
+              <SVGIcon name="resize-flv" width={16} height={16} />
               <div>Resize column width</div>
             </div>
           </Menu>

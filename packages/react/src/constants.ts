@@ -11,7 +11,6 @@ export const API_KEY_PLACEHOLDER: Record<string, string> = Object.fromEntries(
 export const COMIMG_SOON_FUNCTIONS = [
   "UNISWAP",
   "ARTEMIS",
-  "FIREFLY",
   "AAVE",
   "AERODOME",
   "PENDLE",

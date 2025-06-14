@@ -2301,7 +2301,7 @@ function filterAndPickOthers(
 
 export const PROMOTED_CRYPTO_FUNCTIONS = [
   "ETHERSCAN",
-  "FIREFLY",
+  "SAFE",
   "COINGECKO",
   "GNOSISPAY",
   "BLOCKSCOUT",

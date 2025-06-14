@@ -2190,14 +2190,15 @@
   resolved "https://registry.yarnpkg.com/@fal-works/esbuild-plugin-global-externals/-/esbuild-plugin-global-externals-2.1.2.tgz#c05ed35ad82df8e6ac616c68b92c2282bd083ba4"
   integrity sha512-cEee/Z+I12mZcFJshKcCqC8tuX5hG3s+d+9nZ3LabqKF1vKdF41B92pJVCBggjAGORAeOzyyDDKrZwIkLffeOQ==
 
-"@fileverse-dev/formulajs@4.4.11-mod-26":
-  version "4.4.11-mod-26"
-  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.11-mod-26.tgz#f9098c73f9658ad9e3abadded861eae23c65a3e7"
-  integrity sha512-ZNQpve3zrRK6Vw2ihmy8RIJpqZKCkPmCuqKvUqQFnwWf1SfRy3iCtX+WXqBTXf4rQX8d9L8fPVBOTDJyGkQYyw==
+"@fileverse-dev/formulajs@4.4.11-mod-28":
+  version "4.4.11-mod-28"
+  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.11-mod-28.tgz#d1f47fb2ead6ca32bf0c1878e87e1976ae77c308"
+  integrity sha512-nqcs1KPIeO1q6p66GDvqm2Kz0/IUO29ObpITVR5M/mAFDFoXFXdhv5rSR/gXcFe31qGLQpA/gZqpU/Rhx3Vzsg==
   dependencies:
     "@fileverse-dev/formulajs" "^4.4.11-mod-23"
     bessel "^1.0.2"
     esbuild "^0.25.4"
+    js-sha3 "^0.9.3"
     jstat "^1.9.6"
 
 "@fileverse-dev/formulajs@^4.4.11-mod-23":
@@ -14217,6 +14218,11 @@ jison-lex@0.3.x:
   dependencies:
     lex-parser "0.1.x"
     nomnom "1.5.2"
+
+js-sha3@^0.9.3:
+  version "0.9.3"
+  resolved "https://registry.yarnpkg.com/js-sha3/-/js-sha3-0.9.3.tgz#f0209432b23a66a0f6c7af592c26802291a75c2a"
+  integrity sha512-BcJPCQeLg6WjEx3FE591wVAevlli8lxsxm9/FzV4HXkV49TmBH38Yvrpce6fjbADGMKFrBMGTqrVz3qPIZ88Gg==
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"

@@ -236,6 +236,9 @@ export function handleCellAreaMouseDown(
   fxInput?: HTMLDivElement | null,
   canvas?: CanvasRenderingContext2D
 ) {
+  if (!fxInput?.innerHTML && ctx) {
+    ctx.defaultCandidates = [];
+  }
   ctx.contextMenu = {};
   ctx.filterContextMenu = undefined;
   const flowdata = getFlowdata(ctx);

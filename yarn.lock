@@ -2190,7 +2190,17 @@
   resolved "https://registry.yarnpkg.com/@fal-works/esbuild-plugin-global-externals/-/esbuild-plugin-global-externals-2.1.2.tgz#c05ed35ad82df8e6ac616c68b92c2282bd083ba4"
   integrity sha512-cEee/Z+I12mZcFJshKcCqC8tuX5hG3s+d+9nZ3LabqKF1vKdF41B92pJVCBggjAGORAeOzyyDDKrZwIkLffeOQ==
 
-"@fileverse-dev/formulajs@4.4.11-mod-23":
+"@fileverse-dev/formulajs@4.4.11-mod-23-patch-1":
+  version "4.4.11-mod-23-patch-1"
+  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.11-mod-23-patch-1.tgz#064cf9d8ce4705b0154eaf5e5bb372f08973f4bb"
+  integrity sha512-hzwH5ZtNtsUMuUJpj2TCp+pkbaclecdBIjQyIjXOeLXMOTTNgOvosolKmhoqcMOdl9LEcAN6aachTCFnYMXzrQ==
+  dependencies:
+    "@fileverse-dev/formulajs" "^4.4.11-mod-23"
+    bessel "^1.0.2"
+    esbuild "^0.25.4"
+    jstat "^1.9.6"
+
+"@fileverse-dev/formulajs@^4.4.11-mod-23":
   version "4.4.11-mod-23"
   resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.11-mod-23.tgz#ef433ce8a7321ae3cf362668c476299b9697ce3c"
   integrity sha512-/DjC9W0pFIAm4hd/cvpDThad3TXV3pyudjqRiyi6H4saO3rYsg8UovI1ToNemZA61wvJwIGgpsRMZArlQKLhcw==

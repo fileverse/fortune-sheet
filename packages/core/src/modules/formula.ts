@@ -2280,7 +2280,7 @@ function filterAndPickOthers(
   allItems.forEach((item) => {
     if (nameSet.has(item.n)) {
       matched.push(item);
-    } else {
+    } else if (item.t !== 20) {
       unmatched.push(item);
     }
   });
@@ -2301,7 +2301,7 @@ function filterAndPickOthers(
 
 export const PROMOTED_CRYPTO_FUNCTIONS = [
   "ETHERSCAN",
-  "UNISWAP",
+  "BLOCKSCOUT",
   "COINGECKO",
   "GNOSIS",
   "SAFE",
@@ -2329,6 +2329,8 @@ export function rangeHightlightselected(ctx: Context, $editor: HTMLDivElement) {
       functionlist,
       PROMOTED_CRYPTO_FUNCTIONS
     );
+    const funcName = helpFunctionExe($editor, currSelection, ctx);
+    ctx.functionHint = funcName?.toUpperCase();
     return;
   }
   if (currText?.match(/^[a-zA-Z_]+$/)) {

@@ -1,6 +1,7 @@
 import _ from "lodash";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { LucideIcon } from "@fileverse/ui";
+import { COMIMG_SOON_FUNCTIONS } from "packages/react/src/constants";
+import { LucideIcon, Tooltip } from "@fileverse/ui";
 import WorkbookContext from "../../../context";
 import "./index.css";
 
@@ -28,6 +29,10 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
   useEffect(() => {
     calcuatePopUpPlacement();
   });
+
+  const isComingSoon = (name: string) => {
+    return COMIMG_SOON_FUNCTIONS.includes(name);
+  };
   if (
     _.isEmpty(context.functionCandidates) &&
     _.isEmpty(context.defaultCandidates)
@@ -65,24 +70,32 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
               <div
                 key={v.n}
                 data-func={v.n}
-                className={`luckysheet-formula-search-item ${
+                style={{
+                  cursor: isComingSoon(v.n) ? "not-allowed" : "pointer",
+                }}
+                className={`luckysheet-formula-search-item  ${
                   index === 0 ? "luckysheet-formula-search-item-active" : ""
                 }`}
               >
                 <div
                   style={{ display: "flex", justifyContent: "space-between" }}
                 >
-                  <div className="luckysheet-formula-search-func color-text-default text-body-sm">
+                  <div
+                    className={`luckysheet-formula-search-func ${
+                      isComingSoon(v.n)
+                        ? "color-text-secondary"
+                        : "color-text-default"
+                    }  text-body-sm`}
+                  >
                     {v.n}
                   </div>
                   <div
                     style={{
                       display: "flex",
                       justifyContent: "end",
-                      width: "68px",
-                      height: "20px",
+                      minWidth: "68px",
                       alignItems: "center",
-                      gap: "4px",
+                      gap: "6px",
                     }}
                   >
                     {v.LOGO && (
@@ -93,35 +106,49 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                       />
                     )}
                     {v.API_KEY && (
-                      <div
-                        style={{
-                          borderRadius: "4px",
-                          backgroundColor: `${
-                            localStorage.getItem(v.API_KEY)
-                              ? "#177E23"
-                              : "#e8ebec"
-                          }`,
-                          width: "16px",
-                          height: "16px",
-                        }}
-                        className="flex justify-center"
+                      <Tooltip
+                        text={
+                          localStorage.getItem(v.API_KEY)
+                            ? "API Key added"
+                            : "API key required"
+                        }
                       >
-                        <LucideIcon
-                          name="Key"
+                        <div
                           style={{
-                            color: localStorage.getItem(v.API_KEY)
-                              ? "white"
-                              : "#77818A",
-                            width: "12px",
-                            height: "12px",
+                            borderRadius: "4px",
+                            backgroundColor: `${
+                              localStorage.getItem(v.API_KEY)
+                                ? "#177E23"
+                                : "#e8ebec"
+                            }`,
+                            width: "16px",
+                            height: "16px",
                           }}
-                        />
-                      </div>
+                          className="flex justify-center"
+                        >
+                          <LucideIcon
+                            name="Key"
+                            style={{
+                              color: localStorage.getItem(v.API_KEY)
+                                ? "white"
+                                : "#77818A",
+                              width: "12px",
+                              height: "12px",
+                            }}
+                          />
+                        </div>
+                      </Tooltip>
                     )}
                   </div>
                 </div>
-                <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
-                  {v.d}
+                <div
+                  className={`luckysheet-formula-search-detail mt-1 text-helper-text-sm  ${
+                    isComingSoon(v.n)
+                      ? "color-text-secondary"
+                      : "color-text-default"
+                  }`}
+                >
+                  {isComingSoon(v.n) ? "Coming soon to dSheets" : v.d}
                 </div>
               </div>
             );
@@ -134,14 +161,12 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
           </p>
           {context.defaultCandidates
             .slice(5, context.defaultCandidates.length)
-            .map((v, index) => {
+            .map((v) => {
               return (
                 <div
                   key={v.n}
                   data-func={v.n}
-                  className={`luckysheet-formula-search-item ${
-                    index === 0 ? "luckysheet-formula-search-item-active" : ""
-                  }`}
+                  className="luckysheet-formula-search-item"
                 >
                   <div
                     style={{ display: "flex", justifyContent: "space-between" }}
@@ -156,14 +181,14 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                         width: "68px",
                         height: "20px",
                         alignItems: "center",
-                        gap: "4px",
+                        gap: "6px",
                       }}
                     >
                       {v.LOGO && (
                         <img
                           src={v.LOGO}
                           alt="Service Logo"
-                          style={{ width: "20px" }}
+                          style={{ width: "16px" }}
                         />
                       )}
                       {v.API_KEY && (
@@ -223,43 +248,50 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                       display: "flex",
                       justifyContent: "end",
                       width: "68px",
-                      height: "20px",
                       alignItems: "center",
-                      gap: "4px",
+                      gap: "6px",
                     }}
                   >
                     {v.LOGO && (
                       <img
                         src={v.LOGO}
                         alt="Service Logo"
-                        style={{ width: "20px" }}
+                        style={{ width: "16px" }}
                       />
                     )}
                     {v.API_KEY && (
-                      <div
-                        style={{
-                          borderRadius: "4px",
-                          backgroundColor: `${
-                            localStorage.getItem(v.API_KEY)
-                              ? "#177E23"
-                              : "#e8ebec"
-                          }`,
-                          width: "16px",
-                          height: "16px",
-                        }}
-                        className="flex justify-center"
+                      <Tooltip
+                        text={
+                          localStorage.getItem(v.API_KEY)
+                            ? "API Key added"
+                            : "API Key required"
+                        }
                       >
-                        <LucideIcon
-                          name="Key"
+                        <div
                           style={{
-                            color: localStorage.getItem(v.API_KEY)
-                              ? "white"
-                              : "#77818A",
-                            width: "12px",
-                            height: "12px",
+                            borderRadius: "4px",
+                            backgroundColor: `${
+                              localStorage.getItem(v.API_KEY)
+                                ? "#177E23"
+                                : "#e8ebec"
+                            }`,
+                            width: "16px",
+                            height: "16px",
                           }}
-                        />
-                      </div>
+                          className="flex justify-center"
+                        >
+                          <LucideIcon
+                            name="Key"
+                            style={{
+                              color: localStorage.getItem(v.API_KEY)
+                                ? "white"
+                                : "#77818A",
+                              width: "12px",
+                              height: "12px",
+                            }}
+                          />
+                        </div>
+                      </Tooltip>
                     )}
                   </div>
                 </div>

@@ -157,14 +157,14 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
           style={{
             display: "flex",
             justifyContent: "end",
-            width: "68px",
+            minWidth: "68px",
             height: "20px",
             alignItems: "center",
-            gap: "4px",
+            gap: "6px",
           }}
         >
           {fn.LOGO && (
-            <img src={fn.LOGO} alt="Service Logo" style={{ width: "20px" }} />
+            <img src={fn.LOGO} alt="Service Logo" style={{ width: "16px" }} />
           )}
           {fn.API_KEY && (
             <div

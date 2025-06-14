@@ -3,17 +3,44 @@ import {
   onImageMoveStart,
   onImageResizeStart,
 } from "@fileverse-dev/fortune-core";
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useRef, useEffect } from "react";
+import { IconButton } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 
 const ImgBoxs: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
+  const containerRef = useRef<HTMLDivElement>(null);
   const activeImg = useMemo(() => {
     return _.find(context.insertedImgs, { id: context.activeImg });
   }, [context.activeImg, context.insertedImgs]);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+
+      const imageBoxes = containerRef.current.querySelectorAll(
+        ".luckysheet-modal-dialog-image"
+      );
+
+      const clickedInsideSomeImage = Array.from(imageBoxes).some((el) =>
+        el.contains(e.target as Node)
+      );
+
+      if (!clickedInsideSomeImage && context.activeImg !== undefined) {
+        setContext((ctx) => {
+          ctx.activeImg = undefined;
+        });
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [context.activeImg, setContext]);
+
   return (
-    <div id="luckysheet-image-showBoxs">
+    <div id="luckysheet-image-showBoxs" ref={containerRef}>
       {activeImg && (
         <div
           id="luckysheet-modal-dialog-activeImage"
@@ -42,8 +69,6 @@ const ImgBoxs: React.FC = () => {
                 activeImg.height * context.zoomRatio
               }px`,
               backgroundRepeat: "no-repeat",
-              // context.activeImg.width * context.zoomRatio +
-              // context.activeImg.height * context.zoomRatio,
             }}
             onMouseDown={(e) => {
               const { nativeEvent } = e;
@@ -84,15 +109,25 @@ const ImgBoxs: React.FC = () => {
             >
               <i className="fa fa-window-maximize" aria-hidden="true" />
             </span>
-            <span
-              className="luckysheet-modal-controll-btn luckysheet-modal-controll-del"
-              role="button"
-              tabIndex={0}
-              aria-label="删除"
-              title="删除"
-            >
-              <i className="fa fa-trash" aria-hidden="true" />
-            </span>
+            <IconButton
+              icon="Trash2"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                setContext((ctx) => {
+                  const currentSheet = ctx.luckysheetfile.find(
+                    (sheet) => sheet.id === ctx.currentSheetId
+                  );
+                  if (currentSheet) {
+                    currentSheet.images = currentSheet.images?.filter(
+                      (f: any) => f.id !== activeImg.id
+                    );
+                  }
+                  ctx.activeImg = undefined;
+                });
+              }}
+              variant="ghost"
+              className="fortune-iframe-boxes-delete-button"
+            />
           </div>
         </div>
       )}

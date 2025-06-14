@@ -1,7 +1,7 @@
 import _ from "lodash";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { COMIMG_SOON_FUNCTIONS } from "packages/react/src/constants";
 import { LucideIcon, Tooltip } from "@fileverse/ui";
+import { COMIMG_SOON_FUNCTIONS } from "../../../constants";
 import WorkbookContext from "../../../context";
 import "./index.css";
 

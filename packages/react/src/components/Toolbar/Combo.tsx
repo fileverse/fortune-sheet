@@ -92,7 +92,7 @@ const Combo: React.FC<Props> = ({
   );
 
   return (
-    <div ref={buttonRef}>
+    <div ref={buttonRef} className="fortune-toolbar-item">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <div className="flex items-center">

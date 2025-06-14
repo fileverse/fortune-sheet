@@ -7,7 +7,6 @@ import {
   onIframeMoveEnd,
   onIframeResize,
   onIframeResizeEnd,
-  saveIframe,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../context";
 import "./iFrameBoxs.css";
@@ -161,8 +160,6 @@ const IframeBoxs: React.FC = () => {
                           currentSheet.iframes = currentSheet.iframes?.filter(
                             (f: any) => f.id !== frame.id
                           );
-                          ctx.insertedIframes = currentSheet.iframes;
-                          saveIframe(ctx);
                         }
                         ctx.activeIframe = undefined;
                       });

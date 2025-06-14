@@ -1689,7 +1689,7 @@ const Toolbar: React.FC<{
         )}
       </div>
       <div className="fortune-toolbar-right">
-      {settings.customToolbarItems.length > 0 && (
+        {settings.customToolbarItems.length > 0 && (
           <Button
             iconId="dune"
             tooltip="Insert Dune Chart"

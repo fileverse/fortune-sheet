@@ -113,9 +113,16 @@ const DataVerification: React.FC = () => {
                 }
               }
             }
-            ctx.luckysheetfile[
-              getSheetIndex(ctx, ctx.currentSheetId) as number
-            ].dataVerification = currentDataVerification;
+            const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId) as number;
+            ctx.luckysheetfile[sheetIndex].dataVerification = currentDataVerification;
+
+            // Add server save operation for data verification
+            if (ctx.hooks?.saveDataVerification) {
+              ctx.hooks.saveDataVerification(
+                ctx.currentSheetId,
+                currentDataVerification
+              );
+            }
           }
         });
       } else if (type === "delete") {
@@ -139,6 +146,16 @@ const DataVerification: React.FC = () => {
             for (let c = stc; c <= edc; c += 1) {
               delete currentDataVerification[`${r}_${c}`];
             }
+          }
+          const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId) as number;
+          ctx.luckysheetfile[sheetIndex].dataVerification = currentDataVerification;
+
+          // Add server save operation for data verification deletion
+          if (ctx.hooks?.saveDataVerification) {
+            ctx.hooks.saveDataVerification(
+              ctx.currentSheetId,
+              currentDataVerification
+            );
           }
         });
       }
@@ -329,12 +346,12 @@ const DataVerification: React.FC = () => {
                     ctx.dataVerification!.dataRegulation!.value1 = value;
                   });
                 }}
-                // onClick={() =>
-                //   dataSelectRange(
-                //     "dropDown",
-                //     context.dataVerification!.dataRegulation!.value1
-                //   )
-                // }
+              // onClick={() =>
+              //   dataSelectRange(
+              //     "dropDown",
+              //     context.dataVerification!.dataRegulation!.value1
+              //   )
+              // }
               />
               <div className="mt-4 flex items-center">
                 <Checkbox
@@ -530,7 +547,7 @@ const DataVerification: React.FC = () => {
               </Select>
 
               {context.dataVerification.dataRegulation.type2 === "between" ||
-              context.dataVerification.dataRegulation.type2 === "notBetween" ? (
+                context.dataVerification.dataRegulation.type2 === "notBetween" ? (
                 <div className="mt-4 flex gap-2 items-center">
                   <div className="datepicker-toggle">
                     <input

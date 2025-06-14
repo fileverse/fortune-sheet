@@ -82,6 +82,7 @@ export type Hooks = {
       endColumn: number;
     }
   ) => boolean;
+  saveDataVerification?: (sheetId: string, dataVerification: any) => void;
   afterCellMouseDown?: (
     cell: Cell | null,
     cellInfo: {

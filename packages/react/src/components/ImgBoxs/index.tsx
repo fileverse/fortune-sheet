@@ -125,6 +125,20 @@ const ImgBoxs: React.FC = () => {
                   ctx.activeImg = undefined;
                 });
               }}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+                setContext((ctx) => {
+                  const currentSheet = ctx.luckysheetfile.find(
+                    (sheet) => sheet.id === ctx.currentSheetId
+                  );
+                  if (currentSheet) {
+                    currentSheet.images = currentSheet.images?.filter(
+                      (f: any) => f.id !== activeImg.id
+                    );
+                  }
+                  ctx.activeImg = undefined;
+                });
+              }}
               variant="ghost"
               className="fortune-iframe-boxes-delete-button"
             />

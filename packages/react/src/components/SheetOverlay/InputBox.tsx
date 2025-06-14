@@ -149,7 +149,7 @@ const InputBox: React.FC = () => {
       if (!textEditor) return;
 
       const searchTxt = getrangeseleciton()?.textContent || "";
-      const deleteCount = searchTxt.length;
+      const deleteCount = searchTxt === "=" ? 0 : searchTxt.length;
       textEditor.focus();
 
       const selection = window.getSelection();
@@ -187,6 +187,7 @@ const InputBox: React.FC = () => {
 
       setContext((draftCtx) => {
         draftCtx.functionCandidates = [];
+        draftCtx.defaultCandidates = [];
         draftCtx.functionHint = formulaName;
       });
     },
@@ -468,7 +469,9 @@ const InputBox: React.FC = () => {
         />
       </div>
 
-      {(context.functionCandidates.length > 0 || context.functionHint) && (
+      {(context.functionCandidates.length > 0 ||
+        context.functionHint ||
+        context.defaultCandidates.length > 0) && (
         <>
           <FormulaSearch
             onMouseOver={(e) => {

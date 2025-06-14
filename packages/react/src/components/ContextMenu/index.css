@@ -28,11 +28,17 @@
   height: 20px;
   cursor: pointer;
   border-radius: 4px;
+  gap: 12px;
 }
 
 .context-item:hover {
   background: hsl(var(--color-bg-default-hover));
   transition: all 0.2s ease-in-out;
+}
+
+.context-item svg {
+  width: 18px !important;
+  height: 18px !important;
 }
 
 .fortune-context-menu input.luckysheet-mousedown-cancel {
@@ -250,7 +256,6 @@
   justify-content: space-between;
   gap: 8px;
   font-size: 14px;
-
 }
 
 /*颜色筛选 -- pan*/

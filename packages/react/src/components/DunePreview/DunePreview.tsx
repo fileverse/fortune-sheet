@@ -1,7 +1,6 @@
 import React from "react";
 import { sanitizeDuneUrl } from "@fileverse-dev/fortune-core";
 import "./index.css";
-import { Button } from "@fileverse/ui";
 
 interface DunePreviewProps {
   url: string;
@@ -49,12 +48,20 @@ const DunePreview: React.FC<DunePreviewProps> = ({
       </div>
       <p>Do you want to insert Dune chart?</p>
       <div className="fortune-dune-preview-footer">
-        <Button variant="ghost" onClick={onKeepAsLink} className="!w-fit px-0">
+        <button
+          type="button"
+          onClick={onKeepAsLink}
+          className="fortune-dune-preview-button"
+        >
           Keep as Link
-        </Button>
-        <Button onClick={onEmbed} className="!w-fit px-0">
+        </button>
+        <button
+          type="button"
+          onClick={onEmbed}
+          className="fortune-dune-preview-button primary"
+        >
           Embed
-        </Button>
+        </button>
       </div>
     </div>
   );

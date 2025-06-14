@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useMemo } from "react";
+import { IconButton } from "@fileverse/ui";
 import {
   onIframeMoveStart,
   onIframeResizeStart,
@@ -8,6 +9,7 @@ import {
   onIframeResizeEnd,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../context";
+import "./iFrameBoxs.css";
 
 const IframeBoxs: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
@@ -147,11 +149,8 @@ const IframeBoxs: React.FC = () => {
                 </div>
 
                 <div className="luckysheet-modal-dialog-controll">
-                  <span
-                    className="luckysheet-modal-controll-btn luckysheet-modal-controll-del"
-                    role="button"
-                    tabIndex={0}
-                    title="Delete"
+                  <IconButton
+                    icon="Trash2"
                     onClick={() => {
                       setContext((ctx) => {
                         const currentSheet = ctx.luckysheetfile.find(
@@ -165,9 +164,9 @@ const IframeBoxs: React.FC = () => {
                         ctx.activeIframe = undefined;
                       });
                     }}
-                  >
-                    DELETE
-                  </span>
+                    variant="ghost"
+                    className="fortune-iframe-boxes-delete-button"
+                  />
                 </div>
               </>
             )}

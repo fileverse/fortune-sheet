@@ -25,6 +25,7 @@ import _ from "lodash";
 import React, { useContext, useRef, useCallback, useLayoutEffect } from "react";
 import regeneratorRuntime from "regenerator-runtime";
 import Tippy from "@tippyjs/react";
+import { LucideIcon } from "@fileverse/ui";
 import { SplitColumn } from "../SplitColumn";
 import { ResetColumnWidth } from "../ResetColumnWidth";
 import DataVerification from "../DataVerification";
@@ -35,9 +36,9 @@ import Divider from "./Divider";
 import "./index.css";
 import Menu from "./Menu";
 // import CustomSort from "../CustomSort";
-import SVGIcon from "../SVGIcon";
 import "tippy.js/dist/tippy.css";
 import ConditionalFormat from "../ConditionFormat";
+import SVGIcon from "../SVGIcon";
 
 const ContextMenu: React.FC = () => {
   const { showDialog } = useDialog();
@@ -85,12 +86,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="split-flv"
-                width={17}
-                height={17}
-                style={{ marginTop: "4px", marginRight: "8px" }}
-              />
+              <SVGIcon name="split-flv" width={18} height={18} />
               Split text to columns
             </div>
           </Menu>
@@ -118,13 +114,8 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="freeze-flv"
-                width={16}
-                height={16}
-                style={{ marginTop: "4px", marginRight: "4px" }}
-              />
-              {isFrozen ? "Unfreeze row" : "Freeze to current row"}
+              <LucideIcon name="Snowflake" />
+              <p>{isFrozen ? "Unfreeze row" : "Freeze upto current row"}</p>
             </div>
           </Menu>
         );
@@ -154,13 +145,10 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="freeze-flv"
-                width={18}
-                height={18}
-                style={{ marginTop: "4px", marginRight: "4px" }}
-              />
-              <p>{isFrozen ? "Unfreeze column" : "Freeze to current column"}</p>
+              <LucideIcon name="Snowflake" />
+              <p>
+                {isFrozen ? "Unfreeze column" : "Freeze upto current column"}
+              </p>
             </div>
           </Menu>
         );
@@ -182,12 +170,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="comment-flv"
-                width={18}
-                height={18}
-                style={{ marginTop: "4px", marginRight: "8px" }}
-              />
+              <LucideIcon name="MessageSquarePlus" />
               <p>Comment</p>
             </div>
           </Menu>
@@ -210,12 +193,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="dataVerification"
-                width={20}
-                height={20}
-                style={{ marginRight: "7px" }}
-              />
+              <LucideIcon name="ShieldCheck" />
               <p>Data Verification</p>
             </div>
           </Menu>
@@ -235,12 +213,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="search"
-                width={20}
-                height={20}
-                style={{ marginRight: "7px" }}
-              />
+              <LucideIcon name="Search" />
               <p>Find and Replace</p>
             </div>
           </Menu>
@@ -263,12 +236,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="copy-flv"
-                width={21}
-                height={21}
-                style={{ marginTop: "4px", marginRight: "4px" }}
-              />
+              <LucideIcon name="Copy" />
               <p>{rightclick.copy}</p>
             </div>
           </Menu>
@@ -306,12 +274,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="cut-flv"
-                width={17}
-                height={17}
-                style={{ marginRight: "8px" }}
-              />
+              <LucideIcon name="Scissors" />
               <p>Cut</p>
             </div>
           </Menu>
@@ -330,12 +293,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="paste-flv"
-                width={17}
-                height={17}
-                style={{ marginRight: "8px" }}
-              />
+              <LucideIcon name="Clipboard" />
               <p>{rightclick.paste}</p>
             </div>
           </Menu>
@@ -388,8 +346,8 @@ const ContextMenu: React.FC = () => {
                   );
                 }}
               >
-                <>
-                  <SVGIcon name="insert-flv" width={18} height={18} />
+                <div className="context-item">
+                  <LucideIcon name="Plus" />
                   <div>
                     Insert column to the left
                     {/* {_.startsWith(context.lang ?? "", "zh") && (
@@ -420,7 +378,7 @@ const ContextMenu: React.FC = () => {
                       </span>
                     )} */}
                   </div>
-                </>
+                </div>
               </Menu>
             ));
       }
@@ -464,8 +422,8 @@ const ContextMenu: React.FC = () => {
                   );
                 }}
               >
-                <>
-                  <SVGIcon name="insert-flv" width={18} height={18} />
+                <div className="context-item">
+                  <LucideIcon name="Plus" />
                   <div>
                     Insert row below
                     {/* {_.startsWith(context.lang ?? "", "zh") && (
@@ -495,7 +453,7 @@ const ContextMenu: React.FC = () => {
                       </span>
                     )} */}
                   </div>
-                </>
+                </div>
               </Menu>
             ));
       }
@@ -547,12 +505,7 @@ const ContextMenu: React.FC = () => {
               }}
             >
               <div className="context-item">
-                <SVGIcon
-                  name="delete-flv"
-                  width={18}
-                  height={18}
-                  style={{ marginRight: "8px" }}
-                />
+                <LucideIcon name="Trash2" />
                 <div>
                   {rightclick.deleteSelected}
                   {rightclick.column}
@@ -610,12 +563,7 @@ const ContextMenu: React.FC = () => {
               }}
             >
               <div className="context-item">
-                <SVGIcon
-                  name="delete-flv"
-                  width={18}
-                  height={18}
-                  style={{ marginRight: "8px" }}
-                />
+                <LucideIcon name="Trash2" />
                 <div>
                   {rightclick.deleteSelected}
                   {rightclick.column}
@@ -670,12 +618,7 @@ const ContextMenu: React.FC = () => {
               }}
             >
               <div className="context-item">
-                <SVGIcon
-                  name="delete-flv"
-                  width={18}
-                  height={18}
-                  style={{ marginRight: "8px" }}
-                />
+                <LucideIcon name="Trash2" />
                 <div>
                   {rightclick.deleteSelected}
                   {rightclick.row}
@@ -730,12 +673,7 @@ const ContextMenu: React.FC = () => {
               }}
             >
               <div className="context-item">
-                <SVGIcon
-                  name="delete-flv"
-                  width={18}
-                  height={18}
-                  style={{ marginRight: "8px" }}
-                />
+                <LucideIcon name="Trash2" />
                 <div>
                   {rightclick.deleteSelected}
                   {rightclick.row}
@@ -767,12 +705,7 @@ const ContextMenu: React.FC = () => {
               }}
             >
               <div className="context-item">
-                <SVGIcon
-                  name="hide-flv"
-                  width={18}
-                  height={18}
-                  style={{ marginRight: "8px" }}
-                />
+                <LucideIcon name="EyeOff" />
                 <div>{(rightclick as any)[item] + rightclick.row}</div>
               </div>
             </Menu>
@@ -801,12 +734,7 @@ const ContextMenu: React.FC = () => {
               }}
             >
               <div className="context-item">
-                <SVGIcon
-                  name="hide-flv"
-                  width={18}
-                  height={18}
-                  style={{ marginRight: "8px" }}
-                />
+                <LucideIcon name="EyeOff" />
                 <div>{(rightclick as any)[item] + rightclick.column}</div>
               </div>
             </Menu>
@@ -857,12 +785,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="resize-flv"
-                width={18}
-                height={18}
-                style={{ marginRight: "8px" }}
-              />
+              <SVGIcon name="resize-flv" width={16} height={16} />
               <div>
                 Resize row height
                 {/* {rightclick.row + ""}
@@ -907,12 +830,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="resize-flv"
-                width={18}
-                height={18}
-                style={{ marginRight: "8px" }}
-              />
+              <SVGIcon name="resize-flv" width={16} height={16} />
               <div>Resize column width</div>
             </div>
           </Menu>
@@ -944,12 +862,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="clear-flv"
-                width={17}
-                height={17}
-                style={{ marginRight: "8px" }}
-              />
+              <LucideIcon name="Eraser" />
               <p>{rightclick.clearContent}</p>
             </div>
           </Menu>
@@ -974,12 +887,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="asc-sort-flv"
-                width={18}
-                height={18}
-                style={{ marginTop: "4px", marginRight: "8px" }}
-              />
+              <LucideIcon name="ArrowDown01" />
               <p>Ascending sort</p>
             </div>
           </Menu>
@@ -1004,12 +912,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="des-sort-flv"
-                width={18}
-                height={18}
-                style={{ marginTop: "4px", marginRight: "8px" }}
-              />
+              <LucideIcon name="ArrowDown10" />
               <p>Descending sort</p>
             </div>
           </Menu>
@@ -1045,12 +948,7 @@ const ContextMenu: React.FC = () => {
                       className="context-item p-2 w-full"
                       style={{ height: "40px" }}
                     >
-                      <SVGIcon
-                        name="sort-asc"
-                        width={24}
-                        height={18}
-                        style={{ marginRight: "4px" }}
-                      />
+                      <LucideIcon name="ArrowUp" />
                       <p>{sort.asc}</p>
                     </div>
                   </Menu>
@@ -1066,12 +964,7 @@ const ContextMenu: React.FC = () => {
                       className="context-item p-2 w-full"
                       style={{ height: "40px" }}
                     >
-                      <SVGIcon
-                        name="sort-desc"
-                        width={24}
-                        height={18}
-                        style={{ marginRight: "4px" }}
-                      />
+                      <LucideIcon name="ArrowDown" />
                       <p>{sort.desc}</p>
                     </div>
                   </Menu>
@@ -1105,15 +998,10 @@ const ContextMenu: React.FC = () => {
               <Menu>
                 <div className="flex items-center justify-between w-full">
                   <div className="context-item">
-                    <SVGIcon
-                      name="sort-flv"
-                      width={18}
-                      height={18}
-                      style={{ marginRight: "8px" }}
-                    />
+                    <LucideIcon name="ArrowDownUp" />
                     <p>{rightclick.sortSelection}</p>
                   </div>
-                  <SVGIcon name="rightArrow" width={18} />
+                  <LucideIcon name="ChevronRight" width={16} height={16} />
                 </div>
               </Menu>
             </div>
@@ -1150,12 +1038,7 @@ const ContextMenu: React.FC = () => {
                       className="context-item p-2 w-full"
                       style={{ height: "40px" }}
                     >
-                      <SVGIcon
-                        name="filter"
-                        width={22}
-                        height={22}
-                        style={{ marginRight: "4px" }}
-                      />
+                      <LucideIcon name="Filter" />
                       <p>{filter.filter}</p>
                     </div>
                   </Menu>
@@ -1171,12 +1054,7 @@ const ContextMenu: React.FC = () => {
                       className="context-item p-2 w-full"
                       style={{ height: "40px" }}
                     >
-                      <SVGIcon
-                        name="eraser"
-                        width={22}
-                        height={22}
-                        style={{ marginRight: "4px", marginLeft: "2px" }}
-                      />
+                      <LucideIcon name="Eraser" />
                       <p>{filter.clearFilter}</p>
                     </div>
                   </Menu>
@@ -1190,15 +1068,10 @@ const ContextMenu: React.FC = () => {
               <Menu>
                 <div className="flex items-center justify-between w-full">
                   <div className="context-item">
-                    <SVGIcon
-                      name="filter"
-                      width={22}
-                      height={22}
-                      style={{ marginRight: "4px", marginTop: "2px" }}
-                    />
+                    <LucideIcon name="Filter" />
                     <p>{rightclick.filterSelection}</p>
                   </div>
-                  <SVGIcon name="rightArrow" width={18} />
+                  <LucideIcon name="ChevronRight" width={16} height={16} />
                 </div>
               </Menu>
             </div>
@@ -1232,12 +1105,7 @@ const ContextMenu: React.FC = () => {
             }}
           >
             <div className="context-item">
-              <SVGIcon
-                name="link"
-                width={20}
-                height={20}
-                style={{ marginRight: "7px" }}
-              />
+              <LucideIcon name="Link" />
               <p>{rightclick.link}</p>
             </div>
           </Menu>
@@ -1278,16 +1146,11 @@ const ContextMenu: React.FC = () => {
             <div>
               <Menu>
                 <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-2">
-                    <SVGIcon
-                      name="conditionFormat"
-                      width={16}
-                      height={16}
-                      style={{ marginRight: "2px" }}
-                    />
+                  <div className="flex items-center gap-2 context-item">
+                    <LucideIcon name="PaintbrushVertical" />
                     <p>{rightclick.conditionFormat || "Conditional Format"}</p>
                   </div>
-                  <SVGIcon name="rightArrow" width={16} height={16} />
+                  <LucideIcon name="ChevronRight" width={16} height={16} />
                 </div>
               </Menu>
             </div>

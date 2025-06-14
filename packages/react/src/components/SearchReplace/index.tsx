@@ -307,6 +307,7 @@ const SearchReplace: React.FC<{
                     e.target === tableContainerRef.current ||
                     tableContainerRef.current?.contains(e.target as Node)
                   ) {
+                    e.preventDefault();
                     e.stopPropagation();
                     tableContainerRef.current?.focus();
                   }
@@ -315,13 +316,17 @@ const SearchReplace: React.FC<{
                   e.preventDefault();
                   e.stopPropagation();
                   if (tableContainerRef.current) {
-                    tableContainerRef.current.scrollTop += e.deltaY;
+                    const delta = e.deltaY;
+                    const currentScroll = tableContainerRef.current.scrollTop;
+                    tableContainerRef.current.scrollTop = currentScroll + delta;
                   }
                 }}
                 onTouchStart={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                 }}
                 onTouchMove={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                 }}
                 tabIndex={0}

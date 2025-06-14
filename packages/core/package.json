@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-core",
-  "version": "1.0.2-mod-67-patch-4",
+  "version": "1.0.2-mod-71",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "typings": "dist/index.d.ts",

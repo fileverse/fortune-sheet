@@ -404,50 +404,23 @@ const Toolbar: React.FC<{
                     return (
                       <Option
                         key={value}
-                        onMouseEnter={(e) => showSubMenu(e, "more-format")}
-                        onMouseLeave={(e) => hideSubMenu(e, "more-format")}
+                        onClick={() => {
+                          showDialog(
+                            <FormatSearch
+                              onCancel={hideDialog}
+                              type="currency"
+                            />,
+                            undefined,
+                            "Currency Format"
+                          );
+                          setOpen(false);
+                        }}
                       >
                         <div className="fortune-toolbar-menu-line">
                           <div>{text}</div>
-                          <SVGIcon name="rightArrow" width={16} height={16} />
-                        </div>
-                        <div
-                          className="more-format toolbar-item-sub-menu fortune-toolbar-select"
-                          style={{
-                            display: "none",
-                            width: 150,
-                            bottom: 10,
-                            top: undefined,
-                          }}
-                        >
-                          {[
-                            {
-                              text: toolbarFormat.moreCurrency,
-                              onclick: () => {
-                                showDialog(
-                                  <FormatSearch
-                                    onCancel={hideDialog}
-                                    type="currency"
-                                  />,
-                                  undefined,
-                                  "Currency Format"
-                                );
-                                setOpen(false);
-                              },
-                            },
-                          ].map((v) => (
-                            <div
-                              className="set-background-item fortune-toolbar-select-option"
-                              key={v.text}
-                              onClick={() => {
-                                v.onclick();
-                                setOpen(false);
-                              }}
-                              tabIndex={0}
-                            >
-                              {v.text}
-                            </div>
-                          ))}
+                          <div className="fortune-toolbar-subtext">
+                            {example}
+                          </div>
                         </div>
                       </Option>
                     );
@@ -1716,38 +1689,7 @@ const Toolbar: React.FC<{
         )}
       </div>
       <div className="fortune-toolbar-right">
-        {settings.customToolbarItems
-          .filter((n) => n.key === "templates")
-          .map((n) => {
-            return (
-              <CustomButton
-                tooltip={n.tooltip}
-                onClick={n.onClick}
-                key={n.key}
-                icon={n.icon}
-                iconName={n.iconName}
-              >
-                {n.children}
-              </CustomButton>
-            );
-          })}
-        {settings.customToolbarItems
-          .filter((n) => n.key !== "templates" && n.key !== "import-export")
-          .map((n) => {
-            return (
-              <CustomButton
-                tooltip={n.tooltip}
-                onClick={n.onClick}
-                key={n.key}
-                icon={n.icon}
-                iconName={n.iconName}
-              >
-                {n.children}
-              </CustomButton>
-            );
-          })}
-
-        {settings.customToolbarItems.length > 0 && (
+      {settings.customToolbarItems.length > 0 && (
           <Button
             iconId="dune"
             tooltip="Insert Dune Chart"
@@ -1762,6 +1704,21 @@ const Toolbar: React.FC<{
             }}
           />
         )}
+        {settings.customToolbarItems
+          .filter((n) => n.key !== "import-export")
+          .map((n) => {
+            return (
+              <CustomButton
+                tooltip={n.tooltip}
+                onClick={n.onClick}
+                key={n.key}
+                icon={n.icon}
+                iconName={n.iconName}
+              >
+                {n.children}
+              </CustomButton>
+            );
+          })}
         {showDuneModal && (
           <DuneChartsInputModal
             isOpen={showDuneModal}
@@ -1772,7 +1729,6 @@ const Toolbar: React.FC<{
               setShowDuneModal(false);
             }}
             onClose={() => setShowDuneModal(false)}
-            icon="dune-logo"
             placeholder="Add Dune chart link to embed"
             submitText="Embed Dune chart"
           />

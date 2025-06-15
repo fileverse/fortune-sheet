@@ -2303,7 +2303,7 @@ export const PROMOTED_CRYPTO_FUNCTIONS = [
   "ETHERSCAN",
   "SAFE",
   "COINGECKO",
-  "GNOSISPAY",
+  "FIREFLY",
   "BLOCKSCOUT",
 ];
 
@@ -2614,89 +2614,93 @@ export function handleFormulaInput(
   preText?: string,
   refreshRangeSelect = true
 ) {
-  // if (isEditMode()) {
-  //   // 此模式下禁用公式栏
-  //   return;
-  // }
-  let value1: string;
-  const value1txt = preText ?? $editor.innerText;
-  let value = $editor.innerText;
-  value = escapeScriptTag(value);
-  if (
-    value.length > 0 &&
-    value.substring(0, 1) === "=" &&
-    (kcode !== 229 || value.length === 1)
-  ) {
-    if (!refreshRangeSelect) rangeIndexes = getRangeIndexes($editor);
-    value = functionHTMLGenerate(value);
-    if (!refreshRangeSelect && functionHTMLIndex < rangeIndexes.length)
-      refreshRangeSelect = true;
-    value1 = functionHTMLGenerate(value1txt);
+  try {
+    // if (isEditMode()) {
+    //   // 此模式下禁用公式栏
+    //   return;
+    // }
+    let value1: string;
+    const value1txt = preText ?? $editor.innerText;
+    let value = $editor.innerText;
+    value = escapeScriptTag(value);
+    if (
+      value.length > 0 &&
+      value.substring(0, 1) === "=" &&
+      (kcode !== 229 || value.length === 1)
+    ) {
+      if (!refreshRangeSelect) rangeIndexes = getRangeIndexes($editor);
+      value = functionHTMLGenerate(value);
+      if (!refreshRangeSelect && functionHTMLIndex < rangeIndexes.length)
+        refreshRangeSelect = true;
+      value1 = functionHTMLGenerate(value1txt);
 
-    rangeIndexes = [];
+      rangeIndexes = [];
 
-    if (window.getSelection) {
-      // all browsers, except IE before version 9
-      const currSelection = window.getSelection();
-      if (!currSelection) return;
-      if (currSelection.anchorNode?.nodeName.toLowerCase() === "div") {
-        const editorlen = $editor.querySelectorAll("span").length;
-        if (editorlen > 0)
+      if (window.getSelection) {
+        // all browsers, except IE before version 9
+        const currSelection = window.getSelection();
+        if (!currSelection) return;
+        if (currSelection.anchorNode?.nodeName.toLowerCase() === "div") {
+          const editorlen = $editor.querySelectorAll("span").length;
+          if (editorlen > 0)
+            ctx.formulaCache.functionRangeIndex = [
+              editorlen - 1,
+              $editor.querySelectorAll("span").item(editorlen - 1).textContent
+                ?.length!,
+            ];
+        } else {
           ctx.formulaCache.functionRangeIndex = [
-            editorlen - 1,
-            $editor.querySelectorAll("span").item(editorlen - 1).textContent
-              ?.length!,
+            _.indexOf(
+              currSelection.anchorNode?.parentNode?.parentNode?.childNodes,
+              // @ts-ignore
+              currSelection.anchorNode?.parentNode
+            ),
+            currSelection.anchorOffset,
           ];
+        }
       } else {
-        ctx.formulaCache.functionRangeIndex = [
-          _.indexOf(
-            currSelection.anchorNode?.parentNode?.parentNode?.childNodes,
-            // @ts-ignore
-            currSelection.anchorNode?.parentNode
-          ),
-          currSelection.anchorOffset,
-        ];
-      }
-    } else {
-      // Internet Explorer before version 9
-      // @ts-ignore
-      const textRange = document.selection.createRange();
-      ctx.formulaCache.functionRangeIndex = textRange;
-    }
-
-    $editor.innerHTML = value;
-    if ($copyTo) $copyTo.innerHTML = value;
-
-    // the cursor will be set to the beginning of input box after set innerHTML,
-    // restoring it to the correct position
-    functionRange(ctx, $editor, value, value1);
-
-    if (refreshRangeSelect) {
-      cancelFunctionrangeSelected(ctx);
-
-      if (kcode !== 46) {
-        // delete不执行此函数
-        createRangeHightlight(ctx, value);
+        // Internet Explorer before version 9
+        // @ts-ignore
+        const textRange = document.selection.createRange();
+        ctx.formulaCache.functionRangeIndex = textRange;
       }
 
-      ctx.formulaCache.rangestart = false;
-      ctx.formulaCache.rangedrag_column_start = false;
-      ctx.formulaCache.rangedrag_row_start = false;
+      $editor.innerHTML = value;
+      if ($copyTo) $copyTo.innerHTML = value;
 
-      rangeHightlightselected(ctx, $editor);
-    }
-  } else if (_.startsWith(value1txt, "=") && !_.startsWith(value, "=")) {
-    if ($copyTo) $copyTo.innerHTML = value;
-    $editor.innerHTML = escapeHTMLTag(value);
-  } else if (!_.startsWith(value1txt, "=")) {
-    if (!$copyTo) return;
-    if ($copyTo.id === "luckysheet-rich-text-editor") {
-      if (!_.startsWith($copyTo.innerHTML, "<span")) {
+      // the cursor will be set to the beginning of input box after set innerHTML,
+      // restoring it to the correct position
+      functionRange(ctx, $editor, value, value1);
+
+      if (refreshRangeSelect) {
+        cancelFunctionrangeSelected(ctx);
+
+        if (kcode !== 46) {
+          // delete不执行此函数
+          createRangeHightlight(ctx, value);
+        }
+
+        ctx.formulaCache.rangestart = false;
+        ctx.formulaCache.rangedrag_column_start = false;
+        ctx.formulaCache.rangedrag_row_start = false;
+
+        rangeHightlightselected(ctx, $editor);
+      }
+    } else if (_.startsWith(value1txt, "=") && !_.startsWith(value, "=")) {
+      if ($copyTo) $copyTo.innerHTML = value;
+      $editor.innerHTML = escapeHTMLTag(value);
+    } else if (!_.startsWith(value1txt, "=")) {
+      if (!$copyTo) return;
+      if ($copyTo.id === "luckysheet-rich-text-editor") {
+        if (!_.startsWith($copyTo.innerHTML, "<span")) {
+          $copyTo.innerHTML = escapeHTMLTag(value);
+        }
+      } else {
         $copyTo.innerHTML = escapeHTMLTag(value);
       }
-    } else {
-      $copyTo.innerHTML = escapeHTMLTag(value);
     }
+  } catch (_error) {
+    console.log(_error);
   }
 }
 

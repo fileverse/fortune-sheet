@@ -7,7 +7,6 @@ import {
   onIframeMoveEnd,
   onIframeResize,
   onIframeResizeEnd,
-  saveIframe,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../context";
 import "./iFrameBoxs.css";
@@ -163,7 +162,6 @@ const IframeBoxs: React.FC = () => {
                           );
                         }
                         ctx.activeIframe = undefined;
-                        saveIframe(ctx);
                       });
                     }}
                     variant="ghost"

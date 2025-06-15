@@ -157,6 +157,8 @@ export type Settings = {
     onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
   }[];
   currency?: string;
+  onDuneChartEmbed?: () => void;
+  onSheetCountChange?: (count: number) => void;
 };
 
 export const defaultSettings: Required<Settings> = {
@@ -300,4 +302,6 @@ export const defaultSettings: Required<Settings> = {
   customToolbarItems: [],
   currency: "$",
   getCommentCellUI: null,
+  onDuneChartEmbed: () => {},
+  onSheetCountChange: () => {},
 };

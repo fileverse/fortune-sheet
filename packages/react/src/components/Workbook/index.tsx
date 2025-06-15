@@ -815,6 +815,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
                     },
                     { noHistory: true }
                   );
+                  mergedSettings.onDuneChartEmbed?.();
                 }}
               />
             )}

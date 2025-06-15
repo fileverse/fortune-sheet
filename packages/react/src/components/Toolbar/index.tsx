@@ -1730,8 +1730,8 @@ const Toolbar: React.FC<{
               settings.onDuneChartEmbed?.();
             }}
             onClose={() => setShowDuneModal(false)}
-            placeholder="Add Dune chart link to embed"
-            submitText="Embed Dune chart"
+            placeholder="Paste here any Dune chart link for some magic"
+            submitText="Add Dune chart"
           />
         )}
       </div>

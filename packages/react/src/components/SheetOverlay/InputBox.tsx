@@ -208,6 +208,7 @@ const InputBox: React.FC = () => {
       )?.textContent;
       if (formulaName) {
         insertSelectedFormula(formulaName);
+        // User selects datablock
         e.preventDefault();
         e.stopPropagation();
       }

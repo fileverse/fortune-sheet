@@ -70,6 +70,10 @@ const SheetTab: React.FC = () => {
     [refs.cellInput, setContext, settings]
   );
 
+  useEffect(() => {
+    settings.onSheetCountChange?.(context.luckysheetfile.length);
+  }, [context.luckysheetfile.length]);
+
   return (
     <div
       className="luckysheet-sheet-area luckysheet-noselected-text"

@@ -1727,6 +1727,7 @@ const Toolbar: React.FC<{
                 insertDuneChart(draftCtx, url);
               });
               setShowDuneModal(false);
+              settings.onDuneChartEmbed?.();
             }}
             onClose={() => setShowDuneModal(false)}
             placeholder="Add Dune chart link to embed"

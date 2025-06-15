@@ -86,7 +86,7 @@ const DuneChartsInputModal = ({
               style={{ width: "14px", height: "14px" }}
               name="circle-alert"
             />
-            <span>Please make sure the URL is a valid Dune chart link</span>
+            <span>Please add a valid valid Dune chart URL</span>
           </div>
         )}
         {url.length > 0 && !showError && (

@@ -148,15 +148,30 @@ const InputBox: React.FC = () => {
       const textEditor = document.getElementById("luckysheet-rich-text-editor");
       if (!textEditor) return;
 
-      const searchTxt = getrangeseleciton()?.textContent || "";
-      const deleteCount = searchTxt === "=" ? 0 : searchTxt.length;
       textEditor.focus();
 
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
+      let selection = window.getSelection();
+      let range = selection?.rangeCount ? selection.getRangeAt(0) : null;
 
-      const range = selection.getRangeAt(0);
-      if (deleteCount !== 0 && range) {
+      // If no selection or selection is outside the editor, reset to end of editor
+      if (!selection || !range || !textEditor.contains(range.startContainer)) {
+        range = document.createRange();
+        range.selectNodeContents(textEditor);
+        range.collapse(false); // place caret at end
+        selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+
+      // Delete the partially typed formula name if needed
+      const searchTxt = getrangeseleciton()?.textContent || "";
+      const deleteCount = searchTxt === "=" ? 0 : searchTxt.length;
+
+      if (
+        deleteCount > 0 &&
+        range.startContainer.nodeType === Node.TEXT_NODE &&
+        textEditor.contains(range.startContainer)
+      ) {
         const startOffset = Math.max(range.startOffset - deleteCount, 0);
         const endOffset = range.startOffset;
         range.setStart(range.startContainer, startOffset);
@@ -164,6 +179,14 @@ const InputBox: React.FC = () => {
         range.deleteContents();
       }
 
+      // Clean up existing formula spans if any
+      textEditor
+        .querySelectorAll(
+          ".luckysheet-formula-text-func, .luckysheet-formula-text-lpar"
+        )
+        .forEach((el) => el.remove());
+
+      // Create new nodes to insert
       const funcNode = new DOMParser().parseFromString(
         `<span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span>`,
         "text/html"
@@ -174,17 +197,17 @@ const InputBox: React.FC = () => {
         "text/html"
       ).body.firstChild;
 
-      if (range?.startContainer.parentNode) {
-        range.setStart(range.startContainer.parentNode, 1);
+      // Safely insert nodes at the current range
+      if (range && parNode && funcNode) {
+        range.insertNode(funcNode);
+        range.collapse(false);
+        range.insertNode(parNode);
+        range.collapse(false);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
       }
 
-      if (parNode) range.insertNode(parNode);
-      if (funcNode) range.insertNode(funcNode);
-
-      range.collapse();
-      selection.removeAllRanges();
-      selection.addRange(range);
-
+      // Clear formula UI state
       setContext((draftCtx) => {
         draftCtx.functionCandidates = [];
         draftCtx.defaultCandidates = [];
@@ -334,6 +357,8 @@ const InputBox: React.FC = () => {
     ]
   );
 
+  const [showCrypoModal, setShowCryptoModal] = useState(false);
+
   const onChange = useCallback(
     (__: any, isBlur?: boolean) => {
       // setInputHTML(html);
@@ -342,7 +367,9 @@ const InputBox: React.FC = () => {
       if (!e) return;
       const kcode = e.keyCode;
       if (!kcode) return;
-
+      setShowCryptoModal(
+        !document.getElementById("luckysheet-formula-search-c")
+      );
       if (
         !(
           (
@@ -472,31 +499,32 @@ const InputBox: React.FC = () => {
 
       {(context.functionCandidates.length > 0 ||
         context.functionHint ||
-        context.defaultCandidates.length > 0) && (
-        <>
-          <FormulaSearch
-            onMouseOver={(e) => {
-              if (document.getElementById("luckysheet-formula-search-c")) {
-                // apply hovered state on the function item
-                const hoveredItem = (e.target as HTMLElement).closest(
-                  ".luckysheet-formula-search-item"
-                ) as HTMLElement | null;
-                if (!hoveredItem) return;
+        context.defaultCandidates.length > 0) &&
+        showCrypoModal && (
+          <>
+            <FormulaSearch
+              onMouseOver={(e) => {
+                if (document.getElementById("luckysheet-formula-search-c")) {
+                  // apply hovered state on the function item
+                  const hoveredItem = (e.target as HTMLElement).closest(
+                    ".luckysheet-formula-search-item"
+                  ) as HTMLElement | null;
+                  if (!hoveredItem) return;
 
-                clearSearchItemActiveClass();
-                hoveredItem.classList.add(
-                  "luckysheet-formula-search-item-active"
-                );
-              }
-              e.preventDefault();
-            }}
-            onMouseDown={(e) => {
-              selectActiveFormulaOnClick(e);
-            }}
-          />
-          <FormulaHint />
-        </>
-      )}
+                  clearSearchItemActiveClass();
+                  hoveredItem.classList.add(
+                    "luckysheet-formula-search-item-active"
+                  );
+                }
+                e.preventDefault();
+              }}
+              onMouseDown={(e) => {
+                selectActiveFormulaOnClick(e);
+              }}
+            />
+            <FormulaHint />
+          </>
+        )}
     </div>
   );
 };

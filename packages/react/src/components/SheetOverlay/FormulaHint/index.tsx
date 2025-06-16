@@ -31,7 +31,11 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   const hintRef = useRef<HTMLDivElement>(null);
   const [top, setTop] = useState(0);
   const calcuatePopUpPlacement = () => {
-    if (!firstSelection?.top || !firstSelection.height_move || !hintRef.current)
+    if (
+      !firstSelection?.top?.toString() ||
+      !firstSelection.height_move?.toString() ||
+      !hintRef.current
+    )
       return;
     const hintHeight = 360;
     const inputBottom = firstSelection.top + firstSelection.height_move;

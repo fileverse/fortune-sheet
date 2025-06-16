@@ -937,7 +937,7 @@ export function handleCurrencyFormat(ctx: Context, cellInput: HTMLDivElement) {
 
   const currency = ctx.currency || "¥";
 
-  updateFormat(ctx, cellInput, flowdata, "ct", `${currency} #.00`);
+  updateFormat(ctx, cellInput, flowdata, "ct", `${currency} #,##0.00`);
 }
 
 export function handlePercentageFormat(

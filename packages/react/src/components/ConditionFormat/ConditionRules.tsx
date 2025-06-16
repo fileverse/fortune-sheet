@@ -294,7 +294,15 @@ const ConditionRules: React.FC<{ type: string }> = ({ type }) => {
           {conditionformat.applyRange}
         </div>
         <TextField
-          rightIcon={<LucideIcon name="Grid2x2" size="sm" />}
+          rightIcon={
+            <LucideIcon
+              name="Grid2x2"
+              size="sm"
+              onClick={() => {
+                dataSelectRange(`conditionRules${type}`);
+              }}
+            />
+          }
           aria-hidden="true"
           readOnly
           placeholder={conditionformat.selectRange}

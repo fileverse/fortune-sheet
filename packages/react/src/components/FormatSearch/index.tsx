@@ -57,6 +57,7 @@ export const FormatSearch: React.FC<{
       const index = getSheetIndex(ctx, ctx.currentSheetId);
       if (_.isNil(index)) return;
       const selectedFormat = toolbarFormat[selectedFormatIndex].value;
+      const formatString = `${selectedFormat}#,##0.${"0".repeat(decimalPlace)}`;
       _.forEach(ctx.luckysheet_select_save, (selection) => {
         for (let r = selection.row[0]; r <= selection.row[1]; r += 1) {
           for (let c = selection.column[0]; c <= selection.column[1]; c += 1) {
@@ -64,11 +65,9 @@ export const FormatSearch: React.FC<{
               ctx.luckysheetfile[index].data?.[r][c] &&
               ctx.luckysheetfile[index].data?.[r][c]?.ct?.t === "n"
             ) {
-              const zero = 0;
-              ctx.luckysheetfile[index].data![r][c]!.ct!.fa =
-                `${selectedFormat}`.concat(zero.toFixed(decimalPlace));
+              ctx.luckysheetfile[index].data![r][c]!.ct!.fa = formatString;
               ctx.luckysheetfile[index].data![r][c]!.m = update(
-                `${selectedFormat}`.concat(zero.toFixed(decimalPlace)),
+                formatString,
                 ctx.luckysheetfile[index].data![r][c]!.v
               );
             }

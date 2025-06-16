@@ -11237,22 +11237,20 @@ export default {
     { text: "Auto", value: "General", example: "" },
     { text: "Plain", value: "@", example: "" },
     { text: "", value: "split", example: "" },
-    { text: "Number", value: "##0.00", example: "1000.12" },
+    { text: "Number", value: "#,##0.00", example: "1,000.12" },
     { text: "Percent", value: "#0.00%", example: "12.21%" },
     { text: "Scientific", value: "0.00E+00", example: "1.01E+5" },
     { text: "", value: "split", example: "" },
     {
       text: "Accounting",
-      value: `${currency}(0.00)`,
-      example: `${currency}(1200.09)`,
+      value: `${currency}(#,##0.00)`,
+      example: `${currency}(1,200.09)`,
     },
-
     {
       text: "Currency",
-      value: `${currency}0.00`,
-      example: `${currency}1200.09`,
+      value: `${currency}#,##0.00`,
+      example: `${currency}1,200.09`,
     },
-
     { text: "", value: "split", example: "" },
     { text: "Date", value: "yyyy-MM-dd", example: "2017-11-29" },
     { text: "Time", value: "hh:mm AM/PM", example: "3:00 PM" },

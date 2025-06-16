@@ -118,6 +118,17 @@ export type Image = {
   src: string;
 };
 
+export type ConditionRulesProps = {
+  rulesType: string;
+  rulesValue: string;
+  textColor: { check: boolean; color: string };
+  cellColor: { check: boolean; color: string };
+  betweenValue: { value1: string; value2: string };
+  dateValue: string;
+  repeatValue: string;
+  projectValue: string;
+};
+
 export type Sheet = {
   name: string;
   config?: SheetConfig;
@@ -157,6 +168,7 @@ export type Sheet = {
   luckysheet_conditionformat_save?: any[];
   luckysheet_alternateformat_save?: any[];
   dataVerification?: any;
+  conditionRules?: ConditionRulesProps;
   hyperlink?: Record<string, { linkType: string; linkAddress: string }>;
   dynamicArray_compute?: any;
   dynamicArray?: any[];
@@ -220,17 +232,6 @@ export type DataRegulationProps = {
   prohibitInput: boolean;
   hintShow: boolean;
   hintValue: string;
-};
-
-export type ConditionRulesProps = {
-  rulesType: string;
-  rulesValue: string;
-  textColor: { check: boolean; color: string };
-  cellColor: { check: boolean; color: string };
-  betweenValue: { value1: string; value2: string };
-  dateValue: string;
-  repeatValue: string;
-  projectValue: string;
 };
 
 export type FilterOptions = {

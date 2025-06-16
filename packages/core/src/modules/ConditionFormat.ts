@@ -216,9 +216,20 @@ export function setConditionRules(
     ctx.luckysheetfile[index].luckysheet_conditionformat_save ?? [];
   ruleArr?.push(rule);
 
+  // Update both the condition format rules and the condition rules
   ctx.luckysheetfile[index].luckysheet_conditionformat_save = ruleArr;
-  // const fileC = ctx.luckysheetfile ?? [];
-  // const currentRules = getCurrentRules(fileC);
+  ctx.luckysheetfile[index].conditionRules = {
+    ...rules,
+    // Ensure all required properties are present
+    rulesType: rules.rulesType || "",
+    rulesValue: rules.rulesValue || "",
+    textColor: rules.textColor || { check: true, color: "#000000" },
+    cellColor: rules.cellColor || { check: true, color: "#000000" },
+    betweenValue: rules.betweenValue || { value1: "", value2: "" },
+    dateValue: rules.dateValue || "",
+    repeatValue: rules.repeatValue || "0",
+    projectValue: rules.projectValue || "10",
+  };
 }
 
 export function getColorGradation(
@@ -703,7 +714,7 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   }
                 } else if (
                   conditionName === "equal" &&
-                  Number(cell.v) === Number(conditionValue0)
+                  cell.v.toString() === conditionValue0
                 ) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;

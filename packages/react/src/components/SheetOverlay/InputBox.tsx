@@ -367,9 +367,12 @@ const InputBox: React.FC = () => {
       if (!e) return;
       const kcode = e.keyCode;
       if (!kcode) return;
-      setShowCryptoModal(
-        !document.getElementById("luckysheet-formula-search-c")
-      );
+      if (!document.getElementById("luckysheet-formula-search-c")) {
+        setShowCryptoModal(
+          !document.getElementById("luckysheet-formula-search-c")
+        );
+      }
+
       if (
         !(
           (

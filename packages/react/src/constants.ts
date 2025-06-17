@@ -7,11 +7,3 @@ export const API_KEY_PLACEHOLDER: Record<string, string> = Object.fromEntries(
     `${key.replace(/_/g, " ").replace(/\bAPI\b/, "API key")}`,
   ])
 );
-
-export const COMIMG_SOON_FUNCTIONS = [
-  "UNISWAP",
-  "ARTEMIS",
-  "AAVE",
-  "AERODOME",
-  "PENDLE",
-];

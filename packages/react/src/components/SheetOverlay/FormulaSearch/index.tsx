@@ -1,7 +1,6 @@
 import _ from "lodash";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { LucideIcon, Tooltip } from "@fileverse/ui";
-import { COMIMG_SOON_FUNCTIONS } from "../../../constants";
 import WorkbookContext from "../../../context";
 import "./index.css";
 
@@ -34,9 +33,6 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     calcuatePopUpPlacement();
   });
 
-  const isComingSoon = (name: string) => {
-    return COMIMG_SOON_FUNCTIONS.includes(name);
-  };
   if (
     _.isEmpty(context.functionCandidates) &&
     _.isEmpty(context.defaultCandidates)
@@ -62,20 +58,23 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
             Onchain functions
           </h4>
           <p className="text-helper-text-sm color-text-secondary">
-            What is data block description lorem ipsum dolor sit
+            A datablock is a native data structure allowing dSheets to read and
+            structure any data coming from smart contracts or APIs. Anyone can
+            contribute to datablocks to make new data sources supported on
+            dSheets.
           </p>
         </div>
       )}
 
       {context.defaultCandidates.length > 0 ? (
         <>
-          {context.defaultCandidates.slice(0, 5).map((v, index) => {
+          {context.defaultCandidates.map((v, index) => {
             return (
               <div
                 key={v.n}
                 data-func={v.n}
                 style={{
-                  cursor: isComingSoon(v.n) ? "not-allowed" : "pointer",
+                  cursor: "pointer",
                 }}
                 className={`luckysheet-formula-search-item  ${
                   index === 0 ? "luckysheet-formula-search-item-active" : ""
@@ -84,13 +83,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                 <div
                   style={{ display: "flex", justifyContent: "space-between" }}
                 >
-                  <div
-                    className={`luckysheet-formula-search-func ${
-                      isComingSoon(v.n)
-                        ? "color-text-secondary"
-                        : "color-text-default"
-                    }  text-body-sm`}
-                  >
+                  <div className="luckysheet-formula-search-func color-text-default text-body-sm">
                     {v.n}
                   </div>
                   <div
@@ -145,90 +138,12 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                     )}
                   </div>
                 </div>
-                <div
-                  className={`luckysheet-formula-search-detail mt-1 text-helper-text-sm  ${
-                    isComingSoon(v.n)
-                      ? "color-text-secondary"
-                      : "color-text-default"
-                  }`}
-                >
-                  {isComingSoon(v.n) ? "Coming soon to dSheets" : v.d}
+                <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm  color-text-default">
+                  {v.d}
                 </div>
               </div>
             );
           })}
-          <p
-            style={{ padding: "10px" }}
-            className="text-helper-text-sm-bold color-text-secondary"
-          >
-            Functions
-          </p>
-          {context.defaultCandidates
-            .slice(5, context.defaultCandidates.length)
-            .map((v) => {
-              return (
-                <div
-                  key={v.n}
-                  data-func={v.n}
-                  className="luckysheet-formula-search-item"
-                >
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <div className="luckysheet-formula-search-func color-text-default text-body-sm">
-                      {v.n}
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "end",
-                        width: "68px",
-                        height: "20px",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      {v.LOGO && (
-                        <img
-                          src={v.LOGO}
-                          alt="Service Logo"
-                          style={{ width: "16px" }}
-                        />
-                      )}
-                      {v.API_KEY && (
-                        <div
-                          style={{
-                            borderRadius: "4px",
-                            backgroundColor: `${
-                              localStorage.getItem(v.API_KEY)
-                                ? "#177E23"
-                                : "#e8ebec"
-                            }`,
-                            width: "16px",
-                            height: "16px",
-                          }}
-                          className="flex justify-center"
-                        >
-                          <LucideIcon
-                            name="Key"
-                            style={{
-                              color: localStorage.getItem(v.API_KEY)
-                                ? "white"
-                                : "#77818A",
-                              width: "12px",
-                              height: "12px",
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
-                    {v.d}
-                  </div>
-                </div>
-              );
-            })}
         </>
       ) : (
         <>

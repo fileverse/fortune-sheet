@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-react",
-  "version": "1.0.2-mod-106",
+  "version": "1.0.2-mod-108",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.esm.js",
@@ -13,7 +13,7 @@
     "tsc": "tsc"
   },
   "dependencies": {
-    "@fileverse-dev/fortune-core": "1.0.2-mod-106",
+    "@fileverse-dev/fortune-core": "1.0.2-mod-108",
     "@fileverse/ui": "^4.1.7-patch-16",
     "@tippyjs/react": "^4.2.6",
     "@types/regenerator-runtime": "^0.13.6",

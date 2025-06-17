@@ -102,6 +102,13 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                         style={{ width: "16px" }}
                       />
                     )}
+                    {v.SECONDARY_LOGO && (
+                      <img
+                        src={v.SECONDARY_LOGO}
+                        alt="Service Logo"
+                        style={{ width: "16px" }}
+                      />
+                    )}
                     {v.API_KEY && (
                       <Tooltip
                         text={
@@ -174,6 +181,13 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                     {v.LOGO && (
                       <img
                         src={v.LOGO}
+                        alt="Service Logo"
+                        style={{ width: "16px" }}
+                      />
+                    )}
+                    {v.SECONDARY_LOGO && (
+                      <img
+                        src={v.SECONDARY_LOGO}
                         alt="Service Logo"
                         style={{ width: "16px" }}
                       />

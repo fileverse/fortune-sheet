@@ -161,7 +161,7 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
           style={{
             display: "flex",
             justifyContent: "end",
-            minWidth: "68px",
+            minWidth: "75px",
             height: "20px",
             alignItems: "center",
             gap: "6px",
@@ -169,6 +169,13 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
         >
           {fn.LOGO && (
             <img src={fn.LOGO} alt="Service Logo" style={{ width: "16px" }} />
+          )}
+          {fn.SECONDARY_LOGO && (
+            <img
+              src={fn.SECONDARY_LOGO}
+              alt="Service Logo"
+              style={{ width: "16px" }}
+            />
           )}
           {fn.API_KEY && (
             <div

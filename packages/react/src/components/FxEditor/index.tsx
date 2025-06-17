@@ -27,14 +27,11 @@ import _ from "lodash";
 import WorkbookContext from "../../context";
 import SVGIcon from "../SVGIcon";
 import ContentEditable from "../SheetOverlay/ContentEditable";
-import FormulaSearch from "../SheetOverlay/FormulaSearch";
-import FormulaHint from "../SheetOverlay/FormulaHint";
 import NameBox from "./NameBox";
 import usePrevious from "../../hooks/usePrevious";
 
 const FxEditor: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
-  const [focused, setFocused] = useState(false);
   const lastKeyDownEventRef = useRef<KeyboardEvent>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const [isHidenRC, setIsHidenRC] = useState<boolean>(false);
@@ -90,7 +87,6 @@ const FxEditor: React.FC = () => {
       !context.luckysheet_cell_selected_move &&
       isAllowEdit(context, context.luckysheet_select_save)
     ) {
-      setFocused(true);
       setContext((draftCtx) => {
         const last =
           draftCtx.luckysheet_select_save![
@@ -310,11 +306,11 @@ const FxEditor: React.FC = () => {
           onFocus={onFocus}
           onKeyDown={onKeyDown}
           onChange={onChange}
-          onBlur={() => setFocused(false)}
+          // onBlur={() => setFocused(false)}
           tabIndex={0}
           allowEdit={allowEdit}
         />
-        {focused && (
+        {/* {focused && (
           <>
             <FormulaSearch
               style={{
@@ -327,7 +323,7 @@ const FxEditor: React.FC = () => {
               }}
             />
           </>
-        )}
+        )} */}
       </div>
     </div>
   );

@@ -357,8 +357,6 @@ const InputBox: React.FC = () => {
     ]
   );
 
-  const [showCrypoModal, setShowCryptoModal] = useState(false);
-
   const onChange = useCallback(
     (__: any, isBlur?: boolean) => {
       // setInputHTML(html);
@@ -367,11 +365,6 @@ const InputBox: React.FC = () => {
       if (!e) return;
       const kcode = e.keyCode;
       if (!kcode) return;
-      if (!document.getElementById("luckysheet-formula-search-c")) {
-        setShowCryptoModal(
-          !document.getElementById("luckysheet-formula-search-c")
-        );
-      }
 
       if (
         !(
@@ -502,32 +495,31 @@ const InputBox: React.FC = () => {
 
       {(context.functionCandidates.length > 0 ||
         context.functionHint ||
-        context.defaultCandidates.length > 0) &&
-        showCrypoModal && (
-          <>
-            <FormulaSearch
-              onMouseOver={(e) => {
-                if (document.getElementById("luckysheet-formula-search-c")) {
-                  // apply hovered state on the function item
-                  const hoveredItem = (e.target as HTMLElement).closest(
-                    ".luckysheet-formula-search-item"
-                  ) as HTMLElement | null;
-                  if (!hoveredItem) return;
+        context.defaultCandidates.length > 0) && (
+        <>
+          <FormulaSearch
+            onMouseOver={(e) => {
+              if (document.getElementById("luckysheet-formula-search-c")) {
+                // apply hovered state on the function item
+                const hoveredItem = (e.target as HTMLElement).closest(
+                  ".luckysheet-formula-search-item"
+                ) as HTMLElement | null;
+                if (!hoveredItem) return;
 
-                  clearSearchItemActiveClass();
-                  hoveredItem.classList.add(
-                    "luckysheet-formula-search-item-active"
-                  );
-                }
-                e.preventDefault();
-              }}
-              onMouseDown={(e) => {
-                selectActiveFormulaOnClick(e);
-              }}
-            />
-            <FormulaHint />
-          </>
-        )}
+                clearSearchItemActiveClass();
+                hoveredItem.classList.add(
+                  "luckysheet-formula-search-item-active"
+                );
+              }
+              e.preventDefault();
+            }}
+            onMouseDown={(e) => {
+              selectActiveFormulaOnClick(e);
+            }}
+          />
+          <FormulaHint />
+        </>
+      )}
     </div>
   );
 };

@@ -2300,11 +2300,12 @@ function filterAndPickOthers(
 }
 
 export const PROMOTED_CRYPTO_FUNCTIONS = [
-  "ETHERSCAN",
-  "SAFE",
+  "EOA",
+  "UNISWAP",
   "COINGECKO",
-  "FIREFLY",
-  "BLOCKSCOUT",
+  "DEFILLAMA",
+  "GNOSIS",
+  "BASE",
 ];
 
 export function rangeHightlightselected(ctx: Context, $editor: HTMLDivElement) {

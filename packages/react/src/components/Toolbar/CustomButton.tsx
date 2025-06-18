@@ -27,7 +27,7 @@ const CustomButton: React.FC<Props> = ({
         onClick={onClick}
         tabIndex={0}
         role="button"
-        style={selected ? { backgroundColor: "#E7E5EB" } : {}}
+        style={selected ? { backgroundColor: "#FFDF0A" } : {}}
       >
         <CustomIcon width={16} height={16} iconName={iconName} content={icon} />
         {children}

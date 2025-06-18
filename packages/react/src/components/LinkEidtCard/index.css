@@ -85,26 +85,10 @@
 
 .fortune-insert-button {
   width: 100% !important;
-  background-color: #000 !important;
-  color: white !important;
   border: none !important;
   border-radius: 6px !important;
   padding: 12px !important;
   font-weight: 500 !important;
-}
-
-.fortune-insert-button:hover {
-  background-color: #333 !important;
-}
-
-.fortune-insert-button:disabled {
-  background-color: #ccc !important;
-  color: #666 !important;
-  cursor: not-allowed !important;
-}
-
-.fortune-insert-button:disabled:hover {
-  background-color: #ccc !important;
 }
 
 .fortune-link-modify-modal.link-toolbar {

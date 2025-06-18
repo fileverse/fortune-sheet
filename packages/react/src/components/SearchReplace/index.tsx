@@ -202,15 +202,7 @@ const SearchReplace: React.FC<{
               </div>
             </div>
             <Divider className="w-full border-t-[1px]" />
-            <div className="flex flex-row gap-2 justify-center items-center mb-4">
-              {/* <Button
-                variant="secondary"
-                className="min-w-fit"
-                onClick={closeDialog}
-                tabIndex={0}
-              >
-                {button.close}
-              </Button> */}
+            <div className="flex flex-row gap-2 justify-end items-center mb-4">
               <Button
                 id="replaceAllBtn"
                 variant="secondary"

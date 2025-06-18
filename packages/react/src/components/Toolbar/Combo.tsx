@@ -6,6 +6,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  cn,
 } from "@fileverse/ui";
 import SVGIcon from "../SVGIcon";
 import { getLucideIcon } from ".";
@@ -19,6 +20,7 @@ type Props = {
   children: (
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
   ) => React.ReactNode;
+  fillColor?: string;
 };
 
 const Combo: React.FC<Props> = ({
@@ -28,6 +30,7 @@ const Combo: React.FC<Props> = ({
   iconId,
   showArrow = true,
   children,
+  fillColor
 }) => {
   const style: CSSProperties = { userSelect: "none" };
   const [open, setOpen] = useState(false);
@@ -52,6 +55,8 @@ const Combo: React.FC<Props> = ({
         "formula-sum",
         "dune",
         "template",
+        "font-color",
+        "background",
       ].includes(iconId as string)
     );
   }, [iconId]);
@@ -86,7 +91,12 @@ const Combo: React.FC<Props> = ({
         icon={getLucideIcon(iconId as string)}
         variant="ghost"
         onClick={() => setOpen(!open)}
-        className="fortune-toolbar-combo-button"
+        className={cn("fortune-toolbar-combo-button", {
+          "custom-color-button": iconId === "font-color" && fillColor,
+        })}
+        style={{
+          color: iconId === "font-color" ? fillColor : undefined,
+        }}
       />
     </Tooltip>
   );

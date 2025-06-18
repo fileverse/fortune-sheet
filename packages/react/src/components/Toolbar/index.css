@@ -399,3 +399,7 @@
   align-items: center;
   gap: 4px;
 }
+
+.custom-color-button > svg > path:first-child {
+  display: none !important;
+}

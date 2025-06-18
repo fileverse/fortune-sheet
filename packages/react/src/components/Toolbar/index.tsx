@@ -337,15 +337,15 @@ const Toolbar: React.FC<{
           <div style={{ position: "relative" }} key={name}>
             <div
               style={{
-                width: 17,
-                height: 2,
+                width: 24,
+                height: 4,
                 backgroundColor:
                   name === "font-color"
                     ? refs.globalCache.recentTextColor
                     : refs.globalCache.recentBackgroundColor,
                 position: "absolute",
-                bottom: 8,
-                left: 9,
+                bottom: 2,
+                left: 3,
                 zIndex: 100,
               }}
             />
@@ -353,6 +353,11 @@ const Toolbar: React.FC<{
               iconId={name}
               tooltip={tooltip}
               showArrow={false}
+              fillColor={
+                name === "font-color"
+                  ? refs.globalCache.recentTextColor
+                  : undefined
+              }
               onClick={() => {
                 const color =
                   name === "font-color"

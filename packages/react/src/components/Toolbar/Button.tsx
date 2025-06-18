@@ -29,7 +29,7 @@ const Button: React.FC<Props> = ({
         onClick={onClick}
         tabIndex={0}
         role="button"
-        style={selected ? { backgroundColor: "#E7E5EB" } : style}
+        style={selected ? { backgroundColor: "#FFDF0A" } : style}
       >
         <LucideIcon
           name={getLucideIcon(iconId)}

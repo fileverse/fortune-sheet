@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-react",
-  "version": "1.0.2-mod-110",
+  "version": "1.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.esm.js",
@@ -10,10 +10,12 @@
   "repository": "https://github.com/ruilisi/fortune-sheet",
   "license": "MIT",
   "scripts": {
+    "build": "father-build",
+    "dev": "father-build --watch",
     "tsc": "tsc"
   },
   "dependencies": {
-    "@fileverse-dev/fortune-core": "1.0.2-mod-110",
+    "@fileverse-dev/fortune-core": "1.0.2",
     "@fileverse/ui": "^4.1.7-patch-16",
     "@tippyjs/react": "^4.2.6",
     "@types/regenerator-runtime": "^0.13.6",

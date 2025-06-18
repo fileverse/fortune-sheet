@@ -9,7 +9,9 @@ const MoreItemsContaier: React.FC<{
   useOutsideClick(
     containerRef,
     () => {
-      onClose?.();
+      setTimeout(() => {
+        onClose?.();
+      }, 100);
     },
     [containerRef, onClose]
   );

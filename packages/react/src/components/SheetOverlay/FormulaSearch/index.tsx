@@ -92,10 +92,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
               Onchain functions
             </h4>
             <p className="text-helper-text-sm color-text-secondary">
-              A datablock is a native data structure allowing dSheets to read
-              and structure any data coming from smart contracts or APIs. Anyone
-              can contribute to datablocks to make new data sources supported on
-              dSheets.
+              Every onchain function is a native data structure allowing dSheets to read and structure data from smart contracts and APIs.
             </p>
           </div>
           {!isAuthorized && (
@@ -104,8 +101,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
               className="w-full flex flex-col p-2 gap-1"
             >
               <h4
-                className="text-helper-sm-bold"
-                style={{ fontWeight: "bold" }}
+                className="font-semibold"
               >
                 dSheets account required
               </h4>

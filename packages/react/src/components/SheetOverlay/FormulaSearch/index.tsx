@@ -1,13 +1,46 @@
 import _ from "lodash";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { LucideIcon, Tooltip } from "@fileverse/ui";
+import { UNFilter } from "./constant";
 import WorkbookContext from "../../../context";
 import "./index.css";
 
 const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
   props
 ) => {
-  const { context } = useContext(WorkbookContext);
+  const {
+    context,
+    settings: { isAuthorized },
+  } = useContext(WorkbookContext);
+  const authedFunction = [
+    "COINGECKO",
+    "ETHERSCAN",
+    "DEFILLAMA",
+    "GNOSIS",
+    "BASE",
+    "EOA",
+    "PNL",
+    "SAFE",
+    "BLOCKSCOUT",
+    "GNOSIS",
+    "LENS",
+    "FARCASTER",
+    "Ethereum",
+  ];
+  const filteredDefaultCandidates = context.defaultCandidates.filter(
+    (item) => !authedFunction.includes(item.n)
+  );
+  const unfilteredDefaultCandidates = UNFilter.filter(
+    (item) => item.n !== "PNL"
+  );
+  const finalDefaultCandidates = !isAuthorized
+    ? filteredDefaultCandidates
+    : context.defaultCandidates.slice(0, 10);
+
+  const finalFunctionCandidates = isAuthorized
+    ? context.functionCandidates
+    : context.functionCandidates.filter((item) => item.t !== 20);
+
   const firstSelection = context.luckysheet_select_save?.[0];
   const hintRef = useRef<HTMLDivElement>(null);
   const [top, setTop] = useState(0);
@@ -50,25 +83,67 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
       }}
     >
       {context.defaultCandidates.length > 0 && (
-        <div
-          style={{ marginBottom: "4px" }}
-          className="w-full flex flex-col p-2 gap-1"
-        >
-          <h4 className="text-helper-sm-bold color-text-secondary">
-            Onchain functions
-          </h4>
-          <p className="text-helper-text-sm color-text-secondary">
-            A datablock is a native data structure allowing dSheets to read and
-            structure any data coming from smart contracts or APIs. Anyone can
-            contribute to datablocks to make new data sources supported on
-            dSheets.
-          </p>
-        </div>
+        <>
+          <div
+            style={{ marginBottom: "4px" }}
+            className="w-full flex flex-col p-2 gap-1"
+          >
+            <h4 className="text-helper-sm-bold color-text-secondary">
+              Onchain functions
+            </h4>
+            <p className="text-helper-text-sm color-text-secondary">
+              A datablock is a native data structure allowing dSheets to read
+              and structure any data coming from smart contracts or APIs. Anyone
+              can contribute to datablocks to make new data sources supported on
+              dSheets.
+            </p>
+          </div>
+          {!isAuthorized && (
+            <div
+              style={{ marginBottom: "8px", backgroundColor: "#F8F9FA" }}
+              className="w-full flex flex-col p-2 gap-1"
+            >
+              <h4
+                className="text-helper-sm-bold"
+                style={{ fontWeight: "bold" }}
+              >
+                dSheets account required
+              </h4>
+              <p className="text-helper-text-sm color-text-secondary">
+                Use more onchain functions by creating a dSheets account.{" "}
+                <span
+                  className="sign-fortune"
+                  style={{ color: "#5C0AFF", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    console.log("click");
+                    document.getElementById("triggerAuth")?.click();
+                  }}
+                >
+                  Signup/Login
+                </span>
+              </p>
+              <div className="flex gap-2 mt-2 mb-2">
+                {unfilteredDefaultCandidates.map((v, index) => {
+                  return (
+                    <img
+                      key={index}
+                      src={v.LOGO}
+                      alt="Service Logo"
+                      style={{ width: "16px", height: "16px" }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {context.defaultCandidates.length > 0 ? (
         <>
-          {context.defaultCandidates.map((v, index) => {
+          {finalDefaultCandidates.map((v, index) => {
             return (
               <div
                 key={v.n}
@@ -154,86 +229,131 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
         </>
       ) : (
         <>
-          {context.functionCandidates.map((v, index) => {
-            return (
-              <div
-                key={v.n}
-                data-func={v.n}
-                className={`luckysheet-formula-search-item ${
-                  index === 0 ? "luckysheet-formula-search-item-active" : ""
-                }`}
-              >
+          {finalFunctionCandidates.length > 0 &&
+            finalFunctionCandidates.map((v, index) => {
+              return (
                 <div
-                  style={{ display: "flex", justifyContent: "space-between" }}
+                  key={v.n}
+                  data-func={v.n}
+                  className={`luckysheet-formula-search-item ${
+                    index === 0 ? "luckysheet-formula-search-item-active" : ""
+                  }`}
                 >
-                  <div className="luckysheet-formula-search-func color-text-default text-body-sm">
-                    {v.n}
-                  </div>
                   <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "end",
-                      width: "68px",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
+                    style={{ display: "flex", justifyContent: "space-between" }}
                   >
-                    {v.LOGO && (
-                      <img
-                        src={v.LOGO}
-                        alt="Service Logo"
-                        style={{ width: "16px" }}
-                      />
-                    )}
-                    {v.SECONDARY_LOGO && (
-                      <img
-                        src={v.SECONDARY_LOGO}
-                        alt="Service Logo"
-                        style={{ width: "16px" }}
-                      />
-                    )}
-                    {v.API_KEY && (
-                      <Tooltip
-                        text={
-                          localStorage.getItem(v.API_KEY)
-                            ? "API Key added"
-                            : "API Key required"
-                        }
-                      >
-                        <div
-                          style={{
-                            borderRadius: "4px",
-                            backgroundColor: `${
-                              localStorage.getItem(v.API_KEY)
-                                ? "#177E23"
-                                : "#e8ebec"
-                            }`,
-                            width: "16px",
-                            height: "16px",
-                          }}
-                          className="flex justify-center"
+                    <div className="luckysheet-formula-search-func color-text-default text-body-sm">
+                      {v.n}
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "end",
+                        width: "68px",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      {v.LOGO && (
+                        <img
+                          src={v.LOGO}
+                          alt="Service Logo"
+                          style={{ width: "16px" }}
+                        />
+                      )}
+                      {v.SECONDARY_LOGO && (
+                        <img
+                          src={v.SECONDARY_LOGO}
+                          alt="Service Logo"
+                          style={{ width: "16px" }}
+                        />
+                      )}
+                      {v.API_KEY && (
+                        <Tooltip
+                          text={
+                            localStorage.getItem(v.API_KEY)
+                              ? "API Key added"
+                              : "API Key required"
+                          }
                         >
-                          <LucideIcon
-                            name="Key"
+                          <div
                             style={{
-                              color: localStorage.getItem(v.API_KEY)
-                                ? "white"
-                                : "#77818A",
-                              width: "12px",
-                              height: "12px",
+                              borderRadius: "4px",
+                              backgroundColor: `${
+                                localStorage.getItem(v.API_KEY)
+                                  ? "#177E23"
+                                  : "#e8ebec"
+                              }`,
+                              width: "16px",
+                              height: "16px",
                             }}
-                          />
-                        </div>
-                      </Tooltip>
-                    )}
+                            className="flex justify-center"
+                          >
+                            <LucideIcon
+                              name="Key"
+                              style={{
+                                color: localStorage.getItem(v.API_KEY)
+                                  ? "white"
+                                  : "#77818A",
+                                width: "12px",
+                                height: "12px",
+                              }}
+                            />
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
+                  </div>
+                  <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
+                    {v.d}
                   </div>
                 </div>
-                <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
-                  {v.d}
+              );
+            })}
+          {finalFunctionCandidates.length === 0 && (
+            <span>
+              {!isAuthorized && (
+                <div
+                  style={{ marginBottom: "8px", backgroundColor: "#F8F9FA" }}
+                  className="w-full flex flex-col p-2 gap-1"
+                >
+                  <h4
+                    className="text-helper-sm-bold"
+                    style={{ fontWeight: "bold" }}
+                  >
+                    dSheets account required
+                  </h4>
+                  <p className="text-helper-text-sm color-text-secondary">
+                    Use more onchain functions by creating a dSheets account.{" "}
+                    <span
+                      className="sign-fortune"
+                      style={{ color: "#5C0AFF", cursor: "pointer" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        console.log("click");
+                        document.getElementById("triggerAuth")?.click();
+                      }}
+                    >
+                      Signup/Login
+                    </span>
+                  </p>
+                  <div className="flex gap-2 mt-2 mb-2">
+                    {unfilteredDefaultCandidates.map((v, index) => {
+                      return (
+                        <img
+                          key={index}
+                          src={v.LOGO}
+                          alt="Service Logo"
+                          style={{ width: "16px", height: "16px" }}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              )}
+            </span>
+          )}
         </>
       )}
 

@@ -159,6 +159,8 @@ export type Settings = {
   currency?: string;
   onDuneChartEmbed?: () => void;
   onSheetCountChange?: (count: number) => void;
+  isAuthorized?: boolean;
+  isFlvReadOnly?: boolean;
 };
 
 export const defaultSettings: Required<Settings> = {
@@ -304,4 +306,6 @@ export const defaultSettings: Required<Settings> = {
   getCommentCellUI: null,
   onDuneChartEmbed: () => {},
   onSheetCountChange: () => {},
+  isAuthorized: false,
+  isFlvReadOnly: false,
 };

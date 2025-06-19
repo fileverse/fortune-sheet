@@ -1,6 +1,5 @@
 .fortune-dialog {
-  min-width: 368px;
-  max-width: 90%;
+  width: 368px;
   max-height: 90%;
   border-radius: 12px;
   background: hsl(var(--color-bg-default));

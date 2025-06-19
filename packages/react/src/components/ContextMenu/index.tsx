@@ -1038,7 +1038,7 @@ const ContextMenu: React.FC = () => {
                       className="context-item p-2 w-full"
                       style={{ height: "40px" }}
                     >
-                      <LucideIcon name="Filter" />
+                      <LucideIcon name="Filter" className="w-4 h-4" />
                       <p>{filter.filter}</p>
                     </div>
                   </Menu>
@@ -1071,7 +1071,12 @@ const ContextMenu: React.FC = () => {
                     <LucideIcon name="Filter" />
                     <p>{rightclick.filterSelection}</p>
                   </div>
-                  <LucideIcon name="ChevronRight" width={16} height={16} />
+                  <LucideIcon
+                    name="ChevronRight"
+                    width={16}
+                    height={16}
+                    className="w-4 h-4 color-text-secondary"
+                  />
                 </div>
               </Menu>
             </div>
@@ -1150,7 +1155,12 @@ const ContextMenu: React.FC = () => {
                     <LucideIcon name="PaintbrushVertical" />
                     <p>{rightclick.conditionFormat || "Conditional Format"}</p>
                   </div>
-                  <LucideIcon name="ChevronRight" width={16} height={16} />
+                  <LucideIcon
+                    name="ChevronRight"
+                    width={16}
+                    height={16}
+                    className="color-text-secondary w-4 h-4"
+                  />
                 </div>
               </Menu>
             </div>

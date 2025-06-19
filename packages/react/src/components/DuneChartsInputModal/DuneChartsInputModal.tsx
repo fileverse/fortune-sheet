@@ -60,7 +60,7 @@ const DuneChartsInputModal = ({
   return (
     <div className="custom-overlay" onClick={onClose}>
       <div
-        className="input-modal"
+        className="input-modal w-3/4 md:w-full"
         style={{ transformOrigin: "top center" }}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}

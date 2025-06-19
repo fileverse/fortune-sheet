@@ -11680,12 +11680,12 @@ export default {
     tipNameRepeat: "The name of the tab page cannot be repeated! Please revise",
     noMoreSheet:
       "The workbook contains at least one visual worksheet. To delete the selected worksheet, please insert a new worksheet or show a hidden worksheet.",
-    confirmDelete: "Are you sure to delete",
+    confirmDelete: "Are you sure to delete?",
     redoDelete: "Can be undo by Ctrl+Z",
     noHide: "Can't hide, at least keep one sheet tag",
     chartEditNoOpt: "This operation is not allowed in chart editing mode!",
     sheetNameSpecCharError: "The name cannot contain:[ ] :  ? * / ' \"",
-    sheetNamecannotIsEmptyError: "Sheet name cannot be empty",
+    sheetNamecannotIsEmptyError: "Sheet name cannot be empty!",
   },
   conditionformat: {
     conditionformat_greaterThan: "Conditional format - Greater than",

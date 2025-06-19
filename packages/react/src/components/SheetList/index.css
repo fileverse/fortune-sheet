@@ -13,8 +13,8 @@
   height: 30px;
   line-height: 30px;
   width: 100%;
-  margin-right: 46px;
   cursor: pointer;
+  border-radius: 4px;
 }
 
 .fortune-sheet-list-item-name {
@@ -31,7 +31,8 @@
 }
 
 .fortune-sheet-list :hover {
-  background-color: #efefef;
+  background-color: hsl(var(--color-bg-default-hover));
+  transition: background-color 0.2s ease-in-out;
 }
 
 .fortune-sheet-hidden-button {
@@ -44,10 +45,4 @@
 
 .fortune-sheet-hidden-button :hover {
   background-color: #d0d0d0;
-}
-
-.fortune-sheet-selected-check-sapce {
-  width: 20px;
-  display: inline-block;
-  margin-left: 15px;
 }

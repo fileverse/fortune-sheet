@@ -2287,7 +2287,7 @@ export function rangeHightlightselected(ctx: Context, $editor: HTMLDivElement) {
 
   if (currText === "=") {
     const { functionlist } = locale(ctx);
-    ctx.defaultCandidates = functionlist.filter((d) => d.t === 20).slice(0, 10);
+    ctx.defaultCandidates = functionlist.filter((d) => d.t === 20).slice(0, 11);
     const funcName = helpFunctionExe($editor, currSelection, ctx);
     ctx.functionHint = funcName?.toUpperCase();
     return;

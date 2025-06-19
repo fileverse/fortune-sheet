@@ -3,11 +3,11 @@ import {
   cancelNormalSelected,
   cancelActiveImgItem,
 } from "@fileverse-dev/fortune-core";
+import { LucideIcon } from "@fileverse/ui";
 import React, { useContext, useEffect, useRef } from "react";
 import WorkbookContext from "../../context";
 import "./index.css";
 import SheetHiddenButton from "./SheetHiddenButton";
-import SVGIcon from "../SVGIcon";
 
 type Props = {
   sheet: Sheet;
@@ -38,7 +38,7 @@ const SheetListItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
 
   return (
     <div
-      className="fortune-sheet-list-item"
+      className="fortune-sheet-list-item flex items-center gap-2 px-2"
       key={sheet.id}
       ref={containerRef}
       onClick={() => {
@@ -59,13 +59,12 @@ const SheetListItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
       }}
       tabIndex={0}
     >
-      <span className="fortune-sheet-selected-check-sapce">
+      <span className="w-4">
         {sheet.id === context.currentSheetId && (
-          <SVGIcon
-            name="check"
-            width={16}
-            height={16}
-            style={{ lineHeight: 30, verticalAlign: "middle" }}
+          <LucideIcon
+            name="Check"
+            size="sm"
+            className="color-text-default w-4 h-4"
           />
         )}
       </span>

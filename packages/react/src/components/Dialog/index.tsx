@@ -33,13 +33,14 @@ const Dialog: React.FC<Props> = ({
     <div className="fortune-dialog" style={containerStyle}>
       <div
         className={cn(
-          "flex items-center justify-end border-b color-border-default py-3 px-6",
-          {
-            "justify-between": title,
-          }
+          "flex items-center justify-between border-b color-border-default py-3 px-6"
         )}
       >
-        {title && <div className="text-heading-sm">{title}</div>}
+        {title ? (
+          <div className="text-heading-sm">{title}</div>
+        ) : (
+          <div className="text-heading-sm">Oops! Something went wrong</div>
+        )}
         <IconButton icon="X" variant="ghost" onClick={onCancel} tabIndex={0} />
       </div>
       <div className="px-6 pb-6 pt-4 text-body-sm" style={contentStyle}>

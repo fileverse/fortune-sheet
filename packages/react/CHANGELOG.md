@@ -4,6 +4,14 @@
 
 ### Patch Changes
 
+- test bump
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.2
+
+## 1.0.2
+
+### Patch Changes
+
 - test changes
 - Updated dependencies
   - @fileverse-dev/fortune-core@1.0.2

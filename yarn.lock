@@ -2192,7 +2192,7 @@
 
 "@fileverse-dev/formulajs@4.4.11-mod-60":
   version "4.4.11-mod-60"
-  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.11-mod-60.tgz#13763950abd4fe461e6e6a0a41e250bc5d8a254e"
+  resolved "https://registry.npmjs.org/@fileverse-dev/formulajs/-/formulajs-4.4.11-mod-60.tgz"
   integrity sha512-20rEle1a7UQQMHu1jKiC+p2sbwltfU4aglRFAprP6vVghM64khvBjPYSg//VgLDCz81z2ltsyu7Zp00s+yOECw==
   dependencies:
     bessel "^1.0.2"

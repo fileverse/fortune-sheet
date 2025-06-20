@@ -28,7 +28,7 @@ const Template: StoryFn<typeof Workbook> = ({
         {...args}
         data={data}
         onChange={onChange}
-        isAuthorized={true}
+        isAuthorized={false}
         customToolbarItems={[
           {
             key: "templates",

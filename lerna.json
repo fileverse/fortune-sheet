@@ -1,5 +1,16 @@
 {
-  "version": "0.2.2",
+  "version": "independent",
   "npmClient": "yarn",
-  "useWorkspaces": true
+  "useWorkspaces": true,
+  "command": {
+    "publish": {
+      "conventionalCommits": true,
+      "message": "chore(release): publish",
+      "registry": "https://registry.npmjs.org"
+    },
+    "version": {
+      "allowBranch": ["master", "main", "fileverse-mod"],
+      "conventionalCommits": true
+    }
+  }
 }

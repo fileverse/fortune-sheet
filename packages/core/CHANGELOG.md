@@ -1,5 +1,16 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.0
+
+### Minor Changes
+
+- updated formulajs to fix base fn, and unselect first item of function suggestion list
+
+### Patch Changes
+
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.3.0
+
 ## 1.0.3
 
 ### Patch Changes

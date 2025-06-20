@@ -241,6 +241,8 @@ const InputBox: React.FC = () => {
 
   const selectActiveFormulaOnClick = useCallback(
     (e: React.MouseEvent) => {
+      // @ts-expect-error later
+      if (e.target.className.includes("sign-fortune")) return;
       preText.current = inputRef.current!.innerText;
       const formulaName = getActiveFormula()?.querySelector(
         ".luckysheet-formula-search-func"

@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-core",
-  "version": "1.0.2-mod-113",
+  "version": "1.0.2-mod-115",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "typings": "dist/index.d.ts",
@@ -14,7 +14,7 @@
     "dev": "father-build --watch"
   },
   "dependencies": {
-    "@fileverse-dev/formula-parser": "0.2.13-mod-41",
+    "@fileverse-dev/formula-parser": "0.2.13-mod-42",
     "dayjs": "^1.11.0",
     "immer": "^9.0.12",
     "lodash": "^4.17.21",

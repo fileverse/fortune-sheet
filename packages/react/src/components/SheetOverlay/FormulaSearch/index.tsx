@@ -92,7 +92,8 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
               Onchain functions
             </h4>
             <p className="text-helper-text-sm color-text-secondary">
-              Every onchain function is a native data structure allowing dSheets to read and structure data from smart contracts and APIs.
+              Every onchain function is a native data structure allowing dSheets
+              to read and structure data from smart contracts and APIs.
             </p>
           </div>
           {!isAuthorized && (
@@ -100,11 +101,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
               style={{ marginBottom: "8px", backgroundColor: "#F8F9FA" }}
               className="w-full flex flex-col p-2 gap-1"
             >
-              <h4
-                className="font-semibold"
-              >
-                dSheets account required
-              </h4>
+              <h4 className="font-semibold">dSheets account required</h4>
               <p className="text-helper-text-sm color-text-secondary">
                 Use more onchain functions by creating a dSheets account.{" "}
                 <span

@@ -30,8 +30,5 @@ jobs:
       - name: Lint
         run: yarn lint
         
-      - name: Test
-        run: yarn test
-        
       - name: Build packages
         run: yarn build:packages

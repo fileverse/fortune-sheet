@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.3
+
+### Patch Changes
+
+- fix dialog modal
+
 ## 1.0.2
 
 ### Patch Changes

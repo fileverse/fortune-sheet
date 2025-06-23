@@ -2149,8 +2149,7 @@ export function deleteSelectedCellText(ctx: Context): string {
 }
 
 // 选区是否重叠
-export function selectIsOverlap(ctx: Context, range?: any) {
-  console.log("selectIsOverlap", ctx, range);
+export function selectIsOverlap(_ctx: Context, _range?: any) {
   return false;
   // if (range == null) {
   //   range = ctx.luckysheet_select_save;

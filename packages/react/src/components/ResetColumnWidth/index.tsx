@@ -35,7 +35,6 @@ export const ResetColumnWidth: React.FC<{}> = () => {
             maxWidth = cellD.length * 7;
           }
         } else if (typeof cellD === "object" && cellD !== null) {
-          console.log(cellD, "cellD");
           const cellText = cellD.v || cellD.m;
           if (cellText.length * 7 > maxWidth) {
             maxWidth = cellText.length * 7;

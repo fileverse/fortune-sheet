@@ -110,7 +110,6 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    console.log("click");
                     document.getElementById("triggerAuth")?.click();
                   }}
                 >

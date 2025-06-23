@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.5
+
+### Patch Changes
+
+- fix bug that auto selects datablock function
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.15
+
 ## 1.0.4
 
 ### Patch Changes

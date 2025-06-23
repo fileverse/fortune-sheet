@@ -73,6 +73,8 @@ export function setCellValue(
   const sheet = getSheet(ctx, options);
 
   const { data } = sheet;
+
+  if (!data) return;
   // if (data.length === 0) {
   //   data = sheetmanage.buildGridData(file);
   // }

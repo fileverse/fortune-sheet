@@ -110,7 +110,6 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    console.log("click");
                     document.getElementById("triggerAuth")?.click();
                   }}
                 >
@@ -136,7 +135,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
 
       {context.defaultCandidates.length > 0 ? (
         <>
-          {finalDefaultCandidates.map((v, index) => {
+          {finalDefaultCandidates.map((v) => {
             return (
               <div
                 key={v.n}
@@ -144,9 +143,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                 style={{
                   cursor: "pointer",
                 }}
-                className={`luckysheet-formula-search-item  ${
-                  index === 0 ? "luckysheet-formula-search-item-active" : ""
-                }`}
+                className="luckysheet-formula-search-item"
               >
                 <div
                   style={{ display: "flex", justifyContent: "space-between" }}
@@ -223,14 +220,12 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
       ) : (
         <>
           {finalFunctionCandidates.length > 0 &&
-            finalFunctionCandidates.map((v, index) => {
+            finalFunctionCandidates.map((v) => {
               return (
                 <div
                   key={v.n}
                   data-func={v.n}
-                  className={`luckysheet-formula-search-item ${
-                    index === 0 ? "luckysheet-formula-search-item-active" : ""
-                  }`}
+                  className="luckysheet-formula-search-item"
                 >
                   <div
                     style={{ display: "flex", justifyContent: "space-between" }}
@@ -324,7 +319,6 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        console.log("click");
                         document.getElementById("triggerAuth")?.click();
                       }}
                     >

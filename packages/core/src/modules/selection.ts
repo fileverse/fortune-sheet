@@ -2149,8 +2149,8 @@ export function deleteSelectedCellText(ctx: Context): string {
 }
 
 // 选区是否重叠
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function selectIsOverlap(ctx: Context, range?: any) {
-  console.log("selectIsOverlap", ctx, range);
   return false;
   // if (range == null) {
   //   range = ctx.luckysheet_select_save;

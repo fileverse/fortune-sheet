@@ -1,11 +1,12 @@
 {
   "name": "@fileverse-dev/fortune-core",
-  "version": "1.0.5",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "typings": "dist/index.d.ts",
+  "version": "1.0.7",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "typings": "lib/index.d.ts",
   "files": [
-    "dist"
+    "lib",
+    "es"
   ],
   "repository": "https://github.com/ruilisi/fortune-sheet",
   "license": "MIT",

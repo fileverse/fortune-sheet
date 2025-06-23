@@ -1,8 +1,7 @@
 export default {
   target: "browser",
-  cjs: { type: "rollup", lazy: false },
-  esm: { type: "rollup" },
-  umd: { globals: { Workbook: "Workbook" }, minFile: true },
+  cjs: { type: "babel", lazy: false },
+  esm: { type: "babel" },
   extractCSS: true,
   disableTypeCheck: false,
 };

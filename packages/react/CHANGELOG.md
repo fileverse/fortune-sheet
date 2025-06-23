@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.7
+
+### Patch Changes
+
+- fix: css and types
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.7
+
+## 1.0.6
+
+### Patch Changes
+
+- fix: types
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.6
+
 ## 1.0.5
 
 ### Patch Changes

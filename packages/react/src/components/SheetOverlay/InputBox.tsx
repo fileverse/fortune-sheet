@@ -444,7 +444,6 @@ const InputBox: React.FC = () => {
     (colReadOnly[col_index] || rowReadOnly[row_index]) &&
     context.allowEdit === true
   );
-
   return (
     <div
       className="luckysheet-input-box"
@@ -500,7 +499,7 @@ const InputBox: React.FC = () => {
         context.defaultCandidates.length > 0) && (
         <>
           <FormulaSearch
-            onMouseOver={(e) => {
+            onMouseMove={(e) => {
               if (document.getElementById("luckysheet-formula-search-c")) {
                 // apply hovered state on the function item
                 const hoveredItem = (e.target as HTMLElement).closest(

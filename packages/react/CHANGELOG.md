@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.4
+
+### Patch Changes
+
+- updated formulajs to fix base fn, and unselect first item of function suggestion list
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.4
+
 ## 1.0.3
 
 ### Patch Changes

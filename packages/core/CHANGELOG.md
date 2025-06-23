@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.8
+
+### Patch Changes
+
+- minor ui fix and fix blockscout returning 8k record
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.16
+
 ## 1.0.7
 
 ### Patch Changes

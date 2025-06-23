@@ -30,7 +30,13 @@ const Dialog: React.FC<Props> = ({
   const { context } = useContext(WorkbookContext);
   const { button } = locale(context);
   return (
-    <div className="fortune-dialog" style={containerStyle}>
+    <div
+      className="fortune-dialog"
+      style={{
+        ...containerStyle,
+        ...(title === "Data verification" ? { maxWidth: "unset" } : {}),
+      }}
+    >
       <div
         className={cn(
           "flex items-center justify-between border-b color-border-default py-3 px-6"

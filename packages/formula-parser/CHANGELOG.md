@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.16
+
+### Patch Changes
+
+- minor ui fix and fix blockscout returning 8k record
+
 ## 0.2.15
 
 ### Patch Changes

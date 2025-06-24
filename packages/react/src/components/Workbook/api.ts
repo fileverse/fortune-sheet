@@ -442,5 +442,8 @@ export function generateAPIs(
     getWorkbookContext: () => {
       return context;
     },
+    getSettings: () => {
+      return settings;
+    },
   };
 }

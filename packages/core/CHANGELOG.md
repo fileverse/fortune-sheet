@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.9
+
+### Patch Changes
+
+- expose sheet setting as API
+
 ## 1.0.8
 
 ### Patch Changes

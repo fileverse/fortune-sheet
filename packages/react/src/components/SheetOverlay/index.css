@@ -178,7 +178,7 @@
   position: absolute;
   pointer-events: none;
   z-index: 16;
-  border: 1px dashed #0188fb;
+  border: 1px dashed #efc703;
   margin: -1px 0 0 -1px;
   display: none;
 }
@@ -188,7 +188,7 @@
   position: absolute;
   /* pointer-events: none; */
   z-index: 16;
-  border: 2px solid #0188fb;
+  border: 2px solid #efc703;
   margin: -1px 0 0 -1px;
   display: none;
 }
@@ -197,7 +197,7 @@
   position: absolute;
   pointer-events: none;
   z-index: 15;
-  border: 2.5px solid #0188fb;
+  border: 2.5px solid #efc703;
   margin: -1px 0 0 -1px;
   background: rgba(1, 136, 251, 0.15);
   display: none;
@@ -220,7 +220,7 @@
   height: 6px;
   bottom: -5px;
   cursor: crosshair;
-  background-color: #0188fb;
+  background-color: #efc703;
   border: solid 1px #fff;
   z-index: 16;
   pointer-events: auto;
@@ -321,7 +321,7 @@
 }
 
 .luckysheet-input-box {
-  position: absolute;
+  position: fixed;
   font: normal normal 400 13px arial, sans, sans-serif;
   z-index: 15;
   display: flex;
@@ -333,7 +333,7 @@
   text-align: left;
   max-height: 9900px;
   max-width: 9900px;
-  border: 1px #5292f7 solid;
+  border: 2px #efc703 solid;
   padding: 0 2px;
   margin: 0;
   resize: none;
@@ -936,4 +936,19 @@
   z-index: 10;
   overflow: hidden;
   cursor: pointer !important;
+}
+
+.luckysheet-cell-address-indicator {
+  position: absolute;
+  top: -18px;
+  left: 0;
+  background-color: #efc703;
+  color: #000000;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 20;
+  pointer-events: none;
+  user-select: none;
 }

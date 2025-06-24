@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.10
+
+### Patch Changes
+
+- Disabled allowEdit for comment.ts
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.10
+
 ## 1.0.9
 
 ### Patch Changes

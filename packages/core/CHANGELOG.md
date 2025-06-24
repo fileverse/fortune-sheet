@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.10
+
+### Patch Changes
+
+- Disabled allowEdit for comment.ts
+
 ## 1.0.9
 
 ### Patch Changes

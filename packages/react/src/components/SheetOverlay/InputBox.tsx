@@ -16,6 +16,7 @@ import {
   escapeHTMLTag,
   isAllowEdit,
   getrangeseleciton,
+  indexToColumnChar,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -457,22 +458,84 @@ const InputBox: React.FC = () => {
     (colReadOnly[col_index] || rowReadOnly[row_index]) &&
     context.allowEdit === true
   );
+
+  // Calculate input box position relative to viewport (screen) instead of canvas
+  const getInputBoxPosition = useCallback(() => {
+    if (!firstSelection || context.rangeDialog?.show) {
+      return { left: -10000, top: -10000, display: "block" };
+    }
+
+    // Get the canvas container to calculate viewport-relative position
+    const canvasContainer = refs.cellArea.current;
+
+    if (!canvasContainer) {
+      return {
+        left: firstSelection.left || 0,
+        top: firstSelection.top || 0,
+        display: "block",
+      };
+    }
+
+    const containerRect = canvasContainer.getBoundingClientRect();
+
+    // The selection coordinates are absolute canvas coordinates
+    // We add container position to get viewport-relative coordinates, but don't subtract scroll
+    // so the input box stays fixed at the original cell position
+    const viewportLeft = containerRect.left + (firstSelection.left || 0);
+    const viewportTop = containerRect.top + (firstSelection.top || 0);
+
+    return {
+      left: viewportLeft,
+      top: viewportTop,
+      zIndex: _.isEmpty(context.luckysheetCellUpdate) ? -1 : 19,
+      display: "block",
+    };
+  }, [
+    firstSelection,
+    context.rangeDialog?.show,
+    context.luckysheetCellUpdate,
+    refs.cellArea,
+  ]);
+
+  // Calculate cell address indicator position
+  const getAddressIndicatorPosition = useCallback(() => {
+    if (!firstSelection || context.rangeDialog?.show) {
+      return { display: "none" };
+    }
+
+    // Always show above the input box
+    return { top: "-18px", left: "0", display: "block" };
+  }, [firstSelection, context.rangeDialog?.show]);
+
+  // Generate cell address string (e.g., "A1", "B5")
+  const getCellAddress = useCallback(() => {
+    if (!firstSelection) return "";
+
+    const rowIndex = firstSelection.row_focus || 0;
+    const colIndex = firstSelection.column_focus || 0;
+
+    const columnChar = indexToColumnChar(colIndex);
+    const rowNumber = rowIndex + 1;
+
+    return `${columnChar}${rowNumber}`;
+  }, [firstSelection]);
+
   return (
     <div
       className="luckysheet-input-box"
-      style={
-        firstSelection && !context.rangeDialog?.show
-          ? {
-              left: firstSelection.left,
-              top: firstSelection.top,
-              zIndex: _.isEmpty(context.luckysheetCellUpdate) ? -1 : 19,
-              display: "block",
-            }
-          : { left: -10000, top: -10000, display: "block" }
-      }
+      style={getInputBoxPosition()}
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}
     >
+      {/* Cell Address Indicator */}
+      {firstSelection && !context.rangeDialog?.show && (
+        <div
+          className="luckysheet-cell-address-indicator"
+          style={getAddressIndicatorPosition()}
+        >
+          {getCellAddress()}
+        </div>
+      )}
       <div
         className="luckysheet-input-box-inner"
         style={

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.9
+
+### Patch Changes
+
+- expose sheet setting as API
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.9
+
 ## 1.0.8
 
 ### Patch Changes

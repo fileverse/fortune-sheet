@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.13
+
+### Patch Changes
+
+- Fixed split columns modal responsive
+
 ## 1.0.12
 
 ### Patch Changes

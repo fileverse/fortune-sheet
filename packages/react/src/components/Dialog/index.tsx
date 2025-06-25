@@ -34,7 +34,11 @@ const Dialog: React.FC<Props> = ({
       className="fortune-dialog"
       style={{
         ...containerStyle,
-        ...(title === "Data verification" ? { maxWidth: "unset" } : {}),
+        ...(["Data verification", "Split text to columns"].includes(
+          title as string
+        )
+          ? { maxWidth: "unset" }
+          : {}),
       }}
     >
       <div

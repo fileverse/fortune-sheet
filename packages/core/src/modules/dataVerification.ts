@@ -9,6 +9,7 @@ import {
   getSheetIndex,
   GlobalCache,
   isAllowEdit,
+  isAllowEditReadOnly,
   iscelldata,
   isdatetime,
   isRealNull,
@@ -722,7 +723,8 @@ export function cellFocus(
   clickMode: boolean
 ) {
   const allowEdit = isAllowEdit(ctx);
-  if (!allowEdit) return;
+  const isReadOnly = isAllowEditReadOnly(ctx);
+  if (!allowEdit || isReadOnly) return;
   const showHintBox = document.getElementById(
     "luckysheet-dataVerification-showHintBox"
   );

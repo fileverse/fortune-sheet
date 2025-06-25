@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { Context, getFlowdata } from "../context";
 import { CellMatrix, Rect, Cell } from "../types";
 import { colLocation, rowLocation } from "./location";
-import { getSheetIndex, isAllowEdit } from "../utils";
+import { getSheetIndex, isAllowEdit, isAllowEditReadOnly } from "../utils";
 import { getBorderInfoCompute } from "./border";
 import { genarate, update } from "./format";
 import * as formula from "./formula";
@@ -2276,10 +2276,10 @@ export function updateDropCell(ctx: Context) {
   // ) {
   //   return;
   // }
-
   const d = getFlowdata(ctx);
   const allowEdit = isAllowEdit(ctx);
-  if (allowEdit === false || d == null) {
+  const isReadOnly = isAllowEditReadOnly(ctx);
+  if (allowEdit === false || d == null || isReadOnly) {
     return;
   }
 

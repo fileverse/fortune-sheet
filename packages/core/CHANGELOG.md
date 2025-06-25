@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.11
+
+### Patch Changes
+
+- revert comment allowEdit
+
 ## 1.0.10
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.11
+
+### Patch Changes
+
+- revert comment allowEdit
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.11
+
 ## 1.0.10
 
 ### Patch Changes

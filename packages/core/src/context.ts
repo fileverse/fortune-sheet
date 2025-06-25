@@ -489,6 +489,7 @@ export function defaultContext(refs: RefValues): Context {
 
     showGridLines: true,
     allowEdit: true,
+    isFlvReadOnly: false,
 
     fontList: [],
     defaultFontSize: 10,

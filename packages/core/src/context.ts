@@ -211,6 +211,8 @@ export type Context = {
   showGridLines: boolean;
   allowEdit: boolean;
 
+  isFlvReadOnly: boolean;
+
   fontList: any[];
   defaultFontSize: number;
 

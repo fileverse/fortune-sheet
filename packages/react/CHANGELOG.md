@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.14
+
+### Patch Changes
+
+- f3e1d45: added dataBlockCalcFunction in type of Sheet []
+- Updated dependencies [f3e1d45]
+  - @fileverse-dev/fortune-core@1.0.14
+
 ## 1.0.13
 
 ### Patch Changes

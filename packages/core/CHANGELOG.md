@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.14
+
+### Patch Changes
+
+- f3e1d45: added dataBlockCalcFunction in type of Sheet []
+
 ## 1.0.13
 
 ### Patch Changes

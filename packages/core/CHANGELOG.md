@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.12
+
+### Patch Changes
+
+- Added isFlvReadonly to context
+
 ## 1.0.11
 
 ### Patch Changes

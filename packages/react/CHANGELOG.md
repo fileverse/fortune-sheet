@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.12
+
+### Patch Changes
+
+- Added isFlvReadonly to context
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.12
+
 ## 1.0.11
 
 ### Patch Changes

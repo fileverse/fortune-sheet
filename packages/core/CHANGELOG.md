@@ -1,5 +1,41 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.14
+
+### Patch Changes
+
+- f3e1d45: added dataBlockCalcFunction in type of Sheet []
+
+## 1.0.13
+
+### Patch Changes
+
+- Fixed split columns modal responsive
+
+## 1.0.12
+
+### Patch Changes
+
+- Added isFlvReadonly to context
+
+## 1.0.11
+
+### Patch Changes
+
+- revert comment allowEdit
+
+## 1.0.10
+
+### Patch Changes
+
+- Disabled allowEdit for comment.ts
+
+## 1.0.9
+
+### Patch Changes
+
+- expose sheet setting as API
+
 ## 1.0.8
 
 ### Patch Changes

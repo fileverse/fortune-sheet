@@ -211,6 +211,8 @@ export type Context = {
   showGridLines: boolean;
   allowEdit: boolean;
 
+  isFlvReadOnly: boolean;
+
   fontList: any[];
   defaultFontSize: number;
 
@@ -487,6 +489,7 @@ export function defaultContext(refs: RefValues): Context {
 
     showGridLines: true,
     allowEdit: true,
+    isFlvReadOnly: false,
 
     fontList: [],
     defaultFontSize: 10,

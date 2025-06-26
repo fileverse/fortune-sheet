@@ -158,6 +158,7 @@ export type Sheet = {
     column: number[];
   }[];
   calcChain?: any[];
+  dataBlockCalcFunction?: { [key: string]: { [key: string]: any } };
   defaultRowHeight?: number;
   defaultColWidth?: number;
   showGridLines?: boolean | number;

@@ -1,5 +1,53 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.14
+
+### Patch Changes
+
+- f3e1d45: added dataBlockCalcFunction in type of Sheet []
+- Updated dependencies [f3e1d45]
+  - @fileverse-dev/fortune-core@1.0.14
+
+## 1.0.13
+
+### Patch Changes
+
+- Fixed split columns modal responsive
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.13
+
+## 1.0.12
+
+### Patch Changes
+
+- Added isFlvReadonly to context
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.12
+
+## 1.0.11
+
+### Patch Changes
+
+- revert comment allowEdit
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.11
+
+## 1.0.10
+
+### Patch Changes
+
+- Disabled allowEdit for comment.ts
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.10
+
+## 1.0.9
+
+### Patch Changes
+
+- expose sheet setting as API
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.9
+
 ## 1.0.8
 
 ### Patch Changes

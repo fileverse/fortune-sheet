@@ -41,6 +41,8 @@ const InputBox: React.FC = () => {
   const prevCellUpdate = usePrevious<any[]>(context.luckysheetCellUpdate);
   const prevSheetId = usePrevious<string>(context.currentSheetId);
   const [isHidenRC, setIsHidenRC] = useState<boolean>(false);
+  const [isInputBoxActive, setIsInputBoxActive] = useState(false);
+  const [frozenPosition, setFrozenPosition] = useState({ left: 0, top: 0 });
   const firstSelection = context.luckysheet_select_save?.[0];
   const row_index = firstSelection?.row_focus!;
   const col_index = firstSelection?.column_focus!;
@@ -138,6 +140,17 @@ const InputBox: React.FC = () => {
     setIsHidenRC(isShowHidenCR(context));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [context.luckysheet_select_save]);
+
+  // Reset active state when selection changes or InputBox is hidden
+  useEffect(() => {
+    if (
+      !firstSelection ||
+      context.rangeDialog?.show ||
+      _.isEmpty(context.luckysheetCellUpdate)
+    ) {
+      setIsInputBoxActive(false);
+    }
+  }, [firstSelection, context.rangeDialog?.show, context.luckysheetCellUpdate]);
 
   const getActiveFormula = useCallback(
     () => document.querySelector(".luckysheet-formula-search-item-active"),
@@ -476,17 +489,24 @@ const InputBox: React.FC = () => {
       };
     }
 
+    if (isInputBoxActive) {
+      // If InputBox is active, use the frozen position (ignore scroll)
+      return {
+        left: frozenPosition.left,
+        top: frozenPosition.top,
+        zIndex: _.isEmpty(context.luckysheetCellUpdate) ? -1 : 19,
+        display: "block",
+      };
+    }
+    // If not active, calculate the initial position (do not set state here)
     const containerRect = canvasContainer.getBoundingClientRect();
-
-    // The selection coordinates are absolute canvas coordinates
-    // We add container position to get viewport-relative coordinates, but don't subtract scroll
-    // so the input box stays fixed at the original cell position
-    const viewportLeft = containerRect.left + (firstSelection.left || 0);
-    const viewportTop = containerRect.top + (firstSelection.top || 0);
-
+    const initialLeft =
+      containerRect.left + (firstSelection.left || 0) - context.scrollLeft;
+    const initialTop =
+      containerRect.top + (firstSelection.top || 0) - context.scrollTop;
     return {
-      left: viewportLeft,
-      top: viewportTop,
+      left: initialLeft,
+      top: initialTop,
       zIndex: _.isEmpty(context.luckysheetCellUpdate) ? -1 : 19,
       display: "block",
     };
@@ -494,6 +514,39 @@ const InputBox: React.FC = () => {
     firstSelection,
     context.rangeDialog?.show,
     context.luckysheetCellUpdate,
+    refs.cellArea,
+    isInputBoxActive,
+    frozenPosition,
+    context.scrollLeft,
+    context.scrollTop,
+  ]);
+
+  // Effect to freeze the position when input box becomes visible and not yet active
+  useEffect(() => {
+    if (
+      firstSelection &&
+      !context.rangeDialog?.show &&
+      !isInputBoxActive &&
+      !_.isEmpty(context.luckysheetCellUpdate)
+    ) {
+      const canvasContainer = refs.cellArea.current;
+      if (canvasContainer) {
+        const containerRect = canvasContainer.getBoundingClientRect();
+        const initialLeft =
+          containerRect.left + (firstSelection.left || 0) - context.scrollLeft;
+        const initialTop =
+          containerRect.top + (firstSelection.top || 0) - context.scrollTop;
+        setFrozenPosition({ left: initialLeft, top: initialTop });
+        setIsInputBoxActive(true);
+      }
+    }
+  }, [
+    firstSelection,
+    context.rangeDialog?.show,
+    context.luckysheetCellUpdate,
+    isInputBoxActive,
+    context.scrollLeft,
+    context.scrollTop,
     refs.cellArea,
   ]);
 

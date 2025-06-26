@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.18
+
+### Patch Changes
+
+- updated package to 1.0.18 - empty changes
+
+## 1.0.17
+
+### Patch Changes
+
+- revert bug
+
 ## 1.0.16
 
 ### Patch Changes

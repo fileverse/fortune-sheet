@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.16
+
+### Patch Changes
+
+- update version to match react 1.0.16
+
 ## 1.0.14
 
 ### Patch Changes

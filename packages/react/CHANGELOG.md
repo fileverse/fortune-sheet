@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.15
+
+### Patch Changes
+
+- fix UX for selecting function using keyboard arrows
+
 ## 1.0.14
 
 ### Patch Changes

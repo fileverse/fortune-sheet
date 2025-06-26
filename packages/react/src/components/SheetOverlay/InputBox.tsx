@@ -16,6 +16,7 @@ import {
   escapeHTMLTag,
   isAllowEdit,
   getrangeseleciton,
+  indexToColumnChar,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -40,6 +41,8 @@ const InputBox: React.FC = () => {
   const prevCellUpdate = usePrevious<any[]>(context.luckysheetCellUpdate);
   const prevSheetId = usePrevious<string>(context.currentSheetId);
   const [isHidenRC, setIsHidenRC] = useState<boolean>(false);
+  const [isInputBoxActive, setIsInputBoxActive] = useState(false);
+  const [frozenPosition, setFrozenPosition] = useState({ left: 0, top: 0 });
   const firstSelection = context.luckysheet_select_save?.[0];
   const row_index = firstSelection?.row_focus!;
   const col_index = firstSelection?.column_focus!;
@@ -137,6 +140,17 @@ const InputBox: React.FC = () => {
     setIsHidenRC(isShowHidenCR(context));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [context.luckysheet_select_save]);
+
+  // Reset active state when selection changes or InputBox is hidden
+  useEffect(() => {
+    if (
+      !firstSelection ||
+      context.rangeDialog?.show ||
+      _.isEmpty(context.luckysheetCellUpdate)
+    ) {
+      setIsInputBoxActive(false);
+    }
+  }, [firstSelection, context.rangeDialog?.show, context.luckysheetCellUpdate]);
 
   const getActiveFormula = useCallback(
     () => document.querySelector(".luckysheet-formula-search-item-active"),
@@ -457,22 +471,124 @@ const InputBox: React.FC = () => {
     (colReadOnly[col_index] || rowReadOnly[row_index]) &&
     context.allowEdit === true
   );
+
+  // Calculate input box position relative to viewport (screen) instead of canvas
+  const getInputBoxPosition = useCallback(() => {
+    if (!firstSelection || context.rangeDialog?.show) {
+      return { left: -10000, top: -10000, display: "block" };
+    }
+
+    // Get the canvas container to calculate viewport-relative position
+    const canvasContainer = refs.cellArea.current;
+
+    if (!canvasContainer) {
+      return {
+        left: firstSelection.left || 0,
+        top: firstSelection.top || 0,
+        display: "block",
+      };
+    }
+
+    if (isInputBoxActive) {
+      // If InputBox is active, use the frozen position (ignore scroll)
+      return {
+        left: frozenPosition.left,
+        top: frozenPosition.top,
+        zIndex: _.isEmpty(context.luckysheetCellUpdate) ? -1 : 19,
+        display: "block",
+      };
+    }
+    // If not active, calculate the initial position (do not set state here)
+    const containerRect = canvasContainer.getBoundingClientRect();
+    const initialLeft =
+      containerRect.left + (firstSelection.left || 0) - context.scrollLeft;
+    const initialTop =
+      containerRect.top + (firstSelection.top || 0) - context.scrollTop;
+    return {
+      left: initialLeft,
+      top: initialTop,
+      zIndex: _.isEmpty(context.luckysheetCellUpdate) ? -1 : 19,
+      display: "block",
+    };
+  }, [
+    firstSelection,
+    context.rangeDialog?.show,
+    context.luckysheetCellUpdate,
+    refs.cellArea,
+    isInputBoxActive,
+    frozenPosition,
+    context.scrollLeft,
+    context.scrollTop,
+  ]);
+
+  // Effect to freeze the position when input box becomes visible and not yet active
+  useEffect(() => {
+    if (
+      firstSelection &&
+      !context.rangeDialog?.show &&
+      !isInputBoxActive &&
+      !_.isEmpty(context.luckysheetCellUpdate)
+    ) {
+      const canvasContainer = refs.cellArea.current;
+      if (canvasContainer) {
+        const containerRect = canvasContainer.getBoundingClientRect();
+        const initialLeft =
+          containerRect.left + (firstSelection.left || 0) - context.scrollLeft;
+        const initialTop =
+          containerRect.top + (firstSelection.top || 0) - context.scrollTop;
+        setFrozenPosition({ left: initialLeft, top: initialTop });
+        setIsInputBoxActive(true);
+      }
+    }
+  }, [
+    firstSelection,
+    context.rangeDialog?.show,
+    context.luckysheetCellUpdate,
+    isInputBoxActive,
+    context.scrollLeft,
+    context.scrollTop,
+    refs.cellArea,
+  ]);
+
+  // Calculate cell address indicator position
+  const getAddressIndicatorPosition = useCallback(() => {
+    if (!firstSelection || context.rangeDialog?.show) {
+      return { display: "none" };
+    }
+
+    // Always show above the input box
+    return { top: "-18px", left: "0", display: "block" };
+  }, [firstSelection, context.rangeDialog?.show]);
+
+  // Generate cell address string (e.g., "A1", "B5")
+  const getCellAddress = useCallback(() => {
+    if (!firstSelection) return "";
+
+    const rowIndex = firstSelection.row_focus || 0;
+    const colIndex = firstSelection.column_focus || 0;
+
+    const columnChar = indexToColumnChar(colIndex);
+    const rowNumber = rowIndex + 1;
+
+    return `${columnChar}${rowNumber}`;
+  }, [firstSelection]);
+
   return (
     <div
       className="luckysheet-input-box"
-      style={
-        firstSelection && !context.rangeDialog?.show
-          ? {
-              left: firstSelection.left,
-              top: firstSelection.top,
-              zIndex: _.isEmpty(context.luckysheetCellUpdate) ? -1 : 19,
-              display: "block",
-            }
-          : { left: -10000, top: -10000, display: "block" }
-      }
+      style={getInputBoxPosition()}
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}
     >
+      {/* Cell Address Indicator */}
+      {firstSelection && !context.rangeDialog?.show && (
+        <div
+          className="luckysheet-cell-address-indicator"
+          style={getAddressIndicatorPosition()}
+        >
+          {getCellAddress()}
+        </div>
+      )}
       <div
         className="luckysheet-input-box-inner"
         style={

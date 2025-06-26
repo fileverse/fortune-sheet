@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.17
+
+### Patch Changes
+
+- Fixed input box and forumal search on scrolling
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.17
+
 ## 1.0.16
 
 ### Patch Changes

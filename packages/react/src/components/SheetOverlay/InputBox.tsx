@@ -301,11 +301,18 @@ const InputBox: React.FC = () => {
           let previousItem = activeItem
             ? activeItem.previousElementSibling
             : null;
+          while (
+            previousItem &&
+            !previousItem.classList.contains("luckysheet-formula-search-item")
+          ) {
+            previousItem = previousItem.previousElementSibling;
+          }
           if (!previousItem) {
-            previousItem =
-              formulaSearchContainer?.querySelector(
-                ".luckysheet-formula-search-item:last-child"
-              ) || null;
+            const items = formulaSearchContainer?.querySelectorAll(
+              ".luckysheet-formula-search-item"
+            );
+            const lastItem = items?.[items.length - 1];
+            previousItem = lastItem || null;
           }
           clearSearchItemActiveClass();
           if (previousItem) {
@@ -325,10 +332,16 @@ const InputBox: React.FC = () => {
             ".luckysheet-formula-search-item-active"
           );
           let nextItem = activeItem ? activeItem.nextElementSibling : null;
+          while (
+            nextItem &&
+            !nextItem.classList.contains("luckysheet-formula-search-item")
+          ) {
+            nextItem = nextItem.nextElementSibling;
+          }
           if (!nextItem) {
             nextItem =
               formulaSearchContainer?.querySelector(
-                ".luckysheet-formula-search-item:first-child"
+                ".luckysheet-formula-search-item"
               ) || null;
           }
           clearSearchItemActiveClass();

@@ -7,5 +7,13 @@
     "declarationDir": "dist"
   },
   "include": ["src/**/*"],
-  "exclude": ["dist", "lib", "es", "test", "**/*.test.ts", "**/*.spec.ts", "../core/src"]
+  "exclude": [
+    "dist",
+    "lib",
+    "es",
+    "test",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "../core/src"
+  ]
 }

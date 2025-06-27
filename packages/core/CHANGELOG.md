@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.20
+
+### Patch Changes
+
+- fix hex paster and retain table structure
+
 ## 1.0.19
 
 ### Patch Changes

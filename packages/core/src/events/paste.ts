@@ -459,7 +459,7 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
           // 如果单元格设置了纯文本格式，那么就不要转成数值类型了，防止数值过大自动转成科学计数法
           if (originCell && originCell.ct && originCell.ct.fa === "@") {
             value = String(value);
-          } else {
+          } else if (!/^0x?[a-fA-F0-9]+$/.test(value)) {
             value = parseFloat(value);
           }
         }
@@ -479,6 +479,15 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
           const cell: Cell = {};
           const mask = genarate(value);
           [cell.m, cell.ct, cell.v] = mask!;
+          // check if hex value to handle hex address
+          if (/^0x?[a-fA-F0-9]+$/.test(value)) {
+            cell.m = value;
+            cell.ct = {
+              fa: "@",
+              t: "s",
+            };
+            cell.v = value;
+          }
 
           x[c + curC] = cell;
         }
@@ -1757,6 +1766,12 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
                 const mask = genarate(txt);
                 // @ts-ignore
                 [cell.m, cell.ct, cell.v] = mask;
+                // check if hex value to handle hex address
+                if (/^0x?[a-fA-F0-9]+$/.test(txt)) {
+                  cell.ct = { fa: "@", t: "s" };
+                  cell.m = txt;
+                  cell.v = txt;
+                }
               }
               const styleString =
                 typeof allStyleList[`.${className}`] === "string"
@@ -2068,7 +2083,12 @@ export function handlePasteByClick(
   const allowEdit = isAllowEdit(ctx);
   if (!allowEdit) return;
 
-  if (clipboardData) clipboard.writeHtml(clipboardData);
+  // if (clipboardData) clipboard.writeHtml(clipboardData);
+  if (clipboardData) {
+    // Wrap in pre tag to preserve whitespace
+    const htmlWithPreservedNewlines = `<pre style="white-space: pre-wrap;">${clipboardData}</pre>`;
+    clipboard.writeHtml(htmlWithPreservedNewlines);
+  }
 
   const textarea = document.querySelector("#fortune-copy-content");
   // textarea.focus();

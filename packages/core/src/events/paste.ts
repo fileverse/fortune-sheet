@@ -459,7 +459,7 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
           // 如果单元格设置了纯文本格式，那么就不要转成数值类型了，防止数值过大自动转成科学计数法
           if (originCell && originCell.ct && originCell.ct.fa === "@") {
             value = String(value);
-          } else {
+          } else if (!/^0x?[a-fA-F0-9]+$/.test(value)) {
             value = parseFloat(value);
           }
         }
@@ -479,6 +479,15 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
           const cell: Cell = {};
           const mask = genarate(value);
           [cell.m, cell.ct, cell.v] = mask!;
+          // check if hex value to handle hex address
+          if (/^0x?[a-fA-F0-9]+$/.test(value)) {
+            cell.m = value
+            cell.ct = {
+              fa: "@",
+              t: "s",
+            }
+            cell.v = value
+          }
 
           x[c + curC] = cell;
         }
@@ -1712,7 +1721,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
         const patternName = _.initial(styleInner.match(nameReg));
         const allStyleList =
           patternName.length === patternStyle?.length &&
-          typeof patternName === typeof patternStyle
+            typeof patternName === typeof patternStyle
             ? _.fromPairs(_.zip(patternName, patternStyle))
             : {};
 
@@ -1738,7 +1747,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             if (
               (_.has(ctx.luckysheetfile[index].config!.rowlen, targetR) &&
                 ctx.luckysheetfile[index].config!.rowlen![targetR] !==
-                  targetRowHeight) ||
+                targetRowHeight) ||
               (!_.has(ctx.luckysheetfile[index].config!.rowlen, targetR) &&
                 ctx.luckysheetfile[index].defaultRowHeight !== targetRowHeight)
             ) {
@@ -1757,12 +1766,18 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
                 const mask = genarate(txt);
                 // @ts-ignore
                 [cell.m, cell.ct, cell.v] = mask;
+                // check if hex value to handle hex address
+                if (/^0x?[a-fA-F0-9]+$/.test(txt)) {
+                  cell.ct = { fa: '@', t: 's' }
+                  cell.m = txt;
+                  cell.v = txt;
+                }
               }
               const styleString =
                 typeof allStyleList[`.${className}`] === "string"
                   ? allStyleList[`.${className}`]
-                      .substring(1, allStyleList[`.${className}`].length - 1)
-                      .split("\n\t")
+                    .substring(1, allStyleList[`.${className}`].length - 1)
+                    .split("\n\t")
                   : [];
               const styles: Record<string, string> = {};
               _.forEach(styleString, (s) => {
@@ -1783,15 +1798,15 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
                 (fontWight.toString() === "400" ||
                   fontWight === "normal" ||
                   _.isEmpty(fontWight)) &&
-                !_.includes(styles["font-style"], "bold") &&
-                (!styles["font-weight"] || styles["font-weight"] === "400")
+                  !_.includes(styles["font-style"], "bold") &&
+                  (!styles["font-weight"] || styles["font-weight"] === "400")
                   ? 0
                   : 1;
 
               cell.it =
                 (td.style.fontStyle === "normal" ||
                   _.isEmpty(td.style.fontStyle)) &&
-                !_.includes(styles["font-style"], "italic")
+                  !_.includes(styles["font-style"], "italic")
                   ? 0
                   : 1;
 
@@ -2023,7 +2038,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             // Get the cell position
             const last =
               ctx.luckysheet_select_save?.[
-                ctx.luckysheet_select_save.length - 1
+              ctx.luckysheet_select_save.length - 1
               ];
             if (last) {
               const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
@@ -2068,7 +2083,12 @@ export function handlePasteByClick(
   const allowEdit = isAllowEdit(ctx);
   if (!allowEdit) return;
 
-  if (clipboardData) clipboard.writeHtml(clipboardData);
+  // if (clipboardData) clipboard.writeHtml(clipboardData);
+  if (clipboardData) {
+    // Wrap in pre tag to preserve whitespace
+    const htmlWithPreservedNewlines = `<pre style="white-space: pre-wrap;">${clipboardData}</pre>`;
+    clipboard.writeHtml(htmlWithPreservedNewlines);
+  }
 
   const textarea = document.querySelector("#fortune-copy-content");
   // textarea.focus();

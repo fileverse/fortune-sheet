@@ -57,7 +57,9 @@ export const FormatSearch: React.FC<{
       const index = getSheetIndex(ctx, ctx.currentSheetId);
       if (_.isNil(index)) return;
       const selectedFormat = toolbarFormat[selectedFormatIndex].value;
-      const formatString = `${selectedFormat}#,##0.${"0".repeat(decimalPlace)}`;
+      const formatString = `${selectedFormat} #,##0.${"0".repeat(
+        decimalPlace
+      )}`;
       _.forEach(ctx.luckysheet_select_save, (selection) => {
         for (let r = selection.row[0]; r <= selection.row[1]; r += 1) {
           for (let c = selection.column[0]; c <= selection.column[1]; c += 1) {
@@ -125,18 +127,20 @@ export const FormatSearch: React.FC<{
             }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue>
-                {toolbarFormat[selectedFormatIndex]?.name}{" "}
-                {toolbarFormat[selectedFormatIndex]?.value}
+              <SelectValue className="flex items-center gap-2">
+                <span>{toolbarFormat[selectedFormatIndex]?.name}</span>
+                <span className="text-body-sm color-text-secondary ml-1">
+                  ({toolbarFormat[selectedFormatIndex]?.value})
+                </span>
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {toolbarFormat.map((v: any, index: number) => (
                 <SelectItem key={v.name} value={String(index)}>
-                  <div className="flex justify-between w-full">
+                  <div className="flex justify-between w-full items-center gap-2">
                     <span>{v.name}</span>
-                    <span className="text-body-sm text-icon-secondary">
-                      {v.value}
+                    <span className="text-body-sm color-text-secondary">
+                      ({v.value})
                     </span>
                   </div>
                 </SelectItem>

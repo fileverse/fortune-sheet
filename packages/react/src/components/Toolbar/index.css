@@ -403,3 +403,9 @@
 .custom-color-button > svg > path:first-child {
   display: none !important;
 }
+
+#search-input-container [cmdk-input-wrapper] {
+  border: 1px solid hsl(var(--color-border-default));
+  border-radius: 8px;
+  margin: 8px 8px 0px 8px;
+}

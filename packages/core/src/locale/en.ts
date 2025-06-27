@@ -11227,7 +11227,7 @@ export default {
     { name: "Indian Rupee", pos: "before", value: "?" },
     { name: "Indonesian Rupiah", pos: "before", value: "Rp" },
     { name: "Jordanian Dinar", pos: "before", value: "din" },
-    { name: "VND", pos: "after", value: "?" },
+    { name: "VND", pos: "after", value: "₫" },
     { name: "Zambian Kwacha", pos: "before", value: "ZMW" },
     { name: "Gibraltar Pound", pos: "before", value: "￡" },
     { name: "Chilean Peso", pos: "before", value: "$" },

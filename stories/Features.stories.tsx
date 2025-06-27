@@ -30,10 +30,15 @@ const Template: StoryFn<typeof Workbook> = ({
         onChange={onChange}
         isAuthorized={false}
         customToolbarItems={[
+          // {
+          //   key: "templates",
+          //   tooltip: "Templates",
+          //   // onClick: toggleTemplateSidebar,
+          // },
           {
-            key: "templates",
-            tooltip: "Templates",
-            // onClick: toggleTemplateSidebar,
+            key: "ethereum",
+            tooltip: "Crypto denominations",
+            // onClick: () => { },
           },
         ]}
         toolbarItems={[
@@ -59,6 +64,7 @@ const Template: StoryFn<typeof Workbook> = ({
           "vertical-align",
           "|",
           "currency-format",
+          "currency",
           "percentage-format",
           "number-decrease",
           "number-increase",

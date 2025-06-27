@@ -1849,6 +1849,67 @@ const SVGDefines: React.FC<{ currency: string }> = ({ currency }) => (
           />
         </svg>
       </symbol>
+
+      <symbol
+        id="solana"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+      >
+        <g clip-path="url(#clip0_568_119011)">
+          <path
+            d="M2.59975 11.6853C2.69631 11.5775 2.82907 11.5146 2.96988 11.5146H15.7393C15.9726 11.5146 16.0893 11.8291 15.9244 12.0132L13.4019 14.8294C13.3053 14.9372 13.1725 15.0001 13.0317 15.0001H0.262315C0.0289729 15.0001 -0.0876979 14.6856 0.0772505 14.5015L2.59975 11.6853Z"
+            fill="url(#paint0_linear_568_119011)"
+          />
+          <path
+            d="M2.59975 1.17068C2.70033 1.06288 2.8331 1 2.96988 1H15.7393C15.9726 1 16.0893 1.3144 15.9244 1.49856L13.4019 4.31473C13.3053 4.42252 13.1725 4.4854 13.0317 4.4854H0.262315C0.0289729 4.4854 -0.0876979 4.171 0.0772505 3.98685L2.59975 1.17068Z"
+            fill="url(#paint1_linear_568_119011)"
+          />
+          <path
+            d="M13.4019 6.39431C13.3053 6.28651 13.1725 6.22363 13.0317 6.22363H0.262315C0.0289729 6.22363 -0.0876979 6.53804 0.0772505 6.72219L2.59975 9.53836C2.69631 9.64615 2.82907 9.70903 2.96988 9.70903H15.7393C15.9726 9.70903 16.0893 9.39463 15.9244 9.21048L13.4019 6.39431Z"
+            fill="url(#paint2_linear_568_119011)"
+          />
+        </g>
+        <defs>
+          <linearGradient
+            id="paint0_linear_568_119011"
+            x1="14.5195"
+            y1="-0.682254"
+            x2="4.0567"
+            y2="17.2684"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#00FFA3" />
+            <stop offset="1" stop-color="#DC1FFF" />
+          </linearGradient>
+          <linearGradient
+            id="paint1_linear_568_119011"
+            x1="10.6552"
+            y1="-2.93462"
+            x2="0.192482"
+            y2="15.016"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#00FFA3" />
+            <stop offset="1" stop-color="#DC1FFF" />
+          </linearGradient>
+          <linearGradient
+            id="paint2_linear_568_119011"
+            x1="12.575"
+            y1="-1.81561"
+            x2="2.11229"
+            y2="16.135"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#00FFA3" />
+            <stop offset="1" stop-color="#DC1FFF" />
+          </linearGradient>
+          <clipPath id="clip0_568_119011">
+            <rect width="16" height="16" fill="white" />
+          </clipPath>
+        </defs>
+      </symbol>
     </defs>
   </svg>
 );

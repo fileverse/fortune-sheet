@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.17
+
+### Patch Changes
+
+- hancle different type of quotes encoding(curly quotes)
+
 ## 0.2.16
 
 ### Patch Changes

@@ -11,6 +11,12 @@ import errorParser, {
 } from "./error";
 import { extractLabel, toLabel } from "./helper/cell";
 
+function normalizeQuotes(text) {
+  return text
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2018\u2019]/g, "'");
+}
+
 /**
  * @class Parser
  */
@@ -47,6 +53,7 @@ class Parser extends Emitter {
    * @return {*} Returns an object with tow properties `error` and `result`.
    */
   parse(expression, options) {
+    expression = normalizeQuotes(expression);
     let result = null;
     let error = null;
     this.options = options;

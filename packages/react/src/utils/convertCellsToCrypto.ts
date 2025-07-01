@@ -116,16 +116,33 @@ export async function convertCellsToCrypto({
 
     setContext((ctx: any) => {
       const d = getFlowdata(ctx);
-      if (!d) return;
-      d[row][col] = d[row][col] || {};
-      d[row][col].v = cryptoValue;
-      d[row][col].m = `${cryptoValue.toFixed(decimals)} ${denomStr}`;
-      d[row][col].ct = {
+
+      // Check existence
+      if (
+        !d ||
+        !Array.isArray(d) ||
+        !d[row] ||
+        !d[row][col] ||
+        cryptoValue === null
+      )
+        return;
+
+      // Ensure row and cell exist
+      if (!d[row]) d[row] = [];
+      if (!d[row][col]) d[row][col] = {};
+
+      // TypeScript safe assignment
+      const cellCp = d[row][col] as Partial<CryptoCell>;
+
+      cellCp.v = cryptoValue;
+      cellCp.m = `${cryptoValue.toFixed(decimals)} ${denomStr}`;
+      cellCp.ct = {
         fa: `0.${"0".repeat(decimals)} "${denomStr}"`,
         t: "n",
       };
-      // Store the original USD base value for future conversions
-      (d[row][col] as CryptoCell).baseValue = baseValue;
+      cellCp.baseValue = baseValue;
+
+      d[row][col] = cellCp as CryptoCell;
     });
   });
 }

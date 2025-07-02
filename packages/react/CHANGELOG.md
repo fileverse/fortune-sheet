@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.21
+
+### Patch Changes
+
+- avoid re executing function on sort
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.21
+
 ## 1.0.20
 
 ### Patch Changes

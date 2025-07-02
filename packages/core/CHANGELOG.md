@@ -5,6 +5,8 @@
 ### Patch Changes
 
 - avoid re executing function on sort
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.17
 
 ## 1.0.20
 

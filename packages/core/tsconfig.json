@@ -1,11 +1,20 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
+    "target": "es5",
+    "module": "es2015",
     "declaration": true,
-    "declarationDir": "dist"
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": true,
+    "moduleResolution": "node",
+    "noLib": false,
+    "jsx": "react",
+    "strict": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "lib": ["es5", "dom"],
+    "baseUrl": "./"
   },
-  "include": ["src/**/*"],
-  "exclude": ["dist", "lib", "es", "test", "**/*.test.ts", "**/*.spec.ts"]
+  "include": ["./src"],
+  "exclude": ["node_modules", "**/*.test.ts", "**/*.spec.ts", "dist", "lib"]
 }

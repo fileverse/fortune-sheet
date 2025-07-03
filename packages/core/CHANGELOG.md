@@ -1,9 +1,26 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.23
+
+### Patch Changes
+
+- Empty release
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.19
+
+## 1.0.22
+
+### Patch Changes
+
+- app readonly mode for cell footer
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.18
+
 ## 1.0.21
 
 ### Patch Changes
 
+- avoid re executing function on sort
 - Updated dependencies
   - @fileverse-dev/formula-parser@0.2.17
 

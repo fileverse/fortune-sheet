@@ -223,8 +223,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
   // ) {
   //   return;
   // }
+  console.log("pasteHandler", ctx.isFlvReadOnly);
   const allowEdit = isAllowEdit(ctx);
-  if (!allowEdit) return;
+  if (!allowEdit || ctx.isFlvReadOnly) return;
 
   if ((ctx.luckysheet_select_save?.length ?? 0) !== 1) {
     // if (isEditMode()) {

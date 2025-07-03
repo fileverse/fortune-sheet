@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.18
+
+### Patch Changes
+
+- app readonly mode for cell footer
+
 ## 0.2.17
 
 ### Patch Changes

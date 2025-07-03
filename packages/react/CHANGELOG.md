@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.22
+
+### Patch Changes
+
+- app readonly mode for cell footer
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.22
+
 ## 1.0.21
 
 ### Patch Changes

@@ -214,7 +214,7 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
         suppressContentEditableWarning
         contentEditable={isDropPlaceholder ? false : editing}
         onDoubleClick={() => {
-          if(context.isFlvReadOnly) return;
+          if (context.isFlvReadOnly) return;
           setEditing(true);
         }}
         onBlur={onBlur}

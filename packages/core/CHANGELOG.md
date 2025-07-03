@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.26
+
+### Patch Changes
+
+- fix: scroll while formular search
+
 ## 1.0.25
 
 ### Patch Changes

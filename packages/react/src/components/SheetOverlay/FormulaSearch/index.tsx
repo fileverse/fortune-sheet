@@ -66,6 +66,45 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     calcuatePopUpPlacement();
   });
 
+  useEffect(() => {
+    // this handle scroll for formula search section
+    const el = document.getElementById("luckysheet-formula-search-c");
+    let handleWheel: any;
+    if (el) {
+      let scrollLockTimeout: any = null;
+      const cache = {
+        verticalScrollLock: false,
+        horizontalScrollLock: false,
+      };
+
+      handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+
+        const step = 40;
+        const ratio = 1;
+
+        if (e.deltaY !== 0 && !cache.verticalScrollLock) {
+          cache.horizontalScrollLock = true;
+          el.scrollTop += (e.deltaY > 0 ? 1 : -1) * step * ratio;
+        } else if (e.deltaX !== 0 && !cache.horizontalScrollLock) {
+          cache.verticalScrollLock = true;
+          el.scrollLeft += (e.deltaX > 0 ? 1 : -1) * step * ratio;
+        }
+
+        clearTimeout(scrollLockTimeout);
+        scrollLockTimeout = setTimeout(() => {
+          cache.verticalScrollLock = false;
+          cache.horizontalScrollLock = false;
+        }, 50);
+      };
+
+      el.addEventListener("wheel", handleWheel, { passive: false });
+    }
+    return () => {
+      if (el && handleWheel) el.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
+
   if (
     _.isEmpty(context.functionCandidates) &&
     _.isEmpty(context.defaultCandidates)

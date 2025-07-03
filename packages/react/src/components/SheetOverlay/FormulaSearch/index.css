@@ -7,6 +7,8 @@
   background: #fff;
   z-index: 1003;
   width: 300px;
+  max-height: 360px;
+  overflow-y: auto;
 }
 
 .luckysheet-formula-search-c .luckysheet-formula-search-item {
@@ -19,7 +21,7 @@
   .luckysheet-formula-search-item
   .luckysheet-formula-search-detail {
   display: none;
-  color: #77818A;
+  color: #77818a;
 }
 
 .luckysheet-formula-search-c

@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-core",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "main": "lib/index.js",
   "module": "es/index.js",
   "typings": "lib/index.d.ts",

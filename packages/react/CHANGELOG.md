@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.26
+
+### Patch Changes
+
+- fix: scroll while formular search
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.26
+
 ## 1.0.25
 
 ### Patch Changes

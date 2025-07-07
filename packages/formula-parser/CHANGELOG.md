@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.29
+
+### Patch Changes
+
+- minor fix in fromTimeStampToBlock formulajs apikey check remove
+
 ## 0.2.28
 
 ### Patch Changes

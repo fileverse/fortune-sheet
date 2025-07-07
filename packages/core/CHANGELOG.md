@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.34
+
+### Patch Changes
+
+- minor fix in fromTimeStampToBlock formulajs apikey check remove
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.29
+
 ## 1.0.33
 
 ### Patch Changes

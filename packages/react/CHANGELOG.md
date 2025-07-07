@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.32
+
+### Patch Changes
+
+- formula js upgrade
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.32
+
 ## 1.0.31
 
 ### Patch Changes

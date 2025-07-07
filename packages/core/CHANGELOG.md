@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.32
+
+### Patch Changes
+
+- formula js upgrade
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.27
+
 ## 1.0.31
 
 ### Patch Changes

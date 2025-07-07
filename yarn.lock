@@ -2402,10 +2402,10 @@
   resolved "https://registry.yarnpkg.com/@fal-works/esbuild-plugin-global-externals/-/esbuild-plugin-global-externals-2.1.2.tgz#c05ed35ad82df8e6ac616c68b92c2282bd083ba4"
   integrity sha512-cEee/Z+I12mZcFJshKcCqC8tuX5hG3s+d+9nZ3LabqKF1vKdF41B92pJVCBggjAGORAeOzyyDDKrZwIkLffeOQ==
 
-"@fileverse-dev/formulajs@4.4.11-mod-73":
-  version "4.4.11-mod-73"
-  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.11-mod-73.tgz#9a0cd6d47b19a610408e4e4f98b66b55f20f7884"
-  integrity sha512-wDNpWsFOKjyyYa9RZJMyp9yjVIkNawMiQFF/D+X6NZmosFKYqiEpNZbS5sMzgtzLVJ2LCN42LxaX1i7ug9aPGg==
+"@fileverse-dev/formulajs@4.4.11-mod-74":
+  version "4.4.11-mod-74"
+  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.11-mod-74.tgz#5d3bd9ea8ab493737e5430e9e0edef276cbc2464"
+  integrity sha512-P8tDEWJiSGWXNQqXactunbWZXmucdkHgg+wx3qX8YIxPH3ddeMOpCwu92eACfdlBvP2byy2yWz1WyR1g/4CNmA==
   dependencies:
     bessel "^1.0.2"
     esbuild "^0.25.4"

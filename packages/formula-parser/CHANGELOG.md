@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.25
+
+### Patch Changes
+
+- env value use for proxy url
+
 ## 0.2.24
 
 ### Patch Changes

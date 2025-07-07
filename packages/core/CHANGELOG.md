@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.30
+
+### Patch Changes
+
+- env value use for proxy url
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.25
+
 ## 1.0.29
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.22
+
+### Patch Changes
+
+- fix data block error message handler
+
 ## 0.2.21
 
 ### Patch Changes

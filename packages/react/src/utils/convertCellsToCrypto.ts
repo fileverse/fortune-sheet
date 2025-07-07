@@ -134,7 +134,7 @@ export async function convertCellsToCrypto({
       // TypeScript safe assignment
       const cellCp = d[row][col] as Partial<CryptoCell>;
 
-      cellCp.v = cryptoValue;
+      cellCp.v = baseValue.toString();
       cellCp.m = `${cryptoValue.toFixed(decimals)} ${denomStr}`;
       cellCp.ct = {
         fa: `0.${"0".repeat(decimals)} "${denomStr}"`,

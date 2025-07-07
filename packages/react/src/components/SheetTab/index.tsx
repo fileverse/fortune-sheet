@@ -75,96 +75,121 @@ const SheetTab: React.FC = () => {
   }, [context.luckysheetfile.length]);
 
   return (
-    <div
-      className="luckysheet-sheet-area luckysheet-noselected-text"
-      onContextMenu={(e) => e.preventDefault()}
-      id="luckysheet-sheet-area"
-    >
-      <div id="luckysheet-sheet-content">
-        {context.allowEdit && (
-          <div className="fortune-sheettab-button" onClick={onAddSheetClick}>
-            <SVGIcon name="plus" width={16} height={16} />
-          </div>
-        )}
-        {context.allowEdit && (
-          <div className="sheet-list-container">
-            <div
-              id="all-sheets"
-              className="fortune-sheettab-button"
-              ref={tabContainerRef}
-              onMouseDown={(e) => {
-                e.stopPropagation();
-                setContext((ctx) => {
-                  ctx.showSheetList = _.isUndefined(ctx.showSheetList)
-                    ? true
-                    : !ctx.showSheetList;
-                  ctx.sheetTabContextMenu = {};
-                });
-              }}
-            >
-              <SVGIcon name="all-sheets" width={16} height={16} />
-            </div>
-          </div>
-        )}
-        <div
-          id="luckysheet-sheets-m"
-          className="luckysheet-sheets-m lucky-button-custom"
-        >
-          <i className="iconfont luckysheet-iconfont-caidan2" />
+    <div>
+      <div
+        className="w-full"
+        id="denomination-warning"
+        style={{
+          position: "relative",
+          display: "none",
+          backgroundColor: "#F8F9FA",
+          borderBottom: "1px solid #E8EBEC",
+          color: "#77818A",
+          fontFamily: "Helvetica Neue",
+          fontSize: "var(--font-size-2xsm, 12px)",
+          fontStyle: "normal",
+          fontWeight: "400",
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 py-1">
+          <p className="text-sm text-center">
+            <span className="font-medium">Disclaimer:</span> Prices aren&apos;t
+            updated in real time, so they might be slightly different from the
+            source when you check. Updates can be delayed by up to 20 minutes.
+          </p>
         </div>
-        <div
-          className="fortune-sheettab-container"
-          id="fortune-sheettab-container"
-        >
-          {!isShowBoundary && <div className="boundary boundary-left" />}
+      </div>
+      <div
+        className="luckysheet-sheet-area luckysheet-noselected-text"
+        onContextMenu={(e) => e.preventDefault()}
+        id="luckysheet-sheet-area"
+      >
+        <div id="luckysheet-sheet-content">
+          {context.allowEdit && (
+            <div className="fortune-sheettab-button" onClick={onAddSheetClick}>
+              <SVGIcon name="plus" width={16} height={16} />
+            </div>
+          )}
+          {context.allowEdit && (
+            <div className="sheet-list-container">
+              <div
+                id="all-sheets"
+                className="fortune-sheettab-button"
+                ref={tabContainerRef}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  setContext((ctx) => {
+                    ctx.showSheetList = _.isUndefined(ctx.showSheetList)
+                      ? true
+                      : !ctx.showSheetList;
+                    ctx.sheetTabContextMenu = {};
+                  });
+                }}
+              >
+                <SVGIcon name="all-sheets" width={16} height={16} />
+              </div>
+            </div>
+          )}
           <div
-            className="fortune-sheettab-container-c"
-            id="fortune-sheettab-container-c"
-            ref={tabContainerRef}
+            id="luckysheet-sheets-m"
+            className="luckysheet-sheets-m lucky-button-custom"
           >
-            {_.sortBy(context.luckysheetfile, (s) => Number(s.order)).map(
-              (sheet) => {
-                return <SheetItem key={sheet.id} sheet={sheet} />;
-              }
-            )}
-            {/* <SheetItem
+            <i className="iconfont luckysheet-iconfont-caidan2" />
+          </div>
+          <div
+            className="fortune-sheettab-container"
+            id="fortune-sheettab-container"
+          >
+            {!isShowBoundary && <div className="boundary boundary-left" />}
+            <div
+              className="fortune-sheettab-container-c"
+              id="fortune-sheettab-container-c"
+              ref={tabContainerRef}
+            >
+              {_.sortBy(context.luckysheetfile, (s) => Number(s.order)).map(
+                (sheet) => {
+                  return <SheetItem key={sheet.id} sheet={sheet} />;
+                }
+              )}
+              {/* <SheetItem
               isDropPlaceholder
               sheet={{ name: "", id: "drop-placeholder" }}
             /> */}
+            </div>
+            {isShowBoundary && isShowScrollBtn && (
+              <div className="boundary boundary-right" />
+            )}
           </div>
-          {isShowBoundary && isShowScrollBtn && (
-            <div className="boundary boundary-right" />
+          {isShowScrollBtn && (
+            <div
+              id="fortune-sheettab-leftscroll"
+              className="fortune-sheettab-scroll"
+              ref={leftScrollRef}
+              onClick={() => {
+                scrollBy(-scrollDelta);
+              }}
+              tabIndex={0}
+            >
+              <SVGIcon name="arrow-doubleleft" width={12} height={12} />
+            </div>
+          )}
+          {isShowScrollBtn && (
+            <div
+              id="fortune-sheettab-rightscroll"
+              className="fortune-sheettab-scroll"
+              ref={rightScrollRef}
+              onClick={() => {
+                scrollBy(scrollDelta);
+              }}
+              tabIndex={0}
+            >
+              <SVGIcon name="arrow-doubleright" width={12} height={12} />
+            </div>
           )}
         </div>
-        {isShowScrollBtn && (
-          <div
-            id="fortune-sheettab-leftscroll"
-            className="fortune-sheettab-scroll"
-            ref={leftScrollRef}
-            onClick={() => {
-              scrollBy(-scrollDelta);
-            }}
-            tabIndex={0}
-          >
-            <SVGIcon name="arrow-doubleleft" width={12} height={12} />
-          </div>
-        )}
-        {isShowScrollBtn && (
-          <div
-            id="fortune-sheettab-rightscroll"
-            className="fortune-sheettab-scroll"
-            ref={rightScrollRef}
-            onClick={() => {
-              scrollBy(scrollDelta);
-            }}
-            tabIndex={0}
-          >
-            <SVGIcon name="arrow-doubleright" width={12} height={12} />
-          </div>
-        )}
-      </div>
-      <div className="fortune-sheet-area-right">
-        <ZoomControl />
+        <div className="fortune-sheet-area-right">
+          <ZoomControl />
+        </div>
       </div>
     </div>
   );

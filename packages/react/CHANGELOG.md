@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.33
+
+### Patch Changes
+
+- Remove missing API error if proxy support formulajs
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.33
+
 ## 1.0.32
 
 ### Patch Changes

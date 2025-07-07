@@ -1,5 +1,17 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.24
+
+### Patch Changes
+
+- formulajs update for proxy url support
+
+## 0.2.23
+
+### Patch Changes
+
+- formulajs update proxy URl
+
 ## 0.2.22
 
 ### Patch Changes

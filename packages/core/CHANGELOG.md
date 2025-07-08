@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.35
+
+### Patch Changes
+
+- remove hardcode proxy url only use ENV formulajs
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.30
+
 ## 1.0.34
 
 ### Patch Changes

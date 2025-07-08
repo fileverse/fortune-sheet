@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.30
+
+### Patch Changes
+
+- remove hardcode proxy url only use ENV formulajs
+
 ## 0.2.29
 
 ### Patch Changes

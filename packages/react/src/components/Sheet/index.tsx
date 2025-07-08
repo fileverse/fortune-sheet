@@ -239,9 +239,17 @@ const Sheet: React.FC<Props> = ({ sheet }) => {
 
   const onWheel = useCallback(
     (e: WheelEvent) => {
-      const el = document.getElementById("function-details");
-      const isMouseOver = el?.matches(":hover");
-      if (el && isMouseOver) return;
+      const functionDetailsEl = document.getElementById("function-details");
+      const formulaSearchEl = document.getElementById(
+        "luckysheet-formula-search-c"
+      );
+      const isMouseOverFunctionDetails = functionDetailsEl?.matches(":hover");
+      const isMouseOverFormulaSearch = formulaSearchEl?.matches(":hover");
+      if (
+        (functionDetailsEl && isMouseOverFunctionDetails) ||
+        (formulaSearchEl && isMouseOverFormulaSearch)
+      )
+        return;
       setContext((draftCtx) => {
         handleGlobalWheel(
           draftCtx,

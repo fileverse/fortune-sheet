@@ -186,6 +186,7 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
       }}
       tabIndex={0}
       onContextMenu={(e) => {
+        if (context.isFlvReadOnly) return;
         if (isDropPlaceholder) return;
         const rect = refs.workbookContainer.current!.getBoundingClientRect();
         const { pageX, pageY } = e;
@@ -212,7 +213,10 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
         spellCheck="false"
         suppressContentEditableWarning
         contentEditable={isDropPlaceholder ? false : editing}
-        onDoubleClick={() => setEditing(true)}
+        onDoubleClick={() => {
+          if (context.isFlvReadOnly) return;
+          setEditing(true);
+        }}
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         ref={editable}

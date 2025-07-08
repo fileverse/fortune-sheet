@@ -145,7 +145,7 @@ const Template: StoryFn<typeof Workbook> = ({
           "freeze-row",
           "freeze-column",
         ]}
-        isFlvReadOnly={false}
+        isFlvReadOnly={true}
       />
     </div>
   );

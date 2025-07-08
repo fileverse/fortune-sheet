@@ -1,5 +1,121 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.35
+
+### Patch Changes
+
+- remove hardcode proxy url only use ENV formulajs
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.30
+
+## 1.0.34
+
+### Patch Changes
+
+- minor fix in fromTimeStampToBlock formulajs apikey check remove
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.29
+
+## 1.0.33
+
+### Patch Changes
+
+- Remove missing API error if proxy support formulajs
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.28
+
+## 1.0.32
+
+### Patch Changes
+
+- formula js upgrade
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.27
+
+## 1.0.31
+
+### Patch Changes
+
+- No changes new release with fresh build
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.26
+
+## 1.0.30
+
+### Patch Changes
+
+- env value use for proxy url
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.25
+
+## 1.0.29
+
+### Patch Changes
+
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.24
+
+## 1.0.28
+
+### Patch Changes
+
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.23
+
+## 1.0.27
+
+### Patch Changes
+
+- fix data block error message handler
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.22
+
+## 1.0.26
+
+### Patch Changes
+
+- fix: scroll while formular search
+
+## 1.0.25
+
+### Patch Changes
+
+- Updated error message handler
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.21
+
+## 1.0.24
+
+### Patch Changes
+
+- updated error messages
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.20
+
+## 1.0.23
+
+### Patch Changes
+
+- Empty release
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.19
+
+## 1.0.22
+
+### Patch Changes
+
+- app readonly mode for cell footer
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.18
+
+## 1.0.21
+
+### Patch Changes
+
+- avoid re executing function on sort
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.17
+
 ## 1.0.20
 
 ### Patch Changes

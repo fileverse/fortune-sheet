@@ -1,5 +1,122 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.35
+
+### Patch Changes
+
+- remove hardcode proxy url only use ENV formulajs
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.35
+
+## 1.0.34
+
+### Patch Changes
+
+- minor fix in fromTimeStampToBlock formulajs apikey check remove
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.34
+
+## 1.0.33
+
+### Patch Changes
+
+- Remove missing API error if proxy support formulajs
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.33
+
+## 1.0.32
+
+### Patch Changes
+
+- formula js upgrade
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.32
+
+## 1.0.31
+
+### Patch Changes
+
+- No changes new release with fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.31
+
+## 1.0.30
+
+### Patch Changes
+
+- env value use for proxy url
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.30
+
+## 1.0.29
+
+### Patch Changes
+
+- @fileverse-dev/fortune-core@1.0.29
+
+## 1.0.28
+
+### Patch Changes
+
+- @fileverse-dev/fortune-core@1.0.28
+
+## 1.0.27
+
+### Patch Changes
+
+- fix data block error message handler
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.27
+
+## 1.0.26
+
+### Patch Changes
+
+- fix: scroll while formular search
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.26
+
+## 1.0.25
+
+### Patch Changes
+
+- Updated error message handler
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.25
+
+## 1.0.24
+
+### Patch Changes
+
+- updated error messages
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.24
+
+## 1.0.23
+
+### Patch Changes
+
+- Empty release
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.23
+
+## 1.0.22
+
+### Patch Changes
+
+- app readonly mode for cell footer
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.22
+
+## 1.0.21
+
+### Patch Changes
+
+- avoid re executing function on sort
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.21
+- @fileverse-dev/fortune-core@1.0.21
+
 ## 1.0.20
 
 ### Patch Changes

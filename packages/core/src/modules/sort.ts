@@ -1,6 +1,6 @@
 import numeral from "numeral";
 import _ from "lodash";
-import { execfunction, functionCopy, update } from ".";
+// import { execfunction, functionCopy, update } from ".";
 import {
   Cell,
   CellMatrix,
@@ -81,23 +81,23 @@ export function sortDataRange(
   stc: number,
   edc: number
 ) {
-  const { sortedData, rowOffsets } = orderbydata(isAsc, index, dataRange);
+  const { sortedData /* rowOffsets */ } = orderbydata(isAsc, index, dataRange);
 
   for (let r = str; r <= edr; r += 1) {
     for (let c = stc; c <= edc; c += 1) {
       const cell = sortedData[r - str][c - stc];
-      if (cell?.f) {
-        const moveOffset = rowOffsets[r - str];
-        let func = cell?.f!;
-        if (moveOffset > 0) {
-          func = `=${functionCopy(ctx, func, "down", moveOffset)}`;
-        } else if (moveOffset < 0) {
-          func = `=${functionCopy(ctx, func, "up", -moveOffset)}`;
-        }
-        const funcV = execfunction(ctx, func, r, c, undefined, undefined, true);
-        [, cell!.v, cell!.f] = funcV;
-        cell.m = update(cell.ct?.fa || "General", cell.v);
-      }
+      // if (cell?.f) {
+      //   const moveOffset = rowOffsets[r - str];
+      //   let func = cell?.f!;
+      //   if (moveOffset > 0) {
+      //     func = `=${functionCopy(ctx, func, "down", moveOffset)}`;
+      //   } else if (moveOffset < 0) {
+      //     func = `=${functionCopy(ctx, func, "up", -moveOffset)}`;
+      //   }
+      //   const funcV = execfunction(ctx, func, r, c, undefined, undefined, true);
+      //   [, cell!.v, cell!.f] = funcV;
+      //   cell.m = update(cell.ct?.fa || "General", cell.v);
+      // }
       sheetData[r][c] = cell;
     }
   }

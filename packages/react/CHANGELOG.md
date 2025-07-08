@@ -1,5 +1,65 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.35
+
+### Patch Changes
+
+- remove hardcode proxy url only use ENV formulajs
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.35
+
+## 1.0.34
+
+### Patch Changes
+
+- minor fix in fromTimeStampToBlock formulajs apikey check remove
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.34
+
+## 1.0.33
+
+### Patch Changes
+
+- Remove missing API error if proxy support formulajs
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.33
+
+## 1.0.32
+
+### Patch Changes
+
+- formula js upgrade
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.32
+
+## 1.0.31
+
+### Patch Changes
+
+- No changes new release with fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.31
+
+## 1.0.30
+
+### Patch Changes
+
+- env value use for proxy url
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.30
+
+## 1.0.29
+
+### Patch Changes
+
+- @fileverse-dev/fortune-core@1.0.29
+
+## 1.0.28
+
+### Patch Changes
+
+- @fileverse-dev/fortune-core@1.0.28
+
 ## 1.0.27
 
 ### Patch Changes

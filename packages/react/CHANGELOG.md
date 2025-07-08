@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.37
+
+### Patch Changes
+
+- minor fix in react constant services_api_key
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.37
+
 ## 1.0.36
 
 ### Patch Changes

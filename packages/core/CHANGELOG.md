@@ -1,5 +1,37 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.44
+
+### Patch Changes
+
+- formula testing
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.36
+
+## 1.0.43
+
+### Patch Changes
+
+- testing formulajs process env
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.35
+
+## 1.0.42
+
+### Patch Changes
+
+- new formulajs build
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.34
+
+## 1.0.41
+
+### Patch Changes
+
+- correct nodejs version build release
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.33
+
 ## 1.0.40
 
 ### Patch Changes

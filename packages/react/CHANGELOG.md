@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.40
+
+### Patch Changes
+
+- Crypto denomination final
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.40
+
 ## 1.0.38
 
 ### Patch Changes
@@ -21,6 +29,7 @@
 ### Patch Changes
 
 - crypto denomination initilization
+
 ## 1.0.39
 
 ### Patch Changes

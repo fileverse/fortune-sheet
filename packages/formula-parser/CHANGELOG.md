@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.32
+
+### Patch Changes
+
+- Crypto denomination final
+
 ## 0.2.31
 
 ### Patch Changes

@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.44
+
+### Patch Changes
+
+- formula testing
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.44
+
+## 1.0.43
+
+### Patch Changes
+
+- testing formulajs process env
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.43
+
 ## 1.0.42
 
 ### Patch Changes

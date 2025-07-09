@@ -31,15 +31,6 @@ const Template: StoryFn<typeof Workbook> = ({
         data={data}
         onChange={onChange}
         isAuthorized={false}
-        hooks={{afterActivateSheet: () => {
-          setTimeout(() => {
-            console.log("afterActivateSheet", ref.current?.getSheet());
-            ref.current?.setCellValue(0, 0, "test");
-          if(ref.current && ref.current?.getSheet)
-          console.log("afterActivateSheet", ref.current?.getSheet);
-          }, 6000)
-
-        }}}
         customToolbarItems={[
           // {
           //   key: "templates",

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.38
+
+### Patch Changes
+
+- handle undefined env in formulajs
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.31
+
 ## 1.0.37
 
 ### Patch Changes

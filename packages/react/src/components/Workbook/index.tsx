@@ -390,7 +390,10 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
     }, [emitOp]);
 
     useEffect(() => {
-      // Added by FLV
+      mergedSettings.hooks?.afterActivateSheet?.(context.currentSheetId);
+    }, [context.currentSheetId]);
+
+    useEffect(() => {
       setContext((ctx: any) => {
         const gridData = getFlowdata(ctx);
         const cellData = api.dataToCelldata(gridData as any);
@@ -413,10 +416,17 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
         )[0] as HTMLElement;
         if (denominatedUsed && denoWarn) {
           denoWarn.style.display = "block";
-          if (scrollBar) scrollBar.style.bottom = "28px";
+          denoWarn.style.left = "0px";
+          if (scrollBar) {
+            scrollBar.style.bottom = "40px !important";
+            scrollBar.style.backgroundColor = "red !important";
+          }
         } else if (!denominatedUsed && denoWarn) {
           denoWarn.style.display = "none";
-          if (scrollBar) scrollBar.style.bottom = "0px";
+          denoWarn.style.left = "-9999px";
+          if (scrollBar) {
+            scrollBar.style.bottom = "12px !important";
+          }
         }
         return ctx;
       });

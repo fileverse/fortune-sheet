@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.31
+
+### Patch Changes
+
+- handle undefined env in formulajs
+
 ## 0.2.30
 
 ### Patch Changes

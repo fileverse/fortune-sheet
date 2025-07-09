@@ -19,16 +19,27 @@ const Template: StoryFn<typeof Workbook> = ({
   ...args
 }) => {
   const [data, setData] = useState<Sheet[]>(data0);
+  const ref = React.useRef(null)
   const onChange = useCallback((d: Sheet[]) => {
     setData(d);
   }, []);
   return (
     <div style={{ width: "100%", height: "100vh" }}>
       <Workbook
+        ref={ref}
         {...args}
         data={data}
         onChange={onChange}
         isAuthorized={false}
+        hooks={{afterActivateSheet: () => {
+          setTimeout(() => {
+            console.log("afterActivateSheet", ref.current?.getSheet());
+            ref.current?.setCellValue(0, 0, "test");
+          if(ref.current && ref.current?.getSheet)
+          console.log("afterActivateSheet", ref.current?.getSheet);
+          }, 6000)
+
+        }}}
         customToolbarItems={[
           // {
           //   key: "templates",

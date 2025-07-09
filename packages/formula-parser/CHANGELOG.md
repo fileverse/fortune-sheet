@@ -1,5 +1,17 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.34
+
+### Patch Changes
+
+- new formulajs build
+
+## 0.2.33
+
+### Patch Changes
+
+- correct nodejs version build release
+
 ## 0.2.32
 
 ### Patch Changes

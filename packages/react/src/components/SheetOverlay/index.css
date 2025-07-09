@@ -10,7 +10,6 @@
   position: relative;
   overflow: hidden;
   outline-style: none;
-  cursor: default;
 }
 
 .fortune-row-body {

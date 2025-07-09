@@ -42,3 +42,7 @@ html::-webkit-scrollbar-button {
   justify-content: flex-end;
   align-items: center;
 }
+
+.cursor-paint {
+  cursor: url("../../assets/paint-roller.png") 16 16, auto;
+}

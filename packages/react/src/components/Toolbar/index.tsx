@@ -62,6 +62,8 @@ export const getLucideIcon = (title: string) => {
       return "Undo";
     case "redo":
       return "Redo";
+    case "format-painter":
+      return "PaintRoller";
     case "bold":
       return "Bold";
     case "italic":

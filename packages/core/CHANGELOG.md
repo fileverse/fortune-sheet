@@ -1,5 +1,33 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.40
+
+### Patch Changes
+
+- Crypto denomination final
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.32
+
+## 1.0.38
+
+### Patch Changes
+
+- handle undefined env in formulajs
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.31
+
+## 1.0.37
+
+### Patch Changes
+
+- minor fix in react constant services_api_key
+
+## 1.0.36
+
+### Patch Changes
+
+- crypto denomination initilization
+
 ## 1.0.39
 
 ### Patch Changes

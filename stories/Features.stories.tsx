@@ -19,21 +19,28 @@ const Template: StoryFn<typeof Workbook> = ({
   ...args
 }) => {
   const [data, setData] = useState<Sheet[]>(data0);
+  const ref = React.useRef(null)
   const onChange = useCallback((d: Sheet[]) => {
     setData(d);
   }, []);
   return (
     <div style={{ width: "100%", height: "100vh" }}>
       <Workbook
+        ref={ref}
         {...args}
         data={data}
         onChange={onChange}
         isAuthorized={false}
         customToolbarItems={[
+          // {
+          //   key: "templates",
+          //   tooltip: "Templates",
+          //   // onClick: toggleTemplateSidebar,
+          // },
           {
-            key: "templates",
-            tooltip: "Templates",
-            // onClick: toggleTemplateSidebar,
+            key: "ethereum",
+            tooltip: "Crypto denominations",
+            // onClick: () => { },
           },
         ]}
         toolbarItems={[
@@ -60,6 +67,7 @@ const Template: StoryFn<typeof Workbook> = ({
           "vertical-align",
           "|",
           "currency-format",
+          "currency",
           "percentage-format",
           "number-decrease",
           "number-increase",

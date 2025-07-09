@@ -25,6 +25,7 @@ import {
 } from "@fileverse-dev/fortune-core";
 import { applyPatches } from "immer";
 import _ from "lodash";
+import { getCryptoPrice } from "../../utils/cryptoApi";
 import { SetContextOptions } from "../../context";
 
 export function generateAPIs(
@@ -108,6 +109,8 @@ export function generateAPIs(
         { noHistory: true }
       );
     },
+
+    getCryptoPrice,
 
     getCellValue: (
       row: number,

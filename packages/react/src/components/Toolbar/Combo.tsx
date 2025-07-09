@@ -36,6 +36,13 @@ const Combo: React.FC<Props> = ({
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
 
+  // Custom handler to prevent closing during interactions
+  const handleOpenChange = (newOpen: boolean) => {
+    // You can add custom logic here to prevent closing
+    // For example, check if user is interacting with content
+    setOpen(newOpen);
+  };
+
   const isLucideIcon = useMemo(() => {
     return (
       iconId?.startsWith("align-") ||
@@ -57,6 +64,7 @@ const Combo: React.FC<Props> = ({
         "template",
         "font-color",
         "background",
+        "currency",
       ].includes(iconId as string)
     );
   }, [iconId]);
@@ -122,6 +130,7 @@ const Combo: React.FC<Props> = ({
             onClick={() => setOpen(!open)}
             className={cn("fortune-toolbar-combo-button", {
               "custom-color-button": iconId === "font-color" && fillColor,
+              "min-w-fit rounded-l-none": iconId === "currency",
             })}
             style={{
               color: iconId === "font-color" ? fillColor : undefined,
@@ -134,7 +143,7 @@ const Combo: React.FC<Props> = ({
 
   return (
     <div ref={buttonRef} className="fortune-toolbar-item">
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange} modal>
         <PopoverTrigger asChild>
           <div className="flex items-center">{trigger}</div>
         </PopoverTrigger>
@@ -144,6 +153,9 @@ const Combo: React.FC<Props> = ({
           sideOffset={4}
           alignOffset={-16}
           className="fortune-toolbar-combo-popup border-none"
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
         >
           {children?.(setOpen)}
         </PopoverContent>

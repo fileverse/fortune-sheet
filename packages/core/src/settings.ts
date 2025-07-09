@@ -188,6 +188,7 @@ export const defaultSettings: Required<Settings> = {
     "clear-format",
     "|",
     "currency-format",
+    "currency",
     "percentage-format",
     "number-decrease",
     "number-increase",

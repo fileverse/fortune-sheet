@@ -21,6 +21,8 @@ import {
   calcSelectionInfo,
   groupValuesRefresh,
   insertDuneChart,
+  getFlowdata,
+  api,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useMemo,
@@ -388,6 +390,47 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
     }, [emitOp]);
 
     useEffect(() => {
+      mergedSettings.hooks?.afterActivateSheet?.(context.currentSheetId);
+    }, [context.currentSheetId]);
+
+    useEffect(() => {
+      setContext((ctx: any) => {
+        const gridData = getFlowdata(ctx);
+        const cellData = api.dataToCelldata(gridData as any);
+        let denominatedUsed = false;
+        // eslint-disable-next-line no-restricted-syntax
+        for (const cell of cellData) {
+          const value = cell?.v?.m?.toString();
+          if (
+            value?.includes("BTC") ||
+            value?.includes("ETH") ||
+            value?.includes("SOL")
+          ) {
+            denominatedUsed = true;
+            break;
+          }
+        }
+        const denoWarn = document.getElementById("denomination-warning");
+        const scrollBar = document.getElementsByClassName(
+          "luckysheet-scrollbar-x"
+        )[0] as HTMLElement;
+        if (denominatedUsed && denoWarn) {
+          denoWarn.style.display = "block";
+          denoWarn.style.left = "0px";
+          if (scrollBar) {
+            scrollBar.style.bottom = "40px !important";
+            scrollBar.style.backgroundColor = "red !important";
+          }
+        } else if (!denominatedUsed && denoWarn) {
+          denoWarn.style.display = "none";
+          denoWarn.style.left = "-9999px";
+          if (scrollBar) {
+            scrollBar.style.bottom = "12px !important";
+          }
+        }
+        return ctx;
+      });
+
       if (context.luckysheet_select_save != null) {
         mergedSettings.hooks?.afterSelectionChange?.(
           context.currentSheetId,

@@ -37,7 +37,17 @@ import {
   insertDuneChart,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
-import { IconButton, LucideIcon, Tooltip } from "@fileverse/ui";
+import {
+  IconButton,
+  LucideIcon,
+  Tooltip,
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import "./index.css";
 import Button from "./Button";
@@ -55,6 +65,13 @@ import { CustomColor } from "./CustomColor";
 import { FormatSearch } from "../FormatSearch";
 import DuneChartsInputModal from "../DuneChartsInputModal/DuneChartsInputModal";
 import MoreItemsContaier from "./MoreItemsContainer";
+import CryptoDenominationSelector from "../CryptoDenominationSelector";
+import { getGroupedCurrencyOptions, CRYPTO_OPTIONS } from "../../constants";
+import {
+  convertCellsToCrypto,
+  getFiatSymbol,
+} from "../../utils/convertCellsToCrypto";
+import { updateCellsDecimalFormat } from "../../utils/updateCellsDecimalFormat";
 
 export const getLucideIcon = (title: string) => {
   switch (title) {
@@ -102,6 +119,8 @@ export const getLucideIcon = (title: string) => {
       return "DollarSign";
     case "currency-format":
       return "DollarSign";
+    case "currency":
+      return "ChevronDown";
     case "percentage-format":
       return "Percent";
     case "number-decrease":
@@ -126,6 +145,8 @@ export const getLucideIcon = (title: string) => {
       return "Search";
     case "dune":
       return "DuneChart";
+    case "crypto":
+      return "Ethereum";
     case "Ellipsis":
       return "Ellipsis";
     default:
@@ -186,6 +207,10 @@ const Toolbar: React.FC<{
 
   const [customColor] = useState("#000000");
   const [customStyle] = useState("1");
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [decimals, setDecimals] = useState(2);
+  const [selectedFiat, setSelectedFiat] = useState<string>("USD");
 
   const showSubMenu = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>, className: string) => {
@@ -1583,6 +1608,228 @@ const Toolbar: React.FC<{
           </Combo>
         );
       }
+      if (name === "currency") {
+        // Determine current format from cell
+        let currentFmt = defaultFormat[0].text;
+        const currentIcon = "currency";
+        if (cell) {
+          const curr = normalizedCellAttr(cell, "ct");
+          if (curr?.fa) {
+            // Try to match with crypto or fiat
+            const allOptions = [
+              ...CRYPTO_OPTIONS,
+              ...locale(context).currencyDetail.map((c) => ({
+                label: c.name,
+                value: c.value,
+                icon: undefined,
+                type: "fiat",
+              })),
+            ];
+            const found = allOptions.find((o) => curr.fa.includes(o.value));
+            if (found) {
+              currentFmt = found.label;
+            }
+          }
+        }
+        const groupedOptions = getGroupedCurrencyOptions(
+          locale(context).currencyDetail
+        );
+        // Filter options by search term
+        const filterOptions = (options: any[]): any[] => {
+          if (!searchTerm.trim()) return options;
+          const query = searchTerm.trim().toLowerCase();
+          // Split query into words and require all words to match somewhere in label or value
+          return options.filter((opt: any) =>
+            query
+              .split(/\s+/)
+              .every(
+                (word) =>
+                  opt.label.toLowerCase().includes(word) ||
+                  opt.value.toLowerCase().includes(word)
+              )
+          );
+        };
+
+        // Utility to deduplicate by value
+        const dedupeByValue = (options: any[]) => {
+          const seen = new Set();
+          return options.filter((opt) => {
+            if (seen.has(opt.value)) return false;
+            seen.add(opt.value);
+            return true;
+          });
+        };
+
+        const handleCurrencyDecimalsChange = (newDecimals: number) => {
+          setDecimals(newDecimals);
+          let isCrypto = false;
+          if (cell && cell.ct && typeof cell.ct.fa === "string") {
+            const [, matchedDenom] = cell.ct.fa.match(/"([A-Z]+)"/) || [];
+            if (matchedDenom) isCrypto = true;
+          }
+          updateCellsDecimalFormat({
+            context,
+            setContext,
+            decimals: newDecimals,
+            denomination: isCrypto ? undefined : selectedFiat,
+          });
+        };
+
+        return (
+          <Combo
+            iconId={currentIcon}
+            text={currentFmt}
+            key={name}
+            tooltip={tooltip}
+            showArrow
+          >
+            {() => {
+              return (
+                <div style={{ minWidth: "20rem" }}>
+                  {/* Command UI for search and options */}
+                  <Command className="border color-border-default rounded-lg">
+                    <div id="search-input-container">
+                      <CommandInput
+                        placeholder="Search by name or code"
+                        value={searchTerm}
+                        onValueChange={setSearchTerm}
+                      />
+                    </div>
+                    {/* Decimal places UI */}
+                    <div
+                      className="px-4 py-2 border-b color-border-default flex items-center justify-between gap-2 text-body-sm color-text-default"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span>Decimal places:</span>
+                      <span className="cds-row flex items-center">
+                        <IconButton
+                          icon="Minus"
+                          variant="ghost"
+                          size="sm"
+                          className="!bg-transparent"
+                          disabled={decimals === 1}
+                          onClick={() =>
+                            handleCurrencyDecimalsChange(
+                              Math.max(1, decimals - 1)
+                            )
+                          }
+                        />
+                        <input
+                          type="number"
+                          min={1}
+                          max={18}
+                          value={decimals}
+                          onChange={(e) =>
+                            handleCurrencyDecimalsChange(
+                              Math.max(1, Math.min(18, Number(e.target.value)))
+                            )
+                          }
+                        />
+                        <IconButton
+                          icon="Plus"
+                          variant="ghost"
+                          size="sm"
+                          className="!bg-transparent"
+                          disabled={decimals === 18}
+                          onClick={() =>
+                            handleCurrencyDecimalsChange(
+                              Math.min(18, decimals + 1)
+                            )
+                          }
+                        />
+                      </span>
+                    </div>
+                    <CommandList>
+                      <CommandEmpty
+                        className="text-center text-body-sm color-text-secondary flex items-center justify-center"
+                        style={{ minHeight: "5rem" }}
+                      >
+                        No results found.
+                      </CommandEmpty>
+                      {groupedOptions.map((group) => {
+                        // Filter and dedupe
+                        const filtered = dedupeByValue(
+                          filterOptions(group.options)
+                        );
+                        return (
+                          <CommandGroup key={group.group} heading={group.group}>
+                            {filtered.map((opt) => (
+                              <CommandItem
+                                key={opt.value}
+                                value={`${opt.label} ${opt.value}`}
+                                onSelect={async () => {
+                                  if (opt.type === "crypto") {
+                                    await convertCellsToCrypto({
+                                      context,
+                                      setContext,
+                                      denomination: opt.value,
+                                      decimals,
+                                      baseCurrency: "USD",
+                                    });
+                                  } else {
+                                    setSelectedFiat(opt.value);
+                                    setContext((ctx) => {
+                                      const d = getFlowdata(ctx);
+                                      if (d == null) return;
+                                      const formatString = `${getFiatSymbol(
+                                        opt.value
+                                      )} #,##0.${"0".repeat(decimals)}`;
+                                      updateFormat(
+                                        ctx,
+                                        refs.cellInput.current!,
+                                        d,
+                                        "ct",
+                                        formatString
+                                      );
+                                    });
+                                  }
+                                }}
+                              >
+                                <div className="fortune-toolbar-menu-line flex items-center justify-between w-full">
+                                  <div className="flex items-center gap-2">
+                                    {currentFmt === opt.label ? (
+                                      <LucideIcon
+                                        name="Check"
+                                        className="w-4 h-4"
+                                      />
+                                    ) : (
+                                      <span className="w-4 h-4" />
+                                    )}
+                                    <span>{opt.label}</span>
+                                  </div>
+                                  {opt.type === "crypto" ? (
+                                    <span className="color-text-secondary">
+                                      <LucideIcon
+                                        name={opt.icon}
+                                        className="cds-icon"
+                                      />
+                                      {opt.value === "SOL" && (
+                                        <SVGIcon
+                                          name="solana"
+                                          width={16}
+                                          height={16}
+                                        />
+                                      )}
+                                    </span>
+                                  ) : (
+                                    <span className="color-text-secondary">
+                                      {opt.value}
+                                    </span>
+                                  )}
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        );
+                      })}
+                    </CommandList>
+                  </Command>
+                </div>
+              );
+            }}
+          </Combo>
+        );
+      }
       return (
         <Tooltip text={tooltip} placement="bottom">
           <Button
@@ -1697,19 +1944,34 @@ const Toolbar: React.FC<{
       </div>
       <div className="fortune-toolbar-right">
         {settings.customToolbarItems.length > 0 && (
-          <Button
-            iconId="dune"
-            tooltip="Insert Dune Chart"
-            key="dune-charts"
-            onClick={() => {
-              if (context.allowEdit === false) return;
-              setShowDuneModal(true);
-            }}
-            style={{
-              backgroundColor: "#F4603E2E",
-              borderRadius: "8px",
-            }}
-          />
+          <>
+            <Button
+              iconId="dune"
+              tooltip="Insert Dune Chart"
+              key="dune-charts"
+              onClick={() => {
+                if (context.allowEdit === false) return;
+                setShowDuneModal(true);
+              }}
+              style={{
+                backgroundColor: "#F4603E2E",
+                borderRadius: "8px",
+              }}
+            />
+            <span style={{ display: "inline-block", position: "relative" }}>
+              <CryptoDenominationSelector>
+                <Button
+                  iconId="crypto"
+                  tooltip="Crypto denominations"
+                  key="crypto-denominations"
+                  style={{
+                    backgroundColor: "#e8ebec",
+                    borderRadius: "8px",
+                  }}
+                />
+              </CryptoDenominationSelector>
+            </span>
+          </>
         )}
         {settings.customToolbarItems
           .filter((n) => n.key !== "import-export")

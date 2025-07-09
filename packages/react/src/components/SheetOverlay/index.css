@@ -376,7 +376,6 @@
 
 .luckysheet-cell-flow-clip {
   border-collapse: collapse;
-  cursor: default;
   width: 5000000px;
   touch-action: manipulation;
   overflow: hidden;

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.39
+
+### Patch Changes
+
+- feat: Format Painter
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.36
+
 ## 1.0.35
 
 ### Patch Changes

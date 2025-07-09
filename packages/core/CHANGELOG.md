@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.39
+
+### Patch Changes
+
+- feat: Format Painter
+
 ## 1.0.35
 
 ### Patch Changes

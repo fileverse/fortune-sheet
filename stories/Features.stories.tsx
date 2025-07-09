@@ -39,6 +39,7 @@ const Template: StoryFn<typeof Workbook> = ({
         toolbarItems={[
           "undo",
           "redo",
+          "format-painter",
           "|",
           "font",
           "|",
@@ -139,7 +140,7 @@ const Template: StoryFn<typeof Workbook> = ({
           "freeze-row",
           "freeze-column",
         ]}
-        isFlvReadOnly={true}
+        isFlvReadOnly
       />
     </div>
   );

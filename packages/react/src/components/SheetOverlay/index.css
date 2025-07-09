@@ -10,7 +10,6 @@
   position: relative;
   overflow: hidden;
   outline-style: none;
-  cursor: default;
 }
 
 .fortune-row-body {
@@ -377,7 +376,6 @@
 
 .luckysheet-cell-flow-clip {
   border-collapse: collapse;
-  cursor: default;
   width: 5000000px;
   touch-action: manipulation;
   overflow: hidden;

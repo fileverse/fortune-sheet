@@ -434,16 +434,16 @@ const SheetOverlay: React.FC = () => {
         <ScrollBar axis="y" />
         <div
           ref={refs.cellArea}
-          className="fortune-cell-area"
+          className={`fortune-cell-area ${
+            context.luckysheetPaintModelOn ? "cursor-paint" : ""
+          }`}
           onMouseDown={cellAreaMouseDown}
           onDoubleClick={cellAreaDoubleClick}
           onContextMenu={cellAreaContextMenu}
           style={{
             width: context.cellmainWidth,
             height: context.cellmainHeight,
-            cursor: context.luckysheet_cell_selected_extend
-              ? "crosshair"
-              : "default",
+            cursor: context.luckysheet_cell_selected_extend ? "crosshair" : "",
           }}
         >
           <div id="fortune-formula-functionrange" />

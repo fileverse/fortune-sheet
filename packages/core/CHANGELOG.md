@@ -19,6 +19,11 @@
 ### Patch Changes
 
 - crypto denomination initilization
+## 1.0.39
+
+### Patch Changes
+
+- feat: Format Painter
 
 ## 1.0.35
 

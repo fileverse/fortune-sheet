@@ -1793,7 +1793,7 @@ const Toolbar: React.FC<{
                                 }}
                               >
                                 <div className="fortune-toolbar-menu-line flex items-center justify-between w-full">
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 w-[250px]">
                                     {currentFmt === opt.label ? (
                                       <LucideIcon
                                         name="Check"
@@ -1802,7 +1802,7 @@ const Toolbar: React.FC<{
                                     ) : (
                                       <span className="w-4 h-4" />
                                     )}
-                                    <span>{opt.label}</span>
+                                    <span className="truncate flex-1 overflow-hidden whitespace-nowrap">{opt.label}</span>
                                   </div>
                                   {opt.type === "crypto" ? (
                                     <span className="color-text-secondary">

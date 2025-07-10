@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.48
+
+### Patch Changes
+
+- Small fix trucating toolbar dropdown long curreny name
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.48
+
+## 1.0.47
+
+### Patch Changes
+
+- close denomination after select of toolbar
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.47
+
 ## 1.0.46
 
 ### Patch Changes

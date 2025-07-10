@@ -12,7 +12,9 @@ export async function getCryptoPrice(
 ): Promise<number> {
   const key = `${crypto}-${fiat}`.toLowerCase();
   const now = Date.now();
+  console.log(`Fetching crypto price for ${key}`, priceCache);
   if (priceCache[key] && now - priceCache[key].timestamp < CACHE_DURATION) {
+    console.log(`Using cached price for ${key}`);
     return priceCache[key].price;
   }
   const url = `${COINGECKO_API}?ids=${crypto}&vs_currencies=${fiat}`;

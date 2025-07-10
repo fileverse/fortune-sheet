@@ -1683,9 +1683,15 @@ const Toolbar: React.FC<{
             tooltip={tooltip}
             showArrow
           >
-            {() => {
+            {(setOpen) => {
               return (
-                <div style={{ minWidth: "20rem" }}>
+                <div
+                  style={{
+                    minWidth: "20rem",
+                    boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.2)",
+                    borderRadius: "8px",
+                  }}
+                >
                   {/* Command UI for search and options */}
                   <Command className="border color-border-default rounded-lg">
                     <div id="search-input-container">
@@ -1783,6 +1789,7 @@ const Toolbar: React.FC<{
                                       );
                                     });
                                   }
+                                  setOpen(false);
                                 }}
                               >
                                 <div className="fortune-toolbar-menu-line flex items-center justify-between w-full">

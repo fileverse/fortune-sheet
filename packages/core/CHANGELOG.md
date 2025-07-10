@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.46
+
+### Patch Changes
+
+- Fix undo of multiple cell denominated
+
 ## 1.0.45
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.45
+
+### Patch Changes
+
+- mir url fix formulajs
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.37
+
 ## 1.0.44
 
 ### Patch Changes

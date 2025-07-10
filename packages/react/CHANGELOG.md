@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.45
+
+### Patch Changes
+
+- mir url fix formulajs
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.45
+
 ## 1.0.44
 
 ### Patch Changes

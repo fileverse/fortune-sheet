@@ -1802,7 +1802,9 @@ const Toolbar: React.FC<{
                                     ) : (
                                       <span className="w-4 h-4" />
                                     )}
-                                    <span className="truncate flex-1 overflow-hidden whitespace-nowrap">{opt.label}</span>
+                                    <span className="truncate flex-1 overflow-hidden whitespace-nowrap">
+                                      {opt.label}
+                                    </span>
                                   </div>
                                   {opt.type === "crypto" ? (
                                     <span className="color-text-secondary">

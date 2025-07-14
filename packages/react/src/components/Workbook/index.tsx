@@ -40,6 +40,7 @@ import produce, {
   produceWithPatches,
 } from "immer";
 import _ from "lodash";
+import { getCryptoPrice } from "../../utils/cryptoApi";
 import Sheet from "../Sheet";
 import WorkbookContext, { RefValues, SetContextOptions } from "../../context";
 import Toolbar from "../Toolbar";
@@ -392,6 +393,10 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
     useEffect(() => {
       mergedSettings.hooks?.afterActivateSheet?.(context.currentSheetId);
     }, [context.currentSheetId]);
+
+    useEffect(() => {
+      getCryptoPrice("bitcoin", "usd");
+    }, []);
 
     useEffect(() => {
       setContext((ctx: any) => {

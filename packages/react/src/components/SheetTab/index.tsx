@@ -94,7 +94,9 @@ const SheetTab: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto px-4 py-1">
           <p className="text-center text-xsm">
-            <span className="font-medium">Disclaimer:</span> Prices are not updated in real time and may differ slightly. Updates may be delayed by up to 20 minutes.
+            <span className="font-medium">Disclaimer:</span> Prices are not
+            updated in real time and may differ slightly. Updates may be delayed
+            by up to 20 minutes.
           </p>
         </div>
       </div>

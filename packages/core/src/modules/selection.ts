@@ -2128,7 +2128,10 @@ export function deleteSelectedCellText(ctx: Context): string {
 
             if (
               cell.ct != null &&
-              (cell.ct.t === "inlineStr" || cell.ct.fa?.includes("BTC"))
+              (cell.ct.t === "inlineStr" ||
+                cell.ct.fa?.includes("BTC") ||
+                cell.ct.fa?.includes("ETH") ||
+                cell.ct.fa?.includes("SOL"))
             ) {
               delete cell.ct;
             }

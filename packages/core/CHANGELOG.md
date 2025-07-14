@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.51
+
+### Patch Changes
+
+- pre fetch crypto price - avoid loading state
+
 ## 1.0.50
 
 ### Patch Changes

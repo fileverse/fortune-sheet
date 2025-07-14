@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.51
+
+### Patch Changes
+
+- pre fetch crypto price - avoid loading state
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.51
+
 ## 1.0.50
 
 ### Patch Changes

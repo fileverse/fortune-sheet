@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.52
+
+### Patch Changes
+
+- refactored formulajs - @fileverse-dev/formulajs@4.4.11-mod-84
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.52
+
 ## 1.0.51
 
 ### Patch Changes

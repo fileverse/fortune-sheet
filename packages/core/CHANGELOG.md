@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.52
+
+### Patch Changes
+
+- refactored formulajs - @fileverse-dev/formulajs@4.4.11-mod-84
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.38
+
 ## 1.0.51
 
 ### Patch Changes

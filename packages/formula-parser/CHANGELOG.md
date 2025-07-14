@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.37
+
+### Patch Changes
+
+- mir url fix formulajs
+
 ## 0.2.36
 
 ### Patch Changes

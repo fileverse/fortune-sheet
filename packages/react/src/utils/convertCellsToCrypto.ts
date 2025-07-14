@@ -83,6 +83,14 @@ export async function convertCellsToCrypto({
     baseCurrency.toLowerCase()
   );
 
+  // Prepare all cell updates first
+  const cellUpdates: Array<{
+    row: number;
+    col: number;
+    baseValue: number;
+    cryptoValue: number;
+  }> = [];
+
   selectedCells.forEach(({ row, col }) => {
     const cell = flowdata[row]?.[col] as CryptoCell;
     let baseValue: number = 0;
@@ -114,19 +122,20 @@ export async function convertCellsToCrypto({
     // Convert USD base value to selected cryptocurrency
     const cryptoValue = baseValue / price;
 
-    setContext((ctx: any) => {
-      const d = getFlowdata(ctx);
+    cellUpdates.push({
+      row,
+      col,
+      baseValue,
+      cryptoValue,
+    });
+  });
 
-      // Check existence
-      if (
-        !d ||
-        !Array.isArray(d) ||
-        !d[row] ||
-        !d[row][col] ||
-        cryptoValue === null
-      )
-        return;
+  // Apply all updates in a single setContext call - this creates ONE undo operation
+  setContext((ctx: any) => {
+    const d = getFlowdata(ctx);
+    if (!d || !Array.isArray(d)) return;
 
+    cellUpdates.forEach(({ row, col, baseValue, cryptoValue }) => {
       // Ensure row and cell exist
       if (!d[row]) d[row] = [];
       if (!d[row][col]) d[row][col] = {};

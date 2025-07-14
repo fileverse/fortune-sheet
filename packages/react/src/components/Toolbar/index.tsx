@@ -1683,9 +1683,15 @@ const Toolbar: React.FC<{
             tooltip={tooltip}
             showArrow
           >
-            {() => {
+            {(setOpen) => {
               return (
-                <div style={{ minWidth: "20rem" }}>
+                <div
+                  style={{
+                    minWidth: "20rem",
+                    boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.2)",
+                    borderRadius: "8px",
+                  }}
+                >
                   {/* Command UI for search and options */}
                   <Command className="border color-border-default rounded-lg">
                     <div id="search-input-container">
@@ -1783,10 +1789,11 @@ const Toolbar: React.FC<{
                                       );
                                     });
                                   }
+                                  setOpen(false);
                                 }}
                               >
                                 <div className="fortune-toolbar-menu-line flex items-center justify-between w-full">
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 w-[250px]">
                                     {currentFmt === opt.label ? (
                                       <LucideIcon
                                         name="Check"
@@ -1795,7 +1802,9 @@ const Toolbar: React.FC<{
                                     ) : (
                                       <span className="w-4 h-4" />
                                     )}
-                                    <span>{opt.label}</span>
+                                    <span className="truncate flex-1 overflow-hidden whitespace-nowrap">
+                                      {opt.label}
+                                    </span>
                                   </div>
                                   {opt.type === "crypto" ? (
                                     <span className="color-text-secondary">

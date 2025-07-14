@@ -1,5 +1,49 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.51
+
+### Patch Changes
+
+- pre fetch crypto price - avoid loading state
+
+## 1.0.50
+
+### Patch Changes
+
+- new build
+
+## 1.0.49
+
+### Patch Changes
+
+- Disclaimer message update
+
+## 1.0.48
+
+### Patch Changes
+
+- Small fix trucating toolbar dropdown long curreny name
+
+## 1.0.47
+
+### Patch Changes
+
+- close denomination after select of toolbar
+
+## 1.0.46
+
+### Patch Changes
+
+- Fix undo of multiple cell denominated
+
+## 1.0.45
+
+### Patch Changes
+
+- mir url fix formulajs
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.37
+
 ## 1.0.44
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.55
+
+### Patch Changes
+
+- fix: for mobile view DOM access
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.55
+
 ## 1.0.54
 
 ### Patch Changes

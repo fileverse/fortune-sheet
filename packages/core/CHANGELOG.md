@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.55
+
+### Patch Changes
+
+- fix: for mobile view DOM access
+
 ## 1.0.54
 
 ### Patch Changes

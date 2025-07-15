@@ -1,21 +1,55 @@
 // Utility for fetching and caching crypto prices from CoinGecko
-
 const COINGECKO_API =
-  "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd,eur,gbp,jpy,cny,inr,cad,aud,nzd,sek,pln";
+  "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd,aed,ars,aud,bdt,bhd,bmd,brl,cad,chf,clp,cny,czk,dkk,eur,gbp,gel,hkd,huf,idr,ils,inr,jpy,krw,kwd,lkr,mmk,mxn,myr,ngn,nok,nzd,php,pkr,pln,rub,sar,sek,sgd,thb,try,twd,uah,vef,vnd,zar";
 const CACHE_DURATION = 60 * 1000; // 1 minute
 const CRYPTO_LIST = ["bitcoin", "ethereum", "solana"];
 const FIAT_LIST = [
   "usd",
+  "aed",
+  "ars",
+  "aud",
+  "bdt",
+  "bhd",
+  "bmd",
+  "brl",
+  "cad",
+  "chf",
+  "clp",
+  "cny",
+  "czk",
+  "dkk",
   "eur",
   "gbp",
-  "jpy",
-  "cny",
+  "gel",
+  "hkd",
+  "huf",
+  "idr",
+  "ils",
   "inr",
-  "cad",
-  "aud",
+  "jpy",
+  "krw",
+  "kwd",
+  "lkr",
+  "mmk",
+  "mxn",
+  "myr",
+  "ngn",
+  "nok",
   "nzd",
-  "sek",
+  "php",
+  "pkr",
   "pln",
+  "rub",
+  "sar",
+  "sek",
+  "sgd",
+  "thb",
+  "try",
+  "twd",
+  "uah",
+  "vef",
+  "vnd",
+  "zar",
 ];
 
 // In-memory cache: { 'btc-usd': { price: number, timestamp: number } }
@@ -46,6 +80,7 @@ export async function getCryptoPrice(
   crypto: string,
   fiat: string
 ): Promise<number> {
+  console.log("Fetching price for", crypto, fiat);
   const key = `${crypto}-${fiat}`.toLowerCase();
   const now = Date.now();
   if (priceCache[key] && now - priceCache[key].timestamp < CACHE_DURATION) {
@@ -65,6 +100,12 @@ export async function getCryptoPrice(
   updatePriceCache(data, now);
   return price;
 }
+
+export const getCachedPrice = (crypto: string, fiat: string) => {
+  const key = `${crypto}-${fiat}`.toLowerCase();
+  getCryptoPrice(crypto, fiat);
+  return priceCache[key]?.price;
+};
 
 // Optionally, add a function to clear the cache (for testing or force refresh)
 export function clearCryptoPriceCache() {

@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.52
+
+### Patch Changes
+
+- support all fiat for crypto denomination
+
 ## 1.0.51
 
 ### Patch Changes

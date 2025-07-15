@@ -67,7 +67,6 @@ const CryptoDenominationSelector: React.FC<CryptoDenominationSelectorProps> = ({
         setContext,
         denomination: newDenomination,
         decimals,
-        baseCurrency: "USD",
       });
     },
     [context, setContext, decimals]

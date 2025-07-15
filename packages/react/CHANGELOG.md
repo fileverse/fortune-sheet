@@ -1,5 +1,61 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.59
+
+### Patch Changes
+
+- fix tick mark for selectec currency
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.59
+
+## 1.0.58
+
+### Patch Changes
+
+- minor new build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.58
+
+## 1.0.57
+
+### Patch Changes
+
+- minor change cyrrency suffix
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.57
+
+## 1.0.56
+
+### Patch Changes
+
+- change curreny suffix
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.56
+
+## 1.0.55
+
+### Patch Changes
+
+- fix: for mobile view DOM access
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.55
+
+## 1.0.54
+
+### Patch Changes
+
+- mobile view for disclaimer
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.54
+
+## 1.0.53
+
+### Patch Changes
+
+- support all other fiat in crypto denomination
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.53
+
 ## 1.0.52
 
 ### Patch Changes

@@ -1,5 +1,47 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.59
+
+### Patch Changes
+
+- fix tick mark for selectec currency
+
+## 1.0.58
+
+### Patch Changes
+
+- minor new build
+
+## 1.0.57
+
+### Patch Changes
+
+- minor change cyrrency suffix
+
+## 1.0.56
+
+### Patch Changes
+
+- change curreny suffix
+
+## 1.0.55
+
+### Patch Changes
+
+- fix: for mobile view DOM access
+
+## 1.0.54
+
+### Patch Changes
+
+- mobile view for disclaimer
+
+## 1.0.53
+
+### Patch Changes
+
+- support all other fiat in crypto denomination
+
 ## 1.0.52
 
 ### Patch Changes

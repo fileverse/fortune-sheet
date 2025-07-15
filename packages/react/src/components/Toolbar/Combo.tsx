@@ -142,7 +142,13 @@ const Combo: React.FC<Props> = ({
   );
 
   return (
-    <div ref={buttonRef} className="fortune-toolbar-item">
+    <div
+      ref={buttonRef}
+      className="fortune-toolbar-item"
+      onKeyDown={(e) => {
+        e.stopPropagation();
+      }}
+    >
       <Popover open={open} onOpenChange={handleOpenChange} modal>
         <PopoverTrigger asChild>
           <div className="flex items-center">{trigger}</div>

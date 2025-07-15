@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.58
+
+### Patch Changes
+
+- minor new build
+
 ## 1.0.57
 
 ### Patch Changes

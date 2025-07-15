@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.57
+
+### Patch Changes
+
+- minor change cyrrency suffix
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.57
+
 ## 1.0.56
 
 ### Patch Changes

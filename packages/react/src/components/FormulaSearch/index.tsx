@@ -1,5 +1,4 @@
 import React, { useContext, useState, useMemo, useCallback } from "react";
-// import { FUNCTION_LOCALE } from "@fileverse-dev/formulajs";
 import {
   cancelNormalSelected,
   locale,

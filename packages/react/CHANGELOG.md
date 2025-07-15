@@ -1,10 +1,19 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.53
+
+### Patch Changes
+
+- support all fiat to crypto
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.53
+
 ## 1.0.52
 
 ### Patch Changes
 
 - support all fiat for crypto denomination
+- refactored formulajs - @fileverse-dev/formulajs@4.4.11-mod-84
 - Updated dependencies
   - @fileverse-dev/fortune-core@1.0.52
 

@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.38
+
+### Patch Changes
+
+- refactored formulajs - @fileverse-dev/formulajs@4.4.11-mod-84
+
 ## 0.2.37
 
 ### Patch Changes

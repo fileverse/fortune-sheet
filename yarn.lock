@@ -2413,10 +2413,10 @@
     jstat "^1.9.6"
     zod "^3.25.71"
 
-"@fileverse/ui@^4.1.7-patch-16":
-  version "4.1.7-patch-19"
-  resolved "https://registry.npmjs.org/@fileverse/ui/-/ui-4.1.7-patch-19.tgz"
-  integrity sha512-IgPmWCq4KIaDeeMBJoVcwcGFj326EKIZayhHYeuwJc0C7/t2i6woQ0+JkUapPGgN2cDIRlI4vEUonan9mwX7hw==
+"@fileverse/ui@^4.1.7-patch-20":
+  version "4.1.7-patch-20"
+  resolved "https://registry.yarnpkg.com/@fileverse/ui/-/ui-4.1.7-patch-20.tgz#776bf47f29ff019f04634d8a22b6cfaf708bd0e9"
+  integrity sha512-l4aDIif6RzMDxUiuZfE+BuCnLj7fgi2KQvQrgHjQG5CZvNGjXawq0B3QFs/5RBBCEJ3AgT2y6jxX7pZsvSksng==
   dependencies:
     "@radix-ui/react-accordion" "^1.2.0"
     "@radix-ui/react-checkbox" "^1.0.4"

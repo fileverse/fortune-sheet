@@ -33,57 +33,57 @@ export const getFiatGeckoId = (
       return "gbp";
     case "CN¥":
       return "cny";
-    case "HK$":
+    case "K$":
       return "hkd";
-    case "JP¥":
+    case "jp¥":
       return "jpy";
     case "AU$":
       return "aud";
     case "৳":
       return "bdt";
-    case "BHD":
+    case "NAR":
       return "bhd";
     case "R$":
       return "brl";
     case "CA$":
       return "cad";
-    case "CHF":
+    case "CF":
       return "chf";
     case "CLP$":
       return "clp";
-    case "kr.":
+    case "kr":
       return "dkk";
-    case "GEL":
+    case "gl":
       return "gel";
-    case "HUF":
+    case "ft":
       return "huf";
-    case "Rp.":
+    case "Rp":
       return "idr";
-    case "Rs.":
+    case "Rs":
       return "inr"; // Also used for LKR/PKR — adjust if needed
     case "₩":
       return "krw";
-    case "KWD":
+    case "KW":
       return "kwd";
     case "K":
       return "mmk";
-    case "Mex$":
+    case "PO$":
       return "mxn";
-    case "RM":
+    case "R":
       return "myr";
     case "₦":
       return "ngn";
-    case "kr":
+    case "₦kr":
       return "nok"; // Also used for SEK, adjust if needed
     case "₱":
       return "php";
     case "zł":
       return "pln";
-    case "₽":
+    case "RU":
       return "rub";
     case "Rial":
       return "sar";
-    case "S$":
+    case "P$":
       return "sgd";
     case "฿":
       return "thb";
@@ -204,8 +204,6 @@ export async function convertCellsToCrypto({
 
     // Convert USD base value to selected cryptocurrency
     const cryptoValue = baseValue / fiatVsCryptoPrice;
-
-    console.log(getFiatGeckoId(fiatSymbol, cell?.baseCurrency));
 
     cellUpdates.push({
       row,

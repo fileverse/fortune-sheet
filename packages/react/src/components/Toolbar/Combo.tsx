@@ -147,7 +147,6 @@ const Combo: React.FC<Props> = ({
       className="fortune-toolbar-item"
       onKeyDown={(e) => {
         e.stopPropagation();
-        console.log("clicked");
       }}
     >
       <Popover open={open} onOpenChange={handleOpenChange} modal>

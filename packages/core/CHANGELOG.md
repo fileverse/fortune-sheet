@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.56
+
+### Patch Changes
+
+- change curreny suffix
+
 ## 1.0.55
 
 ### Patch Changes

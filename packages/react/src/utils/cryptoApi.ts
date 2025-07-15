@@ -80,7 +80,6 @@ export async function getCryptoPrice(
   crypto: string,
   fiat: string
 ): Promise<number> {
-  console.log("Fetching price for", crypto, fiat);
   const key = `${crypto}-${fiat}`.toLowerCase();
   const now = Date.now();
   if (priceCache[key] && now - priceCache[key].timestamp < CACHE_DURATION) {

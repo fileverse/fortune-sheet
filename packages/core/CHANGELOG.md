@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.59
+
+### Patch Changes
+
+- fix tick mark for selectec currency
+
 ## 1.0.58
 
 ### Patch Changes

@@ -1625,7 +1625,9 @@ const Toolbar: React.FC<{
                 type: "fiat",
               })),
             ];
-            const found = allOptions.find((o) => curr.fa.includes(o.value));
+            const found = [...allOptions]
+            .sort((a, b) => b.value.length - a.value.length) // sort longest first
+            .find((o) => curr.fa.includes(o.value));
             if (found) {
               currentFmt = found.label;
             }
@@ -1759,7 +1761,8 @@ const Toolbar: React.FC<{
                         );
                         return (
                           <CommandGroup key={group.group} heading={group.group}>
-                            {filtered.map((opt) => (
+                            {filtered.map((opt) => {
+                              return (
                               <CommandItem
                                 key={opt.value}
                                 value={`${opt.label} ${opt.value}`}
@@ -1826,7 +1829,8 @@ const Toolbar: React.FC<{
                                   )}
                                 </div>
                               </CommandItem>
-                            ))}
+                            )
+                            })}
                           </CommandGroup>
                         );
                       })}

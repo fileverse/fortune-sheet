@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.59
+
+### Patch Changes
+
+- fix tick mark for selectec currency
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.59
+
 ## 1.0.58
 
 ### Patch Changes

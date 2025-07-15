@@ -1,5 +1,5 @@
 import { getFlowdata } from "@fileverse-dev/fortune-core";
-import { getCryptoPrice } from "./cryptoApi";
+import { getCachedPrice } from "./cryptoApi";
 
 export const getFiatSymbol = (code: string): string => {
   switch (code) {
@@ -17,6 +17,84 @@ export const getFiatSymbol = (code: string): string => {
       return "₹";
     default:
       return code;
+  }
+};
+
+export const getFiatGeckoId = (
+  symbol: string,
+  baseCurrency: string
+): string => {
+  switch (symbol) {
+    case "$":
+      return "usd"; // Defaulting to USD for $ — adjust if needed
+    case "€":
+      return "eur";
+    case "￡":
+      return "gbp";
+    case "CN¥":
+      return "cny";
+    case "HK$":
+      return "hkd";
+    case "JP¥":
+      return "jpy";
+    case "AU$":
+      return "aud";
+    case "৳":
+      return "bdt";
+    case "BHD":
+      return "bhd";
+    case "R$":
+      return "brl";
+    case "CA$":
+      return "cad";
+    case "CHF":
+      return "chf";
+    case "CLP$":
+      return "clp";
+    case "kr.":
+      return "dkk";
+    case "GEL":
+      return "gel";
+    case "HUF":
+      return "huf";
+    case "Rp.":
+      return "idr";
+    case "Rs.":
+      return "inr"; // Also used for LKR/PKR — adjust if needed
+    case "₩":
+      return "krw";
+    case "KWD":
+      return "kwd";
+    case "K":
+      return "mmk";
+    case "Mex$":
+      return "mxn";
+    case "RM":
+      return "myr";
+    case "₦":
+      return "ngn";
+    case "kr":
+      return "nok"; // Also used for SEK, adjust if needed
+    case "₱":
+      return "php";
+    case "zł":
+      return "pln";
+    case "₽":
+      return "rub";
+    case "Rial":
+      return "sar";
+    case "S$":
+      return "sgd";
+    case "฿":
+      return "thb";
+    case "₺":
+      return "try";
+    case "грн.":
+      return "uah";
+    case "ZAR":
+      return "zar";
+    default:
+      return baseCurrency || "usd"; // Fallback: assume symbol is already a code
   }
 };
 
@@ -41,13 +119,11 @@ export async function convertCellsToCrypto({
   setContext,
   denomination,
   decimals,
-  baseCurrency,
 }: {
   context: any;
   setContext: (fn: (ctx: any) => void) => void;
   denomination: string;
   decimals: number;
-  baseCurrency: string;
 }) {
   const selections = context.luckysheet_select_save;
   const flowdata = getFlowdata(context);
@@ -78,10 +154,10 @@ export async function convertCellsToCrypto({
       : "ethereum";
 
   // Get the crypto price in USD
-  const price = await getCryptoPrice(
-    String(coingeckoId),
-    baseCurrency.toLowerCase()
-  );
+  // const price = await getCryptoPrice(
+  //   String(coingeckoId),
+  //   baseCurrency.toLowerCase()
+  // );
 
   // Prepare all cell updates first
   const cellUpdates: Array<{
@@ -119,14 +195,25 @@ export async function convertCellsToCrypto({
 
     if (!baseValue || Number.isNaN(baseValue)) return;
 
+    // @ts-expect-error later
+    const fiatSymbol = cell?.m?.split(" ")[0];
+    const fiatVsCryptoPrice = getCachedPrice(
+      coingeckoId,
+      getFiatGeckoId(fiatSymbol, cell?.baseCurrency)
+    );
+
     // Convert USD base value to selected cryptocurrency
-    const cryptoValue = baseValue / price;
+    const cryptoValue = baseValue / fiatVsCryptoPrice;
+
+    console.log(getFiatGeckoId(fiatSymbol, cell?.baseCurrency));
 
     cellUpdates.push({
       row,
       col,
       baseValue,
       cryptoValue,
+      // @ts-expect-error later
+      baseCurrency: getFiatGeckoId(fiatSymbol) || "usd",
     });
   });
 
@@ -135,23 +222,27 @@ export async function convertCellsToCrypto({
     const d = getFlowdata(ctx);
     if (!d || !Array.isArray(d)) return;
 
-    cellUpdates.forEach(({ row, col, baseValue, cryptoValue }) => {
-      // Ensure row and cell exist
-      if (!d[row]) d[row] = [];
-      if (!d[row][col]) d[row][col] = {};
+    cellUpdates.forEach(
+      // @ts-expect-error later
+      ({ row, col, baseValue, cryptoValue, baseCurrency }) => {
+        // Ensure row and cell exist
+        if (!d[row]) d[row] = [];
+        if (!d[row][col]) d[row][col] = {};
 
-      // TypeScript safe assignment
-      const cellCp = d[row][col] as Partial<CryptoCell>;
+        // TypeScript safe assignment
+        const cellCp = d[row][col] as Partial<CryptoCell>;
 
-      cellCp.v = baseValue.toString();
-      cellCp.m = `${cryptoValue.toFixed(decimals)} ${denomStr}`;
-      cellCp.ct = {
-        fa: `0.${"0".repeat(decimals)} "${denomStr}"`,
-        t: "n",
-      };
-      cellCp.baseValue = baseValue;
+        cellCp.v = baseValue.toString();
+        cellCp.m = `${cryptoValue.toFixed(decimals)} ${denomStr}`;
+        cellCp.ct = {
+          fa: `0.${"0".repeat(decimals)} "${denomStr}"`,
+          t: "n",
+        };
+        cellCp.baseValue = baseValue;
+        cellCp.baseCurrency = baseCurrency.toLowerCase();
 
-      d[row][col] = cellCp as CryptoCell;
-    });
+        d[row][col] = cellCp as CryptoCell;
+      }
+    );
   });
 }

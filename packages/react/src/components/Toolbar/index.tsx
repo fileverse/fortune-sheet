@@ -1770,7 +1770,6 @@ const Toolbar: React.FC<{
                                       setContext,
                                       denomination: opt.value,
                                       decimals,
-                                      baseCurrency: "USD",
                                     });
                                   } else {
                                     setSelectedFiat(opt.value);

@@ -1626,8 +1626,8 @@ const Toolbar: React.FC<{
               })),
             ];
             const found = [...allOptions]
-            .sort((a, b) => b.value.length - a.value.length) // sort longest first
-            .find((o) => curr.fa.includes(o.value));
+              .sort((a, b) => b.value.length - a.value.length) // sort longest first
+              .find((o) => curr.fa.includes(o.value));
             if (found) {
               currentFmt = found.label;
             }
@@ -1763,73 +1763,73 @@ const Toolbar: React.FC<{
                           <CommandGroup key={group.group} heading={group.group}>
                             {filtered.map((opt) => {
                               return (
-                              <CommandItem
-                                key={opt.value}
-                                value={`${opt.label} ${opt.value}`}
-                                onSelect={async () => {
-                                  if (opt.type === "crypto") {
-                                    await convertCellsToCrypto({
-                                      context,
-                                      setContext,
-                                      denomination: opt.value,
-                                      decimals,
-                                    });
-                                  } else {
-                                    setSelectedFiat(opt.value);
-                                    setContext((ctx) => {
-                                      const d = getFlowdata(ctx);
-                                      if (d == null) return;
-                                      const formatString = `${getFiatSymbol(
-                                        opt.value
-                                      )} #,##0.${"0".repeat(decimals)}`;
-                                      updateFormat(
-                                        ctx,
-                                        refs.cellInput.current!,
-                                        d,
-                                        "ct",
-                                        formatString
-                                      );
-                                    });
-                                  }
-                                  setOpen(false);
-                                }}
-                              >
-                                <div className="fortune-toolbar-menu-line flex items-center justify-between w-full">
-                                  <div className="flex items-center gap-2 w-[250px]">
-                                    {currentFmt === opt.label ? (
-                                      <LucideIcon
-                                        name="Check"
-                                        className="w-4 h-4"
-                                      />
-                                    ) : (
-                                      <span className="w-4 h-4" />
-                                    )}
-                                    <span className="truncate flex-1 overflow-hidden whitespace-nowrap">
-                                      {opt.label}
-                                    </span>
-                                  </div>
-                                  {opt.type === "crypto" ? (
-                                    <span className="color-text-secondary">
-                                      <LucideIcon
-                                        name={opt.icon}
-                                        className="cds-icon"
-                                      />
-                                      {opt.value === "SOL" && (
-                                        <SVGIcon
-                                          name="solana"
-                                          width={16}
-                                          height={16}
+                                <CommandItem
+                                  key={opt.value}
+                                  value={`${opt.label} ${opt.value}`}
+                                  onSelect={async () => {
+                                    if (opt.type === "crypto") {
+                                      await convertCellsToCrypto({
+                                        context,
+                                        setContext,
+                                        denomination: opt.value,
+                                        decimals,
+                                      });
+                                    } else {
+                                      setSelectedFiat(opt.value);
+                                      setContext((ctx) => {
+                                        const d = getFlowdata(ctx);
+                                        if (d == null) return;
+                                        const formatString = `${getFiatSymbol(
+                                          opt.value
+                                        )} #,##0.${"0".repeat(decimals)}`;
+                                        updateFormat(
+                                          ctx,
+                                          refs.cellInput.current!,
+                                          d,
+                                          "ct",
+                                          formatString
+                                        );
+                                      });
+                                    }
+                                    setOpen(false);
+                                  }}
+                                >
+                                  <div className="fortune-toolbar-menu-line flex items-center justify-between w-full">
+                                    <div className="flex items-center gap-2 w-[250px]">
+                                      {currentFmt === opt.label ? (
+                                        <LucideIcon
+                                          name="Check"
+                                          className="w-4 h-4"
                                         />
+                                      ) : (
+                                        <span className="w-4 h-4" />
                                       )}
-                                    </span>
-                                  ) : (
-                                    <span className="color-text-secondary">
-                                      {opt.value}
-                                    </span>
-                                  )}
-                                </div>
-                              </CommandItem>
-                            )
+                                      <span className="truncate flex-1 overflow-hidden whitespace-nowrap">
+                                        {opt.label}
+                                      </span>
+                                    </div>
+                                    {opt.type === "crypto" ? (
+                                      <span className="color-text-secondary">
+                                        <LucideIcon
+                                          name={opt.icon}
+                                          className="cds-icon"
+                                        />
+                                        {opt.value === "SOL" && (
+                                          <SVGIcon
+                                            name="solana"
+                                            width={16}
+                                            height={16}
+                                          />
+                                        )}
+                                      </span>
+                                    ) : (
+                                      <span className="color-text-secondary">
+                                        {opt.value}
+                                      </span>
+                                    )}
+                                  </div>
+                                </CommandItem>
+                              );
                             })}
                           </CommandGroup>
                         );

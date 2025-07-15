@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useMediaQuery } from "usehooks-ts";
 import { updateCell, addSheet } from "@fileverse-dev/fortune-core";
 // @ts-ignore
 import WorkbookContext from "../../context";
@@ -15,6 +16,7 @@ import SheetItem from "./SheetItem";
 import ZoomControl from "../ZoomControl";
 
 const SheetTab: React.FC = () => {
+  const isMobile = useMediaQuery("(max-width: 780px)", { defaultValue: true });
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const leftScrollRef = useRef<HTMLDivElement>(null);
@@ -70,36 +72,68 @@ const SheetTab: React.FC = () => {
     [refs.cellInput, setContext, settings]
   );
 
+  const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const handleCloseDisclaimer = () => {
+    setShowDisclaimer(false);
+    const cornerPlus = document.getElementById("corner-plus");
+    if (cornerPlus) {
+      cornerPlus.style.display = "block";
+    }
+  };
+
+  useEffect(() => {
+    const cornerPlus = document.getElementById("corner-plus");
+    if (cornerPlus) {
+      cornerPlus.style.display = "none";
+    }
+  }, [isMobile]);
+
   useEffect(() => {
     settings.onSheetCountChange?.(context.luckysheetfile.length);
   }, [context.luckysheetfile.length]);
 
   return (
     <div>
-      <div
-        className="w-full"
-        id="denomination-warning"
-        style={{
-          position: "fixed",
-          display: "none",
-          backgroundColor: "#F8F9FA",
-          borderBottom: "1px solid #E8EBEC",
-          color: "#77818A",
-          fontFamily: "Helvetica Neue",
-          fontSize: "var(--font-size-2xsm, 12px)",
-          fontStyle: "normal",
-          fontWeight: "400",
-          bottom: "31px",
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 py-1">
-          <p className="text-center text-xsm">
-            <span className="font-medium">Disclaimer:</span> Prices are not
-            updated in real time and may differ slightly. Updates may be delayed
-            by up to 20 minutes.
-          </p>
+      {showDisclaimer && (
+        <div
+          className="w-full"
+          id="denomination-warning"
+          style={{
+            position: "fixed",
+            display: "none",
+            backgroundColor: "#F8F9FA",
+            borderBottom: "1px solid #E8EBEC",
+            color: "#77818A",
+            fontFamily: "Helvetica Neue",
+            fontSize: "var(--font-size-2xsm, 12px)",
+            fontStyle: "normal",
+            fontWeight: "400",
+            bottom: "31px",
+          }}
+        >
+          <div
+            className={`max-w-7xl mx-auto px-4 py-1 ${
+              isMobile && "w-full flex justify-between"
+            }`}
+          >
+            <p className={`${isMobile ? "text-left" : "text-center"} text-xsm`}>
+              <span className="font-medium">Disclaimer:</span> Prices are not
+              updated in real time and may differ slightly. Updates may be
+              delayed by up to 20 minutes.
+            </p>
+            {isMobile && (
+              // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+              <p
+                className="ml-4 content-center cursor-pointer"
+                style={{ alignContent: "center" }}
+                onClick={handleCloseDisclaimer}
+              >
+                Close
+              </p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       <div
         className="luckysheet-sheet-area luckysheet-noselected-text"
         onContextMenu={(e) => e.preventDefault()}

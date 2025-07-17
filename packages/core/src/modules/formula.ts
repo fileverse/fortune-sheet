@@ -200,10 +200,7 @@ export class FormulaCache {
 
   tryGetCellAsNumber(cell: Cell) {
     // @ts-expect-error later // FLV crypto denomination --START--
-    if (
-      cell.m?.includes("ETH") ||
-      cell.m?.includes("SOL") ||
-      cell.m?.includes("BTC")
+    if (cell.m?.includes("ETH") || cell.m?.includes("SOL") || cell.m?.includes("BTC")
     ) {
       // @ts-expect-error later
       const splitedNumberString = cell.m.split(" ")[0];

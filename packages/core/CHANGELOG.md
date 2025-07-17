@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.62
+
+### Patch Changes
+
+- add support for function for crypto deno
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.39
+
 ## 1.0.61
 
 ### Patch Changes

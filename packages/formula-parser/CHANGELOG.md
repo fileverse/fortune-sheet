@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.39
+
+### Patch Changes
+
+- add support for function for crypto deno
+
 ## 0.2.38
 
 ### Patch Changes

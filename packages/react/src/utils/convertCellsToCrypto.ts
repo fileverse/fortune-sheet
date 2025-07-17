@@ -222,14 +222,13 @@ export async function convertCellsToCrypto({
     if (!d || !Array.isArray(d)) return;
 
     cellUpdates.forEach(
-      // @ts-expect-error later
       ({
         row,
         col,
         baseValue,
         cryptoValue,
-        baseCurrency,
-        baseCurrencyPrice,
+        // @ts-expect-error later
+        baseCurrency, baseCurrencyPrice,
       }) => {
         // Ensure row and cell exist
         if (!d[row]) d[row] = [];

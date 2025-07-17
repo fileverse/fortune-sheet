@@ -310,8 +310,8 @@ export function setCellValue(
         cell.m = mask[0].toString();
         [, cell.ct, cell.v] = mask;
       } else {
-        if(v.m){
-          cell.m = v.m
+        if (v.m) {
+          cell.m = v.m;
         } else {
           cell.m = mask.toString();
         }
@@ -340,8 +340,8 @@ export function setCellValue(
         } else if (cell.v != null) {
           const mask = genarate(cell.v as string);
           if (mask) {
-            if(v.m){
-              cell.m = v.m
+            if (v.m) {
+              cell.m = v.m;
             } else {
               cell.m = mask[0].toString();
             }

@@ -228,7 +228,9 @@ export async function convertCellsToCrypto({
         baseValue,
         cryptoValue,
         // @ts-expect-error later
-        baseCurrency, baseCurrencyPrice,
+        baseCurrency,
+        // @ts-expect-error later
+        baseCurrencyPrice,
       }) => {
         // Ensure row and cell exist
         if (!d[row]) d[row] = [];

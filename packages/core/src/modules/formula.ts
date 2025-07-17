@@ -1,6 +1,6 @@
 import _ from "lodash";
 // @ts-ignore
-import { Parser, ERROR_REF } from "@fileverse-dev/formula-parser/src/index";
+import { Parser, ERROR_REF } from "@fileverse-dev/formula-parser";
 import type { Cell, Rect, Selection } from "../types";
 import { Context, getFlowdata } from "../context";
 import {
@@ -200,8 +200,8 @@ export class FormulaCache {
 
   tryGetCellAsNumber(cell: Cell) {
     // @ts-expect-error later // FLV crypto denomination --START--
-    if (cell.m?.includes("ETH") || cell.m?.includes("SOL") || cell.m?.includes("BTC")
-    ) {
+    const isCryptoDeno = cell?.m?.includes("ETH") || cell?.m?.includes("SOL") || cell?.m?.includes("BTC");
+    if (isCryptoDeno) {
       // @ts-expect-error later
       const splitedNumberString = cell.m.split(" ")[0];
       return Number(splitedNumberString);

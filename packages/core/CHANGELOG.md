@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.64
+
+### Patch Changes
+
+- minoe fix in update cell to include baseCrypto value
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.41
+
 ## 1.0.63
 
 ### Patch Changes

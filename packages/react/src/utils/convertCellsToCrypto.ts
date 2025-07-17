@@ -204,7 +204,7 @@ export async function convertCellsToCrypto({
 
     // Convert USD base value to selected cryptocurrency
     const cryptoValue = baseValue / fiatVsCryptoPrice;
-    if(typeof cryptoValue !== "number" || Number.isNaN(cryptoValue)) return
+    if (typeof cryptoValue !== "number" || Number.isNaN(cryptoValue)) return;
 
     cellUpdates.push({
       row,

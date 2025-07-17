@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.63
+
+### Patch Changes
+
+- minor relative path of formula parser in core
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.40
+
 ## 1.0.62
 
 ### Patch Changes

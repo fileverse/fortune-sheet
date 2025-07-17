@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.40
+
+### Patch Changes
+
+- minor relative path of formula parser in core
+
 ## 0.2.39
 
 ### Patch Changes

@@ -929,6 +929,8 @@ export function updateCell(
               decemialCount
             )
           } ${coin}`;
+          // @ts-expect-error later
+          curv.baseValue = value;
         }
         // FLV crypto denomination --END--
         execFunctionGroup(ctx, r, c, curv);
@@ -1034,6 +1036,7 @@ export function updateCell(
         decemialCount
       )
     } ${coin}`;
+    value.baseValue = value?.v;
   }
   // FLV crypto denomination --END--
   setCellValue(ctx, r, c, d, value);

@@ -212,6 +212,7 @@ export async function convertCellsToCrypto({
       cryptoValue,
       // @ts-expect-error later
       baseCurrency: getFiatGeckoId(fiatSymbol) || "usd",
+      baseCurrencyPrice: fiatVsCryptoPrice,
     });
   });
 
@@ -222,7 +223,14 @@ export async function convertCellsToCrypto({
 
     cellUpdates.forEach(
       // @ts-expect-error later
-      ({ row, col, baseValue, cryptoValue, baseCurrency }) => {
+      ({
+        row,
+        col,
+        baseValue,
+        cryptoValue,
+        baseCurrency,
+        baseCurrencyPrice,
+      }) => {
         // Ensure row and cell exist
         if (!d[row]) d[row] = [];
         if (!d[row][col]) d[row][col] = {};
@@ -238,6 +246,7 @@ export async function convertCellsToCrypto({
         };
         cellCp.baseValue = baseValue;
         cellCp.baseCurrency = baseCurrency.toLowerCase();
+        cellCp.baseCurrencyPrice = baseCurrencyPrice;
 
         d[row][col] = cellCp as CryptoCell;
       }

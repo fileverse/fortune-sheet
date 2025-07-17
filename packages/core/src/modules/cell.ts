@@ -265,7 +265,6 @@ export function setCellValue(
           if (len > 5) {
             len = 5;
           }
-
           cell.m = cell.v.toExponential(len).toString();
         } else {
           const v_p = Math.round(cell.v * 1000000000) / 1000000000;
@@ -311,7 +310,7 @@ export function setCellValue(
         cell.m = mask[0].toString();
         [, cell.ct, cell.v] = mask;
       } else {
-        cell.m = mask.toString();
+        cell.m = v.m;
         cell.v = vupdate;
       }
     } else {
@@ -337,7 +336,7 @@ export function setCellValue(
         } else if (cell.v != null) {
           const mask = genarate(cell.v as string);
           if (mask) {
-            cell.m = mask[0].toString();
+            cell.m = v.m;
           }
         }
       } else {
@@ -901,8 +900,6 @@ export function updateCell(
         }
       } else {
         delFunctionGroup(ctx, r, c);
-        execFunctionGroup(ctx, r, c, value);
-        isRunExecFunction = false;
 
         curv = _.cloneDeep(d?.[r]?.[c] || {});
         curv.v = value;
@@ -910,6 +907,24 @@ export function updateCell(
         delete curv.f;
         delete curv.spl;
 
+        // FLV crypto denomination --START--
+        const decemialCount = oldValue?.m?.toString().includes(".")
+          ? oldValue?.m?.toString().split(" ")[0].split(".")[1].length
+          : 0;
+        const coin = oldValue?.m?.toString().split(" ")[1];
+        // @ts-expect-error later
+        if (typeof curv === "object" && curv?.baseValue) {
+          curv.m = `${
+            // @ts-expect-error later
+            // eslint-disable-next-line no-unsafe-optional-chaining
+            (parseFloat(value as string) / oldValue?.baseCurrencyPrice).toFixed(
+              decemialCount
+            )
+          } ${coin}`;
+        }
+        // FLV crypto denomination --END--
+        execFunctionGroup(ctx, r, c, curv);
+        isRunExecFunction = false;
         if (curv.qp === 1 && `${value}`.substring(0, 1) !== "'") {
           // if quotePrefix is 1, cell is force string, cell clear quotePrefix when it is updated
           curv.qp = 0;
@@ -998,6 +1013,20 @@ export function updateCell(
   }
 
   // value maybe an object
+  // FLV crypto denomination --START--
+  const decemialCount = oldValue?.m?.toString().includes(".")
+    ? oldValue?.m?.toString().split(" ")[0].split(".")[1].length
+    : 0;
+  const coin = oldValue?.m?.toString().split(" ")[1];
+  if (typeof value === "object" && value.baseValue && !value?.m) {
+    value.m = `${
+      // @ts-expect-error later
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice)
+        .toFixed(decemialCount)
+    } ${coin}`;
+  }
+  // FLV crypto denomination --END--
   setCellValue(ctx, r, c, d, value);
   cancelNormalSelected(ctx);
 

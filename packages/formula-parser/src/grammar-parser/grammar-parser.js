@@ -372,7 +372,6 @@ var parser = {
       case 36:
       case 37:
         this.$ = yy.rangeValue($$[$0 - 2], $$[$0]);
-
         break;
       case 38:
       case 42:
@@ -1169,6 +1168,7 @@ var parser = {
               lstack[lstack.length - 1].range[1],
             ];
           }
+
           r = this.performAction.apply(
             yyval,
             [
@@ -1181,6 +1181,7 @@ var parser = {
               lstack,
             ].concat(args)
           );
+
 
           if (typeof r !== "undefined") {
             return r;

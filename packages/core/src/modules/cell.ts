@@ -310,7 +310,11 @@ export function setCellValue(
         cell.m = mask[0].toString();
         [, cell.ct, cell.v] = mask;
       } else {
-        cell.m = v.m;
+        if(v.m){
+          cell.m = v.m
+        } else {
+          cell.m = mask.toString();
+        }
         cell.v = vupdate;
       }
     } else {
@@ -336,7 +340,11 @@ export function setCellValue(
         } else if (cell.v != null) {
           const mask = genarate(cell.v as string);
           if (mask) {
-            cell.m = v.m;
+            if(v.m){
+              cell.m = v.m
+            } else {
+              cell.m = mask[0].toString();
+            }
           }
         }
       } else {
@@ -1022,8 +1030,9 @@ export function updateCell(
     value.m = `${
       // @ts-expect-error later
       // eslint-disable-next-line no-unsafe-optional-chaining
-      (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice)
-        .toFixed(decemialCount)
+      (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice).toFixed(
+        decemialCount
+      )
     } ${coin}`;
   }
   // FLV crypto denomination --END--

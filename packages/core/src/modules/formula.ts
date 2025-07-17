@@ -292,7 +292,6 @@ export function iscelldata(txt: string) {
 }
 
 function addToCellIndexList(ctx: Context, txt: string, infoObj: any) {
-  console.log("heheeheheh");
   if (_.isNil(txt) || txt.length === 0 || _.isNil(infoObj)) {
     return;
   }

@@ -1,5 +1,29 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.67
+
+### Patch Changes
+
+- minor changes new fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.67
+
+## 1.0.66
+
+### Patch Changes
+
+- minor fix for string type cell.v for crypto
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.66
+
+## 1.0.65
+
+### Patch Changes
+
+- v as string minor fix
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.65
+
 ## 1.0.64
 
 ### Patch Changes

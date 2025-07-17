@@ -690,6 +690,7 @@ export function updateCell(
   let inputText = $input?.innerText;
   const inputHtml = $input?.innerHTML;
   const flowdata = getFlowdata(ctx);
+  console.log({...flowdata[0][0]});
   if (!flowdata) return;
 
   // if (!_.isNil(rangetosheet) && rangetosheet !== ctx.currentSheetId) {
@@ -910,7 +911,7 @@ export function updateCell(
         delFunctionGroup(ctx, r, c);
 
         curv = _.cloneDeep(d?.[r]?.[c] || {});
-        curv.v = value;
+        curv.v = value.toString();
 
         delete curv.f;
         delete curv.spl;
@@ -931,8 +932,10 @@ export function updateCell(
           } ${coin}`;
           // @ts-expect-error later
           curv.baseValue = value;
+
         }
         // FLV crypto denomination --END--
+        console.log("curv", curv);
         execFunctionGroup(ctx, r, c, curv);
         isRunExecFunction = false;
         if (curv.qp === 1 && `${value}`.substring(0, 1) !== "'") {
@@ -1036,9 +1039,13 @@ export function updateCell(
         decemialCount
       )
     } ${coin}`;
-    value.baseValue = value?.v;
+    value.baseValue = Number(value?.v);
+    value.v = value?.v.toString();
   }
   // FLV crypto denomination --END--
+  console.log(
+    value,
+  )
   setCellValue(ctx, r, c, d, value);
   cancelNormalSelected(ctx);
 

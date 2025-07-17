@@ -1,5 +1,23 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.44
+
+### Patch Changes
+
+- minor changes new fresh build
+
+## 0.2.43
+
+### Patch Changes
+
+- minor fix for string type cell.v for crypto
+
+## 0.2.42
+
+### Patch Changes
+
+- v as string minor fix
+
 ## 0.2.41
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.68
+
+### Patch Changes
+
+- flvdsheet afterupdate cell content to updatecell func
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.68
+
 ## 1.0.67
 
 ### Patch Changes

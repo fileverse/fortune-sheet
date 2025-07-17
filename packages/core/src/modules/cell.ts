@@ -157,6 +157,14 @@ export function setCellValue(
       // if (!_.isNil(v.spl)) {
       //   cell.spl = v.spl;
       // }
+      if(!_.isNil(v.baseCurrency)){
+        // @ts-ignore
+        cell.baseValue = v.baseValue;
+        // @ts-ignore
+        cell.baseCurrency = v.baseCurrency;
+        // @ts-ignore
+        cell.baseCurrencyPrice = v.baseCurrencyPrice;
+      }
 
       if (!_.isNil(v.ct)) {
         cell.ct = v.ct;
@@ -690,7 +698,6 @@ export function updateCell(
   let inputText = $input?.innerText;
   const inputHtml = $input?.innerHTML;
   const flowdata = getFlowdata(ctx);
-  console.log({...flowdata[0][0]});
   if (!flowdata) return;
 
   // if (!_.isNil(rangetosheet) && rangetosheet !== ctx.currentSheetId) {
@@ -911,7 +918,7 @@ export function updateCell(
         delFunctionGroup(ctx, r, c);
 
         curv = _.cloneDeep(d?.[r]?.[c] || {});
-        curv.v = value.toString();
+        curv.v = value;
 
         delete curv.f;
         delete curv.spl;
@@ -929,13 +936,12 @@ export function updateCell(
             (parseFloat(value as string) / oldValue?.baseCurrencyPrice).toFixed(
               decemialCount
             )
-          } ${coin}`;
+            } ${coin}`;
           // @ts-expect-error later
           curv.baseValue = value;
 
         }
         // FLV crypto denomination --END--
-        console.log("curv", curv);
         execFunctionGroup(ctx, r, c, curv);
         isRunExecFunction = false;
         if (curv.qp === 1 && `${value}`.substring(0, 1) !== "'") {
@@ -1038,14 +1044,23 @@ export function updateCell(
       (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice).toFixed(
         decemialCount
       )
-    } ${coin}`;
-    value.baseValue = Number(value?.v);
-    value.v = value?.v.toString();
+      } ${coin}`;
   }
+
   // FLV crypto denomination --END--
-  console.log(
-    value,
-  )
+  if (typeof value === "string") {
+    value = {
+      "ct": {
+        "fa": "General",
+        "t": "g"
+      },
+      "v": value,
+      "tb": "1"
+    }
+  } else if (typeof value === "object" && !value.tb) {
+    value.tb = "1";
+  }
+
   setCellValue(ctx, r, c, d, value);
   cancelNormalSelected(ctx);
 
@@ -1083,10 +1098,10 @@ export function updateCell(
 
       const textInfo = canvas
         ? getCellTextInfo(d[r][c] as Cell, canvas, ctx, {
-            r,
-            c,
-            cellWidth,
-          })
+          r,
+          c,
+          cellWidth,
+        })
         : null;
 
       let currentRowLen = defaultrowlen;
@@ -1134,7 +1149,7 @@ export function updateCell(
   }
   */
 
-  if (ctx.hooks.afterUpdateCell) {
+  if (!value?.baseValue && ctx.hooks.afterUpdateCell) {
     const newValue = _.cloneDeep(flowdata[r][c]);
     const { afterUpdateCell } = ctx.hooks;
     setTimeout(() => {
@@ -1262,9 +1277,8 @@ export function getRangetxt(
     return sheettxt + indexToColumnChar(column0) + (row0 + 1);
   }
 
-  return `${
-    sheettxt + indexToColumnChar(column0) + (row0 + 1)
-  }:${indexToColumnChar(column1)}${row1 + 1}`;
+  return `${sheettxt + indexToColumnChar(column0) + (row0 + 1)
+    }:${indexToColumnChar(column1)}${row1 + 1}`;
 }
 
 // 把string A1:A2转为选区数组

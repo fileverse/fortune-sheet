@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.45
+
+### Patch Changes
+
+- flvdsheet afterupdate cell content to updatecell func
+
 ## 0.2.44
 
 ### Patch Changes

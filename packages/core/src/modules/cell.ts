@@ -157,7 +157,7 @@ export function setCellValue(
       // if (!_.isNil(v.spl)) {
       //   cell.spl = v.spl;
       // }
-      if(!_.isNil(v.baseCurrency)){
+      if (!_.isNil(v.baseCurrency)) {
         // @ts-ignore
         cell.baseValue = v.baseValue;
         // @ts-ignore
@@ -928,7 +928,6 @@ export function updateCell(
           ? oldValue?.m?.toString().split(" ")[0].split(".")[1].length
           : 0;
         const coin = oldValue?.m?.toString().split(" ")[1];
-        // @ts-expect-error later
         if (typeof curv === "object" && curv?.baseValue) {
           curv.m = `${
             // @ts-expect-error later
@@ -936,10 +935,8 @@ export function updateCell(
             (parseFloat(value as string) / oldValue?.baseCurrencyPrice).toFixed(
               decemialCount
             )
-            } ${coin}`;
-          // @ts-expect-error later
+          } ${coin}`;
           curv.baseValue = value;
-
         }
         // FLV crypto denomination --END--
         execFunctionGroup(ctx, r, c, curv);
@@ -1044,19 +1041,19 @@ export function updateCell(
       (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice).toFixed(
         decemialCount
       )
-      } ${coin}`;
+    } ${coin}`;
   }
 
   // FLV crypto denomination --END--
   if (typeof value === "string") {
     value = {
-      "ct": {
-        "fa": "General",
-        "t": "g"
+      ct: {
+        fa: "General",
+        t: "g",
       },
-      "v": value,
-      "tb": "1"
-    }
+      v: value,
+      tb: "1",
+    };
   } else if (typeof value === "object" && !value.tb) {
     value.tb = "1";
   }
@@ -1098,10 +1095,10 @@ export function updateCell(
 
       const textInfo = canvas
         ? getCellTextInfo(d[r][c] as Cell, canvas, ctx, {
-          r,
-          c,
-          cellWidth,
-        })
+            r,
+            c,
+            cellWidth,
+          })
         : null;
 
       let currentRowLen = defaultrowlen;
@@ -1277,8 +1274,9 @@ export function getRangetxt(
     return sheettxt + indexToColumnChar(column0) + (row0 + 1);
   }
 
-  return `${sheettxt + indexToColumnChar(column0) + (row0 + 1)
-    }:${indexToColumnChar(column1)}${row1 + 1}`;
+  return `${
+    sheettxt + indexToColumnChar(column0) + (row0 + 1)
+  }:${indexToColumnChar(column1)}${row1 + 1}`;
 }
 
 // 把string A1:A2转为选区数组

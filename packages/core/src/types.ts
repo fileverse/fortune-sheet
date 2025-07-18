@@ -47,6 +47,10 @@ export type Cell = {
   bg?: string;
   lo?: number;
   rt?: number;
+  baseValue?: number | string;
+  baseCurrency?: string;
+  baseCurrencyPrice?: string | number;
+  isDataBlockFormula?: boolean;
   ps?: {
     left: number | null;
     top: number | null;

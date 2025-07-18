@@ -199,10 +199,9 @@ export class FormulaCache {
   }
 
   tryGetCellAsNumber(cell: Cell) {
-    // @ts-expect-error later // FLV crypto denomination --START--
-    const isCryptoDeno = cell?.m?.includes("ETH") || cell?.m?.includes("SOL") || cell?.m?.includes("BTC");
-    if (isCryptoDeno) {
-      // @ts-expect-error later
+    // FLV crypto denomination --START--
+    const isCryptoDeno = typeof cell?.m === "string" ? (cell?.m?.includes("ETH") || cell?.m?.includes("SOL") || cell?.m?.includes("BTC")) : false;
+    if (isCryptoDeno && typeof cell?.m === "string") {
       const splitedNumberString = cell.m.split(" ")[0];
       return Number(splitedNumberString);
     }

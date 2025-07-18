@@ -2134,9 +2134,7 @@ export function deleteSelectedCellText(ctx: Context): string {
                 cell.ct.fa?.includes("SOL"))
             ) {
               delete cell.ct;
-              // @ts-expect-error later
               delete cell?.baseValue;
-              // @ts-expect-error later
               delete cell?.baseCurrency;
             }
           } else {

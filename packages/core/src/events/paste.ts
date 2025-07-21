@@ -1339,7 +1339,13 @@ function pasteHandlerOfCopyPaste(
           let value = null;
           if (copyData[h - mth]?.[c - mtc]) {
             value = _.cloneDeep(copyData[h - mth][c - mtc]);
-            if (value?.v && value?.isDataBlockFormula) {
+            console.log("value", value);
+            if (
+              value?.v &&
+              value?.f &&
+              value?.isDataBlockFormula &&
+              arr.length === 1
+            ) {
               value.m = "Loading...";
             }
           }
@@ -1374,6 +1380,7 @@ function pasteHandlerOfCopyPaste(
             );
 
             const { afterUpdateCell } = ctx.hooks;
+            console.log("fortune about to call afterUpdateCell");
             if (afterUpdateCell && arr.length === 1) {
               afterUpdateCell(h, c, null, {
                 ...value,
@@ -1551,10 +1558,15 @@ function handleFormulaStringPaste(ctx: Context, formulaStr: string) {
   d[r][c]!.m = isDataBlockRespose ? "Loading..." : val.toString();
   d[r][c]!.v = val;
   d[r][c]!.f = formulaStr;
+  const cellTemp = { m: "", v: "", f: "" };
+
+  cellTemp.m = isDataBlockRespose ? "Loading..." : val.toString();
+  cellTemp.v = val;
+  cellTemp.f = formulaStr;
 
   const { afterUpdateCell } = ctx.hooks;
   if (afterUpdateCell && isDataBlockRespose) {
-    afterUpdateCell(r, c, null, d[r][c]);
+    afterUpdateCell(r, c, null, cellTemp);
   }
 }
 
@@ -2140,7 +2152,7 @@ export function handlePasteByClick(
   } else if (triggerType !== "btn") {
     const isExcelFormula = clipboardData.startsWith("=");
 
-    if (isExcelFormula && false) {
+    if (isExcelFormula) {
       handleFormulaStringPaste(ctx, clipboardData);
     } else {
       pasteHandler(ctx, clipboardData);

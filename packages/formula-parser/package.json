@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/formula-parser",
-  "version": "0.2.45",
+  "version": "0.2.48",
   "description": "Formula parser",
   "main": "lib/index.js",
   "module": "es/index.js",

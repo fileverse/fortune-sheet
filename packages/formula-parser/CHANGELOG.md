@@ -1,5 +1,23 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.48
+
+### Patch Changes
+
+- minor improvement paste
+
+## 0.2.47
+
+### Patch Changes
+
+- fix paster proxy issue
+
+## 0.2.46
+
+### Patch Changes
+
+- paste handler for data block
+
 ## 0.2.45
 
 ### Patch Changes

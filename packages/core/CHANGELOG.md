@@ -1,5 +1,29 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.71
+
+### Patch Changes
+
+- minor improvement paste
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.48
+
+## 1.0.70
+
+### Patch Changes
+
+- fix paster proxy issue
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.47
+
+## 1.0.69
+
+### Patch Changes
+
+- paste handler for data block
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.46
+
 ## 1.0.68
 
 ### Patch Changes

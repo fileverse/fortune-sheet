@@ -1217,8 +1217,8 @@ export function execfunction(
       let finalResult = result;
       if (
         ctx.formulaCache.parser.cryptoDenomination &&
-        ctx.formulaCache.parser.cryptoDenomination !== ""
-        && (typeof result === "number" || typeof result === "string")
+        ctx.formulaCache.parser.cryptoDenomination !== "" &&
+        (typeof result === "number" || typeof result === "string")
       ) {
         const resultStr = Number(result)
           .toFixed(ctx.formulaCache.parser.cryptoDecimals)
@@ -1258,8 +1258,8 @@ export function execfunction(
   let finalResult = result;
   if (
     ctx.formulaCache.parser.cryptoDenomination &&
-    ctx.formulaCache.parser.cryptoDenomination !== ""
-    && (typeof result === "number" || typeof result === "string")
+    ctx.formulaCache.parser.cryptoDenomination !== "" &&
+    (typeof result === "number" || typeof result === "string")
   ) {
     const resultStr = Number(result)
       .toFixed(ctx.formulaCache.parser.cryptoDecimals)

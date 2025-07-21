@@ -1379,7 +1379,6 @@ function pasteHandlerOfCopyPaste(
             );
 
             const { afterUpdateCell } = ctx.hooks;
-            console.log("fortune about to call afterUpdateCell");
             if (afterUpdateCell && arr.length === 1) {
               afterUpdateCell(h, c, null, {
                 ...value,

@@ -43,13 +43,6 @@ const Template: StoryFn<typeof Workbook> = ({
             // onClick: () => { },
           },
         ]}
-        hooks={{
-          afterUpdateCell: async (row, column, oldValue, newValue) => {
-            if(newValue.v === "a" || true){
-              console.log("afterUpdateCell", row, column, oldValue, newValue);
-            }
-          }
-        }}
         toolbarItems={[
           "undo",
           "redo",

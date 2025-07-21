@@ -2,9 +2,9 @@ import _ from "lodash";
 import { Context, getFlowdata } from "../context";
 import { locale } from "../locale";
 import {
-  delFunctionGroup,
+  // delFunctionGroup,
   execfunction,
-  execFunctionGroup,
+  // execFunctionGroup,
   functionCopy,
 } from "../modules/formula";
 import { getdatabyselection, getQKBorder } from "../modules/cell";
@@ -158,7 +158,7 @@ function postPasteCut(
 
   ctx.formulaCache.execFunctionExist.reverse();
   // @ts-ignore
-  execFunctionGroup(ctx, null, null, null, null, target.curData);
+  // execFunctionGroup(ctx, null, null, null, null, target.curData);
   ctx.formulaCache.execFunctionGlobalData = null;
 
   // const index = getSheetIndex(ctx, ctx.currentSheetId);
@@ -223,7 +223,6 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
   // ) {
   //   return;
   // }
-  console.log("pasteHandler", ctx.isFlvReadOnly);
   const allowEdit = isAllowEdit(ctx);
   if (!allowEdit || ctx.isFlvReadOnly) return;
 
@@ -474,7 +473,7 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
 
           if (originCell.f != null && originCell.f.length > 0) {
             originCell.f = "";
-            delFunctionGroup(ctx, r + curR, c + curC, ctx.currentSheetId);
+            // delFunctionGroup(ctx, r + curR, c + curC, ctx.currentSheetId);
           }
         } else {
           const cell: Cell = {};
@@ -1340,6 +1339,9 @@ function pasteHandlerOfCopyPaste(
           let value = null;
           if (copyData[h - mth]?.[c - mtc]) {
             value = _.cloneDeep(copyData[h - mth][c - mtc]);
+            if (value?.v && value?.isDataBlockFormula) {
+              value.m = "Loading...";
+            }
           }
 
           if (!_.isNil(value) && !_.isNil(value.f)) {
@@ -1371,19 +1373,29 @@ function pasteHandlerOfCopyPaste(
               true
             );
 
+            const { afterUpdateCell } = ctx.hooks;
+            if (afterUpdateCell && arr.length === 1) {
+              afterUpdateCell(h, c, null, {
+                ...value,
+                v: funcV[1],
+                m: "[object Promise]",
+              });
+            }
+
             if (!_.isNil(value.spl)) {
               // value.f = funcV[2];
               // value.v = funcV[1];
               // value.spl = funcV[3].data;
-            } else {
-              [, value.v, value.f] = funcV;
-
-              if (!_.isNil(value.ct) && !_.isNil(value.ct.fa)) {
-                value.m = update(value.ct.fa, funcV[1]);
-              } else {
-                value.m = update("General", funcV[1]);
-              }
             }
+            // else {
+            //   [, value.v, value.f] = ['ssss', 'ffff', 'hhhh'];
+
+            //   if (!_.isNil(value.ct) && !_.isNil(value.ct.fa)) {
+            //     value.m = update(value.ct.fa, 'ffff');
+            //   } else {
+            //     value.m = update("General", 'ffff');
+            //   }
+            // }
           }
 
           x[c] = _.cloneDeep(value);
@@ -1530,13 +1542,20 @@ function handleFormulaStringPaste(ctx: Context, formulaStr: string) {
 
   const val = funcV[1];
 
+  const isDataBlockRespose = typeof val !== "string" && typeof val !== "number";
+
   const d = getFlowdata(ctx);
   if (!d) return;
 
   if (!d[r][c]) d[r][c] = {};
-  d[r][c]!.m = val.toString();
+  d[r][c]!.m = isDataBlockRespose ? "Loading..." : val.toString();
   d[r][c]!.v = val;
   d[r][c]!.f = formulaStr;
+
+  const { afterUpdateCell } = ctx.hooks;
+  if (afterUpdateCell && isDataBlockRespose) {
+    afterUpdateCell(r, c, null, d[r][c]);
+  }
 }
 
 export function handlePaste(ctx: Context, e: ClipboardEvent) {
@@ -2121,7 +2140,7 @@ export function handlePasteByClick(
   } else if (triggerType !== "btn") {
     const isExcelFormula = clipboardData.startsWith("=");
 
-    if (isExcelFormula) {
+    if (isExcelFormula && false) {
       handleFormulaStringPaste(ctx, clipboardData);
     } else {
       pasteHandler(ctx, clipboardData);

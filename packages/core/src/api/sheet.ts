@@ -142,7 +142,10 @@ export function calculateSheetFromula(ctx: Context, id: string) {
   if (!ctx.luckysheetfile[index].data) return;
   for (let r = 0; r < ctx.luckysheetfile[index].data!.length; r += 1) {
     for (let c = 0; c < ctx.luckysheetfile[index].data![r].length; c += 1) {
-      if (!ctx.luckysheetfile[index].data![r][c]?.f || ctx.luckysheetfile[index].data![r][c]?.isDataBlockFormula) {
+      if (
+        !ctx.luckysheetfile[index].data![r][c]?.f ||
+        ctx.luckysheetfile[index].data![r][c]?.isDataBlockFormula
+      ) {
         continue;
       }
       const result = execfunction(

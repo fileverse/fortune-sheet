@@ -1339,7 +1339,6 @@ function pasteHandlerOfCopyPaste(
           let value = null;
           if (copyData[h - mth]?.[c - mtc]) {
             value = _.cloneDeep(copyData[h - mth][c - mtc]);
-            console.log("value", value);
             if (
               value?.v &&
               value?.f &&

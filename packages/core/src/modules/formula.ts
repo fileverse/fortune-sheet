@@ -1225,6 +1225,7 @@ export function execfunction(
           .toLowerCase();
         finalResult = `${resultStr} ${ctx.formulaCache.parser.cryptoDenomination}`;
       }
+      // eslint-disable-next-line no-use-before-define
       execFunctionGroup(
         ctx,
         r,

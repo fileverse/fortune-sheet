@@ -204,6 +204,7 @@ export async function convertCellsToCrypto({
 
     // Convert USD base value to selected cryptocurrency
     const cryptoValue = baseValue / fiatVsCryptoPrice;
+    if (typeof cryptoValue !== "number" || Number.isNaN(cryptoValue)) return;
 
     cellUpdates.push({
       row,
@@ -212,6 +213,7 @@ export async function convertCellsToCrypto({
       cryptoValue,
       // @ts-expect-error later
       baseCurrency: getFiatGeckoId(fiatSymbol) || "usd",
+      baseCurrencyPrice: fiatVsCryptoPrice,
     });
   });
 
@@ -221,8 +223,16 @@ export async function convertCellsToCrypto({
     if (!d || !Array.isArray(d)) return;
 
     cellUpdates.forEach(
-      // @ts-expect-error later
-      ({ row, col, baseValue, cryptoValue, baseCurrency }) => {
+      ({
+        row,
+        col,
+        baseValue,
+        cryptoValue,
+        // @ts-expect-error later
+        baseCurrency,
+        // @ts-expect-error later
+        baseCurrencyPrice,
+      }) => {
         // Ensure row and cell exist
         if (!d[row]) d[row] = [];
         if (!d[row][col]) d[row][col] = {};
@@ -238,6 +248,7 @@ export async function convertCellsToCrypto({
         };
         cellCp.baseValue = baseValue;
         cellCp.baseCurrency = baseCurrency.toLowerCase();
+        cellCp.baseCurrencyPrice = baseCurrencyPrice;
 
         d[row][col] = cellCp as CryptoCell;
       }

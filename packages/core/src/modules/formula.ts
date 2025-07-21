@@ -149,6 +149,8 @@ export class FormulaCache {
           endCol = flowdata?.[0].length ?? 0;
         }
         if (emptyRow && emptyCol) throw Error(ERROR_REF);
+        let cryptoDenomination = "";
+        let cryptoDecimal = 0;
 
         for (let row = startRow; row <= endRow; row += 1) {
           const colFragment = [];
@@ -159,19 +161,56 @@ export class FormulaCache {
                 `${row}_${col}_${id}`
               ] || flowdata?.[row]?.[col];
             const v = that.tryGetCellAsNumber(cell);
+            // FLV crypto denomination --START--
+            if (
+              (cell?.m?.includes("ETH") ||
+                cell?.m?.includes("SOL") ||
+                cell?.m?.includes("BTC")) &&
+              cryptoDenomination !== "Error"
+            ) {
+              const visualString = cell?.m.split(" ");
+              if (
+                cryptoDenomination !== "" &&
+                cryptoDenomination !== visualString[1]
+              ) {
+                cryptoDenomination = "Error";
+              } else {
+                // eslint-disable-next-line  prefer-destructuring
+                cryptoDenomination = visualString[1];
+              }
+              cryptoDecimal = visualString[0].includes(".")
+                ? visualString[0].split(".")[1].length
+                : 0;
+            }
             colFragment.push(v);
           }
           fragment.push(colFragment);
         }
+        if (cryptoDenomination === "Error") {
+          cryptoDenomination = "";
+          cryptoDecimal = 0;
+        }
 
         if (fragment) {
-          done(fragment);
+          done(fragment, cryptoDenomination, cryptoDecimal);
         }
       }
     );
   }
 
   tryGetCellAsNumber(cell: Cell) {
+    // FLV crypto denomination --START--
+    const isCryptoDeno =
+      typeof cell?.m === "string"
+        ? cell?.m?.includes("ETH") ||
+          cell?.m?.includes("SOL") ||
+          cell?.m?.includes("BTC")
+        : false;
+    if (isCryptoDeno && typeof cell?.m === "string") {
+      const splitedNumberString = cell.m.split(" ")[0];
+      return Number(splitedNumberString);
+    }
+    // FLV crypto denomination --END--
     if (cell?.ct?.t === "n") {
       const n = Number(cell?.v);
       return Number.isNaN(n) ? cell.v : n;
@@ -1175,11 +1214,23 @@ export function execfunction(
   if (!_.isNil(r) && !_.isNil(c)) {
     if (isrefresh) {
       // eslint-disable-next-line no-use-before-define
+      let finalResult = result;
+      if (
+        ctx.formulaCache.parser.cryptoDenomination &&
+        ctx.formulaCache.parser.cryptoDenomination !== "" &&
+        (typeof result === "number" || typeof result === "string")
+      ) {
+        const resultStr = Number(result)
+          .toFixed(ctx.formulaCache.parser.cryptoDecimals)
+          .toLowerCase();
+        finalResult = `${resultStr} ${ctx.formulaCache.parser.cryptoDenomination}`;
+      }
+      // eslint-disable-next-line no-use-before-define
       execFunctionGroup(
         ctx,
         r,
         c,
-        _.isNil(formulaError) ? result : formulaError,
+        _.isNil(formulaError) ? finalResult : formulaError,
         id
       );
     }
@@ -1204,8 +1255,19 @@ export function execfunction(
   }
   */
 
-  // console.log(result, txt);
-  return [true, _.isNil(formulaError) ? result : formulaError, txt];
+  // FLV crypto denomination --START--
+  let finalResult = result;
+  if (
+    ctx.formulaCache.parser.cryptoDenomination &&
+    ctx.formulaCache.parser.cryptoDenomination !== "" &&
+    (typeof result === "number" || typeof result === "string")
+  ) {
+    const resultStr = Number(result)
+      .toFixed(ctx.formulaCache.parser.cryptoDecimals)
+      .toLowerCase();
+    finalResult = `${resultStr} ${ctx.formulaCache.parser.cryptoDenomination}`;
+  }
+  return [true, _.isNil(formulaError) ? finalResult : formulaError, txt];
 }
 
 function insertUpdateDynamicArray(ctx: Context, dynamicArrayItem: any) {

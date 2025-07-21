@@ -1,5 +1,85 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.71
+
+### Patch Changes
+
+- minor improvement paste
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.48
+
+## 1.0.70
+
+### Patch Changes
+
+- fix paster proxy issue
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.47
+
+## 1.0.69
+
+### Patch Changes
+
+- paste handler for data block
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.46
+
+## 1.0.68
+
+### Patch Changes
+
+- flvdsheet afterupdate cell content to updatecell func
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.45
+
+## 1.0.67
+
+### Patch Changes
+
+- minor changes new fresh build
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.44
+
+## 1.0.66
+
+### Patch Changes
+
+- minor fix for string type cell.v for crypto
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.43
+
+## 1.0.65
+
+### Patch Changes
+
+- v as string minor fix
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.42
+
+## 1.0.64
+
+### Patch Changes
+
+- minoe fix in update cell to include baseCrypto value
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.41
+
+## 1.0.63
+
+### Patch Changes
+
+- minor relative path of formula parser in core
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.40
+
+## 1.0.62
+
+### Patch Changes
+
+- add support for function for crypto deno
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.39
+
 ## 1.0.61
 
 ### Patch Changes

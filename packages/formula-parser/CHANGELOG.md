@@ -1,5 +1,65 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.48
+
+### Patch Changes
+
+- minor improvement paste
+
+## 0.2.47
+
+### Patch Changes
+
+- fix paster proxy issue
+
+## 0.2.46
+
+### Patch Changes
+
+- paste handler for data block
+
+## 0.2.45
+
+### Patch Changes
+
+- flvdsheet afterupdate cell content to updatecell func
+
+## 0.2.44
+
+### Patch Changes
+
+- minor changes new fresh build
+
+## 0.2.43
+
+### Patch Changes
+
+- minor fix for string type cell.v for crypto
+
+## 0.2.42
+
+### Patch Changes
+
+- v as string minor fix
+
+## 0.2.41
+
+### Patch Changes
+
+- minoe fix in update cell to include baseCrypto value
+
+## 0.2.40
+
+### Patch Changes
+
+- minor relative path of formula parser in core
+
+## 0.2.39
+
+### Patch Changes
+
+- add support for function for crypto deno
+
 ## 0.2.38
 
 ### Patch Changes

@@ -24,6 +24,9 @@ class Parser extends Emitter {
   constructor() {
     super();
     this.parser = new GrammarParser();
+    this.cryptoDenomination = "";
+    this.cryptoDecimals = 0;
+
     this.parser.yy = {
       toNumber,
       trimEdges,
@@ -53,6 +56,7 @@ class Parser extends Emitter {
    * @return {*} Returns an object with tow properties `error` and `result`.
    */
   parse(expression, options) {
+    //return
     expression = normalizeQuotes(expression);
     let result = null;
     let error = null;
@@ -254,11 +258,12 @@ class Parser extends Emitter {
       startCell,
       endCell,
       this.options,
-      (_value = []) => {
+      (_value = [], _cryptoDenomination, _cryptoDecimals) => {
         value = _value;
+        this.cryptoDenomination = _cryptoDenomination;
+        this.cryptoDecimals = _cryptoDecimals;
       }
     );
-
     return value;
   }
 

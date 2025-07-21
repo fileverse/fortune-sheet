@@ -157,6 +157,14 @@ export function setCellValue(
       // if (!_.isNil(v.spl)) {
       //   cell.spl = v.spl;
       // }
+      if (!_.isNil(v.baseCurrency)) {
+        // @ts-ignore
+        cell.baseValue = v.baseValue;
+        // @ts-ignore
+        cell.baseCurrency = v.baseCurrency;
+        // @ts-ignore
+        cell.baseCurrencyPrice = v.baseCurrencyPrice;
+      }
 
       if (!_.isNil(v.ct)) {
         cell.ct = v.ct;
@@ -265,7 +273,6 @@ export function setCellValue(
           if (len > 5) {
             len = 5;
           }
-
           cell.m = cell.v.toExponential(len).toString();
         } else {
           const v_p = Math.round(cell.v * 1000000000) / 1000000000;
@@ -311,7 +318,11 @@ export function setCellValue(
         cell.m = mask[0].toString();
         [, cell.ct, cell.v] = mask;
       } else {
-        cell.m = mask.toString();
+        if (v.m) {
+          cell.m = v.m;
+        } else {
+          cell.m = mask.toString();
+        }
         cell.v = vupdate;
       }
     } else {
@@ -337,7 +348,11 @@ export function setCellValue(
         } else if (cell.v != null) {
           const mask = genarate(cell.v as string);
           if (mask) {
-            cell.m = mask[0].toString();
+            if (v.m) {
+              cell.m = v.m;
+            } else {
+              cell.m = mask[0].toString();
+            }
           }
         }
       } else {
@@ -901,8 +916,6 @@ export function updateCell(
         }
       } else {
         delFunctionGroup(ctx, r, c);
-        execFunctionGroup(ctx, r, c, value);
-        isRunExecFunction = false;
 
         curv = _.cloneDeep(d?.[r]?.[c] || {});
         curv.v = value;
@@ -910,6 +923,24 @@ export function updateCell(
         delete curv.f;
         delete curv.spl;
 
+        // FLV crypto denomination --START--
+        const decemialCount = oldValue?.m?.toString().includes(".")
+          ? oldValue?.m?.toString().split(" ")[0].split(".")[1].length
+          : 0;
+        const coin = oldValue?.m?.toString().split(" ")[1];
+        if (typeof curv === "object" && curv?.baseValue) {
+          curv.m = `${
+            // @ts-expect-error later
+            // eslint-disable-next-line no-unsafe-optional-chaining
+            (parseFloat(value as string) / oldValue?.baseCurrencyPrice).toFixed(
+              decemialCount
+            )
+          } ${coin}`;
+          curv.baseValue = value;
+        }
+        // FLV crypto denomination --END--
+        execFunctionGroup(ctx, r, c, curv);
+        isRunExecFunction = false;
         if (curv.qp === 1 && `${value}`.substring(0, 1) !== "'") {
           // if quotePrefix is 1, cell is force string, cell clear quotePrefix when it is updated
           curv.qp = 0;
@@ -998,6 +1029,35 @@ export function updateCell(
   }
 
   // value maybe an object
+  // FLV crypto denomination --START--
+  const decemialCount = oldValue?.m?.toString().includes(".")
+    ? oldValue?.m?.toString().split(" ")[0].split(".")[1].length
+    : 0;
+  const coin = oldValue?.m?.toString().split(" ")[1];
+  if (typeof value === "object" && value.baseValue && !value?.m) {
+    value.m = `${
+      // @ts-expect-error later
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice).toFixed(
+        decemialCount
+      )
+    } ${coin}`;
+  }
+
+  // FLV crypto denomination --END--
+  if (typeof value === "string") {
+    value = {
+      ct: {
+        fa: "General",
+        t: "g",
+      },
+      v: value,
+      tb: "1",
+    };
+  } else if (typeof value === "object" && !value.tb) {
+    value.tb = "1";
+  }
+
   setCellValue(ctx, r, c, d, value);
   cancelNormalSelected(ctx);
 
@@ -1086,7 +1146,7 @@ export function updateCell(
   }
   */
 
-  if (ctx.hooks.afterUpdateCell) {
+  if (!value?.baseValue && ctx.hooks.afterUpdateCell) {
     const newValue = _.cloneDeep(flowdata[r][c]);
     const { afterUpdateCell } = ctx.hooks;
     setTimeout(() => {

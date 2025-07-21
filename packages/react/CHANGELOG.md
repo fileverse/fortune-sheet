@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.72
+
+### Patch Changes
+
+- use core api to refresh function
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.72
+
 ## 1.0.71
 
 ### Patch Changes

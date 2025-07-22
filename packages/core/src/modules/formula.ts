@@ -156,6 +156,13 @@ export class FormulaCache {
           const colFragment = [];
 
           for (let col = startCol; col <= endCol; col += 1) {
+            if (
+              typeof options === "object" &&
+              row === options.row &&
+              col === options.column
+            ) {
+              continue;
+            }
             const cell =
               context?.formulaCache.execFunctionGlobalData?.[
                 `${row}_${col}_${id}`
@@ -1197,6 +1204,8 @@ export function execfunction(
   ctx.formulaCache.parser.context = ctx;
   const parsedResponse = ctx.formulaCache.parser.parse(txt.substring(1), {
     sheetId: id || ctx.currentSheetId,
+    row: r,
+    column: c,
   });
 
   const { error: formulaError } = parsedResponse;

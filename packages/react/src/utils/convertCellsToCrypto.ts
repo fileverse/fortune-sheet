@@ -1,5 +1,6 @@
 import { getFlowdata } from "@fileverse-dev/fortune-core";
 import { getCachedPrice } from "./cryptoApi";
+import { api } from "@fileverse-dev/fortune-core";
 
 export const getFiatSymbol = (code: string): string => {
   switch (code) {
@@ -254,4 +255,7 @@ export async function convertCellsToCrypto({
       }
     );
   });
+  setContext((ctx: any) => {
+    api.calculateSheetFromula(ctx, ctx.currentSheetId);
+  })
 }

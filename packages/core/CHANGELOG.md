@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.73
+
+### Patch Changes
+
+- Skip cell value when processing range if formula is on same row and column
+
 ## 1.0.72
 
 ### Patch Changes

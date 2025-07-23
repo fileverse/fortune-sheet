@@ -13,6 +13,7 @@
 ### Patch Changes
 
 - add api to refresh sub sheet formula
+- add support for converting url to link without having to double tap on the cell
 
 ## 1.0.75
 

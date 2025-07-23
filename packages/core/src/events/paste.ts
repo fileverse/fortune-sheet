@@ -17,7 +17,7 @@ import { getBorderInfoCompute } from "../modules/border";
 import { expandRowsAndColumns, storeSheetParamALL } from "../modules/sheet";
 import { jfrefreshgrid } from "../modules/refresh";
 import { setRowHeight } from "../api";
-import { CFSplitRange, sanitizeDuneUrl } from "../modules";
+import { CFSplitRange, sanitizeDuneUrl, saveHyperlink } from "../modules";
 import clipboard from "../modules/clipboard";
 
 function postPasteCut(
@@ -2101,6 +2101,16 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     const text = clipboardData?.getData("text/plain");
     if (text) {
       document.execCommand("insertText", false, text);
+      const urlRegex = /^(https?:\/\/[^\s]+)/;
+      if (urlRegex.test(text)) {
+        const last =
+          ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
+        if (last) {
+          const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
+          const colIndex = last.column_focus ?? last.column?.[0] ?? 0;
+          saveHyperlink(ctx, rowIndex, colIndex, text, "webpage", text);
+        }
+      }
     }
   }
 }

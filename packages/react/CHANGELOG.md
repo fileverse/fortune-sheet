@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.75
+
+### Patch Changes
+
+- Automatically convert URLs into links ( working version )
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.75
+
+## 1.0.74
+
+### Patch Changes
+
+- Automatically convert URLs into links
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.74
+
 ## 1.0.73
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.76
+
+### Patch Changes
+
+- add support for converting url to link without having to double tap on the cell
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.76
+
 ## 1.0.75
 
 ### Patch Changes

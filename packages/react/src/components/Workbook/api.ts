@@ -377,7 +377,7 @@ export function generateAPIs(
 
     calculateSubSheetFormula: (id: string) => {
       setContext((draftCtx) => {
-          api.calculateSheetFromula(draftCtx, id as string);
+        api.calculateSheetFromula(draftCtx, id as string);
       });
     },
 

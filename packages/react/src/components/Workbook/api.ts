@@ -375,6 +375,12 @@ export function generateAPIs(
       });
     },
 
+    calculateSubSheetFormula: (id: string) => {
+      setContext((draftCtx) => {
+          api.calculateSheetFromula(draftCtx, id as string);
+      });
+    },
+
     dataToCelldata: (data: CellMatrix | undefined) => {
       return api.dataToCelldata(data);
     },

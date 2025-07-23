@@ -1,9 +1,24 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.78
+
+### Patch Changes
+
+- new fresh build
+
+## 1.0.77
+
+### Patch Changes
+
+- new fresh build
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.49
+
 ## 1.0.76
 
 ### Patch Changes
 
+- add api to refresh sub sheet formula
 - add support for converting url to link without having to double tap on the cell
 
 ## 1.0.75

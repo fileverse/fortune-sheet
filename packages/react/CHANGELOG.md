@@ -1,10 +1,26 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.78
+
+### Patch Changes
+
+- new fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.78
+
+## 1.0.77
+
+### Patch Changes
+
+- new fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.77
+
 ## 1.0.76
 
 ### Patch Changes
 
-- add support for converting url to link without having to double tap on the cell
+- add api to refresh sub sheet formula
 - Updated dependencies
   - @fileverse-dev/fortune-core@1.0.76
 

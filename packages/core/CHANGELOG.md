@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.75
+
+### Patch Changes
+
+- Automatically convert URLs into links ( working version )
+
+## 1.0.74
+
+### Patch Changes
+
+- Automatically convert URLs into links
+
 ## 1.0.73
 
 ### Patch Changes

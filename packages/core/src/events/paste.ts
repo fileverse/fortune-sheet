@@ -1568,6 +1568,19 @@ function handleFormulaStringPaste(ctx: Context, formulaStr: string) {
   }
 }
 
+export function parseAsLinkIfUrl(txtdata: string, ctx: Context) {
+  const urlRegex = /^(https?:\/\/[^\s]+)/;
+  if (urlRegex.test(txtdata)) {
+    const last =
+      ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
+    if (last) {
+      const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
+      const colIndex = last.column_focus ?? last.column?.[0] ?? 0;
+      saveHyperlink(ctx, rowIndex, colIndex, txtdata, "webpage", txtdata);
+    }
+  }
+}
+
 export function handlePaste(ctx: Context, e: ClipboardEvent) {
   // if (isEditMode()) {
   //   // 此模式下禁用粘贴
@@ -1589,6 +1602,10 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     }
 
     if (!clipboardData) return;
+    const text = clipboardData.getData("text/plain");
+    if (text) {
+      parseAsLinkIfUrl(text, ctx);
+    }
 
     let txtdata =
       clipboardData.getData("text/html") || clipboardData.getData("text/plain");
@@ -2101,16 +2118,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     const text = clipboardData?.getData("text/plain");
     if (text) {
       document.execCommand("insertText", false, text);
-      const urlRegex = /^(https?:\/\/[^\s]+)/;
-      if (urlRegex.test(text)) {
-        const last =
-          ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
-        if (last) {
-          const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
-          const colIndex = last.column_focus ?? last.column?.[0] ?? 0;
-          saveHyperlink(ctx, rowIndex, colIndex, text, "webpage", text);
-        }
-      }
+      parseAsLinkIfUrl(text, ctx);
     }
   }
 }

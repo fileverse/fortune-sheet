@@ -99,8 +99,10 @@ const SheetTab: React.FC = () => {
           className="w-full"
           id="denomination-warning"
           style={{
-            position: "fixed",
+            zIndex: 1003,
+            position: "absolute",
             display: "none",
+            bottom: "31px",
             backgroundColor: "#F8F9FA",
             borderBottom: "1px solid #E8EBEC",
             color: "#77818A",
@@ -108,7 +110,6 @@ const SheetTab: React.FC = () => {
             fontSize: "var(--font-size-2xsm, 12px)",
             fontStyle: "normal",
             fontWeight: "400",
-            bottom: "31px",
           }}
         >
           <div

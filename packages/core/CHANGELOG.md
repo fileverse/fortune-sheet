@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.80
+
+### Patch Changes
+
+- Font color & Cell color fixes
+
 ## 1.0.79
 
 ### Patch Changes

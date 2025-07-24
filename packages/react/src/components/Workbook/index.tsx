@@ -423,14 +423,13 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           denoWarn.style.display = "block";
           denoWarn.style.left = "0px";
           if (scrollBar) {
-            scrollBar.style.bottom = "40px !important";
-            scrollBar.style.backgroundColor = "red !important";
+            scrollBar.setAttribute("style", "bottom: 36px !important; width: calc(100% - 60px);");
           }
         } else if (!denominatedUsed && denoWarn) {
           denoWarn.style.display = "none";
           denoWarn.style.left = "-9999px";
           if (scrollBar) {
-            scrollBar.style.bottom = "12px !important";
+            scrollBar.setAttribute("style", "bottom: 10px !important; width: calc(100% - 60px);");
           }
         }
         return ctx;

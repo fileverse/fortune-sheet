@@ -614,6 +614,7 @@ const InputBox: React.FC = () => {
             transformOrigin: "left top",
             width: `${100 / context.zoomRatio}%`,
             height: `${100 / context.zoomRatio}%`,
+            color: "black",
           }}
           aria-autocomplete="list"
           onChange={onChange}

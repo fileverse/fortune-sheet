@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.79
+
+### Patch Changes
+
+- fix horizontal scroll with crypto denomination
+
 ## 1.0.78
 
 ### Patch Changes

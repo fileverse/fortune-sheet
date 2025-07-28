@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.81
+
+### Patch Changes
+
+- updated fileverse/ui
+
 ## 1.0.80
 
 ### Patch Changes

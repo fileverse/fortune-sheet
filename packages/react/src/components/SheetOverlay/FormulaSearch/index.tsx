@@ -10,8 +10,9 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
 ) => {
   const {
     context,
-    settings: { isAuthorized },
+    // settings: { isAuthorized },
   } = useContext(WorkbookContext);
+  const isAuthorized = true;
   const authedFunction = [
     "COINGECKO",
     "ETHERSCAN",

@@ -339,11 +339,7 @@ export function handleWithCtrlOrMetaKey(
     // Ctrl + B  加粗
     deleteSelectedCellFormat(ctx);
     // $("#luckysheet-icon-bold").click();
-  }
-  // right tb "2" ht "2"
-  // center tb "2" ht "0"
-  // left tb "2" ht "1"
-  else if (e.code === "KeyC") {
+  }else if (e.code === "KeyC") {
     // Ctrl + C  复制
     handleCopy(ctx);
     // luckysheetactiveCell();
@@ -853,8 +849,6 @@ export function handleGlobalKeyDown(
       }
     }
   }
-
-  console.log("kkkk");
 
   if (cellInput !== document.activeElement) {
     cellInput?.focus();

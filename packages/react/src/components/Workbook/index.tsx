@@ -661,7 +661,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           let position;
           let insertRowColOp: SetContextOptions["insertRowColOp"];
           if (e.code === "KeyR") {
-            //eslint-disable-next-line prefer-destructuring
+            // eslint-disable-next-line prefer-destructuring
             position = getSelection()[0].row[1];
             insertRowColOp = {
               type: "row",
@@ -671,7 +671,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
               id: context.currentSheetId,
             };
           } else {
-            //eslint-disable-next-line prefer-destructuring
+            // eslint-disable-next-line prefer-destructuring
             position = getSelection()[0].column[1];
             insertRowColOp = {
               type: "column",

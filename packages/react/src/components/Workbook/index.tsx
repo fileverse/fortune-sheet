@@ -17,6 +17,7 @@ import {
   ensureSheetIndex,
   CellMatrix,
   insertRowCol,
+  deleteRowCol,
   locale,
   calcSelectionInfo,
   groupValuesRefresh,
@@ -423,13 +424,19 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           denoWarn.style.display = "block";
           denoWarn.style.left = "0px";
           if (scrollBar) {
-            scrollBar.setAttribute("style", "bottom: 36px !important; width: calc(100% - 60px);");
+            scrollBar.setAttribute(
+              "style",
+              "bottom: 36px !important; width: calc(100% - 60px);"
+            );
           }
         } else if (!denominatedUsed && denoWarn) {
           denoWarn.style.display = "none";
           denoWarn.style.left = "-9999px";
           if (scrollBar) {
-            scrollBar.setAttribute("style", "bottom: 10px !important; width: calc(100% - 60px);");
+            scrollBar.setAttribute(
+              "style",
+              "bottom: 10px !important; width: calc(100% - 60px);"
+            );
           }
         }
         return ctx;
@@ -621,8 +628,150 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
       mergedSettings.currency,
     ]);
 
+    const isMac = navigator.platform.toUpperCase().includes("MAC");
+
+    let waitingForRInsertRow = false;
+    let resetInsertRowTimer: any;
+
+    let waitingForDelRow = false;
+    let resetDeleteRowTimer: any;
+
     const onKeyDown = useCallback(
       (e: React.KeyboardEvent<HTMLDivElement>) => {
+        // @ts-expect-error later
+        const { getSelection, getSheet, setSelection } = ref.current;
+
+        // Step 1: Detect the initial shortcut combo (Alt + I on Win, Ctrl + Option + I on Mac)
+        const isMacShortcutInsertRow = isMac && e.ctrlKey && e.altKey;
+        const isWindowsShortcutInsertRow = !isMac && e.altKey;
+        if (
+          (isMacShortcutInsertRow || isWindowsShortcutInsertRow) &&
+          e.code === "KeyI"
+        ) {
+          waitingForRInsertRow = true;
+          clearTimeout(resetInsertRowTimer);
+          resetInsertRowTimer = setTimeout(() => {
+            waitingForRInsertRow = false;
+          }, 3000); // 3 seconds to press R
+          e.preventDefault();
+          return;
+        }
+        if (waitingForRInsertRow && (e.code === "KeyR" || e.code === "KeyC")) {
+          const direction = "rightbottom";
+          let position;
+          let insertRowColOp: SetContextOptions["insertRowColOp"];
+          if (e.code === "KeyR") {
+            // eslint-disable-next-line prefer-destructuring
+            position = getSelection()[0].row[1];
+            insertRowColOp = {
+              type: "row",
+              index: position,
+              count: 1,
+              direction,
+              id: context.currentSheetId,
+            };
+          } else {
+            // eslint-disable-next-line prefer-destructuring
+            position = getSelection()[0].column[1];
+            insertRowColOp = {
+              type: "column",
+              index: position,
+              count: 1,
+              direction,
+              id: context.currentSheetId,
+            };
+          }
+          if (!position) return;
+          const range = context.luckysheet_select_save;
+          setContextWithProduce(
+            (draftCtx) => {
+              if (insertRowColOp) insertRowCol(draftCtx, insertRowColOp);
+              draftCtx.luckysheet_select_save = range;
+            },
+            {
+              insertRowColOp,
+            }
+          );
+
+          waitingForRInsertRow = false;
+          clearTimeout(resetInsertRowTimer);
+          e.preventDefault();
+        }
+
+        //-------
+
+        const isDashKey = e.key === "-" || e.code === "Minus";
+        const isSecondShortcut = isMac
+          ? e.metaKey && e.altKey && isDashKey // Cmd + Option + -
+          : e.ctrlKey && e.altKey && isDashKey; // Ctrl + Alt + -
+
+        if (isSecondShortcut) {
+          waitingForDelRow = true;
+
+          // Set a timeout to cancel if R or C isn’t pressed in time
+          clearTimeout(resetDeleteRowTimer);
+          resetDeleteRowTimer = setTimeout(() => {
+            waitingForDelRow = false;
+            console.log("Timeout: No second key (R or C) pressed in time.");
+          }, 3000); // 3 seconds to press R or C
+
+          e.preventDefault();
+          return;
+        }
+
+        if (waitingForDelRow && (e.code === "KeyR" || e.code === "KeyC")) {
+          let st_index: number;
+          let ed_index: number;
+          if (e.code === "KeyR") {
+            [st_index, ed_index] = getSelection()[0].row;
+            const range = context.luckysheet_select_save;
+            setContextWithProduce((draftCtx) => {
+              deleteRowCol(draftCtx, {
+                type: "row",
+                start: st_index,
+                end: ed_index,
+                id: context.currentSheetId,
+              });
+              draftCtx.luckysheet_select_save = range;
+            });
+          } else {
+            [st_index, ed_index] = getSelection()[0].column;
+            const range = context.luckysheet_select_save;
+            setContextWithProduce((draftCtx) => {
+              deleteRowCol(draftCtx, {
+                type: "column",
+                start: st_index,
+                end: ed_index,
+                id: context.currentSheetId,
+              });
+              draftCtx.luckysheet_select_save = range;
+            });
+          }
+
+          waitingForDelRow = false; // Reset the waiting state
+          clearTimeout(resetDeleteRowTimer);
+          e.preventDefault();
+          return;
+        }
+        // -------
+
+        if (e.shiftKey && e.code === "Space") {
+          e.stopPropagation();
+          e.preventDefault();
+          const selection = getSelection();
+          const selectedCol = selection?.[0].column;
+          const totalRow = getSheet().data.length;
+          setSelection([{ row: [0, totalRow - 1], column: selectedCol }]);
+        }
+        if (e.ctrlKey && e.code === "Space") {
+          e.stopPropagation();
+          e.preventDefault();
+          const selection = getSelection();
+          const selectedRow = selection?.[0].row;
+          const totalCol = getSheet().data[0].length;
+          setSelection([{ row: selectedRow, column: [0, totalCol - 1] }]);
+        }
+
         const { nativeEvent } = e;
         // handling undo and redo ahead because handleUndo and handleRedo
         // themselves are calling setContext, and should not be nested

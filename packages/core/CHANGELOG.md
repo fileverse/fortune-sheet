@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.83
+
+### Patch Changes
+
+- minor update in shortcut text align
+
+## 1.0.82
+
+### Patch Changes
+
+- add more shortcuts
+
 ## 1.0.81
 
 ### Patch Changes

@@ -6,12 +6,19 @@ import { handleFormulaInput } from "../modules/formula";
 import {
   copy,
   deleteSelectedCellText,
+  deleteSelectedCellFormat,
+  textFormat,
   moveHighlightCell,
   moveHighlightRange,
   selectAll,
   selectionCache,
 } from "../modules/selection";
-import { cancelPaintModel, handleBold } from "../modules/toolbar";
+import {
+  cancelPaintModel,
+  handleBold,
+  handleItalic,
+  handleUnderline,
+} from "../modules/toolbar";
 import { hasPartMC } from "../modules/validation";
 import { CellMatrix, GlobalCache } from "../types";
 import { getNowDateTime, getSheetIndex, isAllowEdit } from "../utils";
@@ -277,6 +284,7 @@ export function handleWithCtrlOrMetaKey(
   handleUndo: () => void,
   handleRedo: () => void
 ) {
+  console.log(e.key, e.code);
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
 
@@ -318,6 +326,18 @@ export function handleWithCtrlOrMetaKey(
   } else if (e.code === "KeyB") {
     // Ctrl + B  加粗
     handleBold(ctx, cellInput);
+    // $("#luckysheet-icon-bold").click();
+  } else if (e.code === "KeyI") {
+    // Ctrl + B  加粗
+    handleItalic(ctx, cellInput);
+    // $("#luckysheet-icon-bold").click();
+  } else if (e.code === "KeyU") {
+    // Ctrl + B  加粗
+    handleUnderline(ctx, cellInput);
+    // $("#luckysheet-icon-bold").click();
+  } else if (e.code === "Backslash") {
+    // Ctrl + B  加粗
+    deleteSelectedCellFormat(ctx);
     // $("#luckysheet-icon-bold").click();
   } else if (e.code === "KeyC") {
     // Ctrl + C  复制
@@ -591,6 +611,19 @@ export function handleGlobalKeyDown(
   handleRedo: () => void,
   canvas?: CanvasRenderingContext2D
 ) {
+  if (e.shiftKey && e.code === "Space") {
+    e.stopImmediatePropagation();
+    e.stopPropagation();
+    e.preventDefault();
+    return;
+  }
+  if ((e.ctrlKey || (e.metaKey && e.shiftKey)) && e.code === "KeyE") {
+    textFormat(ctx, "center");
+  } else if ((e.ctrlKey || (e.metaKey && e.shiftKey)) && e.code === "KeyL") {
+    textFormat(ctx, "left");
+  } else if ((e.ctrlKey || (e.metaKey && e.shiftKey)) && e.code === "KeyR") {
+    textFormat(ctx, "right");
+  }
   ctx.luckysheet_select_status = false;
   const kcode = e.keyCode;
   const kstr = e.key;

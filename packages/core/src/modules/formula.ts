@@ -2062,12 +2062,14 @@ export function setCaretPosition(
     const range = document.createRange();
     const sel = window.getSelection();
 
-    const mainSpan = document.querySelector('.luckysheet-formula-text-string');
-    let textContent = mainSpan?.firstChild?.nodeValue?.trim() || '';
-    const innerSpan = mainSpan?.querySelector('.fortune-formula-functionrange-cell');
+    const mainSpan = document.querySelector(".luckysheet-formula-text-string");
+    let textContent = mainSpan?.firstChild?.nodeValue?.trim() || "";
+    const innerSpan = mainSpan?.querySelector(
+      ".fortune-formula-functionrange-cell"
+    );
     if (innerSpan && mainSpan) {
-        textContent += innerSpan.textContent;
-        el.innerHTML = textContent
+      textContent += innerSpan.textContent;
+      el.innerHTML = textContent;
     }
 
     range.setStart(el.childNodes[children], pos);

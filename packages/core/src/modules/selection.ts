@@ -2156,6 +2156,120 @@ export function deleteSelectedCellText(ctx: Context): string {
   return "success";
 }
 
+export function deleteSelectedCellFormat(ctx: Context): string {
+  const allowEdit = isAllowEdit(ctx);
+  if (allowEdit === false) {
+    return "allowEdit";
+  }
+
+  const selection = ctx.luckysheet_select_save;
+  if (selection && !_.isEmpty(selection)) {
+    const d = getFlowdata(ctx);
+    if (!d) return "dataNullError";
+
+    let has_PartMC = false;
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      if (hasPartMC(ctx, ctx.config, r1, r2, c1, c2)) {
+        has_PartMC = true;
+        break;
+      }
+    }
+    if (has_PartMC) {
+      return "partMC";
+    }
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      for (let r = r1; r <= r2; r += 1) {
+        for (let c = c1; c <= c2; c += 1) {
+          if (_.isPlainObject(d[r][c])) {
+            const cell = d[r][c]!;
+            if (cell.ct) {
+              delete cell.ct;
+              delete cell.ff;
+              delete cell.fs;
+              delete cell.bl;
+              delete cell.fc;
+              delete cell.bg;
+              delete cell.tb;
+            }
+          }
+        }
+      }
+    }
+  }
+  return "success";
+}
+
+export function textFormat(
+  ctx: Context,
+  type: "left" | "center" | "right"
+): string {
+  const allowEdit = isAllowEdit(ctx);
+  if (allowEdit === false) {
+    return "allowEdit";
+  }
+
+  const selection = ctx.luckysheet_select_save;
+  if (selection && !_.isEmpty(selection)) {
+    const d = getFlowdata(ctx);
+    if (!d) return "dataNullError";
+
+    let has_PartMC = false;
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      if (hasPartMC(ctx, ctx.config, r1, r2, c1, c2)) {
+        has_PartMC = true;
+        break;
+      }
+    }
+    if (has_PartMC) {
+      return "partMC";
+    }
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      for (let r = r1; r <= r2; r += 1) {
+        for (let c = c1; c <= c2; c += 1) {
+          if (_.isPlainObject(d[r][c])) {
+            const cell = d[r][c]!;
+            if (type === "left") {
+              cell.tb = "2";
+              cell.ht = 1;
+            } else if (type === "center") {
+              cell.tb = "2";
+              cell.ht = 0;
+            } else if (type === "right") {
+              cell.tb = "2";
+              cell.ht = 2;
+            }
+          }
+        }
+      }
+    }
+  }
+  return "success";
+}
+
 // 选区是否重叠
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function selectIsOverlap(ctx: Context, range?: any) {

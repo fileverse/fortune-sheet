@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.84
+
+### Patch Changes
+
+- more shortcuts add link, data, time
+
 ## 1.0.83
 
 ### Patch Changes

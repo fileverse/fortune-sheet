@@ -641,6 +641,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
         // @ts-expect-error later
         const { getSelection, getSheet, setSelection } = ref.current;
 
+        // -------Insert-row-col--------
         // Step 1: Detect the initial shortcut combo (Alt + I on Win, Ctrl + Option + I on Mac)
         const isMacShortcutInsertRow = isMac && e.ctrlKey && e.altKey;
         const isWindowsShortcutInsertRow = !isMac && e.altKey;
@@ -698,7 +699,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           e.preventDefault();
         }
 
-        //-------
+        //-------Delete-row-col--------
 
         const isDashKey = e.key === "-" || e.code === "Minus";
         const isSecondShortcut = isMac
@@ -753,9 +754,10 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           e.preventDefault();
           return;
         }
-        // -------
 
-        if (e.shiftKey && e.code === "Space") {
+        // -------Select-row-col----------
+
+        if (e.ctrlKey && e.code === "Space") {
           e.stopPropagation();
           e.preventDefault();
           const selection = getSelection();
@@ -763,7 +765,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           const totalRow = getSheet().data.length;
           setSelection([{ row: [0, totalRow - 1], column: selectedCol }]);
         }
-        if (e.ctrlKey && e.code === "Space") {
+        if (e.shiftKey && e.code === "Space") {
           e.stopPropagation();
           e.preventDefault();
           const selection = getSelection();
@@ -771,6 +773,8 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           const totalCol = getSheet().data[0].length;
           setSelection([{ row: selectedRow, column: [0, totalCol - 1] }]);
         }
+
+        // -----------
 
         const { nativeEvent } = e;
         // handling undo and redo ahead because handleUndo and handleRedo

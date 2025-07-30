@@ -339,7 +339,7 @@ export function handleWithCtrlOrMetaKey(
     // Ctrl + B  加粗
     deleteSelectedCellFormat(ctx);
     // $("#luckysheet-icon-bold").click();
-  }else if (e.code === "KeyC") {
+  } else if (e.code === "KeyC") {
     // Ctrl + C  复制
     handleCopy(ctx);
     // luckysheetactiveCell();

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.83
+
+### Patch Changes
+
+- minor update in shortcut text align
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.83
+
 ## 1.0.82
 
 ### Patch Changes

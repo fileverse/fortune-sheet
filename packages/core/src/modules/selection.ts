@@ -2253,13 +2253,13 @@ export function textFormat(
           if (_.isPlainObject(d[r][c])) {
             const cell = d[r][c]!;
             if (type === "left") {
-              cell.tb = "2";
+              cell.tb = "1";
               cell.ht = 1;
             } else if (type === "center") {
-              cell.tb = "2";
+              cell.tb = "1";
               cell.ht = 0;
             } else if (type === "right") {
-              cell.tb = "2";
+              cell.tb = "1";
               cell.ht = 2;
             }
           }

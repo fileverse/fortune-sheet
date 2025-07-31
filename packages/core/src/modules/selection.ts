@@ -1601,9 +1601,8 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${
-              sheet.config.columnlen[c.toString()]
-            }px"></colgroup>`;
+            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
+              }px"></colgroup>`;
           }
         }
 
@@ -1946,9 +1945,8 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${
-              sheet.config.columnlen[c.toString()]
-            }px"></colgroup>`;
+            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
+              }px"></colgroup>`;
           }
         }
 
@@ -2152,6 +2150,216 @@ export function deleteSelectedCellText(ctx: Context): string {
     // // 清空编辑框的内容
     // // 备注：在functionInputHanddler方法中会把该标签的内容拷贝到 #luckysheet-functionbox-cell
     // $("#luckysheet-rich-text-editor").html("");
+  }
+  return "success";
+}
+
+export function deleteSelectedCellFormat(ctx: Context): string {
+  const allowEdit = isAllowEdit(ctx);
+  if (allowEdit === false) {
+    return "allowEdit";
+  }
+
+  const selection = ctx.luckysheet_select_save;
+  if (selection && !_.isEmpty(selection)) {
+    const d = getFlowdata(ctx);
+    if (!d) return "dataNullError";
+
+    let has_PartMC = false;
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      if (hasPartMC(ctx, ctx.config, r1, r2, c1, c2)) {
+        has_PartMC = true;
+        break;
+      }
+    }
+    if (has_PartMC) {
+      return "partMC";
+    }
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      for (let r = r1; r <= r2; r += 1) {
+        for (let c = c1; c <= c2; c += 1) {
+          if (_.isPlainObject(d[r][c])) {
+            const cell = d[r][c]!;
+            if (cell.ct) {
+              delete cell.ct;
+              delete cell.ff;
+              delete cell.fs;
+              delete cell.bl;
+              delete cell.fc;
+              delete cell.bg;
+              delete cell.tb;
+            }
+          }
+        }
+      }
+    }
+  }
+  return "success";
+}
+
+export function textFormat(
+  ctx: Context,
+  type: "left" | "center" | "right"
+): string {
+  const allowEdit = isAllowEdit(ctx);
+  if (allowEdit === false) {
+    return "allowEdit";
+  }
+
+  const selection = ctx.luckysheet_select_save;
+  if (selection && !_.isEmpty(selection)) {
+    const d = getFlowdata(ctx);
+    if (!d) return "dataNullError";
+
+    let has_PartMC = false;
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      if (hasPartMC(ctx, ctx.config, r1, r2, c1, c2)) {
+        has_PartMC = true;
+        break;
+      }
+    }
+    if (has_PartMC) {
+      return "partMC";
+    }
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      for (let r = r1; r <= r2; r += 1) {
+        for (let c = c1; c <= c2; c += 1) {
+          if (_.isPlainObject(d[r][c])) {
+            const cell = d[r][c]!;
+            if (type === "left") {
+              cell.tb = "1";
+              cell.ht = 1;
+            } else if (type === "center") {
+              cell.tb = "1";
+              cell.ht = 0;
+            } else if (type === "right") {
+              cell.tb = "1";
+              cell.ht = 2;
+            }
+          }
+        }
+      }
+    }
+  }
+  return "success";
+}
+
+export function fillDate(
+  ctx: Context,
+): string {
+  const allowEdit = isAllowEdit(ctx);
+  if (allowEdit === false) {
+    return "allowEdit";
+  }
+
+  const selection = ctx.luckysheet_select_save;
+  if (selection && !_.isEmpty(selection)) {
+    const d = getFlowdata(ctx);
+    if (!d) return "dataNullError";
+
+    let has_PartMC = false;
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      if (hasPartMC(ctx, ctx.config, r1, r2, c1, c2)) {
+        has_PartMC = true;
+        break;
+      }
+    }
+    if (has_PartMC) {
+      return "partMC";
+    }
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      for (let r = r1; r <= r2; r += 1) {
+        for (let c = c1; c <= c2; c += 1) {
+          const today = new Date();
+          const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+          d[r][c] = { v: formattedDate }
+        }
+      }
+    }
+  }
+  return "success";
+}
+
+export function fillTime(
+  ctx: Context,
+): string {
+  const allowEdit = isAllowEdit(ctx);
+  if (allowEdit === false) {
+    return "allowEdit";
+  }
+
+  const selection = ctx.luckysheet_select_save;
+  if (selection && !_.isEmpty(selection)) {
+    const d = getFlowdata(ctx);
+    if (!d) return "dataNullError";
+
+    let has_PartMC = false;
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      if (hasPartMC(ctx, ctx.config, r1, r2, c1, c2)) {
+        has_PartMC = true;
+        break;
+      }
+    }
+    if (has_PartMC) {
+      return "partMC";
+    }
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      for (let r = r1; r <= r2; r += 1) {
+        for (let c = c1; c <= c2; c += 1) {
+          const now = new Date();
+          const formattedTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+          d[r][c] = { v: formattedTime }
+        }
+      }
+    }
   }
   return "success";
 }

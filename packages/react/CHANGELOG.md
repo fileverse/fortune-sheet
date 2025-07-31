@@ -1,5 +1,29 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.84
+
+### Patch Changes
+
+- more shortcuts add link, data, time
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.84
+
+## 1.0.83
+
+### Patch Changes
+
+- minor update in shortcut text align
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.83
+
+## 1.0.82
+
+### Patch Changes
+
+- add more shortcuts
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.82
+
 ## 1.0.81
 
 ### Patch Changes

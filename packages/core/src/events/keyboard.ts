@@ -8,6 +8,8 @@ import {
   deleteSelectedCellText,
   deleteSelectedCellFormat,
   textFormat,
+  fillDate,
+  fillTime,
   moveHighlightCell,
   moveHighlightRange,
   selectAll,
@@ -20,6 +22,7 @@ import {
   handleUnderline,
 } from "../modules/toolbar";
 import { hasPartMC } from "../modules/validation";
+import { handleLink } from "../modules/toolbar";
 import { CellMatrix, GlobalCache } from "../types";
 import { getNowDateTime, getSheetIndex, isAllowEdit } from "../utils";
 import { handleCopy } from "./copy";
@@ -297,7 +300,7 @@ export function handleWithCtrlOrMetaKey(
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
       // Ctrl + Shift + 方向键  调整选区
       handleControlPlusArrowKey(ctx, e, true);
-    } else if (_.includes([";", '"', ":", "'"], e.key)) {
+    } else if (_.includes(['"', ":", "'"], e.key)) {
       const last =
         ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
       if (!last) return;
@@ -611,6 +614,8 @@ export function handleGlobalKeyDown(
   handleRedo: () => void,
   canvas?: CanvasRenderingContext2D
 ) {
+  console.log(e.code)
+    /* FLV */
   if (e.shiftKey && e.code === "Space") {
     e.stopImmediatePropagation();
     e.stopPropagation();
@@ -624,6 +629,17 @@ export function handleGlobalKeyDown(
   } else if ((e.ctrlKey || (e.metaKey && e.shiftKey)) && e.code === "KeyR") {
     textFormat(ctx, "right");
   }
+  if((e.metaKey || e.ctrlKey) && e.code === 'KeyK'){
+    handleLink(ctx)
+  }
+  if((e.metaKey || e.ctrlKey) && !e.shiftKey && e.code === 'Semicolon'){
+    fillDate(ctx)
+  }
+    if((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === 'Semicolon'){
+    fillTime(ctx)
+  }
+  /* FLV */
+
   ctx.luckysheet_select_status = false;
   const kcode = e.keyCode;
   const kstr = e.key;

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.87
+
+### Patch Changes
+
+- Smart contract reading
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.87
+
 ## 1.0.86
 
 ### Patch Changes

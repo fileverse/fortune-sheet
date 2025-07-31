@@ -1957,6 +1957,19 @@ const Toolbar: React.FC<{
       <div className="fortune-toolbar-right">
         {settings.customToolbarItems.length > 0 && (
           <>
+            {settings.customToolbarItems
+              .filter((t) => t.key === "Smart Contract")
+              .map((n) => (
+                <CustomButton
+                  tooltip={n.tooltip}
+                  onClick={n.onClick}
+                  key={n.key}
+                  icon={n.icon}
+                  iconName={n.iconName}
+                >
+                  {n.children}
+                </CustomButton>
+              ))}
             <Button
               iconId="dune"
               tooltip="Insert Dune Chart"
@@ -1986,7 +1999,9 @@ const Toolbar: React.FC<{
           </>
         )}
         {settings.customToolbarItems
-          .filter((n) => n.key !== "import-export")
+          .filter(
+            (n) => n.key !== "import-export" && n.key !== "Smart Contract"
+          )
           .map((n) => {
             return (
               <CustomButton

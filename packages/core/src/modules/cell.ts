@@ -925,7 +925,7 @@ export function updateCell(
 
         // FLV crypto denomination --START--
         const decemialCount = oldValue?.m?.toString().includes(".")
-          ? oldValue?.m?.toString().split(" ")[0].split(".")[1].length
+          ? oldValue?.m?.toString().split(" ")[0].split(".")[1]?.length
           : 0;
         const coin = oldValue?.m?.toString().split(" ")[1];
         if (typeof curv === "object" && curv?.baseValue) {
@@ -933,7 +933,7 @@ export function updateCell(
             // @ts-expect-error later
             // eslint-disable-next-line no-unsafe-optional-chaining
             (parseFloat(value as string) / oldValue?.baseCurrencyPrice).toFixed(
-              decemialCount
+              decemialCount || 2
             )
           } ${coin}`;
           curv.baseValue = value;
@@ -1031,7 +1031,7 @@ export function updateCell(
   // value maybe an object
   // FLV crypto denomination --START--
   const decemialCount = oldValue?.m?.toString().includes(".")
-    ? oldValue?.m?.toString().split(" ")[0].split(".")[1].length
+    ? oldValue?.m?.toString().split(" ")[0].split(".")[1]?.length
     : 0;
   const coin = oldValue?.m?.toString().split(" ")[1];
   if (typeof value === "object" && value.baseValue && !value?.m) {
@@ -1039,7 +1039,7 @@ export function updateCell(
       // @ts-expect-error later
       // eslint-disable-next-line no-unsafe-optional-chaining
       (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice).toFixed(
-        decemialCount
+        decemialCount || 2
       )
     } ${coin}`;
   }

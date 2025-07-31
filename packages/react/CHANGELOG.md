@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.86
+
+### Patch Changes
+
+- fix undefined length check for crypto denomination decimal
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.86
+
+## 1.0.85
+
+### Patch Changes
+
+- diable canvas zoom for presence of alt
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.85
+
 ## 1.0.84
 
 ### Patch Changes

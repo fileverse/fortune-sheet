@@ -20,9 +20,9 @@ import {
   handleBold,
   handleItalic,
   handleUnderline,
+  handleLink,
 } from "../modules/toolbar";
 import { hasPartMC } from "../modules/validation";
-import { handleLink } from "../modules/toolbar";
 import { CellMatrix, GlobalCache } from "../types";
 import { getNowDateTime, getSheetIndex, isAllowEdit } from "../utils";
 import { handleCopy } from "./copy";
@@ -287,7 +287,6 @@ export function handleWithCtrlOrMetaKey(
   handleUndo: () => void,
   handleRedo: () => void
 ) {
-  console.log(e.key, e.code);
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
 
@@ -614,8 +613,7 @@ export function handleGlobalKeyDown(
   handleRedo: () => void,
   canvas?: CanvasRenderingContext2D
 ) {
-  console.log(e.code)
-    /* FLV */
+  /* FLV */
   if (e.shiftKey && e.code === "Space") {
     e.stopImmediatePropagation();
     e.stopPropagation();
@@ -629,14 +627,14 @@ export function handleGlobalKeyDown(
   } else if ((e.ctrlKey || (e.metaKey && e.shiftKey)) && e.code === "KeyR") {
     textFormat(ctx, "right");
   }
-  if((e.metaKey || e.ctrlKey) && e.code === 'KeyK'){
-    handleLink(ctx)
+  if ((e.metaKey || e.ctrlKey) && e.code === "KeyK") {
+    handleLink(ctx);
   }
-  if((e.metaKey || e.ctrlKey) && !e.shiftKey && e.code === 'Semicolon'){
-    fillDate(ctx)
+  if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.code === "Semicolon") {
+    fillDate(ctx);
   }
-    if((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === 'Semicolon'){
-    fillTime(ctx)
+  if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === "Semicolon") {
+    fillTime(ctx);
   }
   /* FLV */
 

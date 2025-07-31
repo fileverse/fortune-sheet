@@ -186,7 +186,7 @@ export class FormulaCache {
                 cryptoDenomination = visualString[1];
               }
               cryptoDecimal = visualString[0].includes(".")
-                ? visualString[0].split(".")[1].length
+                ? visualString[0].split(".")[1]?.length
                 : 0;
             }
             colFragment.push(v);

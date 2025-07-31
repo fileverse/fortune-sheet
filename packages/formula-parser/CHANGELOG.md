@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.50
+
+### Patch Changes
+
+- Smart contract reading
+
 ## 0.2.49
 
 ### Patch Changes

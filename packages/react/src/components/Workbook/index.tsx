@@ -699,7 +699,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           e.preventDefault();
         }
 
-        //-------Delete-row-col--------
+        // -------Delete-row-col--------
 
         const isDashKey = e.key === "-" || e.code === "Minus";
         const isSecondShortcut = isMac

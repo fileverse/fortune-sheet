@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.86
+
+### Patch Changes
+
+- fix undefined length check for crypto denomination decimal
+
+## 1.0.85
+
+### Patch Changes
+
+- diable canvas zoom for presence of alt
+
 ## 1.0.84
 
 ### Patch Changes

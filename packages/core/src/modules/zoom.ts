@@ -7,7 +7,7 @@ export const MAX_ZOOM_RATIO = 4;
 export const MIN_ZOOM_RATIO = 0.1;
 
 export function handleKeydownForZoom(ev: KeyboardEvent, currentZoom: number) {
-  if (!ev.ctrlKey) {
+  if (!ev.ctrlKey || ev.altKey) {
     return currentZoom;
   }
   let handled = false;

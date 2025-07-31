@@ -1601,8 +1601,9 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
-              }px"></colgroup>`;
+            colgroup += `<colgroup width="${
+              sheet.config.columnlen[c.toString()]
+            }px"></colgroup>`;
           }
         }
 
@@ -1945,8 +1946,9 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
-              }px"></colgroup>`;
+            colgroup += `<colgroup width="${
+              sheet.config.columnlen[c.toString()]
+            }px"></colgroup>`;
           }
         }
 
@@ -2268,9 +2270,7 @@ export function textFormat(
   return "success";
 }
 
-export function fillDate(
-  ctx: Context,
-): string {
+export function fillDate(ctx: Context): string {
   const allowEdit = isAllowEdit(ctx);
   if (allowEdit === false) {
     return "allowEdit";
@@ -2307,8 +2307,14 @@ export function fillDate(
       for (let r = r1; r <= r2; r += 1) {
         for (let c = c1; c <= c2; c += 1) {
           const today = new Date();
-          const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-          d[r][c] = { v: formattedDate }
+          const formattedDate = `${String(today.getDate()).padStart(
+            2,
+            "0"
+          )}/${String(today.getMonth() + 1).padStart(
+            2,
+            "0"
+          )}/${today.getFullYear()}`;
+          d[r][c] = { v: formattedDate };
         }
       }
     }
@@ -2316,9 +2322,7 @@ export function fillDate(
   return "success";
 }
 
-export function fillTime(
-  ctx: Context,
-): string {
+export function fillTime(ctx: Context): string {
   const allowEdit = isAllowEdit(ctx);
   if (allowEdit === false) {
     return "allowEdit";
@@ -2355,8 +2359,13 @@ export function fillTime(
       for (let r = r1; r <= r2; r += 1) {
         for (let c = c1; c <= c2; c += 1) {
           const now = new Date();
-          const formattedTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-          d[r][c] = { v: formattedTime }
+          const formattedTime = `${String(now.getHours()).padStart(
+            2,
+            "0"
+          )}:${String(now.getMinutes()).padStart(2, "0")}:${String(
+            now.getSeconds()
+          ).padStart(2, "0")}`;
+          d[r][c] = { v: formattedTime };
         }
       }
     }

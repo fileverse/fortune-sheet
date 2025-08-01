@@ -32,24 +32,27 @@ export function handleOverlayTouchMove(
 ) {
   if (e.targetTouches.length > 1) return;
   const touch = e.targetTouches[0];
-  if (globalCache.touchMoveStatus) {
-    if (!globalCache.touchMoveStartPos) return;
-    const slideX = touch.pageX - globalCache.touchMoveStartPos.x;
-    const slideY = touch.pageY - globalCache.touchMoveStartPos.y;
-    let { scrollLeft } = ctx;
-    let { scrollTop } = ctx;
-    scrollLeft -= slideX;
-    scrollTop -= slideY;
-    scrollbarY.scrollTop = scrollTop;
+  if (!globalCache.touchMoveStatus || !globalCache.touchMoveStartPos) return;
+  const TOUCH_SCROLL_FACTOR = 0.1;
 
-    globalCache.touchMoveStartPos.vy_y = slideY;
-    globalCache.touchMoveStartPos.scrollTop = scrollTop;
+  const start = globalCache.touchMoveStartPos;
 
-    scrollbarX.scrollLeft = scrollLeft;
+  const slideX = (touch.pageX - start.x) * TOUCH_SCROLL_FACTOR;
+  const slideY = (touch.pageY - start.y) * TOUCH_SCROLL_FACTOR;
 
-    globalCache.touchMoveStartPos.vy_x = slideX;
-    globalCache.touchMoveStartPos.scrollLeft = scrollLeft;
-  }
+  let { scrollLeft } = ctx;
+  let { scrollTop } = ctx;
+
+  scrollLeft -= slideX;
+  scrollTop -= slideY;
+
+  scrollbarY.scrollTop = scrollTop;
+  scrollbarX.scrollLeft = scrollLeft;
+
+  start.vy_x = slideX;
+  start.vy_y = slideY;
+  start.scrollLeft = scrollLeft;
+  start.scrollTop = scrollTop;
 }
 
 export function handleOverlayTouchEnd(globalCache: GlobalCache) {

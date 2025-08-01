@@ -1714,7 +1714,7 @@ const Toolbar: React.FC<{
                           icon="Minus"
                           variant="ghost"
                           size="sm"
-                          className="!bg-transparent"
+                          className=""
                           disabled={decimals === 1}
                           onClick={() =>
                             handleCurrencyDecimalsChange(
@@ -1737,7 +1737,6 @@ const Toolbar: React.FC<{
                           icon="Plus"
                           variant="ghost"
                           size="sm"
-                          className="!bg-transparent"
                           disabled={decimals === 18}
                           onClick={() =>
                             handleCurrencyDecimalsChange(

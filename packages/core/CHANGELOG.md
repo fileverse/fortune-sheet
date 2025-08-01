@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.88
+
+### Patch Changes
+
+- add smooth scrolling and add decimal hover states
+
 ## 1.0.87
 
 ### Patch Changes

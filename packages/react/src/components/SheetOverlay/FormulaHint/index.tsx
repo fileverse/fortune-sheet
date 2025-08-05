@@ -3,7 +3,8 @@ import { Button, TextField, LucideIcon } from "@fileverse/ui";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import WorkbookContext from "../../../context";
 import "./index.css";
-import { formatTimeLeft, isExpired, timeFromNowMessage } from "./utils/utils";
+import { timeFromNowMessage } from "./utils/utils";
+import useGnosisPay from "./use-gnosis-pay";
 
 const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   const { context } = useContext(WorkbookContext);
@@ -17,42 +18,17 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   const [isKeyAdded, setApiKeyAdded] = useState(
     !!localStorage.getItem(fn?.API_KEY)
   );
-  const [hasGnosisPayToken, setHasGnosisPayToken] = useState(false);
   const [showFunctionBody, setShouldShowFunctionBody] = useState(true);
-  const [timeLeft, setTimeLeft] = useState("0 minute");
-  const [accessTokenCreatedAt, setAccessTokenCreatedAt] = useState(0);
-  const isWrongGnosisPayConnector =
-    localStorage.getItem("LOGIN_METHOD") !== "walletAddress";
 
-  const handleGnosisPayToken = (onDone?: () => void) => {
-    if (localStorage.getItem("GNOSIS_PAY_ACCESS")) {
-      const access = JSON.parse(
-        localStorage.getItem("GNOSIS_PAY_ACCESS") || ""
-      );
-      if (!access?.token || isExpired(access?.createdAt)) {
-        if (hasGnosisPayToken) {
-          setHasGnosisPayToken(false);
-        }
-        if (accessTokenCreatedAt) {
-          setAccessTokenCreatedAt(0);
-        }
-        localStorage.removeItem("GNOSIS_PAY_ACCESS");
-        return;
-      }
-      setHasGnosisPayToken(!!access.token);
-      setAccessTokenCreatedAt(access.createdAt);
-      onDone?.();
-    } else {
-      const urlParams = new URLSearchParams(window.location.search);
-      const isRejected = urlParams.has("reject");
-      if (isRejected) {
-        const url = new URL(window.location.href);
-        url.searchParams.delete("reject");
-        window.history.replaceState({}, "", url.toString());
-        onDone?.();
-      }
-    }
-  };
+  const {
+    grantAccess,
+    handleGnosisPayToken,
+    hasGnosisPayToken,
+    isWrongGnosisPayConnector,
+    isLoading,
+    accessTokenCreatedAt,
+    timeLeft,
+  } = useGnosisPay(fn);
 
   useEffect(() => {
     if (fn) {
@@ -127,49 +103,6 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
       if (el && handleWheel) el.removeEventListener("wheel", handleWheel);
     };
   }, []);
-
-  const gnosisTokenTokenIntervalRef = useRef<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    return () => {
-      if (gnosisTokenTokenIntervalRef.current)
-        clearInterval(gnosisTokenTokenIntervalRef.current);
-    };
-  }, [gnosisTokenTokenIntervalRef]);
-
-  useEffect(() => {
-    if (accessTokenCreatedAt <= 0) return () => {};
-
-    const interval = setInterval(() => {
-      const EXPIRY_DURATION_MS = 60 * 60 * 1000;
-      const expiryTimestamp = accessTokenCreatedAt + EXPIRY_DURATION_MS;
-      const newTimeLeft = expiryTimestamp - Date.now();
-      setTimeLeft(formatTimeLeft(newTimeLeft));
-      if (newTimeLeft <= 0 || !document.getElementById("gnosis-pay-area")) {
-        clearInterval(interval);
-      }
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [accessTokenCreatedAt, fn]);
-
-  const grantAccess = () => {
-    const button = document.getElementById("grant-gnosispay-access");
-    if (!button) return;
-    button.click();
-    setIsLoading(true);
-    const interval = setInterval(() => {
-      handleGnosisPayToken(() => {
-        clearInterval(interval);
-        setIsLoading(false);
-      });
-    }, 5000);
-
-    gnosisTokenTokenIntervalRef.current = interval;
-  };
 
   if (!fn) return null;
 

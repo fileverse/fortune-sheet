@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-core",
-  "version": "1.0.88",
+  "version": "1.0.88-patch-5",
   "main": "lib/index.js",
   "module": "es/index.js",
   "typings": "lib/index.d.ts",
@@ -15,7 +15,7 @@
     "dev": "father-build --watch"
   },
   "dependencies": {
-    "@fileverse-dev/formula-parser": "0.2.50",
+    "@fileverse-dev/formula-parser": "0.2.50-patch-4",
     "dayjs": "^1.11.0",
     "immer": "^9.0.12",
     "lodash": "^4.17.21",

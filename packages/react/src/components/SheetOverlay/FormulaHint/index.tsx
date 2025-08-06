@@ -314,7 +314,7 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
                   hasGnosisPayToken ? "#177E23" : "#fb923c"
                 }`,
                 backgroundColor: "white",
-                padding: "16px",
+                padding: "8px",
                 margin: "4px 4px 0px 4px",
                 borderRadius: "4px",
               }}
@@ -339,7 +339,7 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
               <div>
                 <p
                   style={{
-                    margin: "0 0 16px 0",
+                    margin: "0 0 8px 0",
                   }}
                   className="text-body-sm color-text-default"
                 >

@@ -1,6 +1,12 @@
 import _ from "lodash";
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { LucideIcon, Tooltip } from "@fileverse/ui";
+import React, {
+  Fragment,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { cn, LucideIcon, Tooltip } from "@fileverse/ui";
 import { UNFilter } from "./constant";
 import WorkbookContext from "../../../context";
 import "./index.css";
@@ -12,6 +18,8 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     context,
     settings: { isAuthorized },
   } = useContext(WorkbookContext);
+  const isWrongGnosisPayConnector =
+    localStorage.getItem("LOGIN_METHOD") !== "walletAddress";
   const authedFunction = [
     "COINGECKO",
     "ETHERSCAN",
@@ -226,14 +234,41 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                 <div
                   key={v.n}
                   data-func={v.n}
+                  style={{
+                    cursor:
+                      isWrongGnosisPayConnector && v.n === "GNOSISPAY"
+                        ? "not-allowed"
+                        : "pointer",
+                  }}
                   className="luckysheet-formula-search-item"
                 >
                   <div
                     style={{ display: "flex", justifyContent: "space-between" }}
                   >
-                    <div className="luckysheet-formula-search-func color-text-default text-body-sm">
-                      {v.n}
+                    <div className="flex items-center">
+                      {v.LOGO &&
+                        isWrongGnosisPayConnector &&
+                        v.n === "GNOSISPAY" && (
+                          <div className="mr-2">
+                            <img
+                              src={v.LOGO}
+                              alt="Service Logo"
+                              style={{ width: "16px" }}
+                            />
+                          </div>
+                        )}
+                      <div
+                        className={cn(
+                          "luckysheet-formula-search-func color-text-default text-body-sm",
+                          isWrongGnosisPayConnector && v.n === "GNOSISPAY"
+                            ? "color-text-disabled"
+                            : ""
+                        )}
+                      >
+                        {v.n}
+                      </div>
                     </div>
+
                     <div
                       style={{
                         display: "flex",
@@ -243,53 +278,81 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                         gap: "6px",
                       }}
                     >
-                      {v.LOGO && (
-                        <img
-                          src={v.LOGO}
-                          alt="Service Logo"
-                          style={{ width: "16px" }}
-                        />
-                      )}
-                      {v.SECONDARY_LOGO && (
-                        <img
-                          src={v.SECONDARY_LOGO}
-                          alt="Service Logo"
-                          style={{ width: "16px" }}
-                        />
-                      )}
-                      {v.API_KEY && (
+                      {isWrongGnosisPayConnector && v.n === "GNOSISPAY" ? (
                         <Tooltip
+                          position="right"
                           text={
-                            localStorage.getItem(v.API_KEY)
-                              ? "API Key added"
-                              : "API Key required"
+                            <div>
+                              <p>
+                                Your dSheet account was created via
+                                email/social. Unfortunately you are not able to
+                                use Gnosis Pay onchain function.
+                              </p>
+                              <p className="mt-4">
+                                To use Gnosis Pay onchain function you need to
+                                create a new dSheets account via the same wallet
+                                as your Gnosis Pay account.
+                              </p>
+                            </div>
                           }
                         >
-                          <div
-                            style={{
-                              borderRadius: "4px",
-                              backgroundColor: `${
-                                localStorage.getItem(v.API_KEY)
-                                  ? "#177E23"
-                                  : "#e8ebec"
-                              }`,
-                              width: "16px",
-                              height: "16px",
-                            }}
-                            className="flex justify-center"
-                          >
-                            <LucideIcon
-                              name="Key"
-                              style={{
-                                color: localStorage.getItem(v.API_KEY)
-                                  ? "white"
-                                  : "#77818A",
-                                width: "12px",
-                                height: "12px",
-                              }}
-                            />
-                          </div>
+                          <LucideIcon
+                            name="Info"
+                            size="sm"
+                            style={{ color: "#F16227" }}
+                          />
                         </Tooltip>
+                      ) : (
+                        <>
+                          {v.LOGO && (
+                            <img
+                              src={v.LOGO}
+                              alt="Service Logo"
+                              style={{ width: "16px" }}
+                            />
+                          )}
+                          {v.SECONDARY_LOGO && (
+                            <img
+                              src={v.SECONDARY_LOGO}
+                              alt="Service Logo"
+                              style={{ width: "16px" }}
+                            />
+                          )}
+                          {v.API_KEY && (
+                            <Tooltip
+                              text={
+                                localStorage.getItem(v.API_KEY)
+                                  ? "API Key added"
+                                  : "API Key required"
+                              }
+                            >
+                              <div
+                                style={{
+                                  borderRadius: "4px",
+                                  backgroundColor: `${
+                                    localStorage.getItem(v.API_KEY)
+                                      ? "#177E23"
+                                      : "#e8ebec"
+                                  }`,
+                                  width: "16px",
+                                  height: "16px",
+                                }}
+                                className="flex justify-center"
+                              >
+                                <LucideIcon
+                                  name="Key"
+                                  style={{
+                                    color: localStorage.getItem(v.API_KEY)
+                                      ? "white"
+                                      : "#77818A",
+                                    width: "12px",
+                                    height: "12px",
+                                  }}
+                                />
+                              </div>
+                            </Tooltip>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

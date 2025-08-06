@@ -3,6 +3,8 @@ import { Button, TextField, LucideIcon } from "@fileverse/ui";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import WorkbookContext from "../../../context";
 import "./index.css";
+import { timeFromNowMessage } from "./utils/utils";
+import useGnosisPay from "./use-gnosis-pay";
 
 const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   const { context } = useContext(WorkbookContext);
@@ -18,11 +20,23 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   );
   const [showFunctionBody, setShouldShowFunctionBody] = useState(true);
 
+  const {
+    grantAccess,
+    handleGnosisPayToken,
+    hasGnosisPayToken,
+    isWrongGnosisPayConnector,
+    isLoading,
+    accessTokenCreatedAt,
+    timeLeft,
+  } = useGnosisPay(fn);
+
   useEffect(() => {
     if (fn) {
       setApiKeyAdded(!!localStorage.getItem(fn?.API_KEY));
       setAPI_KEY(localStorage.getItem(fn?.API_KEY) || "");
       setShowAPInput(!localStorage.getItem(fn?.API_KEY));
+
+      handleGnosisPayToken();
     }
   }, [fn]);
   const apiKeyPlaceholder: Record<string, string> = {
@@ -89,6 +103,7 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
       if (el && handleWheel) el.removeEventListener("wheel", handleWheel);
     };
   }, []);
+
   if (!fn) return null;
 
   return (
@@ -213,7 +228,7 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
           style={{
             backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"}`,
             maxHeight: "318px",
-            overflowY: "scroll",
+            overflowY: "auto",
           }}
         >
           {fn.API_KEY && (
@@ -288,6 +303,74 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {fn.n === "GNOSISPAY" && (
+            <div
+              id="gnosis-pay-area"
+              style={{
+                borderLeft: `4px solid ${
+                  hasGnosisPayToken ? "#177E23" : "#fb923c"
+                }`,
+                backgroundColor: "white",
+                padding: "8px",
+                margin: "4px 4px 0px 4px",
+                borderRadius: "4px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                }}
+                onClick={() => {}}
+              >
+                <h3
+                  style={{
+                    margin: "0 0 8px 0",
+                  }}
+                  className="text-heading-xsm color-text-default"
+                >
+                  {hasGnosisPayToken
+                    ? "Access granted"
+                    : "Connect your Gnosis Pay account"}
+                </h3>
+              </div>
+              <div>
+                <p
+                  style={{
+                    margin: "0 0 8px 0",
+                  }}
+                  className="text-body-sm color-text-default"
+                >
+                  {!hasGnosisPayToken
+                    ? "Grant access to your Gnosis Pay account and ensure you're using the same wallet for both Gnosis Pay and dSheet."
+                    : ` You can now interact with your Gnosis Pay account for the next ${timeFromNowMessage(
+                        timeLeft
+                      )}. When the timer’s up, just re-grant access and you're good to go!`}
+                </p>
+                <Button
+                  onClick={grantAccess}
+                  disabled={
+                    hasGnosisPayToken || isWrongGnosisPayConnector || isLoading
+                  }
+                  className="w-full items-center flex gap-1"
+                >
+                  {isLoading && (
+                    <div>
+                      <LucideIcon
+                        name="LoaderCircle"
+                        className="animate-spin"
+                        size="sm"
+                      />
+                    </div>
+                  )}
+                  <p>Grant access </p>{" "}
+                  {accessTokenCreatedAt > 0 && <div>{timeLeft}</div>}
+                </Button>
+              </div>
             </div>
           )}
 

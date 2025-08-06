@@ -1,0 +1,1 @@
+export const GNOSIS_PAY_ACCESS = "GNOSIS_PAY_ACCESS";

@@ -3,6 +3,7 @@ import Workbook from "./Workbook";
 export {
   ERROR_MESSAGES_FLAG,
   SERVICES_API_KEY,
+  isGnosisPayAccessExpired,
   // @ts-ignore
 } from "@fileverse-dev/formulajs/crypto-constants";
 export { Workbook };

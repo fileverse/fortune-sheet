@@ -243,6 +243,10 @@ const InputBox: React.FC = () => {
       const formulaName = getActiveFormula()?.querySelector(
         ".luckysheet-formula-search-func"
       )?.textContent;
+      const isWrongGnosisPayConnector =
+        localStorage.getItem("LOGIN_METHOD") !== "walletAddress";
+
+      if (isWrongGnosisPayConnector && formulaName === "GNOSISPAY") return;
       if (formulaName) {
         insertSelectedFormula(formulaName);
         // User selects datablock
@@ -257,10 +261,15 @@ const InputBox: React.FC = () => {
     (e: React.MouseEvent) => {
       // @ts-expect-error later
       if (e.target.className.includes("sign-fortune")) return;
-      preText.current = inputRef.current!.innerText;
       const formulaName = getActiveFormula()?.querySelector(
         ".luckysheet-formula-search-func"
       )?.textContent;
+      const isWrongGnosisPayConnector =
+        localStorage.getItem("LOGIN_METHOD") !== "walletAddress";
+
+      if (isWrongGnosisPayConnector && formulaName === "GNOSISPAY") return;
+
+      preText.current = inputRef.current!.innerText;
       if (formulaName) {
         insertSelectedFormula(formulaName);
         e.preventDefault();

@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { LucideIcon, Tooltip } from "@fileverse/ui";
+import { cn, LucideIcon, Tooltip } from "@fileverse/ui";
 import { UNFilter } from "./constant";
 import WorkbookContext from "../../../context";
 import "./index.css";
@@ -234,6 +234,12 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                 <div
                   key={v.n}
                   data-func={v.n}
+                  style={{
+                    cursor:
+                      isWrongGnosisPayConnector && v.n === "GNOSISPAY"
+                        ? "not-allowed"
+                        : "pointer",
+                  }}
                   className="luckysheet-formula-search-item"
                 >
                   <div
@@ -251,7 +257,14 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                             />
                           </div>
                         )}
-                      <div className="luckysheet-formula-search-func color-text-default text-body-sm">
+                      <div
+                        className={cn(
+                          "luckysheet-formula-search-func color-text-default text-body-sm",
+                          isWrongGnosisPayConnector && v.n === "GNOSISPAY"
+                            ? "color-text-disabled"
+                            : ""
+                        )}
+                      >
                         {v.n}
                       </div>
                     </div>

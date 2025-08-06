@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  isGnosisPayAccessExpired,
+  // @ts-ignore
+} from "@fileverse-dev/formulajs/crypto-constants";
 import { GNOSIS_PAY_ACCESS } from "./constants";
-import { formatTimeLeft, isExpired } from "./utils/utils";
+import { formatTimeLeft, getJwtExpiry } from "./utils/utils";
 
 const useGnosisPay = (fn: any) => {
   const gnosisTokenTokenIntervalRef = useRef<any>(null);
@@ -13,8 +17,8 @@ const useGnosisPay = (fn: any) => {
 
   const handleGnosisPayToken = (onDone?: () => void) => {
     if (localStorage.getItem(GNOSIS_PAY_ACCESS)) {
-      const access = JSON.parse(localStorage.getItem(GNOSIS_PAY_ACCESS) || "");
-      if (!access?.token || isExpired(access?.createdAt)) {
+      const access = localStorage.getItem(GNOSIS_PAY_ACCESS) || "";
+      if (!access || isGnosisPayAccessExpired(access)) {
         if (hasGnosisPayToken) {
           setHasGnosisPayToken(false);
         }
@@ -24,8 +28,8 @@ const useGnosisPay = (fn: any) => {
         localStorage.removeItem(GNOSIS_PAY_ACCESS);
         return;
       }
-      setHasGnosisPayToken(!!access.token);
-      setAccessTokenCreatedAt(access.createdAt);
+      setHasGnosisPayToken(!!access);
+      setAccessTokenCreatedAt(getJwtExpiry(access));
       onDone?.();
     } else {
       const urlParams = new URLSearchParams(window.location.search);
@@ -50,11 +54,17 @@ const useGnosisPay = (fn: any) => {
     if (accessTokenCreatedAt <= 0) return () => {};
 
     const interval = setInterval(() => {
-      const EXPIRY_DURATION_MS = 60 * 60 * 1000;
-      const expiryTimestamp = accessTokenCreatedAt + EXPIRY_DURATION_MS;
+      const access = localStorage.getItem(GNOSIS_PAY_ACCESS) || "";
+      const expiryTimestamp = getJwtExpiry(access) * 1000;
       const newTimeLeft = expiryTimestamp - Date.now();
       setTimeLeft(formatTimeLeft(newTimeLeft));
-      if (newTimeLeft <= 0 || !document.getElementById("gnosis-pay-area")) {
+      if (
+        isGnosisPayAccessExpired(localStorage.getItem(GNOSIS_PAY_ACCESS)) ||
+        !document.getElementById("gnosis-pay-area")
+      ) {
+        localStorage.removeItem(GNOSIS_PAY_ACCESS);
+        setHasGnosisPayToken(false);
+        setAccessTokenCreatedAt(0);
         clearInterval(interval);
       }
     }, 1000);

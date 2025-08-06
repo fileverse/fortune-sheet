@@ -228,7 +228,7 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
           style={{
             backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"}`,
             maxHeight: "318px",
-            overflowY: "scroll",
+            overflowY: "auto",
           }}
         >
           {fn.API_KEY && (
@@ -333,7 +333,9 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
                   }}
                   className="text-heading-xsm color-text-default"
                 >
-                  {hasGnosisPayToken ? "Access granted" : "Access required"}
+                  {hasGnosisPayToken
+                    ? "Access granted"
+                    : "Connect your Gnosis Pay account"}
                 </h3>
               </div>
               <div>
@@ -344,10 +346,10 @@ const FormulaHint: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
                   className="text-body-sm color-text-default"
                 >
                   {!hasGnosisPayToken
-                    ? "To access your Gnosis Pay account, please grant permission. Your dSheet account should be created via the same wallet ss your Gnosis Pay. "
-                    : ` You have ${timeFromNowMessage(
+                    ? "Grant access to your Gnosis Pay account and ensure you're using the same wallet for both Gnosis Pay and dSheet."
+                    : ` You can now interact with your Gnosis Pay account for the next ${timeFromNowMessage(
                         timeLeft
-                      )} to use your Gnosis Pay account. Then you need to grant access again.`}
+                      )}. When the timer’s up, just re-grant access and you're good to go!`}
                 </p>
                 <Button
                   onClick={grantAccess}

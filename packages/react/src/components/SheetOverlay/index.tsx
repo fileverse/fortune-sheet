@@ -170,6 +170,7 @@ const SheetOverlay: React.FC = () => {
       if (link == null) {
         debouncedShowLinkCard(globalCache, rc.r, rc.c, false);
       } else {
+        if (globalCache.linkCard?.mouseEnter) return;
         showLinkCard(ctx, rc.r, rc.c, false);
         debouncedShowLinkCard(globalCache, rc.r, rc.c, false, true);
       }

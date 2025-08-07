@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.89
+
+### Patch Changes
+
+- fix bug when there are multiple links on sheet
+
 ## 1.0.88
 
 ### Patch Changes

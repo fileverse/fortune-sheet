@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.89
+
+### Patch Changes
+
+- fix bug when there are multiple links on sheet
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.89
+
 ## 1.0.88
 
 ### Patch Changes

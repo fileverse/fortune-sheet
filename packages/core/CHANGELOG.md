@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.90
+
+### Patch Changes
+
+- Allow to insert links immediately - TECT-792
+
 ## 1.0.89
 
 ### Patch Changes

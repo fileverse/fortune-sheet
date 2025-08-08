@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.90
+
+### Patch Changes
+
+- Allow to insert links immediately - TECT-792
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.90
+
 ## 1.0.89
 
 ### Patch Changes

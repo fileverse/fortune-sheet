@@ -624,26 +624,30 @@ function pasteHandlerOfCutPaste(
     ctx.luckysheet_copy_save?.copyRange.length === 1
   ) {
     _.forEach(ctx.luckysheet_copy_save?.copyRange, (range) => {
+      const srcIndex = getSheetIndex(
+        ctx,
+        ctx.luckysheet_copy_save?.dataSheetId as string
+      ) as number;
+
       for (let r = 0; r <= range.row[1] - range.row[0]; r += 1) {
         for (let c = 0; c <= range.column[1] - range.column[0]; c += 1) {
-          const index = getSheetIndex(
+          const srcRow = r + range.row[0];
+          const srcCol = c + range.column[0];
+
+          const srcLink =
+            ctx.luckysheetfile[srcIndex].hyperlink?.[`${srcRow}_${srcCol}`];
+          if (!srcLink) continue;
+
+          const targetR = r + ctx.luckysheet_select_save![0].row[0];
+          const targetC = c + ctx.luckysheet_select_save![0].column[0];
+
+          setCellHyperlink(
             ctx,
-            ctx.luckysheet_copy_save?.dataSheetId as string
-          ) as number;
-          if (
-            ctx.luckysheetfile[index]!.data![r + range.row[0]][
-              c + range.column[0]
-            ]?.hl &&
-            ctx.luckysheetfile[index].hyperlink![`${r}_${c}`]
-          ) {
-            setCellHyperlink(
-              ctx,
-              ctx.luckysheet_copy_save?.dataSheetId as string,
-              r + ctx.luckysheet_select_save![0].row[0],
-              c + ctx.luckysheet_select_save![0].column[0],
-              ctx.luckysheetfile[index].hyperlink![`${r}_${c}`]
-            );
-          }
+            ctx.luckysheet_copy_save?.dataSheetId as string,
+            targetR,
+            targetC,
+            srcLink
+          );
         }
       }
     });
@@ -1493,26 +1497,30 @@ function pasteHandlerOfCopyPaste(
     ctx.luckysheet_copy_save?.copyRange.length === 1
   ) {
     _.forEach(ctx.luckysheet_copy_save?.copyRange, (range) => {
+      const srcIndex = getSheetIndex(
+        ctx,
+        ctx.luckysheet_copy_save?.dataSheetId as string
+      ) as number;
+
       for (let r = 0; r <= range.row[1] - range.row[0]; r += 1) {
         for (let c = 0; c <= range.column[1] - range.column[0]; c += 1) {
-          const index = getSheetIndex(
+          const srcRow = r + range.row[0];
+          const srcCol = c + range.column[0];
+
+          const srcLink =
+            ctx.luckysheetfile[srcIndex].hyperlink?.[`${srcRow}_${srcCol}`];
+          if (!srcLink) continue;
+
+          const targetR = r + ctx.luckysheet_select_save![0].row[0];
+          const targetC = c + ctx.luckysheet_select_save![0].column[0];
+
+          setCellHyperlink(
             ctx,
-            ctx.luckysheet_copy_save?.dataSheetId as string
-          ) as number;
-          if (
-            ctx.luckysheetfile[index]!.data![r + range.row[0]][
-              c + range.column[0]
-            ]?.hl &&
-            ctx.luckysheetfile[index].hyperlink![`${r}_${c}`]
-          ) {
-            setCellHyperlink(
-              ctx,
-              ctx.luckysheet_copy_save?.dataSheetId as string,
-              r + ctx.luckysheet_select_save![0].row[0],
-              c + ctx.luckysheet_select_save![0].column[0],
-              ctx.luckysheetfile[index].hyperlink![`${r}_${c}`]
-            );
-          }
+            ctx.luckysheet_copy_save?.dataSheetId as string,
+            targetR,
+            targetC,
+            srcLink
+          );
         }
       }
     });

@@ -1,5 +1,17 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.52
+
+### Patch Changes
+
+- Update tally metadata
+
+## 0.2.51
+
+### Patch Changes
+
+- Add tally
+
 ## 0.2.50
 
 ### Patch Changes

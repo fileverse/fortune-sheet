@@ -3920,7 +3920,6 @@ export function functionCopy(
   mode: string,
   step: number
 ) {
-  console.log("functionCopy");
   if (mode == null) {
     mode = "down";
   }

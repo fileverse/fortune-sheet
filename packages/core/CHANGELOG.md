@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.96
+
+### Patch Changes
+
+- Updated tally metadata
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.56
+
 ## 1.0.95
 
 ### Patch Changes

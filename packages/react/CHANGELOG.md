@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.0.97
+
+### Patch Changes
+
+- fix auto fill for full col and row reference
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.0.97
+
 ## 1.0.96
 
 ### Patch Changes

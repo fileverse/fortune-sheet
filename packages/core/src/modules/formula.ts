@@ -3784,6 +3784,7 @@ export function rangeDragRow(
 }
 
 function updateparam(orient: string, txt: string, step: number) {
+  console.log("updateparam", orient, txt, step);
   const val = txt.split("!");
   let rangetxt;
   let prefix = "";
@@ -3919,6 +3920,7 @@ export function functionCopy(
   mode: string,
   step: number
 ) {
+  console.log("functionCopy");
   if (mode == null) {
     mode = "down";
   }
@@ -4045,6 +4047,8 @@ export function functionCopy(
 
     i += 1;
   }
+
+  function_str = function_str.replace(/NaN/g, "");
 
   return function_str;
 }

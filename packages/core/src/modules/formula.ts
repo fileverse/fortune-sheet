@@ -3784,7 +3784,6 @@ export function rangeDragRow(
 }
 
 function updateparam(orient: string, txt: string, step: number) {
-  console.log("updateparam", orient, txt, step);
   const val = txt.split("!");
   let rangetxt;
   let prefix = "";

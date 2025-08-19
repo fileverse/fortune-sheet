@@ -11,6 +11,10 @@
   justify-content: space-between;
 }
 
+.dollar-icon:hover {
+  background-color: #f2f4f5;
+}
+
 .fortune-toolbar-divider {
   width: 1px;
   height: 20px;

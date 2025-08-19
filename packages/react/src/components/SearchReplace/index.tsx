@@ -4,7 +4,6 @@ import {
   searchNext,
   SearchResult,
   normalizeSelection,
-  onSearchDialogMoveStart,
   replace,
   replaceAll,
   scrollToHighlightCell,
@@ -32,7 +31,7 @@ import "./index.css";
 
 const SearchReplace: React.FC<{
   getContainer: () => HTMLDivElement;
-}> = ({ getContainer }) => {
+}> = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
   const { findAndReplace } = locale(context);
   const [searchText, setSearchText] = useState("");
@@ -67,30 +66,34 @@ const SearchReplace: React.FC<{
     []
   );
 
-  const getInitialPosition = useCallback((container: HTMLDivElement) => {
-    const rect = container.getBoundingClientRect();
-    return {
-      left: (rect.width - 500) / 2,
-      top: (rect.height - 200) / 3,
-    };
-  }, []);
+  // const getInitialPosition = useCallback((container: HTMLDivElement) => {
+  //   const rect = container.getBoundingClientRect();
+  //   return {
+  //     left: (rect.width - 500) / 2,
+  //     top: (rect.height - 200) / 3,
+  //   };
+  // }, []);
 
   return (
     <div
       id="fortune-search-replace"
       className="fortune-search-replace fortune-dialog"
-      style={getInitialPosition(getContainer())}
+      style={{
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      }}
       onMouseEnter={() => {
         _.set(refs.globalCache, "searchDialog.mouseEnter", true);
       }}
       onMouseLeave={() => {
         _.set(refs.globalCache, "searchDialog.mouseEnter", false);
       }}
-      onMouseDown={(e) => {
-        const { nativeEvent } = e;
-        onSearchDialogMoveStart(refs.globalCache, nativeEvent, getContainer());
-        e.stopPropagation();
-      }}
+      // onMouseDown={(e) => {
+      //   const { nativeEvent } = e;
+      //   onSearchDialogMoveStart(refs.globalCache, nativeEvent, getContainer());
+      //   e.stopPropagation();
+      // }}
     >
       <div>
         <div className="flex items-center justify-between border-b color-border-default py-3 px-6">

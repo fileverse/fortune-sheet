@@ -247,7 +247,8 @@ const Sheet: React.FC<Props> = ({ sheet }) => {
       const isMouseOverFormulaSearch = formulaSearchEl?.matches(":hover");
       if (
         (functionDetailsEl && isMouseOverFunctionDetails) ||
-        (formulaSearchEl && isMouseOverFormulaSearch)
+        (formulaSearchEl && isMouseOverFormulaSearch) ||
+        refs?.globalCache?.searchDialog?.mouseEnter
       )
         return;
       setContext((draftCtx) => {

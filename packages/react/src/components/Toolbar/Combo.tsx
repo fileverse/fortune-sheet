@@ -21,6 +21,7 @@ type Props = {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
   ) => React.ReactNode;
   fillColor?: string;
+  triggerRef?: React.RefObject<HTMLButtonElement | null>;
 };
 
 const Combo: React.FC<Props> = ({
@@ -31,10 +32,16 @@ const Combo: React.FC<Props> = ({
   showArrow = true,
   children,
   fillColor,
+  triggerRef,
 }) => {
   const style: CSSProperties = { userSelect: "none" };
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLButtonElement>(null);
+
+  if (!triggerRef) {
+    triggerRef = ref;
+  }
 
   // Custom handler to prevent closing during interactions
   const handleOpenChange = (newOpen: boolean) => {
@@ -42,7 +49,6 @@ const Combo: React.FC<Props> = ({
     // For example, check if user is interacting with content
     setOpen(newOpen);
   };
-
   const isLucideIcon = useMemo(() => {
     return (
       iconId?.startsWith("align-") ||
@@ -125,7 +131,9 @@ const Combo: React.FC<Props> = ({
           <IconButton
             icon={getLucideIcon(iconId as string)}
             variant="ghost"
-            onClick={() => setOpen(!open)}
+            onClick={() => {
+              setOpen(!open);
+            }}
             className={cn("fortune-toolbar-combo-button", {
               "custom-color-button": iconId === "font-color" && fillColor,
               "min-w-fit rounded-l-none": iconId === "currency",
@@ -148,7 +156,7 @@ const Combo: React.FC<Props> = ({
       }}
     >
       <Popover open={open} onOpenChange={handleOpenChange} modal>
-        <PopoverTrigger asChild>
+        <PopoverTrigger ref={triggerRef} asChild>
           <div className="flex items-center">{trigger}</div>
         </PopoverTrigger>
         <PopoverContent

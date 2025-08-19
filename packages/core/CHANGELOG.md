@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.99
+
+### Patch Changes
+
+- added fixes for TEC-821 and TEC-920
+
 ## 1.0.98
 
 ### Patch Changes

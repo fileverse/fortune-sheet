@@ -19,7 +19,7 @@ const Template: StoryFn<typeof Workbook> = ({
   ...args
 }) => {
   const [data, setData] = useState<Sheet[]>(data0);
-  const ref = React.useRef(null)
+  const ref = React.useRef(null);
   const onChange = useCallback((d: Sheet[]) => {
     setData(d);
   }, []);
@@ -66,7 +66,6 @@ const Template: StoryFn<typeof Workbook> = ({
           "text-wrap",
           "vertical-align",
           "|",
-          "currency-format",
           "currency",
           "percentage-format",
           "number-decrease",

@@ -187,7 +187,6 @@ export const defaultSettings: Required<Settings> = {
     "format-painter",
     "clear-format",
     "|",
-    "currency-format",
     "currency",
     "percentage-format",
     "number-decrease",

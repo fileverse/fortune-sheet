@@ -1146,7 +1146,7 @@ export function updateCell(
   }
   */
 
-  if (!value?.baseValue && ctx.hooks.afterUpdateCell) {
+  if (ctx.hooks.afterUpdateCell) {
     const newValue = _.cloneDeep(flowdata[r][c]);
     const { afterUpdateCell } = ctx.hooks;
     setTimeout(() => {

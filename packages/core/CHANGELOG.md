@@ -1,5 +1,43 @@
 # @fileverse-dev/fortune-core
 
+## 1.0.97
+
+### Patch Changes
+
+- fix auto fill for full col and row reference
+
+## 1.0.96
+
+### Patch Changes
+
+- Updated tally metadata
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.56
+
+## 1.0.95
+
+### Patch Changes
+
+- Update tally
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.55
+
+## 1.0.94
+
+### Patch Changes
+
+- Update tally
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.54
+
+## 1.0.93
+
+### Patch Changes
+
+- Update tally
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.53
+
 ## 1.0.92
 
 ### Patch Changes

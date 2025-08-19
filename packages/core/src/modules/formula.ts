@@ -4046,5 +4046,7 @@ export function functionCopy(
     i += 1;
   }
 
+  function_str = function_str.replace(/NaN/g, "");
+
   return function_str;
 }

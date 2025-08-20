@@ -238,7 +238,10 @@ export const CurrencySelector = ({
   };
   const triggerRef = useRef(null);
   return (
-    <div className="items-center fortune-toolbar-button">
+    <div
+      style={{ padding: "0px" }}
+      className="items-center fortune-toolbar-button"
+    >
       <Tooltip text={toolTipText} placement="bottom">
         <div
           className=""

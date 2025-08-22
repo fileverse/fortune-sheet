@@ -1,5 +1,24 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.1
+
+### Patch Changes
+
+- Disable dunesim
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.1
+
+## 1.1.0
+
+### Minor Changes
+
+- Disable dune sim
+
+### Patch Changes
+
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.0
+
 ## 1.0.100
 
 ### Patch Changes

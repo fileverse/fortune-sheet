@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.59
+
+### Patch Changes
+
+- Disable dune sim
+
 ## 0.2.58
 
 ### Patch Changes

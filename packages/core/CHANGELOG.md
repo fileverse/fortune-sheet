@@ -1,5 +1,22 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.1
+
+### Patch Changes
+
+- Disable dunesim
+
+## 1.1.0
+
+### Minor Changes
+
+- Disable dune sim
+
+### Patch Changes
+
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.59
+
 ## 1.0.100
 
 ### Patch Changes

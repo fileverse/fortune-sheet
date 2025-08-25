@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.2
+
+### Patch Changes
+
+- text changes for custom format
+
 ## 1.1.1
 
 ### Patch Changes

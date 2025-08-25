@@ -11151,7 +11151,7 @@ export default {
     },
     { text: "", value: "split", example: "" },
     {
-      text: "Custom formats",
+      text: "Currency",
       value: "fmtOtherSelf",
       example: "",
       icon: "rightArrow",

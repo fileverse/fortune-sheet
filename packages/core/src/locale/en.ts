@@ -11574,8 +11574,10 @@ export default {
   conditionformat: {
     conditionformat_greaterThan: "Conditional format - Greater than",
     conditionformat_greaterThan_title: "Format cells greater than",
-    conditionformat_greaterThanOrEqual: "Conditional format - Greater than or equal",
-    conditionformat_greaterThanOrEqual_title: "Format cells greater than or equal",
+    conditionformat_greaterThanOrEqual:
+      "Conditional format - Greater than or equal",
+    conditionformat_greaterThanOrEqual_title:
+      "Format cells greater than or equal",
     conditionformat_lessThan: "Conditional format - Less than",
     conditionformat_lessThan_title: "Format cells smaller than",
     conditionformat_lessThanOrEqual: "Conditional format - Less than or equal",

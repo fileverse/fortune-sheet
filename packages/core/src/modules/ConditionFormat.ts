@@ -30,12 +30,12 @@ function compareGreaterThan(cellValue: any, conditionValue: any, symbol: any): b
   const cellNum = Number(cellValue);
   const conditionNum = Number(conditionValue);
 
-    if (!isNaN(cellNum) && !isNaN(conditionNum) && symbol === '>=') {
+    if (!Number.isNaN(cellNum) && !Number.isNaN(conditionNum) && symbol === '>=') {
     return cellNum >= conditionNum;
   }
   
   // Check if both conversions resulted in valid numbers
-  if (!isNaN(cellNum) && !isNaN(conditionNum) && symbol === '>') {
+  if (!Number.isNaN(cellNum) && !Number.isNaN(conditionNum) && symbol === '>') {
     return cellNum > conditionNum;
   }
   
@@ -63,12 +63,12 @@ function compareLessThan(cellValue: any, conditionValue: any, symbol: any): bool
   const cellNum = Number(cellValue);
   const conditionNum = Number(conditionValue);
 
-    if (!isNaN(cellNum) && !isNaN(conditionNum) && symbol === '<=') {
+    if (!Number.isNaN(cellNum) && !Number.isNaN(conditionNum) && symbol === '<=') {
     return cellNum <= conditionNum;
   }
   
   // Check if both conversions resulted in valid numbers
-  if (!isNaN(cellNum) && !isNaN(conditionNum)) {
+  if (!Number.isNaN(cellNum) && !Number.isNaN(conditionNum)) {
     return cellNum < conditionNum;
   }
   
@@ -104,8 +104,8 @@ function compareBetween(cellValue: any, value1: any, value2: any): boolean {
     const cellNum = Number(cellValue);
     const val1Num = Number(value1);
     const val2Num = Number(value2);
-    
-    if (!isNaN(cellNum) && !isNaN(val1Num) && !isNaN(val2Num)) {
+
+    if (!Number.isNaN(cellNum) && !Number.isNaN(val1Num) && !Number.isNaN(val2Num)) {
       const smallerNum = Math.min(val1Num, val2Num);
       const biggerNum = Math.max(val1Num, val2Num);
       return cellNum >= smallerNum && cellNum <= biggerNum;

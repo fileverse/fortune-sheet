@@ -139,7 +139,9 @@ const ConditionRules: React.FC<{ type: string }> = ({ type }) => {
           </div>
 
           {(type === "greaterThan" ||
+            type === "greaterThanOrEqual" ||
             type === "lessThan" ||
+            type === "lessThanOrEqual" ||
             type === "equal" ||
             type === "textContains") && (
             <div className="w-full">

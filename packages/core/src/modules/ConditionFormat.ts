@@ -8,6 +8,122 @@ import { execfunction, functionCopy } from "./formula";
 import { checkProtectionFormatCells } from "./protection";
 import { isRealNull } from "./validation";
 
+// Helper function to check if a value contains alphabetic characters
+function hasAlphabeticChars(value: any): boolean {
+  return /[a-zA-Z]/.test(String(value));
+}
+
+// Helper function to perform comparison that handles both numbers and strings
+function compareGreaterThan(cellValue: any, conditionValue: any, symbol: any): boolean {
+  const cellStr = String(cellValue);
+  const conditionStr = String(conditionValue);
+  
+  // If either value contains alphabetic characters, use string comparison
+  if (hasAlphabeticChars(cellValue) || hasAlphabeticChars(conditionValue)) {
+    if (symbol === '>=') {
+      return cellStr.localeCompare(conditionStr) >= 0;
+    }
+    return cellStr.localeCompare(conditionStr) > 0;
+  }
+  
+  // If both are numeric, use numeric comparison
+  const cellNum = Number(cellValue);
+  const conditionNum = Number(conditionValue);
+
+    if (!isNaN(cellNum) && !isNaN(conditionNum) && symbol === '>=') {
+    return cellNum >= conditionNum;
+  }
+  
+  // Check if both conversions resulted in valid numbers
+  if (!isNaN(cellNum) && !isNaN(conditionNum) && symbol === '>') {
+    return cellNum > conditionNum;
+  }
+  
+  // Fallback to string comparison if number conversion fails
+  if (symbol === '>=') {
+    return cellStr.localeCompare(conditionStr) >= 0;
+  }
+  return cellStr.localeCompare(conditionStr) > 0;
+}
+
+// Helper function for less than comparison
+function compareLessThan(cellValue: any, conditionValue: any, symbol: any): boolean {
+  const cellStr = String(cellValue);
+  const conditionStr = String(conditionValue);
+  
+  // If either value contains alphabetic characters, use string comparison
+  if (hasAlphabeticChars(cellValue) || hasAlphabeticChars(conditionValue)) {
+    if(symbol === '<=') {
+      return cellStr.localeCompare(conditionStr) <= 0;
+    }
+    return cellStr.localeCompare(conditionStr) < 0;
+  }
+  
+  // If both are numeric, use numeric comparison
+  const cellNum = Number(cellValue);
+  const conditionNum = Number(conditionValue);
+
+    if (!isNaN(cellNum) && !isNaN(conditionNum) && symbol === '<=') {
+    return cellNum <= conditionNum;
+  }
+  
+  // Check if both conversions resulted in valid numbers
+  if (!isNaN(cellNum) && !isNaN(conditionNum)) {
+    return cellNum < conditionNum;
+  }
+  
+  // Fallback to string comparison if number conversion fails
+  if (symbol === '<=') {
+    return cellStr.localeCompare(conditionStr) <= 0;
+  }
+  return cellStr.localeCompare(conditionStr) < 0;
+}
+
+// Helper function for between comparison with string support
+function compareBetween(cellValue: any, value1: any, value2: any): boolean {
+  const cellStr = String(cellValue);
+  const val1Str = String(value1);
+  const val2Str = String(value2);
+  
+  // Determine which value is "greater" and "smaller" for between comparison
+  let smallerValue, biggerValue;
+  
+  if (hasAlphabeticChars(value1) || hasAlphabeticChars(value2) || hasAlphabeticChars(cellValue)) {
+    // Use string comparison
+    if (val1Str.localeCompare(val2Str) > 0) {
+      biggerValue = val1Str;
+      smallerValue = val2Str;
+    } else {
+      biggerValue = val2Str;
+      smallerValue = val1Str;
+    }
+    
+    return cellStr.localeCompare(smallerValue) >= 0 && cellStr.localeCompare(biggerValue) <= 0;
+  } else {
+    // Use numeric comparison
+    const cellNum = Number(cellValue);
+    const val1Num = Number(value1);
+    const val2Num = Number(value2);
+    
+    if (!isNaN(cellNum) && !isNaN(val1Num) && !isNaN(val2Num)) {
+      const smallerNum = Math.min(val1Num, val2Num);
+      const biggerNum = Math.max(val1Num, val2Num);
+      return cellNum >= smallerNum && cellNum <= biggerNum;
+    }
+    
+    // Fallback to string comparison
+    if (val1Str.localeCompare(val2Str) > 0) {
+      biggerValue = val1Str;
+      smallerValue = val2Str;
+    } else {
+      biggerValue = val2Str;
+      smallerValue = val1Str;
+    }
+    
+    return cellStr.localeCompare(smallerValue) >= 0 && cellStr.localeCompare(biggerValue) <= 0;
+  }
+}
+
 // 得到历史的规则
 export function getHistoryRules(fileH: Sheet[]) {
   const historyRules = [];
@@ -55,7 +171,9 @@ export function setConditionRules(
 
   if (
     conditionName === "greaterThan" ||
+    conditionName === "greaterThanOrEqual" ||
     conditionName === "lessThan" ||
+    conditionName === "lessThanOrEqual" ||
     conditionName === "equal" ||
     conditionName === "textContains"
   ) {
@@ -665,7 +783,9 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
           // 条件类型判断
           if (
             conditionName === "greaterThan" ||
+            conditionName === "greaterThanOrEqual" ||
             conditionName === "lessThan" ||
+            conditionName === "lessThanOrEqual" ||
             conditionName === "equal" ||
             conditionName === "textContains"
           ) {
@@ -688,10 +808,10 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                 if (_.isNil(cell) || _.isNil(cell.v) || isRealNull(cell.v)) {
                   continue;
                 }
-                // 符合条件
+                // 符合条件 - UPDATED WITH STRING COMPARISON SUPPORT
                 if (
                   conditionName === "greaterThan" &&
-                  Number(cell.v) > Number(conditionValue0)
+                  compareGreaterThan(cell.v, conditionValue0, '>')
                 ) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
@@ -699,9 +819,21 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   } else {
                     computeMap[`${r}_${c}`] = { textColor, cellColor };
                   }
-                } else if (
+                }
+                else if (
+                  conditionName === "greaterThanOrEqual" &&
+                  compareGreaterThan(cell.v, conditionValue0, '>=')
+                ) {
+                  if (`${r}_${c}` in computeMap) {
+                    computeMap[`${r}_${c}`].textColor = textColor;
+                    computeMap[`${r}_${c}`].cellColor = cellColor;
+                  } else {
+                    computeMap[`${r}_${c}`] = { textColor, cellColor };
+                  }
+                }
+                 else if (
                   conditionName === "lessThan" &&
-                  Number(cell.v) < Number(conditionValue0)
+                  compareLessThan(cell.v, conditionValue0, "<")
                 ) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
@@ -712,7 +844,22 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                       cellColor,
                     };
                   }
-                } else if (
+                }
+                else if (
+                  conditionName === "lessThanOrEqual" &&
+                  compareLessThan(cell.v, conditionValue0, '<=')
+                ) {
+                  if (`${r}_${c}` in computeMap) {
+                    computeMap[`${r}_${c}`].textColor = textColor;
+                    computeMap[`${r}_${c}`].cellColor = cellColor;
+                  } else {
+                    computeMap[`${r}_${c}`] = {
+                      textColor,
+                      cellColor,
+                    };
+                  }
+                }
+                 else if (
                   conditionName === "equal" &&
                   cell.v.toString() === conditionValue0
                 ) {
@@ -742,16 +889,7 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
               }
             }
           } else if (conditionName === "between") {
-            // 比较两个值的大小
-            let vBig = 0;
-            let vSmall = 0;
-            if (conditionValue0 > conditionValue1) {
-              vBig = conditionValue0;
-              vSmall = conditionValue1;
-            } else {
-              vBig = conditionValue1;
-              vSmall = conditionValue0;
-            }
+            // UPDATED BETWEEN COMPARISON WITH STRING SUPPORT
             // 循环应用范围计算
             for (
               let r = cellrange[s].row[0];
@@ -771,11 +909,8 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                 if (_.isNil(cell) || _.isNil(cell.v) || isRealNull(cell.v)) {
                   continue;
                 }
-                // 符合条件
-                if (
-                  Number(cell.v) >= Number(vSmall) &&
-                  Number(cell.v) <= Number(vBig)
-                ) {
+                // 符合条件 - Updated to use the new compareBetween function
+                if (compareBetween(cell.v, conditionValue0, conditionValue1)) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
                     computeMap[`${r}_${c}`].cellColor = cellColor;
@@ -1440,7 +1575,7 @@ export function CFSplitRange(
         { row: [r1, range2.row[1]], column: [c1, range2.column[0] - 1] },
         { row: [range2.row[1] + 1, r2], column: [c1, c2] },
         {
-          row: [r1 + offset_r, range2.row[1] + offset_r],
+          row: [range2.row[0] + offset_r, r2 + offset_r],
           column: [range2.column[0] + offset_c, c2 + offset_c],
         },
       ];
@@ -1454,7 +1589,7 @@ export function CFSplitRange(
       // 操作部分
       range = [
         {
-          row: [r1 + offset_r, range2.row[1] + offset_r],
+          row: [range2.row[0] + offset_r, r2 + offset_r],
           column: [range2.column[0] + offset_c, c2 + offset_c],
         },
       ];

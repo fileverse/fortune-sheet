@@ -120,7 +120,9 @@ const ConditionalFormat: React.FC<{
               >
                 {[
                   { text: "greaterThan", value: ">" },
+                  { text: "greaterThanOrEqual", value: ">=" },
                   { text: "lessThan", value: "<" },
+                  { text: "lessThanOrEqual", value: "<=" },
                   { text: "between", value: "[]" },
                   { text: "equal", value: "=" },
                   { text: "textContains", value: "()" },

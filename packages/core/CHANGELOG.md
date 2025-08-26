@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.3
+
+### Patch Changes
+
+- Add support for string compare and format condition for equals to
+
 ## 1.1.2
 
 ### Patch Changes

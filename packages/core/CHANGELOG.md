@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.4
+
+### Patch Changes
+
+- Add more shotcuts
+
 ## 1.1.3
 
 ### Patch Changes

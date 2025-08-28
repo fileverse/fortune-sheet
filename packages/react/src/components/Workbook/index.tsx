@@ -24,6 +24,7 @@ import {
   insertDuneChart,
   getFlowdata,
   api,
+  handlePasteByClick,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useMemo,
@@ -775,6 +776,15 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
         }
 
         // -----------
+
+        /** past without format */
+        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === "KeyV") {
+          navigator.clipboard.readText().then((clipboardText) => {
+            setContextWithProduce((safeCtx: any) => {
+              handlePasteByClick(safeCtx, clipboardText);
+            });
+          });
+        }
 
         const { nativeEvent } = e;
         // handling undo and redo ahead because handleUndo and handleRedo

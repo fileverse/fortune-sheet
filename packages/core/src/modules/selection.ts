@@ -2211,6 +2211,96 @@ export function deleteSelectedCellFormat(ctx: Context): string {
   return "success";
 }
 
+export function fillRightData(ctx: Context): string {
+  const allowEdit = isAllowEdit(ctx);
+  if (allowEdit === false) {
+    return "allowEdit";
+  }
+
+  const selection = ctx.luckysheet_select_save;
+  if (selection && !_.isEmpty(selection)) {
+    const d = getFlowdata(ctx);
+    if (!d) return "dataNullError";
+
+    let has_PartMC = false;
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      if (hasPartMC(ctx, ctx.config, r1, r2, c1, c2)) {
+        has_PartMC = true;
+        break;
+      }
+    }
+    if (has_PartMC) {
+      return "partMC";
+    }
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      for (let r = r1; r <= r2; r += 1) {
+        for (let c = c1; c <= c2; c += 1) {
+          const previousCell = d[r][c - 1];
+          d[r][c] = { ...previousCell };
+        }
+      }
+    }
+  }
+  return "success";
+}
+
+export function fillDownData(ctx: Context): string {
+  const allowEdit = isAllowEdit(ctx);
+  if (allowEdit === false) {
+    return "allowEdit";
+  }
+
+  const selection = ctx.luckysheet_select_save;
+  if (selection && !_.isEmpty(selection)) {
+    const d = getFlowdata(ctx);
+    if (!d) return "dataNullError";
+
+    let has_PartMC = false;
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      if (hasPartMC(ctx, ctx.config, r1, r2, c1, c2)) {
+        has_PartMC = true;
+        break;
+      }
+    }
+    if (has_PartMC) {
+      return "partMC";
+    }
+
+    for (let s = 0; s < selection.length; s += 1) {
+      const r1 = selection[s].row[0];
+      const r2 = selection[s].row[1];
+      const c1 = selection[s].column[0];
+      const c2 = selection[s].column[1];
+
+      for (let r = r1; r <= r2; r += 1) {
+        for (let c = c1; c <= c2; c += 1) {
+          const previousCell = d[r - 1][c];
+          d[r][c] = { ...previousCell };
+        }
+      }
+    }
+  }
+  return "success";
+}
+
 export function textFormat(
   ctx: Context,
   type: "left" | "center" | "right"

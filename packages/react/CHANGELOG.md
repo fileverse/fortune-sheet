@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.4
+
+### Patch Changes
+
+- Add more shotcuts
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.4
+
 ## 1.1.3
 
 ### Patch Changes

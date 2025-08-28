@@ -10,6 +10,8 @@ import {
   textFormat,
   fillDate,
   fillTime,
+  fillRightData,
+  fillDownData,
   moveHighlightCell,
   moveHighlightRange,
   selectAll,
@@ -603,7 +605,7 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
   }
 }
 
-export function handleGlobalKeyDown(
+export async function handleGlobalKeyDown(
   ctx: Context,
   cellInput: HTMLDivElement,
   fxInput: HTMLDivElement | null | undefined,
@@ -635,6 +637,12 @@ export function handleGlobalKeyDown(
   }
   if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === "Semicolon") {
     fillTime(ctx);
+  }
+  if ((e.metaKey || e.ctrlKey) && e.code === "KeyR") {
+    fillRightData(ctx);
+  }
+  if ((e.metaKey || e.ctrlKey) && e.code === "KeyD") {
+    fillDownData(ctx);
   }
   /* FLV */
 

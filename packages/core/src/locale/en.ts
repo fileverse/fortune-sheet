@@ -11090,6 +11090,7 @@ export default {
     { name: "Canadian Dollar", pos: "before", value: "CA$", geckoId: "cad" },
     { name: "Swiss Franc", pos: "before", value: "CF", geckoId: "chf" },
     { name: "Chilean Peso", pos: "before", value: "CLP$", geckoId: "clp" },
+    { name: "Czech Koruna", pos: "after", value: "CZK", geckoId: "czk" },
     { name: "Danish Krone", pos: "after", value: "kr", geckoId: "dkk" },
     { name: "Georgian Lari", pos: "before", value: "gl", geckoId: "gel" },
     { name: "Hungarian Forint", pos: "before", value: "Ft", geckoId: "huf" },

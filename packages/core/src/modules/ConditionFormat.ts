@@ -14,66 +14,82 @@ function hasAlphabeticChars(value: any): boolean {
 }
 
 // Helper function to perform comparison that handles both numbers and strings
-function compareGreaterThan(cellValue: any, conditionValue: any, symbol: any): boolean {
+function compareGreaterThan(
+  cellValue: any,
+  conditionValue: any,
+  symbol: any
+): boolean {
   const cellStr = String(cellValue);
   const conditionStr = String(conditionValue);
-  
+
   // If either value contains alphabetic characters, use string comparison
   if (hasAlphabeticChars(cellValue) || hasAlphabeticChars(conditionValue)) {
-    if (symbol === '>=') {
+    if (symbol === ">=") {
       return cellStr.localeCompare(conditionStr) >= 0;
     }
     return cellStr.localeCompare(conditionStr) > 0;
   }
-  
+
   // If both are numeric, use numeric comparison
   const cellNum = Number(cellValue);
   const conditionNum = Number(conditionValue);
 
-    if (!Number.isNaN(cellNum) && !Number.isNaN(conditionNum) && symbol === '>=') {
+  if (
+    !Number.isNaN(cellNum) &&
+    !Number.isNaN(conditionNum) &&
+    symbol === ">="
+  ) {
     return cellNum >= conditionNum;
   }
-  
+
   // Check if both conversions resulted in valid numbers
-  if (!Number.isNaN(cellNum) && !Number.isNaN(conditionNum) && symbol === '>') {
+  if (!Number.isNaN(cellNum) && !Number.isNaN(conditionNum) && symbol === ">") {
     return cellNum > conditionNum;
   }
-  
+
   // Fallback to string comparison if number conversion fails
-  if (symbol === '>=') {
+  if (symbol === ">=") {
     return cellStr.localeCompare(conditionStr) >= 0;
   }
   return cellStr.localeCompare(conditionStr) > 0;
 }
 
 // Helper function for less than comparison
-function compareLessThan(cellValue: any, conditionValue: any, symbol: any): boolean {
+function compareLessThan(
+  cellValue: any,
+  conditionValue: any,
+  symbol: any
+): boolean {
   const cellStr = String(cellValue);
   const conditionStr = String(conditionValue);
-  
+
   // If either value contains alphabetic characters, use string comparison
   if (hasAlphabeticChars(cellValue) || hasAlphabeticChars(conditionValue)) {
-    if(symbol === '<=') {
+    if (symbol === "<=") {
       return cellStr.localeCompare(conditionStr) <= 0;
     }
     return cellStr.localeCompare(conditionStr) < 0;
   }
-  
+
   // If both are numeric, use numeric comparison
   const cellNum = Number(cellValue);
   const conditionNum = Number(conditionValue);
 
-    if (!Number.isNaN(cellNum) && !Number.isNaN(conditionNum) && symbol === '<=') {
+  if (
+    !Number.isNaN(cellNum) &&
+    !Number.isNaN(conditionNum) &&
+    symbol === "<="
+  ) {
     return cellNum <= conditionNum;
   }
-  
+
   // Check if both conversions resulted in valid numbers
   if (!Number.isNaN(cellNum) && !Number.isNaN(conditionNum)) {
     return cellNum < conditionNum;
   }
-  
+
   // Fallback to string comparison if number conversion fails
-  if (symbol === '<=') {
+  if (symbol === "<=") {
     return cellStr.localeCompare(conditionStr) <= 0;
   }
   return cellStr.localeCompare(conditionStr) < 0;
@@ -84,11 +100,16 @@ function compareBetween(cellValue: any, value1: any, value2: any): boolean {
   const cellStr = String(cellValue);
   const val1Str = String(value1);
   const val2Str = String(value2);
-  
+
   // Determine which value is "greater" and "smaller" for between comparison
-  let smallerValue, biggerValue;
-  
-  if (hasAlphabeticChars(value1) || hasAlphabeticChars(value2) || hasAlphabeticChars(cellValue)) {
+  let smallerValue;
+  let biggerValue;
+
+  if (
+    hasAlphabeticChars(value1) ||
+    hasAlphabeticChars(value2) ||
+    hasAlphabeticChars(cellValue)
+  ) {
     // Use string comparison
     if (val1Str.localeCompare(val2Str) > 0) {
       biggerValue = val1Str;
@@ -97,31 +118,40 @@ function compareBetween(cellValue: any, value1: any, value2: any): boolean {
       biggerValue = val2Str;
       smallerValue = val1Str;
     }
-    
-    return cellStr.localeCompare(smallerValue) >= 0 && cellStr.localeCompare(biggerValue) <= 0;
-  } else {
-    // Use numeric comparison
-    const cellNum = Number(cellValue);
-    const val1Num = Number(value1);
-    const val2Num = Number(value2);
 
-    if (!Number.isNaN(cellNum) && !Number.isNaN(val1Num) && !Number.isNaN(val2Num)) {
-      const smallerNum = Math.min(val1Num, val2Num);
-      const biggerNum = Math.max(val1Num, val2Num);
-      return cellNum >= smallerNum && cellNum <= biggerNum;
-    }
-    
-    // Fallback to string comparison
-    if (val1Str.localeCompare(val2Str) > 0) {
-      biggerValue = val1Str;
-      smallerValue = val2Str;
-    } else {
-      biggerValue = val2Str;
-      smallerValue = val1Str;
-    }
-    
-    return cellStr.localeCompare(smallerValue) >= 0 && cellStr.localeCompare(biggerValue) <= 0;
+    return (
+      cellStr.localeCompare(smallerValue) >= 0 &&
+      cellStr.localeCompare(biggerValue) <= 0
+    );
   }
+  // Use numeric comparison
+  const cellNum = Number(cellValue);
+  const val1Num = Number(value1);
+  const val2Num = Number(value2);
+
+  if (
+    !Number.isNaN(cellNum) &&
+    !Number.isNaN(val1Num) &&
+    !Number.isNaN(val2Num)
+  ) {
+    const smallerNum = Math.min(val1Num, val2Num);
+    const biggerNum = Math.max(val1Num, val2Num);
+    return cellNum >= smallerNum && cellNum <= biggerNum;
+  }
+
+  // Fallback to string comparison
+  if (val1Str.localeCompare(val2Str) > 0) {
+    biggerValue = val1Str;
+    smallerValue = val2Str;
+  } else {
+    biggerValue = val2Str;
+    smallerValue = val1Str;
+  }
+
+  return (
+    cellStr.localeCompare(smallerValue) >= 0 &&
+    cellStr.localeCompare(biggerValue) <= 0
+  );
 }
 
 // 得到历史的规则
@@ -811,7 +841,7 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                 // 符合条件 - UPDATED WITH STRING COMPARISON SUPPORT
                 if (
                   conditionName === "greaterThan" &&
-                  compareGreaterThan(cell.v, conditionValue0, '>')
+                  compareGreaterThan(cell.v, conditionValue0, ">")
                 ) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
@@ -819,10 +849,9 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   } else {
                     computeMap[`${r}_${c}`] = { textColor, cellColor };
                   }
-                }
-                else if (
+                } else if (
                   conditionName === "greaterThanOrEqual" &&
-                  compareGreaterThan(cell.v, conditionValue0, '>=')
+                  compareGreaterThan(cell.v, conditionValue0, ">=")
                 ) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
@@ -830,8 +859,7 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   } else {
                     computeMap[`${r}_${c}`] = { textColor, cellColor };
                   }
-                }
-                 else if (
+                } else if (
                   conditionName === "lessThan" &&
                   compareLessThan(cell.v, conditionValue0, "<")
                 ) {
@@ -844,10 +872,9 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                       cellColor,
                     };
                   }
-                }
-                else if (
+                } else if (
                   conditionName === "lessThanOrEqual" &&
-                  compareLessThan(cell.v, conditionValue0, '<=')
+                  compareLessThan(cell.v, conditionValue0, "<=")
                 ) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
@@ -858,8 +885,7 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                       cellColor,
                     };
                   }
-                }
-                 else if (
+                } else if (
                   conditionName === "equal" &&
                   cell.v.toString() === conditionValue0
                 ) {

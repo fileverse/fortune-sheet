@@ -23,21 +23,30 @@ import React, {
 } from "react";
 import WorkbookContext from "../../context";
 
+type HoverLoc = { row: number; row_pre: number; row_index: number };
+type SelectedLoc = { row: number; row_pre: number; r1: number; r2: number };
+
+const DOUBLE_MS = 300; // double-click window
+const START_DRAG_THRESHOLD_PX = 6;
+const AUTOSCROLL_EDGE_PX = 36;
+const AUTOSCROLL_SPEED_MAX_PX = 28;
+
 const RowHeader: React.FC = () => {
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
   const rowChangeSizeRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hoverLocation, setHoverLocation] = useState({
+
+  const [hoverLocation, setHoverLocation] = useState<HoverLoc>({
     row: -1,
     row_pre: -1,
     row_index: -1,
   });
   const [hoverInFreeze, setHoverInFreeze] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<
-    { row: number; row_pre: number; r1: number; r2: number }[]
-  >([]);
+  const [selectedLocation, setSelectedLocation] = useState<SelectedLoc[]>([]);
+
   const sheetIndex = getSheetIndex(context, context.currentSheetId);
   const sheet = sheetIndex == null ? null : context.luckysheetfile[sheetIndex];
+
   const freezeHandleTop = useMemo(() => {
     if (
       sheet?.frozen?.type === "row" ||
@@ -55,16 +64,95 @@ const RowHeader: React.FC = () => {
     return context.scrollTop;
   }, [context.visibledatarow, sheet?.frozen, context.scrollTop]);
 
+  // Keep latest context/selection available inside document listeners
+  const contextRef = useRef(context);
+  useEffect(() => {
+    contextRef.current = context;
+  }, [context]);
+
+  const selectedLocationRef = useRef(selectedLocation);
+  useEffect(() => {
+    selectedLocationRef.current = selectedLocation;
+  }, [selectedLocation]);
+
+  // Double-click detection state
+  const clickRef = useRef({ lastTime: 0, lastRow: -1 });
+
+  // Reorder-drag state
+  const dragRef = useRef({
+    mouseDown: false,
+    startY: 0,
+    source: -1,
+    active: false,
+    lineEl: null as HTMLDivElement | null,
+    ghostEl: null as HTMLDivElement | null,
+    onDocMove: null as null | ((ev: MouseEvent) => void),
+    onDocUp: null as null | ((ev: MouseEvent) => void),
+    rafId: 0 as number, // autoscroll rAF id
+    prevUserSelect: "" as string,
+    prevWebkitUserSelect: "" as string,
+    lastNativeEvent: null as MouseEvent | null, // used for autoscroll
+  });
+
+  const stopAutoscroll = useCallback(() => {
+    if (dragRef.current.rafId) {
+      cancelAnimationFrame(dragRef.current.rafId);
+      dragRef.current.rafId = 0;
+    }
+  }, []);
+
+  const startAutoscroll = useCallback(() => {
+    stopAutoscroll();
+    const loop = () => {
+      if (!dragRef.current.active) return;
+      const wb = refs.workbookContainer.current || containerRef.current;
+      const last = dragRef.current.lastNativeEvent;
+      if (wb && last) {
+        const rect = wb.getBoundingClientRect();
+        const y = last.pageY - rect.top - window.scrollY;
+        let dy = 0;
+        if (y < AUTOSCROLL_EDGE_PX) {
+          dy =
+            -((AUTOSCROLL_EDGE_PX - y) / AUTOSCROLL_EDGE_PX) *
+            AUTOSCROLL_SPEED_MAX_PX;
+        } else if (y > rect.height - AUTOSCROLL_EDGE_PX) {
+          dy =
+            ((y - (rect.height - AUTOSCROLL_EDGE_PX)) / AUTOSCROLL_EDGE_PX) *
+            AUTOSCROLL_SPEED_MAX_PX;
+        }
+        if (dy !== 0) {
+          wb.scrollTop = Math.max(0, wb.scrollTop + dy);
+        }
+      }
+      dragRef.current.rafId = requestAnimationFrame(loop);
+    };
+    dragRef.current.rafId = requestAnimationFrame(loop);
+  }, [stopAutoscroll, refs.workbookContainer]);
+
+  const removeDragLine = useCallback(() => {
+    const { lineEl, ghostEl } = dragRef.current;
+    try {
+      if (lineEl?.parentElement) lineEl.parentElement.removeChild(lineEl);
+    } catch {}
+    try {
+      if (ghostEl?.parentElement) ghostEl.parentElement.removeChild(ghostEl);
+    } catch {}
+    dragRef.current.lineEl = null;
+    dragRef.current.ghostEl = null;
+    dragRef.current.active = false;
+  }, []);
+
+  // Hover highlight tracking (freeze-aware)
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (context.luckysheet_rows_change_size) {
-        return;
-      }
+      if (context.luckysheet_rows_change_size) return;
+
+      const container = containerRef.current;
+      if (!container) return;
+
       const mouseY =
-        e.pageY -
-        containerRef.current!.getBoundingClientRect().top -
-        window.scrollY;
-      const _y = mouseY + containerRef.current!.scrollTop;
+        e.pageY - container.getBoundingClientRect().top - window.scrollY;
+      const _y = mouseY + container.scrollTop;
       const freeze = refs.globalCache.freezen?.[context.currentSheetId];
       const { y, inHorizontalFreeze } = fixPositionOnFrozenCells(
         freeze,
@@ -73,8 +161,7 @@ const RowHeader: React.FC = () => {
         0,
         mouseY
       );
-      const row_location = rowLocation(y, context.visibledatarow);
-      const [row_pre, row, row_index] = row_location;
+      const [row_pre, row, row_index] = rowLocation(y, context.visibledatarow);
       if (row_pre !== hoverLocation.row_pre || row !== hoverLocation.row) {
         setHoverLocation({ row_pre, row, row_index });
         setHoverInFreeze(inHorizontalFreeze);
@@ -90,36 +177,42 @@ const RowHeader: React.FC = () => {
     ]
   );
 
-  // NOTE: header click/selection is handled on mouseup rather than mousedown so
-  // a drag can begin without being immediately turned into a selection.
-  const dragRef = useRef({
-    mouseDown: false,
-    startY: 0,
-    source: -1,
-    active: false,
-    lineEl: null as HTMLDivElement | null,
-    lastNativeEvent: null as MouseEvent | null,
-    ghostEl: null as HTMLDivElement | null,
-    // store per-drag handlers so they can be removed reliably
-    onDocMove: null as null | ((ev: MouseEvent) => void),
-    onDocUp: null as null | ((ev: MouseEvent) => void),
-  });
-
-  // keep refs to values used inside dynamically-attached document listeners
-  const selectedLocationRef = useRef(selectedLocation);
+  // Selection: compute header selection bands from grid selection
   useEffect(() => {
-    selectedLocationRef.current = selectedLocation;
-  }, [selectedLocation]);
+    const s = context.luckysheet_select_save || [];
+    if (_.isNil(s)) return;
+    setSelectedLocation([]);
+    if (s[0]?.column_select) return;
 
-  const contextRef = useRef(context);
+    let rowTitleMap: Record<number, number> = {};
+    for (let i = 0; i < s.length; i += 1) {
+      const r1 = s[i].row[0];
+      const r2 = s[i].row[1];
+      rowTitleMap = selectTitlesMap(rowTitleMap, r1, r2);
+    }
+    const rowTitleRange = selectTitlesRange(rowTitleMap);
+    const selects: SelectedLoc[] = [];
+    for (let i = 0; i < rowTitleRange.length; i += 1) {
+      const r1 = rowTitleRange[i][0];
+      const r2 = rowTitleRange[i][rowTitleRange[i].length - 1];
+      const row = rowLocationByIndex(r2, context.visibledatarow)[1];
+      const row_pre = rowLocationByIndex(r1, context.visibledatarow)[0];
+      if (_.isNumber(row_pre) && _.isNumber(row)) {
+        selects.push({ row, row_pre, r1, r2 });
+      }
+    }
+    setSelectedLocation(selects);
+  }, [context.luckysheet_select_save, context.visibledatarow]);
+
+  // Keep header scrolled with grid
   useEffect(() => {
-    contextRef.current = context;
-  }, [context]);
+    if (containerRef.current) {
+      containerRef.current.scrollTop = context.scrollTop;
+    }
+  }, [context.scrollTop]);
 
   const onMouseLeave = useCallback(() => {
-    if (context.luckysheet_rows_change_size) {
-      return;
-    }
+    if (context.luckysheet_rows_change_size) return;
     setHoverLocation({ row: -1, row_pre: -1, row_index: -1 });
   }, [context.luckysheet_rows_change_size]);
 
@@ -176,60 +269,16 @@ const RowHeader: React.FC = () => {
     [refs.workbookContainer, setContext, settings, refs.cellArea]
   );
 
-  useEffect(() => {
-    const s = context.luckysheet_select_save || [];
-    if (_.isNil(s)) return;
-    setSelectedLocation([]);
-    if (s[0]?.column_select) return;
-    let rowTitleMap: Record<number, number> = {};
-    for (let i = 0; i < s.length; i += 1) {
-      const r1 = s[i].row[0];
-      const r2 = s[i].row[1];
-      rowTitleMap = selectTitlesMap(rowTitleMap, r1, r2);
-    }
-    const rowTitleRange = selectTitlesRange(rowTitleMap);
-    const selects: { row: number; row_pre: number; r1: number; r2: number }[] =
-      [];
-    for (let i = 0; i < rowTitleRange.length; i += 1) {
-      const r1 = rowTitleRange[i][0];
-      const r2 = rowTitleRange[i][rowTitleRange[i].length - 1];
-      const row = rowLocationByIndex(r2, context.visibledatarow)[1];
-      const row_pre = rowLocationByIndex(r1, context.visibledatarow)[0];
-      if (_.isNumber(row_pre) && _.isNumber(row)) {
-        selects.push({ row, row_pre, r1, r2 });
-      }
-    }
-    setSelectedLocation(selects);
-  }, [context.luckysheet_select_save, context.visibledatarow]);
-
-  useEffect(() => {
-    containerRef.current!.scrollTop = context.scrollTop;
-  }, [context.scrollTop]);
-
-  // helpers to cleanup drag line
-  const removeDragLine = useCallback(() => {
-    const line = dragRef.current.lineEl;
-    if (line && line.parentElement) {
-      line.parentElement.removeChild(line);
-    }
-    dragRef.current.lineEl = null;
-    const ghost = dragRef.current.ghostEl;
-    if (ghost && ghost.parentElement) {
-      ghost.parentElement.removeChild(ghost);
-    }
-    dragRef.current.ghostEl = null;
-    dragRef.current.active = false;
-  }, []);
-
-  // attach to onMouseDown: start tracking
-  const onMouseDownWithDrag = useCallback(
+  /**
+   * Hybrid onMouseDown:
+   * - Single-click: selection (v2 behavior)
+   * - Double-click (same row): arm reorder drag (v1 behavior)
+   */
+  const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      // only left button
-      if (e.button !== 0) return;
-      // prevent other handlers from turning this into an immediate selection
-      e.preventDefault();
-      e.stopPropagation();
-      // don't start drag when clicking on resize or freeze handles
+      if (e.button !== 0) return; // left button only
+
+      // ignore clicks on resize/freeze handles
       const target = e.target as HTMLElement;
       if (
         target.closest(".fortune-rows-change-size") ||
@@ -237,109 +286,137 @@ const RowHeader: React.FC = () => {
       ) {
         return;
       }
-      // record start
-      dragRef.current.mouseDown = true;
-      dragRef.current.startY = e.pageY;
-      // store native event so selection can be applied on mouseup if no drag occurs
-      dragRef.current.lastNativeEvent = e.nativeEvent;
 
-      // compute source row index from the click position (more reliable than hover state)
-      const rect = containerRef.current!.getBoundingClientRect();
+      const container = containerRef.current;
+      if (!container) return;
+
+      // map to row index (freeze-aware)
+      const rect = container.getBoundingClientRect();
       const mouseY = e.pageY - rect.top - window.scrollY;
-      const localY = mouseY + containerRef.current!.scrollTop;
+      const localY = mouseY + container.scrollTop;
       const freeze = refs.globalCache.freezen?.[context.currentSheetId];
       const { y } = fixPositionOnFrozenCells(freeze, 0, localY, 0, mouseY);
-      const [, , sourceIndex] = rowLocation(y, context.visibledatarow);
-      dragRef.current.source = sourceIndex;
-      // if we didn't hit a valid row, bail out early
-      if (sourceIndex < 0) {
-        dragRef.current.mouseDown = false;
-        dragRef.current.lastNativeEvent = null;
+      const [, , rowIndex] = rowLocation(y, context.visibledatarow);
+      if (rowIndex < 0) return;
+
+      // detect double-click on the SAME row within DOUBLE_MS
+      const now = performance.now();
+      const isDouble =
+        now - clickRef.current.lastTime < DOUBLE_MS &&
+        clickRef.current.lastRow === rowIndex;
+      clickRef.current.lastTime = now;
+      clickRef.current.lastRow = rowIndex;
+
+      if (!isDouble) {
+        // --- SINGLE CLICK: selection (default v2 behavior) ---
+        const { nativeEvent } = e;
+        setContext((draftCtx) => {
+          handleRowHeaderMouseDown(
+            draftCtx,
+            refs.globalCache,
+            nativeEvent,
+            containerRef.current!,
+            refs.cellInput.current!,
+            refs.fxInput.current!
+          );
+        });
         return;
       }
+
+      // --- DOUBLE CLICK: start reorder drag (v1 behavior) ---
+      e.preventDefault();
+      e.stopPropagation();
+
+      dragRef.current.mouseDown = true;
+      dragRef.current.startY = e.pageY;
+      dragRef.current.source = rowIndex;
       dragRef.current.active = false;
 
-      // attach document listeners for this drag session
       const onDocMove = (ev: MouseEvent) => {
         if (!dragRef.current.mouseDown) return;
-        const { pageY } = ev;
-        const delta = Math.abs(pageY - dragRef.current.startY);
-        const startThreshold = 6; // pixels to start drag
-        const container = containerRef.current;
-        if (!container) return;
+        dragRef.current.lastNativeEvent = ev;
 
+        const wb = refs.workbookContainer.current || containerRef.current;
+        if (!wb) return;
+
+        const delta = Math.abs(ev.pageY - dragRef.current.startY);
+
+        // Activate drag after a small movement
         if (!dragRef.current.active) {
-          if (delta < startThreshold) return;
-          // start drag
+          if (delta < START_DRAG_THRESHOLD_PX) return;
           dragRef.current.active = true;
+
+          // Disable text selection until drop
+          dragRef.current.prevUserSelect = document.body.style.userSelect;
+          dragRef.current.prevWebkitUserSelect = (
+            document.body.style as any
+          ).webkitUserSelect;
+          document.body.style.userSelect = "none";
+          (document.body.style as any).webkitUserSelect = "none";
+
+          // Full-width insertion line (append to workbook container)
           const line = document.createElement("div");
           line.style.position = "absolute";
           line.style.left = "0px";
           line.style.right = "0px";
           line.style.height = "2px";
-          line.style.background = "#007bff";
+          line.style.background = "#1a73e8";
           line.style.zIndex = "9999";
           line.style.pointerEvents = "none";
-          container.appendChild(line);
+          wb.appendChild(line);
           dragRef.current.lineEl = line;
 
-          // create ghost
+          // Ghost pill (size = selected block or single row)
           const ghost = document.createElement("div");
           ghost.style.position = "absolute";
-          ghost.style.left = "0px";
+          ghost.style.left = "8px";
           ghost.style.width = `${Math.max(
             60,
             contextRef.current.rowHeaderWidth - 8
           )}px`;
           ghost.style.boxSizing = "border-box";
           ghost.style.padding = "6px 8px";
-          ghost.style.background = "rgba(0,123,255,0.12)";
-          ghost.style.border = "1px solid rgba(0,123,255,0.3)";
-          ghost.style.borderRadius = "4px";
+          ghost.style.background = "rgba(26,115,232,0.10)";
+          ghost.style.border = "1px solid rgba(26,115,232,0.35)";
+          ghost.style.borderRadius = "6px";
           ghost.style.zIndex = "10000";
           ghost.style.pointerEvents = "none";
           ghost.style.display = "flex";
           ghost.style.alignItems = "center";
-          ghost.style.fontSize = "13px";
-          ghost.style.color = "#034ea2";
+          ghost.style.fontSize = "12px";
+          ghost.style.fontWeight = "500";
 
-          // label/height based on latest selectedLocation
           let ghostHeight = 24;
-          let label = "1 row";
-          try {
-            const { source } = dragRef.current;
-            const foundBlock = selectedLocationRef.current.find(
-              (s) => s.r1 <= source && source <= s.r2
+          let label = `${dragRef.current.source + 1} row`;
+          const block = selectedLocationRef.current.find(
+            (s) =>
+              s.r1 <= dragRef.current.source && dragRef.current.source <= s.r2
+          );
+          if (block) {
+            ghostHeight = Math.max(24, block.row - block.row_pre - 1);
+            const count = block.r2 - block.r1 + 1;
+            label = count > 1 ? `${count} rows` : `${block.r1 + 1} row`;
+          } else {
+            const coords = rowLocationByIndex(
+              dragRef.current.source,
+              contextRef.current.visibledatarow
             );
-            if (foundBlock) {
-              ghostHeight = Math.max(
-                24,
-                foundBlock.row - foundBlock.row_pre - 1
-              );
-              const count = foundBlock.r2 - foundBlock.r1 + 1;
-              label = count > 1 ? `${count} rows` : `${foundBlock.r1 + 1} row`;
-            } else {
-              const coords = rowLocationByIndex(
-                dragRef.current.source,
-                contextRef.current.visibledatarow
-              );
-              const h = coords[1] - coords[0] - 1;
-              ghostHeight = Math.max(24, h);
-              label = `${dragRef.current.source + 1} row`;
-            }
-          } catch (err) {
-            // ignore
+            const h = coords[1] - coords[0] - 1;
+            ghostHeight = Math.max(24, h);
           }
           ghost.style.height = `${ghostHeight}px`;
           ghost.textContent = label;
-          container.appendChild(ghost);
+          wb.appendChild(ghost);
           dragRef.current.ghostEl = ghost;
+
+          // start autoscroll loop
+          startAutoscroll();
         }
 
-        // compute insertion similar to previous implementation
-        const _rect = container.getBoundingClientRect();
-        const _mouseY = pageY - _rect.top - window.scrollY;
-        const _localY = _mouseY + container.scrollTop;
+        // Compute insertion position (workbook-local coords)
+        const wbRect = wb.getBoundingClientRect();
+        const _mouseY = ev.pageY - wbRect.top - window.scrollY;
+        const _localY = _mouseY + wb.scrollTop;
         const freezeLocal =
           refs.globalCache.freezen?.[contextRef.current.currentSheetId];
         const { y: yaxis } = fixPositionOnFrozenCells(
@@ -355,28 +432,29 @@ const RowHeader: React.FC = () => {
         );
         const mid = (row_pre + row) / 2;
         let insertion = row_index + (yaxis > mid ? 1 : 0);
-        const sheetIndexLocal = getSheetIndex(
+
+        const si = getSheetIndex(
           contextRef.current,
           contextRef.current.currentSheetId
         );
         const sheetLocal =
-          sheetIndexLocal == null
-            ? null
-            : contextRef.current.luckysheetfile[sheetIndexLocal];
+          si == null ? null : contextRef.current.luckysheetfile[si];
         const max =
           sheetLocal?.data?.length ?? contextRef.current.visibledatarow.length;
-        if (insertion < 0) insertion = 0;
-        if (insertion > max) insertion = max;
+        insertion = Math.max(0, Math.min(max, insertion));
 
+        // Position visuals
         const topForLine = yaxis > mid ? row : row_pre;
         if (dragRef.current.lineEl)
           dragRef.current.lineEl.style.top = `${topForLine}px`;
+
         if (dragRef.current.ghostEl) {
-          const ghost = dragRef.current.ghostEl;
-          const gh = parseFloat(ghost.style.height || "24");
-          const top = _mouseY + container.scrollTop - gh / 2;
-          ghost.style.top = `${top}px`;
+          const gh = parseFloat(dragRef.current.ghostEl.style.height || "24");
+          dragRef.current.ghostEl.style.top = `${
+            _mouseY + wb.scrollTop - gh / 2
+          }px`;
         }
+
         if (dragRef.current.lineEl)
           dragRef.current.lineEl.dataset.insertion = String(insertion);
       };
@@ -386,64 +464,51 @@ const RowHeader: React.FC = () => {
         dragRef.current.mouseDown = false;
         const wasActive = dragRef.current.active;
 
+        // restore selection behavior
+        try {
+          document.body.style.userSelect = dragRef.current.prevUserSelect || "";
+          (document.body.style as any).webkitUserSelect =
+            dragRef.current.prevWebkitUserSelect || "";
+        } catch {}
+        stopAutoscroll();
+
         if (wasActive && dragRef.current.lineEl) {
-          const insertion = Number(dragRef.current.lineEl.dataset.insertion);
+          const raw = dragRef.current.lineEl.dataset.insertion;
+          const insertion = raw == null ? -1 : Number(raw);
           const { source } = dragRef.current;
-          const sheetIndexLocal = getSheetIndex(
+          const si = getSheetIndex(
             contextRef.current,
             contextRef.current.currentSheetId
           );
           if (
-            sheetIndexLocal != null &&
+            si != null &&
             source >= 0 &&
-            !Number.isNaN(insertion) &&
+            Number.isFinite(insertion) &&
             insertion >= 0
           ) {
             setContext((draftCtx) => {
-              const targetSheet = draftCtx.luckysheetfile[sheetIndexLocal];
-              if (!targetSheet || !targetSheet.data) return;
-              const arr = targetSheet.data;
+              const sheet0 = draftCtx.luckysheetfile[si];
+              if (!sheet0?.data) return;
+              const arr = sheet0.data;
               if (source < 0 || source >= arr.length) return;
+
               let _target = insertion;
-              // adjust target relative to source before removal
-              if (_target > source) _target -= 1;
-              // remove the source first so length/indices reflect the post-removal state
+              if (_target > source) _target -= 1; // adjust for removal
               const [rowData] = arr.splice(source, 1);
-              // now clamp target to [0..arr.length] (allow append at the end)
               if (_target < 0) _target = 0;
-              if (_target > arr.length) _target = arr.length;
-              // if target equals the (post-removal) source, it’s effectively a no-op, but keep it simple:
+              if (_target > arr.length) _target = arr.length; // allow append
               arr.splice(_target, 0, rowData);
-              targetSheet.data = arr;
-              updateContextWithSheetData(draftCtx, targetSheet.data);
-            });
-          }
-        } else {
-          const native = dragRef.current.lastNativeEvent;
-          if (native) {
-            setContext((draftCtx) => {
-              handleRowHeaderMouseDown(
-                draftCtx,
-                refs.globalCache,
-                native,
-                containerRef.current!,
-                refs.cellInput.current!,
-                refs.fxInput.current!
-              );
+              sheet0.data = arr;
+              updateContextWithSheetData(draftCtx, sheet0.data);
             });
           }
         }
 
-        // cleanup DOM and state
+        // cleanup
         removeDragLine();
         dragRef.current.active = false;
-        dragRef.current.mouseDown = false;
-        dragRef.current.lastNativeEvent = null;
-        dragRef.current.lineEl = null;
-        dragRef.current.ghostEl = null;
         dragRef.current.source = -1;
 
-        // remove listeners
         if (dragRef.current.onDocMove)
           document.removeEventListener("mousemove", dragRef.current.onDocMove);
         if (dragRef.current.onDocUp)
@@ -452,14 +517,10 @@ const RowHeader: React.FC = () => {
         dragRef.current.onDocUp = null;
       };
 
-      // store and attach
       dragRef.current.onDocMove = onDocMove;
       dragRef.current.onDocUp = onDocUp;
       document.addEventListener("mousemove", onDocMove);
       document.addEventListener("mouseup", onDocUp);
-
-      // do not trigger header selection immediately; defer handling to mouseup
-      // so a drag can start without being overridden by selection logic.
     },
     [
       refs.globalCache,
@@ -467,33 +528,11 @@ const RowHeader: React.FC = () => {
       context.currentSheetId,
       setContext,
       removeDragLine,
+      startAutoscroll,
+      stopAutoscroll,
     ]
   );
 
-  // ensure cleanup on unmount if any listeners remained
-  useEffect(() => {
-    return () => {
-      if (dragRef.current.onDocMove)
-        document.removeEventListener("mousemove", dragRef.current.onDocMove);
-      if (dragRef.current.onDocUp)
-        document.removeEventListener("mouseup", dragRef.current.onDocUp);
-      dragRef.current.onDocMove = null;
-      dragRef.current.onDocUp = null;
-    };
-  }, []);
-
-  const onMouseMoveWithDrag = useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      onMouseMove(e);
-      // update lastNativeEvent for potential selection use on mouseup
-      dragRef.current.lastNativeEvent = e.nativeEvent;
-    },
-    [onMouseMove]
-  );
-
-  // ...existing onMouseLeave, onRowSizeHandleMouseDown, etc. ...
-
-  // replace original onMouseDown usage in returned JSX with onMouseDownWithDrag
   return (
     <div
       ref={containerRef}
@@ -502,18 +541,15 @@ const RowHeader: React.FC = () => {
         width: context.rowHeaderWidth - 1.5,
         height: context.cellmainHeight,
       }}
-      // capture-phase handler to preempt other listeners that may create selection
-      onMouseDownCapture={onMouseDownWithDrag}
-      onMouseMove={onMouseMoveWithDrag}
+      onMouseMove={onMouseMove}
+      onMouseDown={onMouseDown}
       onMouseLeave={onMouseLeave}
       onContextMenu={onContextMenu}
     >
       <div
         className="fortune-rows-freeze-handle"
         onMouseDown={onRowFreezeHandleMouseDown}
-        style={{
-          top: freezeHandleTop,
-        }}
+        style={{ top: freezeHandleTop }}
       />
       <div
         className="fortune-rows-change-size"
@@ -545,7 +581,7 @@ const RowHeader: React.FC = () => {
       {selectedLocation.map(({ row, row_pre, r1, r2 }, i) => (
         <div
           className="fortune-row-header-selected"
-          key={i}
+          key={`${r1}-${r2}-${i}`}
           style={_.assign(
             {
               top: row_pre,
@@ -563,7 +599,7 @@ const RowHeader: React.FC = () => {
           )}
         />
       ))}
-      {/* placeholder to overflow the container, making the container scrollable */}
+      {/* overflow spacer to make the container scrollable */}
       <div
         style={{ height: context.rh_height, width: 1 }}
         id="luckysheetrowHeader_0"

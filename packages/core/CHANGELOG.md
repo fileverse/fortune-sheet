@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.5
+
+### Patch Changes
+
+- add zoom sort cuts
+
 ## 1.1.4
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.5
+
+### Patch Changes
+
+- add zoom sort cuts
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.5
+
 ## 1.1.4
 
 ### Patch Changes

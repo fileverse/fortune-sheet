@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.6
+
+### Patch Changes
+
+- Add stats info beside zoom control
+
 ## 1.1.5
 
 ### Patch Changes

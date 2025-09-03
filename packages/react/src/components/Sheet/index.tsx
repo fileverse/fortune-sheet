@@ -6,9 +6,9 @@ import {
   handleGlobalWheel,
   initFreeze,
   Sheet as SheetType,
+  cellFadeAnimator,
 } from "@fileverse-dev/fortune-core";
 import "./index.css";
-import { cellFadeAnimator } from "packages/core/src/animate";
 import WorkbookContext from "../../context";
 import SheetOverlay from "../SheetOverlay";
 

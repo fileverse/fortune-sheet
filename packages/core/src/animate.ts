@@ -42,14 +42,18 @@ class CellFadeAnimator {
 
   private ensureTicking() {
     if (this.animationFrameId !== null) return;
-    if (this.active.size === 0 && !this.onTick) return;
+    if (this.active.size === 0) return;
+
     const loop = () => {
       this.animationFrameId = null;
-      if (this.active.size > 0) this.onTick?.();
-      if (this.active.size > 0 || this.onTick) {
-        this.animationFrameId = requestAnimationFrame(loop);
+
+      if (this.active.size === 0) {
+        return;
       }
+      this.onTick?.();
+      this.animationFrameId = requestAnimationFrame(loop);
     };
+
     this.animationFrameId = requestAnimationFrame(loop);
   }
 }

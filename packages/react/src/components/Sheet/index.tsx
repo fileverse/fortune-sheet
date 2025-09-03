@@ -8,6 +8,7 @@ import {
   Sheet as SheetType,
 } from "@fileverse-dev/fortune-core";
 import "./index.css";
+import { cellFadeAnimator } from "packages/core/src/animate";
 import WorkbookContext from "../../context";
 import SheetOverlay from "../SheetOverlay";
 
@@ -103,138 +104,162 @@ const Sheet: React.FC<Props> = ({ sheet }) => {
   useEffect(() => {
     // update formula chains value first if not empty
     if (context.groupValuesRefreshData.length > 0) {
-      // wait for it to be refreshed
       return;
     }
 
     const tableCanvas = new Canvas(refs.canvas.current!, context);
-    if (tableCanvas == null) return;
-    const freeze = refs.globalCache.freezen?.[sheet.id!];
-    if (
-      freeze?.horizontal?.freezenhorizontaldata ||
-      freeze?.vertical?.freezenverticaldata
-    ) {
-      // with frozen
-      const horizontalData = freeze?.horizontal?.freezenhorizontaldata;
-      const verticallData = freeze?.vertical?.freezenverticaldata;
-      if (horizontalData && verticallData) {
-        const [horizontalPx, , horizontalScrollTop] = horizontalData;
-        const [verticalPx, , verticalScrollWidth] = verticallData;
-        // main
-        tableCanvas.drawMain({
-          scrollWidth: context.scrollLeft + verticalPx - verticalScrollWidth,
-          scrollHeight: context.scrollTop + horizontalPx - horizontalScrollTop,
-          offsetLeft: verticalPx - verticalScrollWidth + context.rowHeaderWidth,
-          offsetTop:
-            horizontalPx - horizontalScrollTop + context.columnHeaderHeight,
-          clear: true,
-        });
-        // right top
-        tableCanvas.drawMain({
-          scrollWidth: context.scrollLeft + verticalPx - verticalScrollWidth,
-          scrollHeight: horizontalScrollTop,
-          drawHeight: horizontalPx,
-          offsetLeft: verticalPx - verticalScrollWidth + context.rowHeaderWidth,
-        });
-        // left down
-        tableCanvas.drawMain({
-          scrollWidth: verticalScrollWidth,
-          scrollHeight: context.scrollTop + horizontalPx - horizontalScrollTop,
-          drawWidth: verticalPx,
-          offsetTop:
-            horizontalPx - horizontalScrollTop + context.columnHeaderHeight,
-        });
-        // left top
-        tableCanvas.drawMain({
-          scrollWidth: verticalScrollWidth,
-          scrollHeight: horizontalScrollTop,
-          drawWidth: verticalPx,
-          drawHeight: horizontalPx,
-        });
-        // headers
-        tableCanvas.drawColumnHeader(
-          context.scrollLeft + verticalPx - verticalScrollWidth,
-          undefined,
-          verticalPx - verticalScrollWidth + context.rowHeaderWidth
-        );
-        tableCanvas.drawColumnHeader(verticalScrollWidth, verticalPx);
-        tableCanvas.drawRowHeader(
-          context.scrollTop + horizontalPx - horizontalScrollTop,
-          undefined,
-          horizontalPx - horizontalScrollTop + context.columnHeaderHeight
-        );
-        tableCanvas.drawRowHeader(horizontalScrollTop, horizontalPx);
-        tableCanvas.drawFreezeLine({
-          horizontalTop:
-            horizontalPx - horizontalScrollTop + context.columnHeaderHeight - 2,
-          verticalLeft:
-            verticalPx - verticalScrollWidth + context.rowHeaderWidth - 2,
-        });
-      } else if (horizontalData) {
-        const [horizontalPx, , horizontalScrollTop] = horizontalData;
-        // main
+    const repaint = () => {
+      const freeze = refs.globalCache.freezen?.[sheet.id!];
+
+      if (
+        freeze?.horizontal?.freezenhorizontaldata ||
+        freeze?.vertical?.freezenverticaldata
+      ) {
+        const horizontalData = freeze?.horizontal?.freezenhorizontaldata;
+        const verticallData = freeze?.vertical?.freezenverticaldata;
+
+        if (horizontalData && verticallData) {
+          const [horizontalPx, , horizontalScrollTop] = horizontalData;
+          const [verticalPx, , verticalScrollWidth] = verticallData;
+
+          // main
+          tableCanvas.drawMain({
+            scrollWidth: context.scrollLeft + verticalPx - verticalScrollWidth,
+            scrollHeight:
+              context.scrollTop + horizontalPx - horizontalScrollTop,
+            offsetLeft:
+              verticalPx - verticalScrollWidth + context.rowHeaderWidth,
+            offsetTop:
+              horizontalPx - horizontalScrollTop + context.columnHeaderHeight,
+            clear: true,
+          });
+          // right top
+          tableCanvas.drawMain({
+            scrollWidth: context.scrollLeft + verticalPx - verticalScrollWidth,
+            scrollHeight: horizontalScrollTop,
+            drawHeight: horizontalPx,
+            offsetLeft:
+              verticalPx - verticalScrollWidth + context.rowHeaderWidth,
+          });
+          // left down
+          tableCanvas.drawMain({
+            scrollWidth: verticalScrollWidth,
+            scrollHeight:
+              context.scrollTop + horizontalPx - horizontalScrollTop,
+            drawWidth: verticalPx,
+            offsetTop:
+              horizontalPx - horizontalScrollTop + context.columnHeaderHeight,
+          });
+          // left top
+          tableCanvas.drawMain({
+            scrollWidth: verticalScrollWidth,
+            scrollHeight: horizontalScrollTop,
+            drawWidth: verticalPx,
+            drawHeight: horizontalPx,
+          });
+          // headers
+          tableCanvas.drawColumnHeader(
+            context.scrollLeft + verticalPx - verticalScrollWidth,
+            undefined,
+            verticalPx - verticalScrollWidth + context.rowHeaderWidth
+          );
+          tableCanvas.drawColumnHeader(verticalScrollWidth, verticalPx);
+          tableCanvas.drawRowHeader(
+            context.scrollTop + horizontalPx - horizontalScrollTop,
+            undefined,
+            horizontalPx - horizontalScrollTop + context.columnHeaderHeight
+          );
+          tableCanvas.drawRowHeader(horizontalScrollTop, horizontalPx);
+          tableCanvas.drawFreezeLine({
+            horizontalTop:
+              horizontalPx -
+              horizontalScrollTop +
+              context.columnHeaderHeight -
+              2,
+            verticalLeft:
+              verticalPx - verticalScrollWidth + context.rowHeaderWidth - 2,
+          });
+        } else if (horizontalData) {
+          const [horizontalPx, , horizontalScrollTop] = horizontalData;
+
+          // main
+          tableCanvas.drawMain({
+            scrollWidth: context.scrollLeft,
+            scrollHeight:
+              context.scrollTop + horizontalPx - horizontalScrollTop,
+            offsetTop:
+              horizontalPx - horizontalScrollTop + context.columnHeaderHeight,
+            clear: true,
+          });
+          // top
+          tableCanvas.drawMain({
+            scrollWidth: context.scrollLeft,
+            scrollHeight: horizontalScrollTop,
+            drawHeight: horizontalPx,
+          });
+          // headers
+          tableCanvas.drawColumnHeader(context.scrollLeft);
+          tableCanvas.drawRowHeader(
+            context.scrollTop + horizontalPx - horizontalScrollTop,
+            undefined,
+            horizontalPx - horizontalScrollTop + context.columnHeaderHeight
+          );
+          tableCanvas.drawRowHeader(horizontalScrollTop, horizontalPx);
+          tableCanvas.drawFreezeLine({
+            horizontalTop:
+              horizontalPx -
+              horizontalScrollTop +
+              context.columnHeaderHeight -
+              2,
+          });
+        } else if (verticallData) {
+          const [verticalPx, , verticalScrollWidth] = verticallData;
+
+          // main
+          tableCanvas.drawMain({
+            scrollWidth: context.scrollLeft + verticalPx - verticalScrollWidth,
+            scrollHeight: context.scrollTop,
+            offsetLeft:
+              verticalPx - verticalScrollWidth + context.rowHeaderWidth,
+          });
+          // left
+          tableCanvas.drawMain({
+            scrollWidth: verticalScrollWidth,
+            scrollHeight: context.scrollTop,
+            drawWidth: verticalPx,
+          });
+          // headers
+          tableCanvas.drawRowHeader(context.scrollTop);
+          tableCanvas.drawColumnHeader(
+            context.scrollLeft + verticalPx - verticalScrollWidth,
+            undefined,
+            verticalPx - verticalScrollWidth + context.rowHeaderWidth
+          );
+          tableCanvas.drawColumnHeader(verticalScrollWidth, verticalPx);
+          tableCanvas.drawFreezeLine({
+            verticalLeft:
+              verticalPx - verticalScrollWidth + context.rowHeaderWidth - 2,
+          });
+        }
+      } else {
+        // without frozen
         tableCanvas.drawMain({
           scrollWidth: context.scrollLeft,
-          scrollHeight: context.scrollTop + horizontalPx - horizontalScrollTop,
-          offsetTop:
-            horizontalPx - horizontalScrollTop + context.columnHeaderHeight,
+          scrollHeight: context.scrollTop,
           clear: true,
         });
-        // top
-        tableCanvas.drawMain({
-          scrollWidth: context.scrollLeft,
-          scrollHeight: horizontalScrollTop,
-          drawHeight: horizontalPx,
-        });
-        // headers
         tableCanvas.drawColumnHeader(context.scrollLeft);
-        tableCanvas.drawRowHeader(
-          context.scrollTop + horizontalPx - horizontalScrollTop,
-          undefined,
-          horizontalPx - horizontalScrollTop + context.columnHeaderHeight
-        );
-        tableCanvas.drawRowHeader(horizontalScrollTop, horizontalPx);
-        tableCanvas.drawFreezeLine({
-          horizontalTop:
-            horizontalPx - horizontalScrollTop + context.columnHeaderHeight - 2,
-        });
-      } else if (verticallData) {
-        const [verticalPx, , verticalScrollWidth] = verticallData;
-        // main
-        tableCanvas.drawMain({
-          scrollWidth: context.scrollLeft + verticalPx - verticalScrollWidth,
-          scrollHeight: context.scrollTop,
-          offsetLeft: verticalPx - verticalScrollWidth + context.rowHeaderWidth,
-        });
-        // left
-        tableCanvas.drawMain({
-          scrollWidth: verticalScrollWidth,
-          scrollHeight: context.scrollTop,
-          drawWidth: verticalPx,
-        });
-        // headers
         tableCanvas.drawRowHeader(context.scrollTop);
-        tableCanvas.drawColumnHeader(
-          context.scrollLeft + verticalPx - verticalScrollWidth,
-          undefined,
-          verticalPx - verticalScrollWidth + context.rowHeaderWidth
-        );
-        tableCanvas.drawColumnHeader(verticalScrollWidth, verticalPx);
-        tableCanvas.drawFreezeLine({
-          verticalLeft:
-            verticalPx - verticalScrollWidth + context.rowHeaderWidth - 2,
-        });
       }
-    } else {
-      // without frozen
-      tableCanvas.drawMain({
-        scrollWidth: context.scrollLeft,
-        scrollHeight: context.scrollTop,
-        clear: true,
-      });
-      tableCanvas.drawColumnHeader(context.scrollLeft);
-      tableCanvas.drawRowHeader(context.scrollTop);
-    }
+    };
+
+    // draw now
+    repaint();
+
+    // keep repainting while fades are active
+    cellFadeAnimator.setOnTick(repaint);
+    // eslint-disable-next-line consistent-return
+    return () => cellFadeAnimator.setOnTick(null);
   }, [context, refs.canvas, refs.globalCache.freezen, setContext, sheet.id]);
 
   const onWheel = useCallback(

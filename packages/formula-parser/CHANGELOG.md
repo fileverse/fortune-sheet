@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.61
+
+### Patch Changes
+
+- addd support for dunesim
+
 ## 0.2.59
 
 ### Patch Changes

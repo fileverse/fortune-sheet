@@ -6,14 +6,39 @@ import React, {
   useRef,
   useState,
 } from "react";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  LucideIcon,
+  Button,
+} from '@fileverse/ui';
 import { useMediaQuery } from "usehooks-ts";
-import { updateCell, addSheet } from "@fileverse-dev/fortune-core";
+import { updateCell, addSheet, calcSelectionInfo } from "@fileverse-dev/fortune-core";
 // @ts-ignore
 import WorkbookContext from "../../context";
 import SVGIcon from "../SVGIcon";
 import "./index.css";
 import SheetItem from "./SheetItem";
 import ZoomControl from "../ZoomControl";
+
+const STATS = [
+  { label: "Average", value: 'average' },
+  { label: "Count", value: 'count' },
+  { label: "Max", value: 'max' },
+  { label: "Min", value: 'min' },
+  { label: "Number of Cells", value: 'numberC' },
+  { label: "Sum", value: 'sum' },
+];
+
+const STATS_LABELS = {
+  average: "Average",
+  count: "Count",
+  max: "Max",
+  min: "Min",
+  numberC: "Number of Cells",
+  sum: "Sum",
+}
 
 const SheetTab: React.FC = () => {
   const isMobile = useMediaQuery("(max-width: 780px)", { defaultValue: true });
@@ -23,6 +48,23 @@ const SheetTab: React.FC = () => {
   const rightScrollRef = useRef<HTMLDivElement>(null);
   const [isShowScrollBtn, setIsShowScrollBtn] = useState<boolean>(false);
   const [isShowBoundary, setIsShowBoundary] = useState<boolean>(true);
+      const [calInfo, setCalInfo] = useState<{
+        numberC: number;
+        count: number;
+        sum: number;
+        max: number;
+        min: number;
+        average: string;
+      }>({
+        numberC: 0,
+        count: 0,
+        sum: 0,
+        max: 0,
+        min: 0,
+        average: "",
+      });
+
+      const [selectedStat, setSelectedStat] = useState<string>('sum');
 
   const scrollDelta = 150;
 
@@ -42,6 +84,20 @@ const SheetTab: React.FC = () => {
       behavior: "smooth",
     });
   }, []);
+
+      useEffect(() => {
+        const selection = context.luckysheet_select_save;
+        // const { lang } = props;
+        if (selection) {
+          const re = calcSelectionInfo(context, 'en');
+          setCalInfo(re);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [context.luckysheet_select_save]);
+
+      useEffect(()=>{
+        console.log(calInfo, "calInfo");
+      },[calInfo])
 
   useEffect(() => {
     const tabCurrent = tabContainerRef.current;
@@ -224,6 +280,45 @@ const SheetTab: React.FC = () => {
           )}
         </div>
         <div className="fortune-sheet-area-right">
+          <Popover>
+      <PopoverTrigger className="hover:bg-gray-100">
+        <Button
+              variant="ghost"
+              className={`w-full h-8 rounded p-2 m-1 text-left flex items-center justify-center transition mr-2`}
+            >
+                {calInfo.count > 0 && <p className="text-body-sm">{STATS_LABELS[selectedStat as keyof typeof STATS_LABELS]}: {calInfo[selectedStat as keyof typeof calInfo]}</p>}
+            </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        alignOffset={0}
+        className="w-72 export-content color-border-default shadow-elevation-3"
+        elevation={2}
+        side="bottom"
+        sideOffset={4}
+      >
+        <div className="p-2 color-text-default color-border-default">
+          <h1 className="text-helper-text-sm color-text-secondary pl-2 mb-2">
+            Sort By
+          </h1>
+          {STATS.map((option) => (
+            <Button
+              variant="ghost"
+              key={option.value}
+              className={`w-full h-8 rounded p-2 m-1 text-left flex items-center justify-between transition ${selectedStat === option.value && 'bg-[#F8F9FA]'}`}
+              onClick={() => setSelectedStat(option.value)}
+            >
+              <div className="flex gap-2 items-center">
+                {selectedStat === option.value && (
+                  <LucideIcon name="Check" size="sm" />
+                )}
+                <p className="text-body-sm">{option.label}: {calInfo[option.value as keyof typeof calInfo]}</p>
+              </div>
+            </Button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
           <ZoomControl />
         </div>
       </div>

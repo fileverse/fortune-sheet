@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useRef, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+  useEffect,
+} from "react";
 import {
   Context,
   MAX_ZOOM_RATIO,
@@ -87,7 +93,7 @@ const ZoomControl: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.code === "Equal") {
         zoomTo(context.zoomRatio + 0.1);
-          e.stopPropagation();
+        e.stopPropagation();
       } else if ((e.metaKey || e.ctrlKey) && e.code === "Minus") {
         zoomTo(context.zoomRatio - 0.1);
         e.stopPropagation();

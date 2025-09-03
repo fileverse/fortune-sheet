@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.6
+
+### Patch Changes
+
+- Add stats info beside zoom control
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.6
+
 ## 1.1.5
 
 ### Patch Changes

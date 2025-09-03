@@ -19,7 +19,7 @@ class CellFadeAnimator {
     this.ensureTicking();
   }
 
-  alpha(sheetId: string, r: number, c: number): number {
+  getOpacity(sheetId: string, r: number, c: number): number {
     const activeCellAnimationData = this.active.get(`${sheetId}:${r}:${c}`);
     if (!activeCellAnimationData) return 1;
     const animationProgress = Math.min(

@@ -1687,10 +1687,10 @@ export class Canvas {
       renderCtx.textBaseline = "bottom";
 
       const sheetId = this.sheetCtx.currentSheetId;
-      const a = cellFadeAnimator.alpha(sheetId, r, c);
-      if (a < 0.999) {
+      const opacity = cellFadeAnimator.getOpacity(sheetId, r, c);
+      if (opacity < 0.999) {
         renderCtx.save();
-        renderCtx.globalAlpha = a;
+        renderCtx.globalAlpha = opacity;
         renderCtx.fillText(
           _.isNil(value) ? "" : value,
           horizonAlignPos,
@@ -2290,10 +2290,10 @@ export class Canvas {
       }
 
       const sheetId = this.sheetCtx.currentSheetId;
-      const a = cellFadeAnimator.alpha(sheetId, r, c);
-      if (a < 0.999) {
+      const opacity = cellFadeAnimator.getOpacity(sheetId, r, c);
+      if (opacity < 0.999) {
         renderCtx.save();
-        renderCtx.globalAlpha = a;
+        renderCtx.globalAlpha = opacity;
         this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
         renderCtx.restore();
       } else {
@@ -2450,10 +2450,10 @@ export class Canvas {
     }
 
     const sheetId = this.sheetCtx.currentSheetId;
-    const a = cellFadeAnimator.alpha(sheetId, r, c);
-    if (a < 0.999) {
+    const opacity = cellFadeAnimator.getOpacity(sheetId, r, c);
+    if (opacity < 0.999) {
       renderCtx.save();
-      renderCtx.globalAlpha = a;
+      renderCtx.globalAlpha = opacity;
       this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
       renderCtx.restore();
     } else {

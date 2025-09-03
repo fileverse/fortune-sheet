@@ -1,5 +1,23 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.10
+
+### Patch Changes
+
+- stats UI fix
+
+## 1.1.9
+
+### Patch Changes
+
+- minor stats UI changes
+
+## 1.1.8
+
+### Patch Changes
+
+- stats feedback
+
 ## 1.1.7
 
 ### Patch Changes

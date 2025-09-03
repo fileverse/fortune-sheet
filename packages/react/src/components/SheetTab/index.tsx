@@ -100,10 +100,6 @@ const SheetTab: React.FC = () => {
   }, [context.luckysheet_select_save]);
 
   useEffect(() => {
-    console.log(calInfo, "calInfo");
-  }, [calInfo]);
-
-  useEffect(() => {
     const tabCurrent = tabContainerRef.current;
     if (!tabCurrent) return;
     setIsShowScrollBtn(tabCurrent!.scrollWidth - 2 > tabCurrent!.clientWidth);

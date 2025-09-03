@@ -1,5 +1,45 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.10
+
+### Patch Changes
+
+- stats UI fix
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.10
+
+## 1.1.9
+
+### Patch Changes
+
+- minor stats UI changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.9
+
+## 1.1.8
+
+### Patch Changes
+
+- stats feedback
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.8
+
+## 1.1.7
+
+### Patch Changes
+
+- addd support for dunesim
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.7
+
+## 1.1.6
+
+### Patch Changes
+
+- Add stats info beside zoom control
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.6
+
 ## 1.1.5
 
 ### Patch Changes

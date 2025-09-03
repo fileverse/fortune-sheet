@@ -1,5 +1,37 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.10
+
+### Patch Changes
+
+- stats UI fix
+
+## 1.1.9
+
+### Patch Changes
+
+- minor stats UI changes
+
+## 1.1.8
+
+### Patch Changes
+
+- stats feedback
+
+## 1.1.7
+
+### Patch Changes
+
+- addd support for dunesim
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.61
+
+## 1.1.6
+
+### Patch Changes
+
+- Add stats info beside zoom control
+
 ## 1.1.5
 
 ### Patch Changes

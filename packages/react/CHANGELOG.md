@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.20
+
+### Patch Changes
+
+- Fix dune example
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.20
+
 ## 1.1.19
 
 ### Patch Changes

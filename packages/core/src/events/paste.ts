@@ -1387,7 +1387,7 @@ function pasteHandlerOfCopyPaste(
               afterUpdateCell(h, c, null, {
                 ...value,
                 v: arr.length === 1 ? funcV[1] : value.v, // To check with mritunjay for the "arr.length === 1" cond
-                m: funcV[1] instanceof Promise ?  "[object Promise]"  : funcV[1],
+                m: funcV[1] instanceof Promise ? "[object Promise]" : funcV[1],
               });
             }
 
@@ -1628,27 +1628,27 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
       // 剪贴板内容解析
       const cpDataArr = [];
 
-        const reg = /<tr.*?>(.*?)<\/tr>/g;
-        const reg2 = /<td.*?>(.*?)<\/td>/g;
+      const reg = /<tr.*?>(.*?)<\/tr>/g;
+      const reg2 = /<td.*?>(.*?)<\/td>/g;
 
-        const regArr = txtdata.match(reg) || [];
+      const regArr = txtdata.match(reg) || [];
 
-        for (let i = 0; i < regArr.length; i += 1) {
+      for (let i = 0; i < regArr.length; i += 1) {
         const cpRowArr = [];
 
-          const reg2Arr = regArr[i].match(reg2);
+        const reg2Arr = regArr[i].match(reg2);
 
-          if (!_.isNil(reg2Arr)) {
-            for (let j = 0; j < reg2Arr.length; j += 1) {
-              const cpValue = reg2Arr[j]
+        if (!_.isNil(reg2Arr)) {
+          for (let j = 0; j < reg2Arr.length; j += 1) {
+            const cpValue = reg2Arr[j]
               .replace(/<td.*?>/g, "")
               .replace(/<\/td>/g, "");
-              cpRowArr.push(cpValue);
-            }
+            cpRowArr.push(cpValue);
           }
-
-          cpDataArr.push(cpRowArr);
         }
+
+        cpDataArr.push(cpRowArr);
+      }
 
       // 当前页面复制区内容
       const copy_r1 = ctx.luckysheet_copy_save.copyRange[0].row[0];
@@ -1659,42 +1659,42 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
       const copy_index = ctx.luckysheet_copy_save.dataSheetId;
 
       let d;
-        if (copy_index === ctx.currentSheetId) {
-          d = getFlowdata(ctx);
-        } else {
-          const index = getSheetIndex(ctx, copy_index);
+      if (copy_index === ctx.currentSheetId) {
+        d = getFlowdata(ctx);
+      } else {
+        const index = getSheetIndex(ctx, copy_index);
         if (_.isNil(index)) return;
-          d = ctx.luckysheetfile[index].data;
-        }
+        d = ctx.luckysheetfile[index].data;
+      }
       if (!d) return;
 
       for (let r = copy_r1; r <= copy_r2; r += 1) {
-          if (r - copy_r1 > cpDataArr.length - 1) {
-            break;
-          }
+        if (r - copy_r1 > cpDataArr.length - 1) {
+          break;
+        }
 
-          for (let c = copy_c1; c <= copy_c2; c += 1) {
+        for (let c = copy_c1; c <= copy_c2; c += 1) {
           const cell = d[r][c];
           let isInlineStr = false;
-            if (!_.isNil(cell) && !_.isNil(cell.mc) && _.isNil(cell.mc.rs)) {
-              continue;
-            }
+          if (!_.isNil(cell) && !_.isNil(cell.mc) && _.isNil(cell.mc.rs)) {
+            continue;
+          }
 
           let v;
-            if (!_.isNil(cell)) {
+          if (!_.isNil(cell)) {
             if ((cell.ct?.fa?.indexOf("w") ?? -1) > -1) {
-                v = d[r]?.[c]?.v;
-              } else {
-                v = d[r]?.[c]?.m;
-              }
+              v = d[r]?.[c]?.v;
             } else {
-            v = "";
+              v = d[r]?.[c]?.m;
             }
+          } else {
+            v = "";
+          }
 
           if (_.isNil(v) && d[r]?.[c]?.ct?.t === "inlineStr") {
             v = d[r]![c]!.ct!.s!.map((val: any) => val.v).join("");
-              isInlineStr = true;
-            }
+            isInlineStr = true;
+          }
           if (_.isNil(v)) {
             v = "";
           }
@@ -1707,7 +1707,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             //   isEqual = false;
             //   break;
             // }
-            } else {
+          } else {
             if (_.trim(cpDataArr[r - copy_r1][c - copy_c1]) !== _.trim(v)) {
               isEqual = false;
               break;
@@ -1745,43 +1745,43 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     } else {
       if (txtdata.indexOf("table") > -1) {
         const ele = document.createElement("div");
-            ele.innerHTML = txtdata;
+        ele.innerHTML = txtdata;
 
         const trList = ele.querySelectorAll("table tr");
-            if (trList.length === 0) {
-              ele.remove();
-              return;
-            }
+        if (trList.length === 0) {
+          ele.remove();
+          return;
+        }
 
         const data = new Array(trList.length);
-            let colLen = 0;
+        let colLen = 0;
         _.forEach(trList[0].querySelectorAll("td"), (td) => {
-              let colspan = td.colSpan;
+          let colspan = td.colSpan;
           if (Number.isNaN(colspan)) {
             colspan = 1;
           }
-              colLen += colspan;
-            });
+          colLen += colspan;
+        });
 
         for (let i = 0; i < data.length; i += 1) {
           data[i] = new Array(colLen);
         }
 
-            let r = 0;
-            const borderInfo: any = {};
+        let r = 0;
+        const borderInfo: any = {};
         const styleInner = ele.querySelectorAll("style")[0]?.innerHTML || "";
-            const patternReg = /{([^}]*)}/g;
-            const patternStyle = styleInner.match(patternReg);
-            const nameReg = /^[^\t].*/gm;
-            const patternName = _.initial(styleInner.match(nameReg));
-            const allStyleList =
-              patternName.length === patternStyle?.length &&
-              typeof patternName === typeof patternStyle
-                ? _.fromPairs(_.zip(patternName, patternStyle))
-                : {};
+        const patternReg = /{([^}]*)}/g;
+        const patternStyle = styleInner.match(patternReg);
+        const nameReg = /^[^\t].*/gm;
+        const patternName = _.initial(styleInner.match(nameReg));
+        const allStyleList =
+          patternName.length === patternStyle?.length &&
+          typeof patternName === typeof patternStyle
+            ? _.fromPairs(_.zip(patternName, patternStyle))
+            : {};
 
-            const index = getSheetIndex(ctx, ctx.currentSheetId);
-            if (!_.isNil(index)) {
+        const index = getSheetIndex(ctx, ctx.currentSheetId);
+        if (!_.isNil(index)) {
           if (_.isNil(ctx.luckysheetfile[index].config)) {
             ctx.luckysheetfile[index].config = {};
           }
@@ -1791,14 +1791,14 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
               number
             >;
           }
-              const rowHeightList = ctx.luckysheetfile[index].config!.rowlen!;
-              _.forEach(trList, (tr) => {
-                let c = 0;
-                const targetR = ctx.luckysheet_select_save![0].row[0] + r;
+          const rowHeightList = ctx.luckysheetfile[index].config!.rowlen!;
+          _.forEach(trList, (tr) => {
+            let c = 0;
+            const targetR = ctx.luckysheet_select_save![0].row[0] + r;
 
             const targetRowHeight = !_.isNil(tr.getAttribute("height"))
               ? parseInt(tr.getAttribute("height") as string, 10)
-                  : null;
+              : null;
             if (
               (_.has(ctx.luckysheetfile[index].config!.rowlen, targetR) &&
                 ctx.luckysheetfile[index].config!.rowlen![targetR] !==
@@ -1806,92 +1806,92 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
               (!_.has(ctx.luckysheetfile[index].config!.rowlen, targetR) &&
                 ctx.luckysheetfile[index].defaultRowHeight !== targetRowHeight)
             ) {
-                  rowHeightList[targetR] = targetRowHeight as number;
-                }
+              rowHeightList[targetR] = targetRowHeight as number;
+            }
 
             _.forEach(tr.querySelectorAll("td"), (td) => {
               // build cell from td
-                  const { className } = td;
-                  const cell: Cell = {};
-                  const txt = td.innerText || td.innerHTML;
-                  if (_.trim(txt).length === 0) {
-                    cell.v = undefined;
+              const { className } = td;
+              const cell: Cell = {};
+              const txt = td.innerText || td.innerHTML;
+              if (_.trim(txt).length === 0) {
+                cell.v = undefined;
                 cell.m = "";
-                  } else {
-                    const mask = genarate(txt);
-                    // @ts-ignore
-                    [cell.m, cell.ct, cell.v] = mask;
+              } else {
+                const mask = genarate(txt);
+                // @ts-ignore
+                [cell.m, cell.ct, cell.v] = mask;
                 // check if hex value to handle hex address
-                    if (/^0x?[a-fA-F0-9]+$/.test(txt)) {
+                if (/^0x?[a-fA-F0-9]+$/.test(txt)) {
                   cell.ct = { fa: "@", t: "s" };
-                      cell.m = txt;
-                      cell.v = txt;
-                    }
-                  }
-                  const styleString =
+                  cell.m = txt;
+                  cell.v = txt;
+                }
+              }
+              const styleString =
                 typeof allStyleList[`.${className}`] === "string"
                   ? allStyleList[`.${className}`]
                       .substring(1, allStyleList[`.${className}`].length - 1)
                       .split("\n\t")
-                      : [];
-                  const styles: Record<string, string> = {};
-                  _.forEach(styleString, (s) => {
+                  : [];
+              const styles: Record<string, string> = {};
+              _.forEach(styleString, (s) => {
                 const styleList = s.split(":");
                 styles[styleList[0]] = styleList?.[1].replace(";", "");
-                  });
-                  if (!_.isNil(styles.border)) td.style.border = styles.border;
-                  let bg: string | undefined =
-                    td.style.backgroundColor || styles.background;
+              });
+              if (!_.isNil(styles.border)) td.style.border = styles.border;
+              let bg: string | undefined =
+                td.style.backgroundColor || styles.background;
               if (bg === "rgba(0, 0, 0, 0)" || _.isEmpty(bg)) {
                 bg = undefined;
               }
 
-                  cell.bg = bg;
+              cell.bg = bg;
 
-                  const fontWight = td.style.fontWeight;
-                  cell.bl =
+              const fontWight = td.style.fontWeight;
+              cell.bl =
                 (fontWight.toString() === "400" ||
                   fontWight === "normal" ||
-                      _.isEmpty(fontWight)) &&
+                  _.isEmpty(fontWight)) &&
                 !_.includes(styles["font-style"], "bold") &&
                 (!styles["font-weight"] || styles["font-weight"] === "400")
-                      ? 0
-                      : 1;
+                  ? 0
+                  : 1;
 
-                  cell.it =
+              cell.it =
                 (td.style.fontStyle === "normal" ||
-                      _.isEmpty(td.style.fontStyle)) &&
+                  _.isEmpty(td.style.fontStyle)) &&
                 !_.includes(styles["font-style"], "italic")
-                      ? 0
-                      : 1;
+                  ? 0
+                  : 1;
 
               cell.un = !_.includes(styles["text-decoration"], "underline")
-                    ? undefined
-                    : 1;
+                ? undefined
+                : 1;
 
               cell.cl = !_.includes(td.innerHTML, "<s>") ? undefined : 1;
 
               const ff = td.style.fontFamily || styles["font-family"] || "";
               const ffs = ff.split(",");
-                  for (let i = 0; i < ffs.length; i += 1) {
-                    let fa = _.trim(ffs[i].toLowerCase());
-                    // @ts-ignore
-                    fa = locale_fontjson[fa];
-                    if (_.isNil(fa)) {
-                      cell.ff = 0;
-                    } else {
-                      cell.ff = fa;
-                      break;
-                    }
-                  }
-                  const fs = Math.round(
+              for (let i = 0; i < ffs.length; i += 1) {
+                let fa = _.trim(ffs[i].toLowerCase());
+                // @ts-ignore
+                fa = locale_fontjson[fa];
+                if (_.isNil(fa)) {
+                  cell.ff = 0;
+                } else {
+                  cell.ff = fa;
+                  break;
+                }
+              }
+              const fs = Math.round(
                 styles["font-size"]
                   ? parseInt(styles["font-size"].replace("pt", ""), 10)
                   : (parseInt(td.style.fontSize || "13", 10) * 72) / 96
-                  );
-                  cell.fs = fs;
+              );
+              cell.fs = fs;
 
-                  cell.fc = td.style.color || styles.color;
+              cell.fc = td.style.color || styles.color;
 
               const ht = td.style.textAlign || styles["text-align"] || "left";
               if (ht === "center") {
@@ -1902,9 +1902,9 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
                 cell.ht = 1;
               }
 
-                  const regex = /vertical-align:\s*(.*?);/;
-                  const vt =
-                    td.style.verticalAlign ||
+              const regex = /vertical-align:\s*(.*?);/;
+              const vt =
+                td.style.verticalAlign ||
                 styles["vertical-align"] ||
                 (!_.isNil(allStyleList.td) &&
                   allStyleList.td.match(regex).length > 0 &&
@@ -1920,8 +1920,8 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
 
               if ("mso-rotate" in styles) {
                 const rt = styles["mso-rotate"];
-                    cell.rt = parseFloat(rt);
-                  }
+                cell.rt = parseFloat(rt);
+              }
 
               while (c < colLen && !_.isNil(data[r][c])) {
                 c += 1;
@@ -1931,11 +1931,11 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
                 return true;
               }
 
-                  if (_.isNil(data[r][c])) {
-                    data[r][c] = cell;
-                    // @ts-ignore
+              if (_.isNil(data[r][c])) {
+                data[r][c] = cell;
+                // @ts-ignore
                 let rowspan = parseInt(td.getAttribute("rowspan"), 10);
-                    // @ts-ignore
+                // @ts-ignore
                 let colspan = parseInt(td.getAttribute("colspan"), 10);
 
                 if (Number.isNaN(rowspan)) {
@@ -1946,171 +1946,171 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
                   colspan = 1;
                 }
 
-                    const r_ab = ctx.luckysheet_select_save![0].row[0] + r;
-                    const c_ab = ctx.luckysheet_select_save![0].column[0] + c;
+                const r_ab = ctx.luckysheet_select_save![0].row[0] + r;
+                const c_ab = ctx.luckysheet_select_save![0].column[0] + c;
 
-                    for (let rp = 0; rp < rowspan; rp += 1) {
-                      for (let cp = 0; cp < colspan; cp += 1) {
-                        if (rp === 0) {
-                          const bt = td.style.borderTop;
+                for (let rp = 0; rp < rowspan; rp += 1) {
+                  for (let cp = 0; cp < colspan; cp += 1) {
+                    if (rp === 0) {
+                      const bt = td.style.borderTop;
                       if (
                         !_.isEmpty(bt) &&
                         bt.substring(0, 3).toLowerCase() !== "0px"
                       ) {
-                            const width = td.style.borderTopWidth;
-                            const type = td.style.borderTopStyle;
-                            const color = td.style.borderTopColor;
-                            const borderconfig = getQKBorder(width, type, color);
+                        const width = td.style.borderTopWidth;
+                        const type = td.style.borderTopStyle;
+                        const color = td.style.borderTopColor;
+                        const borderconfig = getQKBorder(width, type, color);
 
                         if (!borderInfo[`${r + rp}_${c + cp}`]) {
                           borderInfo[`${r + rp}_${c + cp}`] = {};
                         }
 
-                            borderInfo[`${r + rp}_${c + cp}`].t = {
-                              style: borderconfig[0],
-                              color: borderconfig[1],
-                            };
-                          }
-                        }
+                        borderInfo[`${r + rp}_${c + cp}`].t = {
+                          style: borderconfig[0],
+                          color: borderconfig[1],
+                        };
+                      }
+                    }
 
-                        if (rp === rowspan - 1) {
-                          const bb = td.style.borderBottom;
+                    if (rp === rowspan - 1) {
+                      const bb = td.style.borderBottom;
                       if (
                         !_.isEmpty(bb) &&
                         bb.substring(0, 3).toLowerCase() !== "0px"
                       ) {
-                            const width = td.style.borderBottomWidth;
-                            const type = td.style.borderBottomStyle;
-                            const color = td.style.borderBottomColor;
-                            const borderconfig = getQKBorder(width, type, color);
+                        const width = td.style.borderBottomWidth;
+                        const type = td.style.borderBottomStyle;
+                        const color = td.style.borderBottomColor;
+                        const borderconfig = getQKBorder(width, type, color);
 
                         if (!borderInfo[`${r + rp}_${c + cp}`]) {
                           borderInfo[`${r + rp}_${c + cp}`] = {};
                         }
 
-                            borderInfo[`${r + rp}_${c + cp}`].b = {
-                              style: borderconfig[0],
-                              color: borderconfig[1],
-                            };
-                          }
-                        }
+                        borderInfo[`${r + rp}_${c + cp}`].b = {
+                          style: borderconfig[0],
+                          color: borderconfig[1],
+                        };
+                      }
+                    }
 
-                        if (cp === 0) {
-                          const bl = td.style.borderLeft;
+                    if (cp === 0) {
+                      const bl = td.style.borderLeft;
                       if (
                         !_.isEmpty(bl) &&
                         bl.substring(0, 3).toLowerCase() !== "0px"
                       ) {
-                            const width = td.style.borderLeftWidth;
-                            const type = td.style.borderLeftStyle;
-                            const color = td.style.borderLeftColor;
-                            const borderconfig = getQKBorder(width, type, color);
+                        const width = td.style.borderLeftWidth;
+                        const type = td.style.borderLeftStyle;
+                        const color = td.style.borderLeftColor;
+                        const borderconfig = getQKBorder(width, type, color);
 
                         if (!borderInfo[`${r + rp}_${c + cp}`]) {
                           borderInfo[`${r + rp}_${c + cp}`] = {};
                         }
 
-                            borderInfo[`${r + rp}_${c + cp}`].l = {
-                              style: borderconfig[0],
-                              color: borderconfig[1],
-                            };
-                          }
-                        }
+                        borderInfo[`${r + rp}_${c + cp}`].l = {
+                          style: borderconfig[0],
+                          color: borderconfig[1],
+                        };
+                      }
+                    }
 
-                        if (cp === colspan - 1) {
-                          const br = td.style.borderLeft;
+                    if (cp === colspan - 1) {
+                      const br = td.style.borderLeft;
                       if (
                         !_.isEmpty(br) &&
                         br.substring(0, 3).toLowerCase() !== "0px"
                       ) {
-                            const width = td.style.borderRightWidth;
-                            const type = td.style.borderRightStyle;
-                            const color = td.style.borderRightColor;
-                            const borderconfig = getQKBorder(width, type, color);
+                        const width = td.style.borderRightWidth;
+                        const type = td.style.borderRightStyle;
+                        const color = td.style.borderRightColor;
+                        const borderconfig = getQKBorder(width, type, color);
 
                         if (!borderInfo[`${r + rp}_${c + cp}`]) {
                           borderInfo[`${r + rp}_${c + cp}`] = {};
                         }
 
-                            borderInfo[`${r + rp}_${c + cp}`].r = {
-                              style: borderconfig[0],
-                              color: borderconfig[1],
-                            };
-                          }
-                        }
+                        borderInfo[`${r + rp}_${c + cp}`].r = {
+                          style: borderconfig[0],
+                          color: borderconfig[1],
+                        };
+                      }
+                    }
 
                     if (rp === 0 && cp === 0) {
                       continue;
                     }
 
-                        data[r + rp][c + cp] = { mc: { r: r_ab, c: c_ab } };
-                      }
-                    }
-
-                    if (rowspan > 1 || colspan > 1) {
-                      const first = { rs: rowspan, cs: colspan, r: r_ab, c: c_ab };
-                  data[r][c].mc = first;
-                    }
+                    data[r + rp][c + cp] = { mc: { r: r_ab, c: c_ab } };
                   }
-                  c += 1;
+                }
+
+                if (rowspan > 1 || colspan > 1) {
+                  const first = { rs: rowspan, cs: colspan, r: r_ab, c: c_ab };
+                  data[r][c].mc = first;
+                }
+              }
+              c += 1;
               if (c === colLen) {
                 return true;
               }
-                  return true;
-                });
+              return true;
+            });
 
-                r += 1;
-              });
-              setRowHeight(ctx, rowHeightList);
-            }
+            r += 1;
+          });
+          setRowHeight(ctx, rowHeightList);
+        }
 
-            ctx.luckysheet_selection_range = [];
-            pasteHandler(ctx, data, borderInfo);
+        ctx.luckysheet_selection_range = [];
+        pasteHandler(ctx, data, borderInfo);
         // $("#fortune-copy-content").empty();
-            ele.remove();
-          }
+        ele.remove();
+      }
       // 复制的是图片
       else if (
-          clipboardData.files.length === 1 &&
+        clipboardData.files.length === 1 &&
         clipboardData.files[0].type.indexOf("image") > -1
-        ) {
+      ) {
         //   imageCtrl.insertImg(clipboardData.files[0]);
-        } else {
+      } else {
         txtdata = clipboardData.getData("text/plain");
         const isExcelFormula = txtdata.startsWith("=");
 
-            if (isExcelFormula) {
-              handleFormulaStringPaste(ctx, txtdata);
-            } else {
-              pasteHandler(ctx, txtdata);
+        if (isExcelFormula) {
+          handleFormulaStringPaste(ctx, txtdata);
+        } else {
+          pasteHandler(ctx, txtdata);
 
-              const _txtdata =
+          const _txtdata =
             clipboardData.getData("text/html") ||
             clipboardData.getData("text/plain");
           // Check if it's a Dune link after pasting
-              const embedUrl = sanitizeDuneUrl(_txtdata);
-              if (embedUrl) {
+          const embedUrl = sanitizeDuneUrl(_txtdata);
+          if (embedUrl) {
             // Get the cell position
             const last =
               ctx.luckysheet_select_save?.[
                 ctx.luckysheet_select_save.length - 1
               ];
-                if (last) {
-                  const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
-                  const colIndex = last.column_focus ?? last.column?.[0] ?? 0;
+            if (last) {
+              const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
+              const colIndex = last.column_focus ?? last.column?.[0] ?? 0;
 
               // Calculate position for the preview
               const left =
                 colIndex === 0 ? 0 : ctx.visibledatacolumn[colIndex - 1];
-                  const top = rowIndex === 0 ? 0 : ctx.visibledatarow[rowIndex + 5];
+              const top = rowIndex === 0 ? 0 : ctx.visibledatarow[rowIndex + 5];
               // Show the preview
               ctx.showDunePreview = {
                 url: txtdata,
                 position: { left, top },
               };
-                }
-              }
             }
+          }
+        }
       }
     }
   } else if (ctx.luckysheetCellUpdate.length > 0) {

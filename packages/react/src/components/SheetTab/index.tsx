@@ -169,8 +169,9 @@ const SheetTab: React.FC = () => {
           }}
         >
           <div
-            className={`max-w-7xl mx-auto px-4 py-1 ${isMobile && "w-full flex justify-between"
-              }`}
+            className={`max-w-7xl mx-auto px-4 py-1 ${
+              isMobile && "w-full flex justify-between"
+            }`}
           >
             <p className={`${isMobile ? "text-left" : "text-center"} text-xsm`}>
               <span className="font-medium">Disclaimer:</span> Prices are not
@@ -284,7 +285,7 @@ const SheetTab: React.FC = () => {
               <Button
                 variant="ghost"
                 className="w-full !h-6 p-2 m-1 text-left flex items-center justify-center transition mr-2 !rounded-[0px]"
-                style={{height: "24px !important"}}
+                style={{ height: "24px !important" }}
               >
                 {calInfo.count > 0 && (
                   <p className="text-body-sm">
@@ -298,18 +299,22 @@ const SheetTab: React.FC = () => {
               align="end"
               alignOffset={0}
               className="stats-content color-border-default shadow-elevation-3"
-              style={{width: "fit-content!important"}}
+              style={{ width: "fit-content!important" }}
               elevation={2}
               side="bottom"
               sideOffset={4}
             >
-              <div className="p-2 color-text-default color-border-default" style={{ paddingRight: "15px" }}>
+              <div
+                className="p-2 color-text-default color-border-default"
+                style={{ paddingRight: "15px" }}
+              >
                 {STATS.map((option) => (
                   <Button
                     variant="ghost"
                     key={option.value}
-                    className={`w-full h-8 rounded p-2 m-1 text-left flex items-center justify-between transition mr-2 min-w-[50px] ${selectedStat === option.value && "bg-[#F8F9FA]"
-                      }`}
+                    className={`w-full h-8 rounded p-2 m-1 text-left flex items-center justify-between transition mr-2 min-w-[50px] ${
+                      selectedStat === option.value && "bg-[#F8F9FA]"
+                    }`}
                     onClick={() => setSelectedStat(option.value)}
                   >
                     <div className="flex gap-2 items-center w-full">
@@ -318,25 +323,29 @@ const SheetTab: React.FC = () => {
                           <LucideIcon name="Check" size="sm" />
                         </div>
                       )}
-                        <p className={`text-body-sm color-text-secondary`}
+                      <p
+                        className="text-body-sm color-text-secondary"
+                        style={{
+                          marginLeft:
+                            selectedStat === option.value ? 0 : "24px",
+                          fontSize: "14px",
+                        }}
+                      >
+                        {option.label}:{" "}
+                      </p>
+                      <div className="flex w-full justify-end">
+                        <p
+                          className="font-body-sm-bold color-text-default"
                           style={{
-                            marginLeft: selectedStat === option.value ? 0 : '24px',
-                            fontSize: "14px"
+                            marginLeft:
+                              selectedStat === option.value ? 0 : "24px",
+                            fontSize: "14px",
+                            fontWeight: 500,
                           }}
                         >
-                          {option.label}:{" "}
+                          {calInfo[option.value as keyof typeof calInfo]}
                         </p>
-                        <div className="flex w-full justify-end">
-                          <p className={`font-body-sm-bold color-text-default`}
-                            style={{
-                              marginLeft: selectedStat === option.value ? 0 : '24px',
-                              fontSize: "14px",
-                              fontWeight: 500,
-                            }}
-                          >
-                            {calInfo[option.value as keyof typeof calInfo]}
-                          </p>
-                        </div>
+                      </div>
                     </div>
                   </Button>
                 ))}

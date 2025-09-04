@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.14
+
+### Patch Changes
+
+- Updated live query refresh tag
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.63
+
 ## 1.1.13
 
 ### Patch Changes

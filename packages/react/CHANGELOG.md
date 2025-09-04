@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.17
+
+### Patch Changes
+
+- Updated dunesim error message
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.17
+
 ## 1.1.16
 
 ### Patch Changes

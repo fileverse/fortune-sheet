@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.17
+
+### Patch Changes
+
+- Updated dunesim error message
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.65
+
 ## 1.1.16
 
 ### Patch Changes

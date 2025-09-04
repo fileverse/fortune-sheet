@@ -22,6 +22,7 @@ import {
   CellWithRowAndCol,
   newComment,
   GlobalCache,
+  LiveQueryData,
 } from "@fileverse-dev/fortune-core";
 import { applyPatches } from "immer";
 import _ from "lodash";
@@ -166,6 +167,31 @@ export function generateAPIs(
     initializeComment: (row: number, column: number) => {
       setContext((ctx) => {
         newComment(ctx, undefined, row, column);
+      });
+    },
+    updateSheetLiveQueryList: (subsheetIndex: number, _data: LiveQueryData) => {
+      setContext((ctx) => {
+        const previousLiveQuery =
+          ctx.luckysheetfile[subsheetIndex].liveQueryList;
+        ctx.luckysheetfile[subsheetIndex] = {
+          ...ctx.luckysheetfile[subsheetIndex],
+          liveQueryList: {
+            ...previousLiveQuery,
+            [`${_data.data.id}`]: _data,
+          },
+        };
+      });
+    },
+    removeFromLiveQueryList: (subSheetIndex: number, id: string) => {
+      setContext((ctx) => {
+        const previousLiveQuery = {
+          ...ctx.luckysheetfile[subSheetIndex].liveQueryList,
+        };
+        delete previousLiveQuery?.[id];
+        ctx.luckysheetfile[subSheetIndex] = {
+          ...ctx.luckysheetfile[subSheetIndex],
+          liveQueryList: previousLiveQuery,
+        };
       });
     },
 

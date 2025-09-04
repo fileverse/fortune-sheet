@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.13
+
+### Patch Changes
+
+- Add support for live query
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.13
+
 ## 1.1.11
 
 ### Patch Changes

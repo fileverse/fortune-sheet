@@ -12,6 +12,7 @@ import { isInlineStringCell } from "./modules/inline-string";
 import { getSheetIndex, indexToColumnChar } from "./utils";
 import { getBorderInfoComputeRange } from "./modules/border";
 import { checkCF, getComputeMap, validateCellData } from "./modules";
+import { cellFadeAnimator } from "./animate";
 
 export const defaultStyle = {
   fillStyle: "#000000",
@@ -1685,11 +1686,24 @@ export class Canvas {
       const verticalAlignPos = endY + offsetTop - 2;
       renderCtx.textBaseline = "bottom";
 
-      renderCtx.fillText(
-        _.isNil(value) ? "" : value,
-        horizonAlignPos,
-        verticalAlignPos
-      );
+      const sheetId = this.sheetCtx.currentSheetId;
+      const opacity = cellFadeAnimator.getOpacity(sheetId, r, c);
+      if (opacity < 0.999) {
+        renderCtx.save();
+        renderCtx.globalAlpha = opacity;
+        renderCtx.fillText(
+          _.isNil(value) ? "" : value,
+          horizonAlignPos,
+          verticalAlignPos
+        );
+        renderCtx.restore();
+      } else {
+        renderCtx.fillText(
+          _.isNil(value) ? "" : value,
+          horizonAlignPos,
+          verticalAlignPos
+        );
+      }
     }
 
     // 若单元格有批注
@@ -2275,10 +2289,16 @@ export class Canvas {
         renderCtx.fillStyle = "#ff0000";
       }
 
-      this.cellTextRender(textInfo, renderCtx, {
-        pos_x,
-        pos_y,
-      });
+      const sheetId = this.sheetCtx.currentSheetId;
+      const opacity = cellFadeAnimator.getOpacity(sheetId, r, c);
+      if (opacity < 0.999) {
+        renderCtx.save();
+        renderCtx.globalAlpha = opacity;
+        this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
+        renderCtx.restore();
+      } else {
+        this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
+      }
 
       renderCtx.restore();
     }
@@ -2429,10 +2449,16 @@ export class Canvas {
       renderCtx.fillStyle = checksCF.textColor;
     }
 
-    this.cellTextRender(textInfo, renderCtx, {
-      pos_x,
-      pos_y,
-    });
+    const sheetId = this.sheetCtx.currentSheetId;
+    const opacity = cellFadeAnimator.getOpacity(sheetId, r, c);
+    if (opacity < 0.999) {
+      renderCtx.save();
+      renderCtx.globalAlpha = opacity;
+      this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
+      renderCtx.restore();
+    } else {
+      this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
+    }
 
     renderCtx.restore();
   }

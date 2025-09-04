@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.13
+
+### Patch Changes
+
+- Add support for live query
+
 ## 1.1.11
 
 ### Patch Changes

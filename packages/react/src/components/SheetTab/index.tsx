@@ -280,10 +280,11 @@ const SheetTab: React.FC = () => {
         </div>
         <div className="fortune-sheet-area-right">
           <Popover>
-            <PopoverTrigger className="hover:bg-gray-100">
+            <PopoverTrigger className="p-0 m-0 mr-2">
               <Button
                 variant="ghost"
-                className="w-full h-8 rounded p-2 m-1 text-left flex items-center justify-center transition mr-2"
+                className="w-full !h-6 p-2 m-1 text-left flex items-center justify-center transition mr-2 !rounded-[0px]"
+                style={{height: "24px !important"}}
               >
                 {calInfo.count > 0 && (
                   <p className="text-body-sm">

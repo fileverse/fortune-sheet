@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.19
+
+### Patch Changes
+
+- remove stats popover if string
+
+## 1.1.18
+
+### Patch Changes
+
+- Change sequence of stats
+
 ## 1.1.17
 
 ### Patch Changes

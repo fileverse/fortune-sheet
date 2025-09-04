@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.19
+
+### Patch Changes
+
+- remove stats popover if string
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.19
+
+## 1.1.18
+
+### Patch Changes
+
+- Change sequence of stats
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.18
+
 ## 1.1.17
 
 ### Patch Changes

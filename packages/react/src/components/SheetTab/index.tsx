@@ -32,7 +32,7 @@ const STATS = [
   { label: "Min", value: "min" },
   { label: "Max", value: "max" },
   { label: "Count", value: "count" },
-  { label: "Cells", value: "numberC" },
+  { label: "Count Numbers", value: "numberC" },
 ];
 
 const STATS_LABELS = {
@@ -361,12 +361,14 @@ const SheetTab: React.FC = () => {
               </PopoverContent>
             </Popover>
           ) : (
-            <div style={{ marginRight: "10px" }}>
-              <p className="text-body-sm">
-                {STATS_LABELS["count" as keyof typeof STATS_LABELS]}:{" "}
-                {calInfo["count" as keyof typeof calInfo]}
-              </p>
-            </div>
+            calInfo.count > 0 && (
+              <div style={{ marginRight: "10px" }}>
+                <p className="text-body-sm">
+                  {STATS_LABELS["count" as keyof typeof STATS_LABELS]}:{" "}
+                  {calInfo["count" as keyof typeof calInfo]}
+                </p>
+              </div>
+            )
           )}
           <ZoomControl />
         </div>

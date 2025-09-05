@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.23
+
+### Patch Changes
+
+- Fix arrow navigation
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.23
+
 ## 1.1.22
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.23
+
+### Patch Changes
+
+- Fix arrow navigation
+
 ## 1.1.22
 
 ### Patch Changes

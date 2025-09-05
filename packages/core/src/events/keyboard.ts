@@ -827,10 +827,8 @@ export async function handleGlobalKeyDown(
       kstr === "ArrowUp" ||
       kstr === "ArrowDown" ||
       kstr === "ArrowLeft" ||
-      kstr === "ArrowRight" ||
-      kstr === "Tab"
-    ) {
-      // handleArrowKey(ctx, e);
+      kstr === "ArrowRight") {
+      handleArrowKey(ctx, e);
     } else if (
       !(
         (kcode >= 112 && kcode <= 123) ||

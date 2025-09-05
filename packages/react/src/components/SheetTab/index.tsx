@@ -287,7 +287,7 @@ const SheetTab: React.FC = () => {
           )}
         </div>
         <div className="fortune-sheet-area-right">
-          {statsFilter.length === 6 ? (
+          {statsFilter.length === 6 && (
             <Popover>
               <PopoverTrigger className="p-0 m-0 mr-2">
                 <Button
@@ -360,15 +360,6 @@ const SheetTab: React.FC = () => {
                 </div>
               </PopoverContent>
             </Popover>
-          ) : (
-            calInfo.count > 0 && (
-              <div style={{ marginRight: "10px" }}>
-                <p className="text-body-sm">
-                  {STATS_LABELS["count" as keyof typeof STATS_LABELS]}:{" "}
-                  {calInfo["count" as keyof typeof calInfo]}
-                </p>
-              </div>
-            )
           )}
           <ZoomControl />
         </div>

@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.66
+
+### Patch Changes
+
+- Fix dune example
+
 ## 0.2.65
 
 ### Patch Changes

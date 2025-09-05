@@ -361,14 +361,14 @@ const SheetTab: React.FC = () => {
               </PopoverContent>
             </Popover>
           ) : (
-            (calInfo.count > 0 && (
+            calInfo.count > 0 && (
               <div style={{ marginRight: "10px" }}>
-              <p className="text-body-sm">
-                {STATS_LABELS["count" as keyof typeof STATS_LABELS]}:{" "}
-                {calInfo["count" as keyof typeof calInfo]}
-              </p>
-            </div>
-            ))
+                <p className="text-body-sm">
+                  {STATS_LABELS["count" as keyof typeof STATS_LABELS]}:{" "}
+                  {calInfo["count" as keyof typeof calInfo]}
+                </p>
+              </div>
+            )
           )}
           <ZoomControl />
         </div>

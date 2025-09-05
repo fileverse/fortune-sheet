@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.21
+
+### Patch Changes
+
+- Add support for tab navigation
+
 ## 1.1.20
 
 ### Patch Changes

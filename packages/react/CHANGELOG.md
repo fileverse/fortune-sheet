@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.25
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.25
+
+## 1.1.24
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.24
+
 ## 1.1.23
 
 ### Patch Changes

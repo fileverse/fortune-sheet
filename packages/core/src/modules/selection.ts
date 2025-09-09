@@ -2653,13 +2653,19 @@ export function calcSelectionInfo(ctx: Context, lang?: string | null) {
         // 防止选区长度超出data
         if (r >= data.length || c >= data[0].length) break;
         const ct = data![r][c]?.ct?.t as string;
-        const value = data![r][c]?.m as string;
+        let value = data![r][c]?.m as string;
+        if(data![r][c]?.ct?.fa?.includes("#,##0")){
+          value = data![r][c]?.v as string;
+        }
+
         // 判断是不是数字
         if (
           ct === "n" ||
-          (ct === "g" && parseFloat(value).toString() !== "NaN")
+          (ct === "g" && parseFloat(value).toString() !== "NaN") ||
+          (ct === "s" && parseFloat(value).toString() !== "NaN")
         ) {
-          const valueNumber = parseFloat(value);
+          const removeComma = value.replace(/,/g, '');
+          const valueNumber = parseFloat(removeComma);
           count += 1;
           sum += valueNumber;
           max = Math.max(valueNumber, max);
@@ -2672,7 +2678,7 @@ export function calcSelectionInfo(ctx: Context, lang?: string | null) {
     }
   }
   const formatString =
-    lang && !["zh", "zh_tw"].includes(lang) ? "0.00" : "w0.00";
+    lang && !["zh", "zh_tw"].includes(lang) ? "0.00" : "0.00";
   const average: string = SSF.format(formatString, sum / numberC);
   sum = SSF.format(formatString, sum);
   max = SSF.format(formatString, max);

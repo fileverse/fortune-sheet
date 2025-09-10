@@ -2658,8 +2658,12 @@ export function calcSelectionInfo(ctx: Context, lang?: string | null) {
           value = data![r][c]?.v as string;
         }
 
-        if(data![r][c]?.ct?.t === 'inlineStr' && (value === null || value === undefined || value === '') && data![r][c]?.ct?.s){
-            value = data![r][c]?.ct?.s[0]?.v as string;
+        if (
+          data![r][c]?.ct?.t === "inlineStr" &&
+          (value === null || value === undefined || value === "") &&
+          data![r][c]?.ct?.s
+        ) {
+          value = data![r][c]?.ct?.s[0]?.v as string;
         }
 
         // 判断是不是数字

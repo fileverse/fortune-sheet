@@ -212,7 +212,7 @@ export function sortSelection(
   sortDataRange(ctx, d, data, colIndex, isAsc, str, edr, c1, c2);
 }
 
-function ensureSpaceForSpill(
+function createRowsOrColumnsForSpilledValues(
   ctx: Context,
   startRow: number,
   startColumn: number,
@@ -283,7 +283,13 @@ export function spillSortResult(
   if (!rowCount || !colCount) return false;
 
   // make sure the sheet has enough rows/cols for spilling the result
-  ensureSpaceForSpill(ctx, startRow, startCol, rowCount, colCount);
+  createRowsOrColumnsForSpilledValues(
+    ctx,
+    startRow,
+    startCol,
+    rowCount,
+    colCount
+  );
 
   const sheetData = flowdata || getFlowdata(ctx);
   if (!sheetData) return false;

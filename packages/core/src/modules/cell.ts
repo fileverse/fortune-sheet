@@ -1059,8 +1059,10 @@ export function updateCell(
     value.tb = "1";
   }
 
+  const isValueArray = Array.isArray((value as any)?.v?.[0]);
+
   try {
-    if (Array.isArray((value as any)?.v?.[0])) {
+    if (isValueArray) {
       if (spillSortResult(ctx, r, c, value, d)) {
         cancelNormalSelected(ctx);
         if (ctx.hooks.afterUpdateCell) {

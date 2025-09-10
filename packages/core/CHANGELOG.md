@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.31
+
+### Patch Changes
+
+- handle undefined inline s value
+
 ## 1.1.30
 
 ### Patch Changes

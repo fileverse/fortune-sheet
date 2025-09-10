@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.31
+
+### Patch Changes
+
+- handle undefined inline s value
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.31
+
 ## 1.1.30
 
 ### Patch Changes

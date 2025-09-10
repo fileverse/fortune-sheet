@@ -117,12 +117,13 @@ export function updateFormatCell(
           }
           cell.ct.fa = foucsStatus;
           cell.ct.t = type;
-          cell.fc = cell.fc || cell.ct.s[0].fc;
-          cell.bl = cell.bl || cell.ct.s[0].bl;
-          cell.it = cell.it || cell.ct.s[0].it;
-          cell.un = cell.un || cell.ct.s[0].un;
-          cell.fs = cell.fs || cell.ct.s[0].fs;
-          cell.cl = cell.cl || cell.ct.s[0].cl;
+          cell.v = String(value);
+          cell.fc = cell.fc || cell.ct?.s?.[0]?.fc;
+          cell.bl = cell.bl || cell.ct?.s?.[0]?.bl;
+          cell.it = cell.it || cell.ct?.s?.[0]?.it;
+          cell.un = cell.un || cell.ct?.s?.[0]?.un;
+          cell.fs = cell.fs || cell.ct?.s?.[0]?.fs;
+          cell.cl = cell.cl || cell.ct?.s?.[0]?.cl;
         } else {
           d[r][c] = {
             ct: { fa: foucsStatus, t: type },

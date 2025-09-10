@@ -2408,10 +2408,10 @@
   resolved "https://registry.yarnpkg.com/@fal-works/esbuild-plugin-global-externals/-/esbuild-plugin-global-externals-2.1.2.tgz#c05ed35ad82df8e6ac616c68b92c2282bd083ba4"
   integrity sha512-cEee/Z+I12mZcFJshKcCqC8tuX5hG3s+d+9nZ3LabqKF1vKdF41B92pJVCBggjAGORAeOzyyDDKrZwIkLffeOQ==
 
-"@fileverse-dev/formulajs@4.4.17":
-  version "4.4.17"
-  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.17.tgz#3236d30793868aaa8eb9a8092ac0a6d6c777148d"
-  integrity sha512-be1pWDvpAKVcYa02gbTWVNZlbbAkHbhEBehYQ+wAdlvuKILoSBcPOn1smzXBLa2oVRxDX2KsFZxUNvlGbFcCJA==
+"@fileverse-dev/formulajs@4.4.18":
+  version "4.4.18"
+  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.18.tgz#df1e37b2fdf1d5edf2754e0fff689711637ed541"
+  integrity sha512-qboLaVGigIynIlPo5JZK0D8ByqQCHYQBe/ciNBQxv3A+E+H/z3xGxcg7J0zZEmtqnsgIXo4ctvwBOnxyOX9DdA==
   dependencies:
     bessel "^1.0.2"
     esbuild "^0.25.4"
@@ -7453,6 +7453,11 @@ ansi-styles@^6.0.0:
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-6.2.1.tgz#0e62320cf99c21afff3b3012192546aacbfb05c5"
   integrity sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==
+
+ansi-styles@^6.1.0:
+  version "6.2.3"
+  resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-6.2.3.tgz#c044d5dcc521a076413472597a1acb1f103c4041"
+  integrity sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==
 
 ansi-styles@~1.0.0:
   version "1.0.0"

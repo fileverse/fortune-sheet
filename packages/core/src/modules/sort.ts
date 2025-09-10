@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 import numeral from "numeral";
 import _ from "lodash";
 // import { execfunction, functionCopy, update } from ".";
@@ -7,9 +8,11 @@ import {
   Context,
   diff,
   getFlowdata,
+  getSheetIndex,
   isdatetime,
   isRealNull,
   isRealNum,
+  setCellValue,
 } from "..";
 import { jfrefreshgrid } from "./refresh";
 
@@ -207,4 +210,109 @@ export function sortSelection(
   }
 
   sortDataRange(ctx, d, data, colIndex, isAsc, str, edr, c1, c2);
+}
+
+function createRowsOrColumnsForSpilledValues(
+  ctx: Context,
+  startRow: number,
+  startColumn: number,
+  spillRows: number,
+  spillCols: number
+) {
+  const flowdata = getFlowdata(ctx);
+  if (!flowdata) return;
+
+  // update luckysheetfile metadata if needed
+  try {
+    const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId) as number;
+    const sheet = ctx.luckysheetfile[sheetIndex];
+
+    const requiredRowCount = startRow + spillRows;
+    const requiredColCount = startColumn + spillCols;
+
+    if (sheet.row && sheet.row < requiredRowCount) {
+      sheet.row = requiredRowCount;
+    }
+    if (sheet.column && sheet.column < requiredColCount) {
+      sheet.column = requiredColCount;
+    }
+  } catch (error) {
+    console.error("Failed to update sheet metadata for spill operation", error);
+  }
+
+  // make sure the matrix has at least `startRow + spillRows` rows.
+  while (flowdata.length < startRow + spillRows) {
+    flowdata.push([]); // push empty row
+  }
+  // For each row that will be touched by the spill:
+  for (let rowIndex = startRow; rowIndex < startRow + spillRows; rowIndex++) {
+    if (!Array.isArray(flowdata[rowIndex])) {
+      flowdata[rowIndex] = [];
+    }
+
+    // Ensure the row has at least `startColumn + spillCols` columns.
+    while (flowdata[rowIndex].length < startColumn + spillCols) {
+      flowdata[rowIndex].push(null);
+    }
+  }
+}
+
+export function spillSortResult(
+  ctx: Context,
+  startRow: number,
+  startCol: number,
+  formulaResult: any, // expects { f: string, v: any[][] }
+  flowdata?: CellMatrix
+): boolean {
+  const formulaString = formulaResult?.f;
+  const formulaValue = formulaResult?.v;
+
+  // make sure it is a SORT formula result
+  if (typeof formulaString !== "string" || !/= *SORT\s*\(/i.test(formulaString))
+    return false;
+  if (!Array.isArray(formulaValue)) return false;
+
+  // make sure result is a 2D array
+  const valueMatrix: any[][] = Array.isArray(formulaValue[0])
+    ? formulaValue
+    : formulaValue.map((x) => [x]);
+
+  const rowCount = valueMatrix.length;
+  const colCount =
+    rowCount && Array.isArray(valueMatrix[0]) ? valueMatrix[0].length : 0;
+  if (!rowCount || !colCount) return false;
+
+  // make sure the sheet has enough rows/cols for spilling the result
+  createRowsOrColumnsForSpilledValues(
+    ctx,
+    startRow,
+    startCol,
+    rowCount,
+    colCount
+  );
+
+  const sheetData = flowdata || getFlowdata(ctx);
+  if (!sheetData) return false;
+
+  // write the first cell with the formula reference
+  setCellValue(ctx, startRow, startCol, sheetData, {
+    ...formulaResult,
+    v: valueMatrix[0][0],
+    tb: "1",
+  });
+
+  // spill the rest of the result to the grid
+  for (let r = 0; r < rowCount; r++) {
+    for (let c = 0; c < colCount; c++) {
+      if (r === 0 && c === 0) continue; // already handled above
+      const cellValue = valueMatrix[r][c];
+      setCellValue(ctx, startRow + r, startCol + c, sheetData, {
+        v: cellValue,
+        ct: { fa: "General", t: typeof cellValue === "number" ? "n" : "g" },
+        tb: "1",
+      });
+    }
+  }
+
+  return true;
 }

@@ -10707,7 +10707,7 @@ export default {
       p: [
         {
           name: "range",
-          detail: "The data to be sorted.",
+          detail: "the cell range to sort.",
           example: "A2:A17",
           require: "m",
           repeat: "n",
@@ -10716,7 +10716,7 @@ export default {
         {
           name: "sort_column",
           detail:
-            "The index of the column in `range` or a range outside of `range` containing the values by which to sort.",
+            "The index of the column in `range` to sort by. The first column in `range` is 1, the second column is 2, and so on.",
           example: "1",
           require: "o",
           repeat: "n",
@@ -10726,18 +10726,10 @@ export default {
           name: "is_ascending",
           detail:
             "`TRUE` or `FALSE` indicating whether to sort `sort_column` in ascending order. `FALSE` sorts in descending order.",
-          example: "-1",
+          example: `"TRUE"`,
           require: "o",
           repeat: "n",
-          type: "rangenumber",
-        },
-        {
-          name: "sort_column2",
-          detail: "Additional columns.",
-          example: "TRUE()",
-          require: "o",
-          repeat: "n",
-          type: "rangeall",
+          type: "string",
         },
       ],
     },

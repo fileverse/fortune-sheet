@@ -1,5 +1,53 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.68
+
+### Patch Changes
+
+- N/A
+
+## 0.2.67
+
+### Patch Changes
+
+- New fresh build
+
+## 0.2.66
+
+### Patch Changes
+
+- Fix dune example
+
+## 0.2.65
+
+### Patch Changes
+
+- Updated dunesim error message
+
+## 0.2.64
+
+### Patch Changes
+
+- New fresh build for all pacakges
+
+## 0.2.63
+
+### Patch Changes
+
+- Updated live query refresh tag
+
+## 0.2.62
+
+### Patch Changes
+
+- Updated dunesim to dune
+
+## 0.2.61
+
+### Patch Changes
+
+- addd support for dunesim
+
 ## 0.2.59
 
 ### Patch Changes

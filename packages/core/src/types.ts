@@ -133,6 +133,19 @@ export type ConditionRulesProps = {
   projectValue: string;
 };
 
+export type LiveQueryData = {
+  data: {
+    row: number;
+    column: number;
+    function: string;
+    value: any;
+    id: string;
+    name: string;
+    subSheetId: string;
+  };
+  cellData: Cell;
+};
+
 export type Sheet = {
   name: string;
   config?: SheetConfig;
@@ -181,6 +194,7 @@ export type Sheet = {
     type: "row" | "column" | "both" | "rangeRow" | "rangeColumn" | "rangeBoth";
     range?: { row_focus: number; column_focus: number };
   };
+  liveQueryList?: Record<string, LiveQueryData>;
 };
 
 export type CommentBox = {

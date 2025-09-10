@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+  useEffect,
+} from "react";
 import {
   Context,
   MAX_ZOOM_RATIO,
@@ -82,6 +88,22 @@ const ZoomControl: React.FC = () => {
     },
     [setContext]
   );
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.code === "Equal") {
+        zoomTo(context.zoomRatio + 0.1);
+        e.stopPropagation();
+      } else if ((e.metaKey || e.ctrlKey) && e.code === "Minus") {
+        zoomTo(context.zoomRatio - 0.1);
+        e.stopPropagation();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [context.zoomRatio]);
 
   return (
     <div className="fortune-zoom-container">

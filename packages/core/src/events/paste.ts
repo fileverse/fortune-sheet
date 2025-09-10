@@ -1383,11 +1383,11 @@ function pasteHandlerOfCopyPaste(
             );
 
             const { afterUpdateCell } = ctx.hooks;
-            if (afterUpdateCell && arr.length === 1) {
+            if (afterUpdateCell) {
               afterUpdateCell(h, c, null, {
                 ...value,
-                v: funcV[1],
-                m: "[object Promise]",
+                v: arr.length === 1 ? funcV[1] : value.v, // To check with mritunjay for the "arr.length === 1" cond
+                m: funcV[1] instanceof Promise ? "[object Promise]" : funcV[1],
               });
             }
 

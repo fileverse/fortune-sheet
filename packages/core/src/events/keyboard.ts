@@ -742,9 +742,15 @@ export async function handleGlobalKeyDown(
     handleGlobalEnter(ctx, cellInput, e, canvas);
   } else if (kstr === "Tab") {
     if (ctx.luckysheetCellUpdate.length > 0) {
-      return;
+      updateCell(
+        ctx,
+        ctx.luckysheetCellUpdate[0],
+        ctx.luckysheetCellUpdate[1],
+        cellInput,
+        undefined,
+        canvas
+      );
     }
-
     if (e.shiftKey) {
       moveHighlightCell(ctx, "right", -1, "rangeOfSelect");
     } else {

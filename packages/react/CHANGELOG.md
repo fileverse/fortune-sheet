@@ -1,5 +1,221 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.32
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.32
+
+## 1.1.31
+
+### Patch Changes
+
+- handle undefined inline s value
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.31
+
+## 1.1.30
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.30
+
+## 1.1.29
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.29
+
+## 1.1.28
+
+### Patch Changes
+
+- Minor fix for inlinestr for stats
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.28
+
+## 1.1.27
+
+### Patch Changes
+
+- Fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.27
+
+## 1.1.26
+
+### Patch Changes
+
+- Fix inline color font cell's for currency conversion
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.26
+
+## 1.1.25
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.25
+
+## 1.1.24
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.24
+
+## 1.1.23
+
+### Patch Changes
+
+- Fix arrow navigation
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.23
+
+## 1.1.22
+
+### Patch Changes
+
+- New fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.22
+
+## 1.1.21
+
+### Patch Changes
+
+- Add support for tab navigation
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.21
+
+## 1.1.20
+
+### Patch Changes
+
+- Fix dune example
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.20
+
+## 1.1.19
+
+### Patch Changes
+
+- remove stats popover if string
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.19
+
+## 1.1.18
+
+### Patch Changes
+
+- Change sequence of stats
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.18
+
+## 1.1.17
+
+### Patch Changes
+
+- Updated dunesim error message
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.17
+
+## 1.1.16
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.16
+
+## 1.1.15
+
+### Patch Changes
+
+- New fresh build for all pacakges
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.15
+
+## 1.1.14
+
+### Patch Changes
+
+- Updated live query refresh tag
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.14
+
+## 1.1.13
+
+### Patch Changes
+
+- Add support for live query
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.13
+
+## 1.1.11
+
+### Patch Changes
+
+- Updated dunesim to dune
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.11
+
+## 1.1.10
+
+### Patch Changes
+
+- stats UI fix
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.10
+
+## 1.1.9
+
+### Patch Changes
+
+- minor stats UI changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.9
+
+## 1.1.8
+
+### Patch Changes
+
+- stats feedback
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.8
+
+## 1.1.7
+
+### Patch Changes
+
+- addd support for dunesim
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.7
+
+## 1.1.6
+
+### Patch Changes
+
+- Add stats info beside zoom control
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.6
+
+## 1.1.5
+
+### Patch Changes
+
+- add zoom sort cuts
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.5
+
 ## 1.1.4
 
 ### Patch Changes

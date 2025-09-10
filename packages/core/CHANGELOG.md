@@ -1,5 +1,183 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.32
+
+### Patch Changes
+
+- N/A
+
+## 1.1.31
+
+### Patch Changes
+
+- handle undefined inline s value
+
+## 1.1.30
+
+### Patch Changes
+
+- N/A
+
+## 1.1.29
+
+### Patch Changes
+
+- N/A
+
+## 1.1.28
+
+### Patch Changes
+
+- Minor fix for inlinestr for stats
+
+## 1.1.27
+
+### Patch Changes
+
+- Fresh build
+
+## 1.1.26
+
+### Patch Changes
+
+- Fix inline color font cell's for currency conversion
+
+## 1.1.25
+
+### Patch Changes
+
+- N/A
+
+## 1.1.24
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.68
+
+## 1.1.23
+
+### Patch Changes
+
+- Fix arrow navigation
+
+## 1.1.22
+
+### Patch Changes
+
+- New fresh build
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.67
+
+## 1.1.21
+
+### Patch Changes
+
+- Add support for tab navigation
+
+## 1.1.20
+
+### Patch Changes
+
+- Fix dune example
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.66
+
+## 1.1.19
+
+### Patch Changes
+
+- remove stats popover if string
+
+## 1.1.18
+
+### Patch Changes
+
+- Change sequence of stats
+
+## 1.1.17
+
+### Patch Changes
+
+- Updated dunesim error message
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.65
+
+## 1.1.16
+
+### Patch Changes
+
+- N/A
+
+## 1.1.15
+
+### Patch Changes
+
+- New fresh build for all pacakges
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.64
+
+## 1.1.14
+
+### Patch Changes
+
+- Updated live query refresh tag
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.63
+
+## 1.1.13
+
+### Patch Changes
+
+- Add support for live query
+
+## 1.1.11
+
+### Patch Changes
+
+- Updated dunesim to dune
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.62
+
+## 1.1.10
+
+### Patch Changes
+
+- stats UI fix
+
+## 1.1.9
+
+### Patch Changes
+
+- minor stats UI changes
+
+## 1.1.8
+
+### Patch Changes
+
+- stats feedback
+
+## 1.1.7
+
+### Patch Changes
+
+- addd support for dunesim
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.61
+
+## 1.1.6
+
+### Patch Changes
+
+- Add stats info beside zoom control
+
+## 1.1.5
+
+### Patch Changes
+
+- add zoom sort cuts
+
 ## 1.1.4
 
 ### Patch Changes

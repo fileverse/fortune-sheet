@@ -1,10 +1,46 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.32
+
+### Patch Changes
+
+- N/A
+
+## 1.1.31
+
+### Patch Changes
+
+- handle undefined inline s value
+
+## 1.1.30
+
+### Patch Changes
+
+- N/A
+
+## 1.1.29
+
+### Patch Changes
+
+- N/A
+
+## 1.1.28
+
+### Patch Changes
+
+- Minor fix for inlinestr for stats
+
+## 1.1.27
+
+### Patch Changes
+
+- Fresh build
+
 ## 1.1.26
 
 ### Patch Changes
 
-- support curreny and crypto denomination in number stats
+- Fix inline color font cell's for currency conversion
 
 ## 1.1.25
 

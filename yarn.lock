@@ -2402,10 +2402,10 @@
   resolved "https://registry.npmjs.org/@fal-works/esbuild-plugin-global-externals/-/esbuild-plugin-global-externals-2.1.2.tgz"
   integrity sha512-cEee/Z+I12mZcFJshKcCqC8tuX5hG3s+d+9nZ3LabqKF1vKdF41B92pJVCBggjAGORAeOzyyDDKrZwIkLffeOQ==
 
-"@fileverse-dev/formulajs@4.4.12-mod-2":
-  version "4.4.12-mod-2"
-  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.12-mod-2.tgz#778c8798dd371cdf8b68912899921098449cf664"
-  integrity sha512-wCUEgsGDkCWd3vzMYQ7XEXzMhb1zF2YTaCsbmHm21+1QwEtopQgeYNcv6HgFz8qPcJqHOWa5rjcKFujH5ms8IQ==
+"@fileverse-dev/formulajs@4.4.18":
+  version "4.4.18"
+  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.18.tgz#df1e37b2fdf1d5edf2754e0fff689711637ed541"
+  integrity sha512-qboLaVGigIynIlPo5JZK0D8ByqQCHYQBe/ciNBQxv3A+E+H/z3xGxcg7J0zZEmtqnsgIXo4ctvwBOnxyOX9DdA==
   dependencies:
     bessel "^1.0.2"
     esbuild "^0.25.4"
@@ -7432,10 +7432,15 @@ ansi-styles@^5.0.0:
   resolved "https://registry.npmjs.org/ansi-styles/-/ansi-styles-5.2.0.tgz"
   integrity sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA==
 
-ansi-styles@^6.0.0, ansi-styles@^6.1.0:
+ansi-styles@^6.0.0:
   version "6.2.1"
   resolved "https://registry.npmjs.org/ansi-styles/-/ansi-styles-6.2.1.tgz"
   integrity sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==
+
+ansi-styles@^6.1.0:
+  version "6.2.3"
+  resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-6.2.3.tgz#c044d5dcc521a076413472597a1acb1f103c4041"
+  integrity sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==
 
 ansi-styles@~1.0.0:
   version "1.0.0"

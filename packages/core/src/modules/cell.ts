@@ -22,6 +22,7 @@ import {
 } from "./inline-string";
 import { isRealNull, isRealNum, valueIsError } from "./validation";
 import { getCellTextInfo } from "./text";
+import { spillSortResult } from "./sort";
 
 // TODO put these in context ref
 // let rangestart = false;
@@ -1058,7 +1059,24 @@ export function updateCell(
     value.tb = "1";
   }
 
+  try {
+    if (Array.isArray((value as any)?.v?.[0])) {
+      if (spillSortResult(ctx, r, c, value, d)) {
+        cancelNormalSelected(ctx);
+        if (ctx.hooks.afterUpdateCell) {
+          const newValue = _.cloneDeep(d[r][c]);
+          setTimeout(() => ctx.hooks.afterUpdateCell?.(r, c, null, newValue));
+        }
+        ctx.formulaCache.execFunctionGlobalData = null;
+        return;
+      }
+    }
+  } catch (e) {
+    console.log("[updateCell] spill failed; falling back", e);
+  }
+
   setCellValue(ctx, r, c, d, value);
+
   cancelNormalSelected(ctx);
 
   /*

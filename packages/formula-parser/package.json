@@ -48,7 +48,7 @@
     "webpack-cli": "^4.2.0"
   },
   "dependencies": {
-    "@fileverse-dev/formulajs": "4.4.12-mod-2",
+    "@fileverse-dev/formulajs": "4.4.18",
     "tiny-emitter": "^2.1.0"
   },
   "jest": {

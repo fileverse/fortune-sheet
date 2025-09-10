@@ -22,7 +22,11 @@ import { moveToEnd } from "./cursor";
 import { locale } from "../locale";
 import { colors } from "./color";
 import { colLocation, mousePosition, rowLocation } from "./location";
-import { cancelFunctionrangeSelected, seletedHighlistByindex } from ".";
+import {
+  cancelFunctionrangeSelected,
+  seletedHighlistByindex,
+  spillSortResult,
+} from ".";
 
 let functionHTMLIndex = 0;
 let rangeIndexes: number[] = [];
@@ -1759,6 +1763,41 @@ export function execFunctionGroup(
       formulaCell.id,
       calcChainSet
     );
+
+    const valueData = v?.[1];
+    const valueFunction = v?.[2];
+
+    if (Array.isArray(valueData)) {
+      // spill to grid
+      const spilled = spillSortResult(
+        ctx,
+        formulaCell.r,
+        formulaCell.c,
+        { v: valueData, f: valueFunction },
+        data // flowdata for this sheet
+      );
+
+      if (spilled) {
+        const matrixTopLeftValue = Array.isArray(valueData[0])
+          ? valueData[0][0]
+          : valueData[0];
+
+        ctx.groupValuesRefreshData.push({
+          r: formulaCell.r,
+          c: formulaCell.c,
+          v: matrixTopLeftValue,
+          f: valueFunction,
+          spe: v[3],
+          id: formulaCell.id,
+        });
+
+        ctx.formulaCache.execFunctionGlobalData[
+          `${formulaCell.r}_${formulaCell.c}_${formulaCell.id}`
+        ] = { v: matrixTopLeftValue, f: valueFunction };
+
+        continue;
+      }
+    }
 
     ctx.groupValuesRefreshData.push({
       r: formulaCell.r,

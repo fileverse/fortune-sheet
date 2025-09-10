@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.33
+
+### Patch Changes
+
+- Fix Sort function
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.69
+
 ## 1.1.32
 
 ### Patch Changes

@@ -2658,13 +2658,17 @@ export function calcSelectionInfo(ctx: Context, lang?: string | null) {
           value = data![r][c]?.v as string;
         }
 
+        if(data![r][c]?.ct?.t === 'inlineStr' && (value === null || value === undefined || value === '') && data![r][c]?.ct?.s){
+            value = data![r][c]?.ct?.s[0]?.v as string;
+        }
+
         // 判断是不是数字
         if (
           ct === "n" ||
           (ct === "g" && parseFloat(value).toString() !== "NaN") ||
-          (ct === "s" && parseFloat(value).toString() !== "NaN")
+          (ct === "inlineStr" && parseFloat(value).toString() !== "NaN")
         ) {
-          const removeComma = value.replace(/,/g, "");
+          const removeComma = value?.replace(/,/g, "") || "0";
           const valueNumber = parseFloat(removeComma);
           count += 1;
           sum += valueNumber;

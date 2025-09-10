@@ -1,10 +1,34 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.29
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.29
+
+## 1.1.28
+
+### Patch Changes
+
+- Minor fix for inlinestr for stats
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.28
+
+## 1.1.27
+
+### Patch Changes
+
+- Fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.27
+
 ## 1.1.26
 
 ### Patch Changes
 
-- support curreny and crypto denomination in number stats
+- Fix inline color font cell's for currency conversion
 - Updated dependencies
   - @fileverse-dev/fortune-core@1.1.26
 

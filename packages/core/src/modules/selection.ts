@@ -2673,7 +2673,7 @@ export function calcSelectionInfo(ctx: Context, lang?: string | null) {
           (ct === "g" && parseFloat(value).toString() !== "NaN") ||
           (ct === "inlineStr" && parseFloat(value).toString() !== "NaN")
         ) {
-          const removeComma = value?.replace(/,/g, "") || "0";
+          const removeComma = String(value)?.replace(/,/g, "") || "0";
           const valueNumber = parseFloat(removeComma);
           count += 1;
           sum += valueNumber;

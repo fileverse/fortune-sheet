@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.32
+
+### Patch Changes
+
+- N/A
+
 ## 1.1.31
 
 ### Patch Changes

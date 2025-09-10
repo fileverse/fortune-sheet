@@ -2661,7 +2661,8 @@ export function calcSelectionInfo(ctx: Context, lang?: string | null) {
         if (
           data![r][c]?.ct?.t === "inlineStr" &&
           (value === null || value === undefined || value === "") &&
-          data![r][c]?.ct?.s
+          data![r][c]?.ct?.s &&
+          !data![r][c]?.ct?.s[0]?.v.includes("\r")
         ) {
           value = data![r][c]?.ct?.s[0]?.v as string;
         }

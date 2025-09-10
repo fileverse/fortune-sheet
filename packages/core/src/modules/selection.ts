@@ -2653,13 +2653,23 @@ export function calcSelectionInfo(ctx: Context, lang?: string | null) {
         // 防止选区长度超出data
         if (r >= data.length || c >= data[0].length) break;
         const ct = data![r][c]?.ct?.t as string;
-        const value = data![r][c]?.m as string;
+        let value = data![r][c]?.m as string;
+        if (data![r][c]?.ct?.fa?.includes("#,##0")) {
+          value = data![r][c]?.v as string;
+        }
+
+        if(data![r][c]?.ct?.t === 'inlineStr' && (value === null || value === undefined || value === '') && data![r][c]?.ct?.s){
+            value = data![r][c]?.ct?.s[0]?.v as string;
+        }
+
         // 判断是不是数字
         if (
           ct === "n" ||
-          (ct === "g" && parseFloat(value).toString() !== "NaN")
+          (ct === "g" && parseFloat(value).toString() !== "NaN") ||
+          (ct === "inlineStr" && parseFloat(value).toString() !== "NaN")
         ) {
-          const valueNumber = parseFloat(value);
+          const removeComma = value?.replace(/,/g, "") || "0";
+          const valueNumber = parseFloat(removeComma);
           count += 1;
           sum += valueNumber;
           max = Math.max(valueNumber, max);

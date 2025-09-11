@@ -1755,8 +1755,8 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
 
         const data = new Array(trList.length);
         let colLen = 0;
-        _.forEach(trList[0].querySelectorAll("td"), (td) => {
-          let colspan = td.colSpan;
+        _.forEach(trList[0].querySelectorAll("td, th"), (td) => {
+          let colspan = (td as HTMLTableCellElement).colSpan;
           if (Number.isNaN(colspan)) {
             colspan = 1;
           }
@@ -1809,11 +1809,13 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
               rowHeightList[targetR] = targetRowHeight as number;
             }
 
-            _.forEach(tr.querySelectorAll("td"), (td) => {
+            _.forEach(tr.querySelectorAll("td, th"), (element) => {
               // build cell from td
+              const td = element as HTMLTableCellElement;
               const { className } = td;
               const cell: Cell = {};
-              const txt = td.innerText || td.innerHTML;
+              const txt =
+                (td as HTMLTableCellElement).innerText || td.innerHTML;
               if (_.trim(txt).length === 0) {
                 cell.v = undefined;
                 cell.m = "";

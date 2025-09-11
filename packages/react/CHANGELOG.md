@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.34
+
+### Patch Changes
+
+- fix issue with copy and paste table
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.34
+
 ## 1.1.33
 
 ### Patch Changes

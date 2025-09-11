@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.34
+
+### Patch Changes
+
+- fix issue with copy and paste table
+
 ## 1.1.33
 
 ### Patch Changes

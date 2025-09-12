@@ -575,14 +575,24 @@ function handleShiftWithArrowKey(ctx: Context, e: KeyboardEvent) {
 }
 
 export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
-  if (
-    ctx.luckysheetCellUpdate.length > 0 ||
-    ctx.luckysheet_cell_selected_move ||
-    ctx.luckysheet_cell_selected_extend
-    // || $(event.target).hasClass("formulaInputFocus") ||
-    // $("#luckysheet-singleRange-dialog").is(":visible") ||
-    // $("#luckysheet-multiRange-dialog").is(":visible")
-  ) {
+  // if (
+  //   ctx.luckysheetCellUpdate.length > 0 ||
+  //   ctx.luckysheet_cell_selected_move ||
+  //   ctx.luckysheet_cell_selected_extend
+  //   // || $(event.target).hasClass("formulaInputFocus") ||
+  //   // $("#luckysheet-singleRange-dialog").is(":visible") ||
+  //   // $("#luckysheet-multiRange-dialog").is(":visible")
+  // ) {
+  //   return;
+  // }
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<div>${document.getElementById("luckysheet-rich-text-editor")?.innerHTML}</div>`, 'text/html');
+  const spans = doc.querySelectorAll('span');
+  const lastSpan = spans[spans.length - 1];
+
+  // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
+  if (lastSpan?.innerText.includes(')') || (!lastSpan?.innerText.includes('(') && lastSpan?.innerText.length > 2)) {
     return;
   }
 

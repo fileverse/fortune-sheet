@@ -27,12 +27,14 @@ import React, {
   useLayoutEffect,
   useState,
 } from "react";
-import _ from "lodash";
+import _, { get } from "lodash";
 import WorkbookContext from "../../context";
 import ContentEditable from "./ContentEditable";
 import FormulaSearch from "./FormulaSearch";
 import FormulaHint from "./FormulaHint";
 import usePrevious from "../../hooks/usePrevious";
+import { moveCursorToEnd, isLetterNumberPattern, removeLastSpan, incrementColumn, decrementColumn, incrementRow, decrementRow } from "./helper";
+
 
 const InputBox: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
@@ -42,11 +44,22 @@ const InputBox: React.FC = () => {
   const prevSheetId = usePrevious<string>(context.currentSheetId);
   const [isHidenRC, setIsHidenRC] = useState<boolean>(false);
   const [isInputBoxActive, setIsInputBoxActive] = useState(false);
+  const [activeCell, setActiveCell] = useState<string>(
+    ''
+  );
+  const [activeRefCell, setActiveRefCell] = useState<string>('');
   const [frozenPosition, setFrozenPosition] = useState({ left: 0, top: 0 });
   const firstSelection = context.luckysheet_select_save?.[0];
   const row_index = firstSelection?.row_focus!;
   const col_index = firstSelection?.column_focus!;
   const preText = useRef("");
+  const placeRef = useRef('');
+
+  useEffect(() => {
+    if (isInputBoxActive) {
+      setActiveCell(getCellAddress());
+    }
+  }, [isInputBoxActive]);
 
   const inputBoxStyle = useMemo(() => {
     if (firstSelection && context.luckysheetCellUpdate.length > 0) {
@@ -281,6 +294,59 @@ const InputBox: React.FC = () => {
       // ) {
       //   return;
       // }
+
+      /* Arrow navigation for cell reference starts here */
+
+      if (e.key !== 'ArrowLeft') {
+        setTimeout(() => {
+          moveCursorToEnd(inputRef?.current!);
+        }, 5);
+      }
+
+      let refCell = placeRef.current;
+
+      if (e.key === 'ArrowUp') {
+        refCell = decrementRow(placeRef.current);
+      } else if (e.key === 'ArrowDown') {
+        refCell = incrementRow(placeRef.current);
+      } else if (e.key === 'ArrowLeft') {
+        refCell = decrementColumn(placeRef.current);
+      } else if (e.key === 'ArrowRight') {
+        refCell = incrementColumn(placeRef.current);
+      }
+
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<div>${inputRef?.current?.innerHTML}</div>`, 'text/html');
+        const spans = doc.querySelectorAll('span');
+        const lastSpan = spans[spans.length - 1];
+
+        if ((lastSpan?.innerText === '(' || lastSpan?.innerText === ',' || lastSpan?.innerText.includes(':') || lastSpan?.innerText !== ')') && !isLetterNumberPattern(lastSpan?.innerText)) {
+          if ((!lastSpan?.innerText.includes('(') && lastSpan?.innerText.length > 2) || (lastSpan?.innerText.length === 2 && !isLetterNumberPattern(lastSpan?.innerText))) {
+            return;
+          }
+
+          inputRef.current!.innerHTML = `${inputRef.current!.innerHTML}<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
+
+          setTimeout(() => {
+            moveCursorToEnd(inputRef.current!);
+          }, 1);
+          return;
+        }
+
+        if (isLetterNumberPattern(lastSpan?.innerText)) {
+          const htmlR = removeLastSpan(inputRef?.current!.innerHTML);
+          inputRef.current!.innerHTML = `${htmlR}<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
+
+          moveCursorToEnd(inputRef.current!);
+          setTimeout(() => {
+            moveCursorToEnd(inputRef.current!);
+          }, 1);
+          return;
+        }
+      }
+      /* Arrow navigation for cell reference ends here */
+
 
       if (e.key === "Escape" && context.luckysheetCellUpdate.length > 0) {
         setContext((draftCtx) => {
@@ -573,6 +639,15 @@ const InputBox: React.FC = () => {
     return `${columnChar}${rowNumber}`;
   }, [firstSelection]);
 
+  const wraperGetCell = () => {
+    const cell = getCellAddress();
+    placeRef.current = cell;
+    if (activeRefCell !== cell) {
+      setActiveRefCell(cell);
+    }
+    return activeCell || cell;
+  }
+
   return (
     <div
       className="luckysheet-input-box"
@@ -586,7 +661,7 @@ const InputBox: React.FC = () => {
           className="luckysheet-cell-address-indicator"
           style={getAddressIndicatorPosition()}
         >
-          {getCellAddress()}
+          {wraperGetCell()}
         </div>
       )}
       <div
@@ -594,10 +669,10 @@ const InputBox: React.FC = () => {
         style={
           firstSelection
             ? {
-                minWidth: firstSelection.width,
-                minHeight: firstSelection.height,
-                ...inputBoxStyle,
-              }
+              minWidth: firstSelection.width,
+              minHeight: firstSelection.height,
+              ...inputBoxStyle,
+            }
             : {}
         }
       >
@@ -627,30 +702,30 @@ const InputBox: React.FC = () => {
       {(context.functionCandidates.length > 0 ||
         context.functionHint ||
         context.defaultCandidates.length > 0) && (
-        <>
-          <FormulaSearch
-            onMouseMove={(e) => {
-              if (document.getElementById("luckysheet-formula-search-c")) {
-                // apply hovered state on the function item
-                const hoveredItem = (e.target as HTMLElement).closest(
-                  ".luckysheet-formula-search-item"
-                ) as HTMLElement | null;
-                if (!hoveredItem) return;
+          <>
+            <FormulaSearch
+              onMouseMove={(e) => {
+                if (document.getElementById("luckysheet-formula-search-c")) {
+                  // apply hovered state on the function item
+                  const hoveredItem = (e.target as HTMLElement).closest(
+                    ".luckysheet-formula-search-item"
+                  ) as HTMLElement | null;
+                  if (!hoveredItem) return;
 
-                clearSearchItemActiveClass();
-                hoveredItem.classList.add(
-                  "luckysheet-formula-search-item-active"
-                );
-              }
-              e.preventDefault();
-            }}
-            onMouseDown={(e) => {
-              selectActiveFormulaOnClick(e);
-            }}
-          />
-          <FormulaHint />
-        </>
-      )}
+                  clearSearchItemActiveClass();
+                  hoveredItem.classList.add(
+                    "luckysheet-formula-search-item-active"
+                  );
+                }
+                e.preventDefault();
+              }}
+              onMouseDown={(e) => {
+                selectActiveFormulaOnClick(e);
+              }}
+            />
+            <FormulaHint />
+          </>
+        )}
     </div>
   );
 };

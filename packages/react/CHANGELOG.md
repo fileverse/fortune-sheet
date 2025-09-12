@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.35
+
+### Patch Changes
+
+- Support arrow navigation for function cell reference
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.35
+
 ## 1.1.34
 
 ### Patch Changes

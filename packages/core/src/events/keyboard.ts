@@ -595,11 +595,12 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
   );
   const spans = doc.querySelectorAll("span");
   const lastSpan = spans[spans.length - 1];
+  const notFunctionInit = !document.getElementById("luckysheet-rich-text-editor")?.innerText.includes('(')
 
   // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
   if (
     lastSpan?.innerText.includes(")") ||
-    (!lastSpan?.innerText.includes("(") && lastSpan?.innerText.length > 2)
+    (notFunctionInit && lastSpan?.innerText.length > 3)
   ) {
     return;
   }

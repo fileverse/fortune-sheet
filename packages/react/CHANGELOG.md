@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.36
+
+### Patch Changes
+
+- minor condition changes for arrow navigation
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.36
+
 ## 1.1.35
 
 ### Patch Changes

@@ -587,12 +587,20 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
   // }
 
   const parser = new DOMParser();
-  const doc = parser.parseFromString(`<div>${document.getElementById("luckysheet-rich-text-editor")?.innerHTML}</div>`, 'text/html');
-  const spans = doc.querySelectorAll('span');
+  const doc = parser.parseFromString(
+    `<div>${
+      document.getElementById("luckysheet-rich-text-editor")?.innerHTML
+    }</div>`,
+    "text/html"
+  );
+  const spans = doc.querySelectorAll("span");
   const lastSpan = spans[spans.length - 1];
 
   // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
-  if (lastSpan?.innerText.includes(')') || (!lastSpan?.innerText.includes('(') && lastSpan?.innerText.length > 2)) {
+  if (
+    lastSpan?.innerText.includes(")") ||
+    (!lastSpan?.innerText.includes("(") && lastSpan?.innerText.length > 2)
+  ) {
     return;
   }
 

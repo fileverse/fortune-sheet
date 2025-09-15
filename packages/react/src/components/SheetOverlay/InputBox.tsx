@@ -302,7 +302,7 @@ const InputBox: React.FC = () => {
 
       /* Arrow navigation for cell reference starts here */
 
-      if (e.key !== "ArrowLeft") {
+      if (e.key === "Delete" || e.key === "Backspace") {
         setTimeout(() => {
           moveCursorToEnd(inputRef?.current!);
         }, 5);
@@ -334,6 +334,19 @@ const InputBox: React.FC = () => {
         const spans = doc.querySelectorAll("span");
         const lastSpan = spans[spans.length - 1];
 
+        const notFunctionInit = !document
+          .getElementById("luckysheet-rich-text-editor")
+          ?.innerText.includes("(");
+
+
+        // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
+        if (
+          lastSpan?.innerText.includes(")") ||
+          (notFunctionInit && lastSpan?.innerText.length >= 1 && !_.includes(["="], lastSpan?.innerText))
+        ) {
+          return;
+        }
+
         if (
           (lastSpan?.innerText === "(" ||
             lastSpan?.innerText === "," ||
@@ -342,7 +355,7 @@ const InputBox: React.FC = () => {
           !isLetterNumberPattern(lastSpan?.innerText)
         ) {
           if (
-            (!lastSpan?.innerText.includes("(") &&
+            (!inputRef?.current!.innerText.includes("(") &&
               lastSpan?.innerText.length > 2) ||
             (lastSpan?.innerText.length === 2 &&
               !isLetterNumberPattern(lastSpan?.innerText))
@@ -350,9 +363,8 @@ const InputBox: React.FC = () => {
             return;
           }
 
-          inputRef.current!.innerHTML = `${
-            inputRef.current!.innerHTML
-          }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
+          inputRef.current!.innerHTML = `${inputRef.current!.innerHTML
+            }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
 
           setTimeout(() => {
             moveCursorToEnd(inputRef.current!);
@@ -694,10 +706,10 @@ const InputBox: React.FC = () => {
         style={
           firstSelection
             ? {
-                minWidth: firstSelection.width,
-                minHeight: firstSelection.height,
-                ...inputBoxStyle,
-              }
+              minWidth: firstSelection.width,
+              minHeight: firstSelection.height,
+              ...inputBoxStyle,
+            }
             : {}
         }
       >
@@ -727,30 +739,30 @@ const InputBox: React.FC = () => {
       {(context.functionCandidates.length > 0 ||
         context.functionHint ||
         context.defaultCandidates.length > 0) && (
-        <>
-          <FormulaSearch
-            onMouseMove={(e) => {
-              if (document.getElementById("luckysheet-formula-search-c")) {
-                // apply hovered state on the function item
-                const hoveredItem = (e.target as HTMLElement).closest(
-                  ".luckysheet-formula-search-item"
-                ) as HTMLElement | null;
-                if (!hoveredItem) return;
+          <>
+            <FormulaSearch
+              onMouseMove={(e) => {
+                if (document.getElementById("luckysheet-formula-search-c")) {
+                  // apply hovered state on the function item
+                  const hoveredItem = (e.target as HTMLElement).closest(
+                    ".luckysheet-formula-search-item"
+                  ) as HTMLElement | null;
+                  if (!hoveredItem) return;
 
-                clearSearchItemActiveClass();
-                hoveredItem.classList.add(
-                  "luckysheet-formula-search-item-active"
-                );
-              }
-              e.preventDefault();
-            }}
-            onMouseDown={(e) => {
-              selectActiveFormulaOnClick(e);
-            }}
-          />
-          <FormulaHint />
-        </>
-      )}
+                  clearSearchItemActiveClass();
+                  hoveredItem.classList.add(
+                    "luckysheet-formula-search-item-active"
+                  );
+                }
+                e.preventDefault();
+              }}
+              onMouseDown={(e) => {
+                selectActiveFormulaOnClick(e);
+              }}
+            />
+            <FormulaHint />
+          </>
+        )}
     </div>
   );
 };

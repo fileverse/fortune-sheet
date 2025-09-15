@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.37
+
+### Patch Changes
+
+- support mouse drag
+
 ## 1.1.36
 
 ### Patch Changes

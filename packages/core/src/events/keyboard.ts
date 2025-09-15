@@ -575,18 +575,15 @@ function handleShiftWithArrowKey(ctx: Context, e: KeyboardEvent) {
 }
 
 export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
-  // if (
-  //   ctx.luckysheetCellUpdate.length > 0 ||
-  //   ctx.luckysheet_cell_selected_move ||
-  //   ctx.luckysheet_cell_selected_extend
-  //   // || $(event.target).hasClass("formulaInputFocus") ||
-  //   // $("#luckysheet-singleRange-dialog").is(":visible") ||
-  //   // $("#luckysheet-multiRange-dialog").is(":visible")
-  // ) {
-  //   return;
-  // }
-
-  const parser = new DOMParser();
+  if (
+    ctx.luckysheetCellUpdate.length > 0 ||
+    ctx.luckysheet_cell_selected_move ||
+    ctx.luckysheet_cell_selected_extend
+    // || $(event.target).hasClass("formulaInputFocus") ||
+    // $("#luckysheet-singleRange-dialog").is(":visible") ||
+    // $("#luckysheet-multiRange-dialog").is(":visible")
+  ) {
+      const parser = new DOMParser();
   const doc = parser.parseFromString(
     `<div>${
       document.getElementById("luckysheet-rich-text-editor")?.innerHTML
@@ -602,10 +599,12 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
   // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
   if (
     lastSpan?.innerText.includes(")") ||
-    (notFunctionInit && lastSpan?.innerText.length > 3)
+    (notFunctionInit && lastSpan?.innerText.length >= 1 && !_.includes(["="], lastSpan?.innerText))
   ) {
     return;
   }
+  }
+
 
   const moveCount = hideCRCount(ctx, e.key);
   switch (e.key) {

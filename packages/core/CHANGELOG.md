@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.45
+
+### Patch Changes
+
+- Freah build after conflit
+
 ## 1.1.44
 
 ### Patch Changes

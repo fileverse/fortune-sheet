@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.45
+
+### Patch Changes
+
+- Freah build after conflit
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.45
+
 ## 1.1.44
 
 ### Patch Changes

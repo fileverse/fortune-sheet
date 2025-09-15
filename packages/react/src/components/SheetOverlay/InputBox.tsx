@@ -63,7 +63,6 @@ const InputBox: React.FC = () => {
   const preText = useRef("");
   const placeRef = useRef("");
 
-
   const inputBoxStyle = useMemo(() => {
     if (firstSelection && context.luckysheetCellUpdate.length > 0) {
       const flowdata = getFlowdata(context);
@@ -670,7 +669,7 @@ const InputBox: React.FC = () => {
     return `${columnChar}${rowNumber}`;
   }, [firstSelection]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (isInputBoxActive) {
       setActiveCell(getCellAddress());
       setFirstSelectionActiveCell(context.luckysheet_select_save?.[0]);

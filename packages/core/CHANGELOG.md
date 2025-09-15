@@ -35,6 +35,7 @@
 ### Patch Changes
 
 - Support arrow navigation for function cell reference
+- Fix crypto address being treated as a number
 
 ## 1.1.34
 

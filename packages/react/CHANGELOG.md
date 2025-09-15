@@ -48,6 +48,10 @@
 - Updated dependencies
   - @fileverse-dev/fortune-core@1.1.35
 
+- Fix crypto address being treated as a number
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.40
+
 ## 1.1.34
 
 ### Patch Changes

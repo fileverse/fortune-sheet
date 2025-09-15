@@ -10701,7 +10701,7 @@ export default {
     {
       n: "SORT",
       t: "14",
-      d: "Sorts the rows of a given array or range by the values in one or more columns.",
+      d: "Sorts the rows of a given array or range by the values in a specified column.",
       a: "Sorts rows of range by specified column.",
       m: [1, 4],
       p: [
@@ -10716,7 +10716,7 @@ export default {
         {
           name: "sort_column",
           detail:
-            "The index of the column in `range` to sort by. The first column in `range` is 1, the second column is 2, and so on.",
+            "The index of the column in `range` to sort by. defaults to the first column. index starts at 1.",
           example: "1",
           require: "o",
           repeat: "n",

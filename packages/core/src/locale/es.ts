@@ -10700,7 +10700,7 @@ export default {
     {
       n: "SORT",
       t: "14",
-      d: "Sorts the rows of a given array or range by the values in one or more columns.",
+      d: "Sorts the rows of a given array or range by the values in a specified column.",
       a: "Sorts rows of range by specified column.",
       m: [1, 4],
       p: [

@@ -15,7 +15,7 @@
     "dev": "father-build --watch"
   },
   "dependencies": {
-    "@fileverse-dev/formula-parser": "0.2.69",
+    "@fileverse-dev/formula-parser": "0.2.70",
     "dayjs": "^1.11.0",
     "immer": "^9.0.12",
     "lodash": "^4.17.21",

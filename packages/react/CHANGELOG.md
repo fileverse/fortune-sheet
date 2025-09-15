@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.39
+
+### Patch Changes
+
+- N/A fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.39
+
+## 1.1.38
+
+### Patch Changes
+
+- minor condition change for inputbox updates
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.38
+
 ## 1.1.37
 
 ### Patch Changes

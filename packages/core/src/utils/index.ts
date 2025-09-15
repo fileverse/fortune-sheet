@@ -309,3 +309,25 @@ export function isAllowEditReadOnly(
     }) && (_.isUndefined(ctx.isFlvReadOnly) ? true : ctx.isFlvReadOnly)
   );
 }
+
+export function isLetterNumberPattern(str: string): boolean {
+  const regex = /^[a-zA-Z]\d+$/;
+  return regex.test(str);
+}
+
+export function removeLastSpan(htmlString: string) {
+  // Create a temporary container
+  const container = document.createElement("div");
+  container.innerHTML = htmlString;
+
+  // Get all span elements
+  const spans = container.querySelectorAll("span");
+
+  if (spans.length > 0) {
+    const lastSpan = spans[spans.length - 1];
+    lastSpan.remove();
+  }
+
+  // Return the updated HTML string
+  return container.innerHTML;
+}

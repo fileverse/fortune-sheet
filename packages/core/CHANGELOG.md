@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.39
+
+### Patch Changes
+
+- N/A fresh build
+
+## 1.1.38
+
+### Patch Changes
+
+- minor condition change for inputbox updates
+
 ## 1.1.37
 
 ### Patch Changes

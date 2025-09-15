@@ -180,6 +180,13 @@ export function setCellValue(
   } else {
     vupdate = v;
   }
+  let commaPresent = false;
+  if (vupdate && typeof vupdate === "string" && vupdate.includes(",")) {
+    commaPresent = vupdate.includes(",");
+    const removeCommasValidated = (str: string) =>
+      /^[\d,]+$/.test(str) ? str?.replace(/,/g, "") : str;
+    vupdate = removeCommasValidated(vupdate);
+  }
 
   if (isRealNull(vupdate)) {
     if (_.isPlainObject(cell)) {
@@ -343,7 +350,17 @@ export function setCellValue(
         }
         cell.v =
           vupdate; /* 备注：如果使用parseFloat，1.1111111111111111会转换为1.1111111111111112 ? */
-        cell.ct = { fa: "General", t: "n" };
+        let format;
+        if (String(vupdate).includes(".")) {
+          format = "#,##0.00";
+        } else if (commaPresent) {
+          format = "#,##0.00";
+        } else {
+          format = "0";
+        }
+        cell.m = update(format, cell.v);
+        cell.ht = 2;
+        cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
           cell.m = cell.v.toString();
         } else if (cell.v != null) {

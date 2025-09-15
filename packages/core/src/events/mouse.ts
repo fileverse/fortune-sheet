@@ -369,13 +369,14 @@ export function handleCellAreaMouseDown(
     );
     const spans = doc.querySelectorAll("span");
     const firstSpan = spans[0];
+    const lastSpan = spans[spans.length - 1];
 
     if (
       ctx.formulaCache.rangestart ||
       ctx.formulaCache.rangedrag_column_start ||
       ctx.formulaCache.rangedrag_row_start ||
       israngeseleciton(ctx) ||
-      firstSpan?.innerText.includes("=")
+      (firstSpan?.innerText.includes("=") && !lastSpan?.innerText.includes(")"))
     ) {
       // 公式选区
       let rowseleted = [row_index, row_index_ed];

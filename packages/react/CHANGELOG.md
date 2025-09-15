@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.44
+
+### Patch Changes
+
+- N/A fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.44
+
+## 1.1.43
+
+### Patch Changes
+
+- improvment in auto number type detection
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.43
+
 ## 1.1.42
 
 ### Patch Changes

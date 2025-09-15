@@ -55,16 +55,14 @@ const InputBox: React.FC = () => {
   const [activeRefCell, setActiveRefCell] = useState<string>("");
   const [frozenPosition, setFrozenPosition] = useState({ left: 0, top: 0 });
   const firstSelection = context.luckysheet_select_save?.[0];
+  const [firstSelectionActiveCell, setFirstSelectionActiveCell] = useState<any>(
+    {}
+  );
   const row_index = firstSelection?.row_focus!;
   const col_index = firstSelection?.column_focus!;
   const preText = useRef("");
   const placeRef = useRef("");
 
-  useEffect(() => {
-    if (isInputBoxActive) {
-      setActiveCell(getCellAddress());
-    }
-  }, [isInputBoxActive]);
 
   const inputBoxStyle = useMemo(() => {
     if (firstSelection && context.luckysheetCellUpdate.length > 0) {
@@ -73,8 +71,8 @@ const InputBox: React.FC = () => {
       return getStyleByCell(
         context,
         flowdata,
-        firstSelection.row_focus!,
-        firstSelection.column_focus!
+        firstSelectionActiveCell.row_focus!,
+        firstSelectionActiveCell.column_focus!
       );
     }
     return {};
@@ -84,6 +82,7 @@ const InputBox: React.FC = () => {
     context.currentSheetId,
     context.luckysheetCellUpdate,
     firstSelection,
+    firstSelectionActiveCell,
   ]);
 
   useLayoutEffect(() => {
@@ -670,6 +669,13 @@ const InputBox: React.FC = () => {
 
     return `${columnChar}${rowNumber}`;
   }, [firstSelection]);
+
+    useEffect(() => {
+    if (isInputBoxActive) {
+      setActiveCell(getCellAddress());
+      setFirstSelectionActiveCell(context.luckysheet_select_save?.[0]);
+    }
+  }, [isInputBoxActive]);
 
   const wraperGetCell = () => {
     const cell = getCellAddress();

@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.44
+
+### Patch Changes
+
+- N/A fresh build
+
+## 1.1.43
+
+### Patch Changes
+
+- improvment in auto number type detection
+
 ## 1.1.42
 
 ### Patch Changes

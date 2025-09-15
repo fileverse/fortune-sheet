@@ -684,6 +684,13 @@ const Toolbar: React.FC<{
           if (curr?.fa != null) {
             if (format != null) {
               currentFmt = format.text;
+            } else if (
+              curr.fa === "#,##0" ||
+              curr.fa === "#,##0.00" ||
+              curr.fa === "0" ||
+              curr.fa === "0.00"
+            ) {
+              currentFmt = "Number";
             } else {
               currentFmt = defaultFormat[defaultFormat.length - 1].text;
             }

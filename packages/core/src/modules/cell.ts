@@ -696,6 +696,7 @@ export function updateCell(
   value?: any,
   canvas?: CanvasRenderingContext2D
 ) {
+  console.log("updateCell", r, c, $input, value);
   let inputText = $input?.innerText;
   const inputHtml = $input?.innerHTML;
   const flowdata = getFlowdata(ctx);

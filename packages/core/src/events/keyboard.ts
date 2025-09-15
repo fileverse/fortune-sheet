@@ -583,7 +583,28 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
     // $("#luckysheet-singleRange-dialog").is(":visible") ||
     // $("#luckysheet-multiRange-dialog").is(":visible")
   ) {
-    return;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(
+      `<div>${
+        document.getElementById("luckysheet-rich-text-editor")?.innerHTML
+      }</div>`,
+      "text/html"
+    );
+    const spans = doc.querySelectorAll("span");
+    const lastSpan = spans[spans.length - 1];
+    const notFunctionInit = !document
+      .getElementById("luckysheet-rich-text-editor")
+      ?.innerText.includes("(");
+
+    // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
+    if (
+      lastSpan?.innerText.includes(")") ||
+      (notFunctionInit &&
+        /^[a-zA-Z]+$/.test(lastSpan?.innerText) &&
+        !_.includes(["="], lastSpan?.innerText))
+    ) {
+      return;
+    }
   }
 
   const moveCount = hideCRCount(ctx, e.key);

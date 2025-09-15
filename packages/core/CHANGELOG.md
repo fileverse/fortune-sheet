@@ -1,9 +1,52 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.42
+
+### Patch Changes
+
+- avoid list navigation if reference cell present in formula
+
+## 1.1.41
+
+### Patch Changes
+
+- fresh build
+
 ## 1.1.40
 
 ### Patch Changes
 
+- Minor arrow navigation
+
+## 1.1.39
+
+### Patch Changes
+
+- N/A fresh build
+
+## 1.1.38
+
+### Patch Changes
+
+- minor condition change for inputbox updates
+
+## 1.1.37
+
+### Patch Changes
+
+- support mouse drag
+
+## 1.1.36
+
+### Patch Changes
+
+- minor condition changes for arrow navigation
+
+## 1.1.35
+
+### Patch Changes
+
+- Support arrow navigation for function cell reference
 - Fix crypto address being treated as a number
 
 ## 1.1.34

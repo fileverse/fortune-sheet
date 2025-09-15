@@ -360,11 +360,22 @@ export function handleCellAreaMouseDown(
 
   // 公式相关
   if (ctx.luckysheetCellUpdate.length > 0) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(
+      `<div>${
+        document.getElementById("luckysheet-rich-text-editor")?.innerHTML
+      }</div>`,
+      "text/html"
+    );
+    const spans = doc.querySelectorAll("span");
+    const firstSpan = spans[0];
+
     if (
       ctx.formulaCache.rangestart ||
       ctx.formulaCache.rangedrag_column_start ||
       ctx.formulaCache.rangedrag_row_start ||
-      israngeseleciton(ctx)
+      israngeseleciton(ctx) ||
+      firstSpan?.innerText.includes("=")
     ) {
       // 公式选区
       let rowseleted = [row_index, row_index_ed];

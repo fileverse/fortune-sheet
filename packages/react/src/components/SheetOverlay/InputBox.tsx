@@ -301,6 +301,7 @@ const InputBox: React.FC = () => {
       // }
 
       /* Arrow navigation for cell reference starts here */
+      let allowListNavigation = true;
 
       if (e.key === "Delete" || e.key === "Backspace") {
         setTimeout(() => {
@@ -354,6 +355,7 @@ const InputBox: React.FC = () => {
           !isLetterNumberPattern(lastSpan?.innerText) &&
           !arrowRefNotAllowed
         ) {
+          allowListNavigation = false;
           inputRef.current!.innerHTML = `${
             inputRef.current!.innerHTML
           }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
@@ -364,6 +366,7 @@ const InputBox: React.FC = () => {
         }
 
         if (isLetterNumberPattern(lastSpan?.innerText)) {
+          allowListNavigation = false;
           const htmlR = removeLastSpan(inputRef?.current!.innerHTML);
           inputRef.current!.innerHTML = `${htmlR}<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
 
@@ -396,7 +399,8 @@ const InputBox: React.FC = () => {
         e.preventDefault();
       } else if (
         e.key === "ArrowUp" &&
-        context.luckysheetCellUpdate.length > 0
+        context.luckysheetCellUpdate.length > 0 &&
+        allowListNavigation
       ) {
         if (document.getElementById("luckysheet-formula-search-c")) {
           const formulaSearchContainer = document.getElementById(
@@ -429,7 +433,8 @@ const InputBox: React.FC = () => {
         e.preventDefault();
       } else if (
         e.key === "ArrowDown" &&
-        context.luckysheetCellUpdate.length > 0
+        context.luckysheetCellUpdate.length > 0 &&
+        allowListNavigation
       ) {
         if (document.getElementById("luckysheet-formula-search-c")) {
           const formulaSearchContainer = document.getElementById(

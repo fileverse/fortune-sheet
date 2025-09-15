@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.42
+
+### Patch Changes
+
+- avoid list navigation if reference cell present in formula
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.42
+
+## 1.1.41
+
+### Patch Changes
+
+- fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.41
+
 ## 1.1.40
 
 ### Patch Changes
@@ -46,6 +62,7 @@
 
 - Support arrow navigation for function cell reference
 - Updated dependencies
+
   - @fileverse-dev/fortune-core@1.1.35
 
 - Fix crypto address being treated as a number

@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.42
+
+### Patch Changes
+
+- avoid list navigation if reference cell present in formula
+
+## 1.1.41
+
+### Patch Changes
+
+- fresh build
+
 ## 1.1.40
 
 ### Patch Changes

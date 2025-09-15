@@ -24,9 +24,16 @@ export function valueIsError(value: string) {
 export function isRealNull(val: any) {
   return _.isNil(val) || val.toString().replace(/\s/g, "") === "";
 }
+export function isHexValue(str: string): boolean {
+  // Accepts with or without 0x prefix
+  return /^0x?[a-fA-F0-9]+$/.test(str);
+}
 
 // 是否是纯数字
 export function isRealNum(val: any) {
+  if (isHexValue(val.toString())) {
+    return false;
+  }
   if (_.isNil(val) || val.toString().replace(/\s/g, "") === "") {
     return false;
   }

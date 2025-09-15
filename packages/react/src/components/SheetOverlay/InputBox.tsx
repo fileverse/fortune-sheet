@@ -340,7 +340,8 @@ const InputBox: React.FC = () => {
           ?.innerText.includes("(");
 
         // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
-        const arrowRefNotAllowed = lastSpan?.innerText.includes(")") ||
+        const arrowRefNotAllowed =
+          lastSpan?.innerText.includes(")") ||
           (notFunctionInit &&
             /^[a-zA-Z]+$/.test(lastSpan?.innerText) &&
             !_.includes(["="], lastSpan?.innerText));
@@ -350,9 +351,9 @@ const InputBox: React.FC = () => {
             lastSpan?.innerText === "," ||
             lastSpan?.innerText.includes(":") ||
             lastSpan?.innerText !== ")") &&
-          !isLetterNumberPattern(lastSpan?.innerText) && !arrowRefNotAllowed
+          !isLetterNumberPattern(lastSpan?.innerText) &&
+          !arrowRefNotAllowed
         ) {
-
           inputRef.current!.innerHTML = `${
             inputRef.current!.innerHTML
           }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;

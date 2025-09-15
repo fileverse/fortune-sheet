@@ -600,7 +600,7 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
     if (
       lastSpan?.innerText.includes(")") ||
       (notFunctionInit &&
-        lastSpan?.innerText.length >= 1 &&
+        /^[a-zA-Z]+$/.test(lastSpan?.innerText) &&
         !_.includes(["="], lastSpan?.innerText))
     ) {
       return;

@@ -320,6 +320,7 @@ const InputBox: React.FC = () => {
         refCell = incrementColumn(placeRef.current);
       }
 
+      // current hack to for arrow navigation, try to find a better way like using rangeDrag
       if (
         e.key === "ArrowUp" ||
         e.key === "ArrowDown" ||
@@ -339,30 +340,18 @@ const InputBox: React.FC = () => {
           ?.innerText.includes("(");
 
         // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
-        if (
-          lastSpan?.innerText.includes(")") ||
+        const arrowRefNotAllowed = lastSpan?.innerText.includes(")") ||
           (notFunctionInit &&
-            lastSpan?.innerText.length >= 1 &&
-            !_.includes(["="], lastSpan?.innerText))
-        ) {
-          return;
-        }
+            /^[a-zA-Z]+$/.test(lastSpan?.innerText) &&
+            !_.includes(["="], lastSpan?.innerText));
 
         if (
           (lastSpan?.innerText === "(" ||
             lastSpan?.innerText === "," ||
             lastSpan?.innerText.includes(":") ||
             lastSpan?.innerText !== ")") &&
-          !isLetterNumberPattern(lastSpan?.innerText)
+          !isLetterNumberPattern(lastSpan?.innerText) && !arrowRefNotAllowed
         ) {
-          if (
-            (!inputRef?.current!.innerText.includes("(") &&
-              lastSpan?.innerText.length > 2) ||
-            (lastSpan?.innerText.length === 2 &&
-              !isLetterNumberPattern(lastSpan?.innerText))
-          ) {
-            return;
-          }
 
           inputRef.current!.innerHTML = `${
             inputRef.current!.innerHTML
@@ -371,7 +360,6 @@ const InputBox: React.FC = () => {
           setTimeout(() => {
             moveCursorToEnd(inputRef.current!);
           }, 1);
-          return;
         }
 
         if (isLetterNumberPattern(lastSpan?.innerText)) {
@@ -382,7 +370,6 @@ const InputBox: React.FC = () => {
           setTimeout(() => {
             moveCursorToEnd(inputRef.current!);
           }, 1);
-          return;
         }
       }
       /* Arrow navigation for cell reference ends here */

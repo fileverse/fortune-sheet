@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.40
+
+### Patch Changes
+
+- Minor arrow navigation
+
 ## 1.1.39
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.40
+
+### Patch Changes
+
+- Fix crypto address being treated as a number
+
 ## 1.1.34
 
 ### Patch Changes

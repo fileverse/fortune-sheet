@@ -60,6 +60,19 @@ const InputBox: React.FC = () => {
   const preText = useRef("");
   const placeRef = useRef("");
 
+  // Generate cell address string (e.g., "A1", "B5")
+  const getCellAddress = useCallback(() => {
+    if (!firstSelection) return "";
+
+    const rowIndex = firstSelection.row_focus || 0;
+    const colIndex = firstSelection.column_focus || 0;
+
+    const columnChar = indexToColumnChar(colIndex);
+    const rowNumber = rowIndex + 1;
+
+    return `${columnChar}${rowNumber}`;
+  }, [firstSelection]);
+
   useEffect(() => {
     if (isInputBoxActive) {
       setActiveCell(getCellAddress());
@@ -657,19 +670,6 @@ const InputBox: React.FC = () => {
     // Always show above the input box
     return { top: "-18px", left: "0", display: "block" };
   }, [firstSelection, context.rangeDialog?.show]);
-
-  // Generate cell address string (e.g., "A1", "B5")
-  const getCellAddress = useCallback(() => {
-    if (!firstSelection) return "";
-
-    const rowIndex = firstSelection.row_focus || 0;
-    const colIndex = firstSelection.column_focus || 0;
-
-    const columnChar = indexToColumnChar(colIndex);
-    const rowNumber = rowIndex + 1;
-
-    return `${columnChar}${rowNumber}`;
-  }, [firstSelection]);
 
   const wraperGetCell = () => {
     const cell = getCellAddress();

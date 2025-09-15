@@ -47,6 +47,7 @@ function parseCell(input: string) {
 
 function columnToNumber(colPart: string) {
   let colNumber = 0;
+  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < colPart.length; i++) {
     colNumber = colNumber * 26 + (colPart.charCodeAt(i) - 64);
   }
@@ -56,6 +57,7 @@ function columnToNumber(colPart: string) {
 function numberToColumn(colNumber: number) {
   let colPart = "";
   while (colNumber > 0) {
+    // eslint-disable-next-line no-plusplus
     colNumber--;
     colPart = String.fromCharCode(65 + (colNumber % 26)) + colPart;
     colNumber = Math.floor(colNumber / 26);

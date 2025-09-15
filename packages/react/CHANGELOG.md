@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.43
+
+### Patch Changes
+
+- Update sort function
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.43
+
 ## 1.1.42
 
 ### Patch Changes

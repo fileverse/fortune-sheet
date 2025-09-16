@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.47
+
+### Patch Changes
+
+- handle both comma and decimal
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.47
+
 ## 1.1.46
 
 ### Patch Changes

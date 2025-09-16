@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-react",
-  "version": "1.1.46",
+  "version": "1.1.47",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "module": "es/index.js",
@@ -16,7 +16,7 @@
     "tsc": "tsc"
   },
   "dependencies": {
-    "@fileverse-dev/fortune-core": "1.1.46",
+    "@fileverse-dev/fortune-core": "1.1.47",
     "@fileverse/ui": "^4.1.7-patch-21",
     "@tippyjs/react": "^4.2.6",
     "@types/regenerator-runtime": "^0.13.6",

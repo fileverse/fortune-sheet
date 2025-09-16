@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.47
+
+### Patch Changes
+
+- handle both comma and decimal
+
 ## 1.1.46
 
 ### Patch Changes

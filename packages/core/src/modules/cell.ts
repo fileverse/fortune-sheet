@@ -140,6 +140,7 @@ export function setCellValue(
   d: CellMatrix | null | undefined,
   v: any
 ) {
+  console.log("setCellValue", r, c, v);
   if (_.isNil(d)) {
     d = getFlowdata(ctx);
   }
@@ -187,12 +188,10 @@ export function setCellValue(
     vupdate = v;
   }
   let commaPresent = false;
-  let decimalPresent = false;
   if (vupdate && typeof vupdate === "string" && vupdate.includes(",")) {
     commaPresent = vupdate.includes(",");
-    decimalPresent = vupdate.includes(".");
     const removeCommasValidated = (str: string) =>
-      /^[\d,]+$/.test(str) ? str?.replace(/,/g, "") : str;
+      /^[\d,.]+$/.test(str) ? str?.replace(/,/g, "") : str;
     vupdate = removeCommasValidated(vupdate);
   }
 
@@ -358,16 +357,23 @@ export function setCellValue(
         }
         cell.v =
           vupdate; /* 备注：如果使用parseFloat，1.1111111111111111会转换为1.1111111111111112 ? */
+        const strValue = String(vupdate);
         let format;
-        if (String(vupdate).includes(".")) {
-          format = "#,##0.00";
-        } else if (commaPresent && decimalPresent) {
-          format = "#,##0.00";
-        } else if (commaPresent) {
+
+        const hasDecimal = strValue.includes(".");
+        const hasComma = commaPresent;
+
+        if (hasDecimal) {
+          const decimalCount = strValue.split(".")[1]?.length || 0;
+          format = hasComma
+            ? `#,##0.${"0".repeat(decimalCount)}`
+            : `0.${"0".repeat(decimalCount)}`;
+        } else if (hasComma) {
           format = "#,##0";
         } else {
           format = "0";
         }
+
         cell.m = v.m ? v.m : update(format, cell.v);
         console.log("cell.m", cell.m, format, vupdate, v);
         cell.ht = 2;

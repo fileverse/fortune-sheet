@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.48
+
+### Patch Changes
+
+- Minor fixes for function with name like =A1
+
 ## 1.1.47
 
 ### Patch Changes

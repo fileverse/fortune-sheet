@@ -999,9 +999,8 @@ export function updateCell(
       };
 
       if (/^[\d.,]+$/.test(value.v)) {
-        // @ts-expect-error later
-        const args = getContentInParentheses(value?.f).split(",");
-        const cellRefs = args.map((arg) => arg.trim().toUpperCase());
+        const args = getContentInParentheses(value?.f)?.split(",");
+        const cellRefs = args?.map((arg) => arg.trim().toUpperCase());
         const formatted = processArray(cellRefs, d, flowdata);
         if (formatted) {
           value.m = update(formatted, value.v);

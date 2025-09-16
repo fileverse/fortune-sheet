@@ -64,7 +64,7 @@ const InputBox: React.FC = () => {
   const placeRef = useRef("");
 
   const inputBoxStyle = useMemo(() => {
-    if (firstSelection && context.luckysheetCellUpdate.length > 0) {
+    if (firstSelectionActiveCell && context.luckysheetCellUpdate.length > 0) {
       const flowdata = getFlowdata(context);
       if (!flowdata) return {};
       return getStyleByCell(
@@ -80,7 +80,6 @@ const InputBox: React.FC = () => {
     context.luckysheetfile,
     context.currentSheetId,
     context.luckysheetCellUpdate,
-    firstSelection,
     firstSelectionActiveCell,
   ]);
 
@@ -301,11 +300,11 @@ const InputBox: React.FC = () => {
       /* Arrow navigation for cell reference starts here */
       let allowListNavigation = true;
 
-      if (e.key === "Delete" || e.key === "Backspace") {
-        setTimeout(() => {
-          moveCursorToEnd(inputRef?.current!);
-        }, 5);
-      }
+      // if (e.key === "Delete" || e.key === "Backspace") {
+      //   setTimeout(() => {
+      //     moveCursorToEnd(inputRef?.current!);
+      //   }, 5);
+      // }
 
       let refCell = placeRef.current;
 

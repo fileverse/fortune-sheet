@@ -334,8 +334,25 @@ export function removeLastSpan(htmlString: string) {
 
 export function getContentInParentheses(str: string | null): string | null {
   if (!str) return null;
-  const match = str.match(/\(([^)]+)\)/);
-  return match ? match[1] : null;
+
+  // Case 1: Handle content inside parentheses (existing behavior)
+  const parenMatch = str.match(/\(([^)]+)\)/);
+  if (parenMatch) return parenMatch[1];
+
+  // Case 2: Handle formulas like "=B1+B2" or "=A1:B1+B2"
+  // Match cell references (like A1, B2, A1:B2) after '='
+  const formulaMatch = str.match(/^=([\w\d:+\-*/]+)$/);
+  if (formulaMatch) {
+    // Replace operators with commas and remove duplicates
+    const refs = formulaMatch[1]
+      /* eslint-disable no-useless-escape */
+      .split(/[\+\-\*\/]/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    return refs.join(",");
+  }
+
+  return null;
 }
 
 export function processArray(cellReferences: any, d: any, flowData: any) {
@@ -367,7 +384,7 @@ export function processArray(cellReferences: any, d: any, flowData: any) {
   }
 
   // Filter out invalid cell references first
-  const validCellReferences = cellReferences.filter((cellRef: string) => {
+  const validCellReferences = cellReferences?.filter((cellRef: string) => {
     if (cellRef.includes(":")) {
       // For ranges, check both parts
       const [startCell, endCell] = cellRef.split(":");
@@ -382,7 +399,7 @@ export function processArray(cellReferences: any, d: any, flowData: any) {
   // First, expand ranges like "a1:b2" into individual cell references
   const expandedCellReferences: any = [];
 
-  validCellReferences.forEach((cellRef: string) => {
+  validCellReferences?.forEach((cellRef: string) => {
     if (cellRef.includes(":")) {
       // Handle range notation like "a1:b2"
       const [startCell, endCell] = cellRef.split(":");

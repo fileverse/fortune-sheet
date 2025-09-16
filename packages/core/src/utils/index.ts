@@ -331,3 +331,121 @@ export function removeLastSpan(htmlString: string) {
   // Return the updated HTML string
   return container.innerHTML;
 }
+
+export function getContentInParentheses(str: string | null): string | null {
+  if (!str) return null;
+  const match = str.match(/\(([^)]+)\)/);
+  return match ? match[1] : null;
+}
+
+export function processArray(cellReferences: any, d: any, flowData: any) {
+  // Helper function to validate cell reference format
+  function isValidCellReference(cell: string) {
+    // Valid format: one or more letters followed by one or more digits
+    const cellPattern = /^[A-Za-z]+\d+$/;
+    return cellPattern.test(cell);
+  }
+
+  // Helper function to parse cell reference into components
+  function parseCellReference(cell: string) {
+    const match = cell.match(/^([A-Za-z]+)(\d+)$/);
+    if (!match) return null;
+
+    const letters = match[1].toLowerCase();
+    const number = parseInt(match[2], 10);
+
+    // Convert letters to column index (A=0, B=1, ..., Z=25, AA=26, AB=27, etc.)
+    let col = 0;
+    for (let i = 0; i < letters.length; i += 1) {
+      col = col * 26 + (letters.charCodeAt(i) - "a".charCodeAt(0) + 1);
+    }
+    col -= 1; // Convert to 0-based index
+
+    const row = number - 1; // Convert to 0-based index
+
+    return { letters, number, col, row };
+  }
+
+  // Filter out invalid cell references first
+  const validCellReferences = cellReferences.filter((cellRef: string) => {
+    if (cellRef.includes(":")) {
+      // For ranges, check both parts
+      const [startCell, endCell] = cellRef.split(":");
+      return (
+        isValidCellReference(startCell.trim()) &&
+        isValidCellReference(endCell.trim())
+      );
+    }
+    return isValidCellReference(cellRef.trim());
+  });
+
+  // First, expand ranges like "a1:b2" into individual cell references
+  const expandedCellReferences: any = [];
+
+  validCellReferences.forEach((cellRef: string) => {
+    if (cellRef.includes(":")) {
+      // Handle range notation like "a1:b2"
+      const [startCell, endCell] = cellRef.split(":");
+
+      // Parse start and end cells
+      const startParsed = parseCellReference(startCell.trim());
+      const endParsed = parseCellReference(endCell.trim());
+
+      if (!startParsed || !endParsed) return; // Skip invalid ranges
+
+      // Generate all cells in the range
+      for (let row = startParsed.number; row <= endParsed.number; row += 1) {
+        for (let { col } = startParsed; col <= endParsed.col; col += 1) {
+          // Convert column index back to letters
+          let letters = "";
+          let tempCol = col + 1; // Convert back to 1-based for letter calculation
+          while (tempCol > 0) {
+            tempCol -= 1;
+            letters =
+              String.fromCharCode("A".charCodeAt(0) + (tempCol % 26)) + letters;
+            tempCol = Math.floor(tempCol / 26);
+          }
+          const cellName = letters + row;
+          expandedCellReferences.push(cellName);
+        }
+      }
+    } else {
+      // Single cell reference, add as is
+      expandedCellReferences.push(cellRef.toUpperCase());
+    }
+  });
+  // Array to store converted coordinates
+  const coordinates: any = [];
+
+  // Convert each expanded cell reference to coordinates
+  expandedCellReferences.forEach((cell: string) => {
+    const parsed = parseCellReference(cell);
+    if (parsed) {
+      // Store as [row, col] coordinate
+      coordinates.push([parsed.row, parsed.col]);
+      console.log(`${cell} -> [${parsed.row}, ${parsed.col}]`);
+    }
+  });
+
+  let formated;
+  coordinates.forEach((coord: any) => {
+    const [row, col] = coord;
+
+    // Check if coordinates are within bounds
+    if (row >= 0 && row < d.length && col >= 0 && col < d[row].length) {
+      if (
+        flowData?.[row][col]?.ct?.fa &&
+        flowData?.[row][col]?.ct?.fa?.includes("#,##0")
+      ) {
+        formated = "#,##0";
+      } else if (
+        flowData?.[row][col]?.ct?.fa &&
+        flowData?.[row][col]?.ct?.fa?.includes("#,##0.00")
+      ) {
+        formated = "#,##0.00";
+      }
+    }
+  });
+
+  return formated;
+}

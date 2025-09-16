@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.46
+
+### Patch Changes
+
+- fix function return type for number
+
 ## 1.1.45
 
 ### Patch Changes

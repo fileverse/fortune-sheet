@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.46
+
+### Patch Changes
+
+- fix function return type for number
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.46
+
 ## 1.1.45
 
 ### Patch Changes

@@ -1,7 +1,13 @@
 import _ from "lodash";
 import { Context, getFlowdata } from "../context";
 import { Cell, CellMatrix, Range, Selection, SingleRange } from "../types";
-import { getSheetIndex, indexToColumnChar, rgbToHex } from "../utils";
+import {
+  getSheetIndex,
+  indexToColumnChar,
+  rgbToHex,
+  processArray,
+  getContentInParentheses,
+} from "../utils";
 import { checkCF, getComputeMap } from "./ConditionFormat";
 import { getFailureText, validateCellData } from "./dataVerification";
 import { genarate, update } from "./format";
@@ -181,8 +187,10 @@ export function setCellValue(
     vupdate = v;
   }
   let commaPresent = false;
+  let decimalPresent = false;
   if (vupdate && typeof vupdate === "string" && vupdate.includes(",")) {
     commaPresent = vupdate.includes(",");
+    decimalPresent = vupdate.includes(".");
     const removeCommasValidated = (str: string) =>
       /^[\d,]+$/.test(str) ? str?.replace(/,/g, "") : str;
     vupdate = removeCommasValidated(vupdate);
@@ -353,12 +361,15 @@ export function setCellValue(
         let format;
         if (String(vupdate).includes(".")) {
           format = "#,##0.00";
-        } else if (commaPresent) {
+        } else if (commaPresent && decimalPresent) {
           format = "#,##0.00";
+        } else if (commaPresent) {
+          format = "#,##0";
         } else {
           format = "0";
         }
-        cell.m = update(format, cell.v);
+        cell.m = v.m ? v.m : update(format, cell.v);
+        console.log("cell.m", cell.m, format, vupdate, v);
         cell.ht = 2;
         cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
@@ -867,6 +878,7 @@ export function updateCell(
     if (!isCurInline) {
       if (_.isString(value) && value.slice(0, 1) === "=" && value.length > 1) {
         const v = execfunction(ctx, value, r, c, undefined, undefined, true);
+        console.log("v", v, value);
         isRunExecFunction = false;
         curv = _.cloneDeep(d?.[r]?.[c] || {});
         [, curv.v, curv.f] = v;
@@ -979,6 +991,21 @@ export function updateCell(
         v: v[1],
         f: v[2],
       };
+
+      if (/^[\d.,]+$/.test(value.v)) {
+        // @ts-expect-error later
+        const args = getContentInParentheses(value?.f).split(",");
+        const cellRefs = args.map((arg) => arg.trim().toUpperCase());
+        const formatted = processArray(cellRefs, d, flowdata);
+        if (formatted) {
+          value.m = update(formatted, value.v);
+          value.ct = {
+            fa: formatted,
+            t: "n",
+          };
+        }
+        value.ht = 2;
+      }
 
       // 打进单元格的sparklines的配置串， 报错需要单独处理。
       if (v.length === 4 && v[3].type === "sparklines") {

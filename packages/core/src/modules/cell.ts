@@ -140,7 +140,6 @@ export function setCellValue(
   d: CellMatrix | null | undefined,
   v: any
 ) {
-  console.log("setCellValue", r, c, v);
   if (_.isNil(d)) {
     d = getFlowdata(ctx);
   }
@@ -375,7 +374,6 @@ export function setCellValue(
         }
 
         cell.m = v.m ? v.m : update(format, cell.v);
-        console.log("cell.m", cell.m, format, vupdate, v);
         cell.ht = 2;
         cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
@@ -730,7 +728,6 @@ export function updateCell(
   value?: any,
   canvas?: CanvasRenderingContext2D
 ) {
-  console.log("updateCell", r, c, $input, value);
   let inputText = $input?.innerText;
   const inputHtml = $input?.innerHTML;
   const flowdata = getFlowdata(ctx);
@@ -884,7 +881,6 @@ export function updateCell(
     if (!isCurInline) {
       if (_.isString(value) && value.slice(0, 1) === "=" && value.length > 1) {
         const v = execfunction(ctx, value, r, c, undefined, undefined, true);
-        console.log("v", v, value);
         isRunExecFunction = false;
         curv = _.cloneDeep(d?.[r]?.[c] || {});
         [, curv.v, curv.f] = v;

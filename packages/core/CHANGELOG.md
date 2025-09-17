@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.51
+
+### Patch Changes
+
+- remove console
+
 ## 1.1.50
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.52
+
+### Patch Changes
+
+- handle if cell reference is AB1 as well
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.52
+
 ## 1.1.51
 
 ### Patch Changes

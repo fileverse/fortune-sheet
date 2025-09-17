@@ -15,7 +15,7 @@ export function moveCursorToEnd(editableDiv: HTMLDivElement) {
 }
 
 export function isLetterNumberPattern(str: string): boolean {
-  const regex = /^[a-zA-Z]\d+$/;
+  const regex = /^[a-zA-Z]+\d+$/;
   return regex.test(str);
 }
 

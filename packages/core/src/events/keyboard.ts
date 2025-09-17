@@ -599,6 +599,7 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
     // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
     if (
       lastSpan?.innerText.includes(")") ||
+      lastSpan?.innerText === '""' ||
       (notFunctionInit &&
         /^[a-zA-Z]+$/.test(lastSpan?.innerText) &&
         !_.includes(["="], lastSpan?.innerText))

@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.50
+
+### Patch Changes
+
+- fix minor issue for tab navigation
+
 ## 1.1.49
 
 ### Patch Changes

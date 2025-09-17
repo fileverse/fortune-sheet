@@ -349,6 +349,7 @@ const InputBox: React.FC = () => {
             lastSpan?.innerText === "," ||
             lastSpan?.innerText.includes(":") ||
             lastSpan?.innerText !== ")") &&
+          lastSpan?.innerText !== '""' &&
           !isLetterNumberPattern(lastSpan?.innerText) &&
           !arrowRefNotAllowed
         ) {

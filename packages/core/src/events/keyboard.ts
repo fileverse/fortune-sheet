@@ -602,7 +602,8 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
       lastSpan?.innerText.includes('"') ||
       (notFunctionInit &&
         /^[a-zA-Z]+$/.test(lastSpan?.innerText) &&
-        !_.includes(["="], lastSpan?.innerText))
+        !_.includes(["="], lastSpan?.innerText)) ||
+      /^[a-zA-Z]+$/.test(lastSpan?.innerText)
     ) {
       return;
     }

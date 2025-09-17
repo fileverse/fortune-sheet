@@ -440,7 +440,6 @@ export function processArray(cellReferences: any, d: any, flowData: any) {
     if (parsed) {
       // Store as [row, col] coordinate
       coordinates.push([parsed.row, parsed.col]);
-      console.log(`${cell} -> [${parsed.row}, ${parsed.col}]`);
     }
   });
 

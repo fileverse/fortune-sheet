@@ -67,12 +67,16 @@ const InputBox: React.FC = () => {
     if (firstSelectionActiveCell && context.luckysheetCellUpdate.length > 0) {
       const flowdata = getFlowdata(context);
       if (!flowdata) return {};
-      return getStyleByCell(
+      let style = getStyleByCell(
         context,
         flowdata,
         firstSelectionActiveCell.row_focus!,
         firstSelectionActiveCell.column_focus!
       );
+      if (inputRef.current?.innerText.charAt(0) === "=") {
+        style = { ...style, textAlign: "left" };
+      }
+      return style;
     }
     return {};
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,6 +178,13 @@ const InputBox: React.FC = () => {
 
   const insertSelectedFormula = useCallback(
     (formulaName: string) => {
+      if (/^=[a-zA-Z]+$/.test(inputRef.current!.innerText)) {
+        const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
+        inputRef.current!.innerHTML = ht;
+        moveCursorToEnd(inputRef.current!);
+        return;
+      }
+
       const textEditor = document.getElementById("luckysheet-rich-text-editor");
       if (!textEditor) return;
 
@@ -343,7 +354,6 @@ const InputBox: React.FC = () => {
           (notFunctionInit &&
             /^[a-zA-Z]+$/.test(lastSpan?.innerText) &&
             !_.includes(["="], lastSpan?.innerText));
-        console.log(lastSpan?.innerText, "lastSpan?.innerText");
 
         if (
           (lastSpan?.innerText === "(" ||
@@ -352,7 +362,8 @@ const InputBox: React.FC = () => {
             lastSpan?.innerText !== ")") &&
           !lastSpan?.innerText.includes('"') &&
           !isLetterNumberPattern(lastSpan?.innerText) &&
-          !arrowRefNotAllowed
+          !arrowRefNotAllowed &&
+          !/^[a-zA-Z]+$/.test(lastSpan?.innerText)
         ) {
           allowListNavigation = false;
           inputRef.current!.innerHTML = `${

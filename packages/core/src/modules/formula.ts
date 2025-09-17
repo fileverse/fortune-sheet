@@ -27,6 +27,8 @@ import {
   spillSortResult,
 } from ".";
 
+import { isLetterNumberPattern, removeLastSpan } from "../utils/index";
+
 let functionHTMLIndex = 0;
 let rangeIndexes: number[] = [];
 const operatorPriority: any = {
@@ -2133,7 +2135,9 @@ export function setCaretPosition(
     el.focus();
   } catch (err) {
     console.error(err);
-    moveCursorToEnd(textDom as HTMLDivElement);
+    setTimeout(() => {
+      moveCursorToEnd(textDom as HTMLDivElement);
+    }, 10);
   }
 }
 
@@ -3287,6 +3291,19 @@ export function rangeSetValue(
   selected: any,
   fxInput?: HTMLDivElement | null
 ) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(
+    `<div>${cellInput.innerHTML}</div>`,
+    "text/html"
+  );
+  const spans = doc.querySelectorAll("span");
+  const lastSpan = spans[spans.length - 1];
+
+  if (lastSpan && isLetterNumberPattern(lastSpan?.innerText)) {
+    const htmlR = removeLastSpan(cellInput.innerHTML);
+    cellInput!.innerHTML = `${htmlR}`;
+  }
+
   let $editor = cellInput;
   let $copyTo = fxInput;
   if (document.activeElement?.id === "luckysheet-functionbox-cell") {

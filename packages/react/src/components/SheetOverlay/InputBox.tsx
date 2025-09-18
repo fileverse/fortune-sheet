@@ -55,40 +55,28 @@ const InputBox: React.FC = () => {
   const [activeRefCell, setActiveRefCell] = useState<string>("");
   const [frozenPosition, setFrozenPosition] = useState({ left: 0, top: 0 });
   const firstSelection = context.luckysheet_select_save?.[0];
+  const [firstSelectionActiveCell, setFirstSelectionActiveCell] = useState<any>(
+    {}
+  );
   const row_index = firstSelection?.row_focus!;
   const col_index = firstSelection?.column_focus!;
   const preText = useRef("");
   const placeRef = useRef("");
 
-  // Generate cell address string (e.g., "A1", "B5")
-  const getCellAddress = useCallback(() => {
-    if (!firstSelection) return "";
-
-    const rowIndex = firstSelection.row_focus || 0;
-    const colIndex = firstSelection.column_focus || 0;
-
-    const columnChar = indexToColumnChar(colIndex);
-    const rowNumber = rowIndex + 1;
-
-    return `${columnChar}${rowNumber}`;
-  }, [firstSelection]);
-
-  useEffect(() => {
-    if (isInputBoxActive) {
-      setActiveCell(getCellAddress());
-    }
-  }, [isInputBoxActive]);
-
   const inputBoxStyle = useMemo(() => {
-    if (firstSelection && context.luckysheetCellUpdate.length > 0) {
+    if (firstSelectionActiveCell && context.luckysheetCellUpdate.length > 0) {
       const flowdata = getFlowdata(context);
       if (!flowdata) return {};
-      return getStyleByCell(
+      let style = getStyleByCell(
         context,
         flowdata,
-        firstSelection.row_focus!,
-        firstSelection.column_focus!
+        firstSelectionActiveCell.row_focus!,
+        firstSelectionActiveCell.column_focus!
       );
+      if (inputRef.current?.innerText.charAt(0) === "=") {
+        style = { ...style, textAlign: "left" };
+      }
+      return style;
     }
     return {};
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,7 +84,7 @@ const InputBox: React.FC = () => {
     context.luckysheetfile,
     context.currentSheetId,
     context.luckysheetCellUpdate,
-    firstSelection,
+    firstSelectionActiveCell,
   ]);
 
   useLayoutEffect(() => {
@@ -190,6 +178,13 @@ const InputBox: React.FC = () => {
 
   const insertSelectedFormula = useCallback(
     (formulaName: string) => {
+      if (/^=[a-zA-Z]+$/.test(inputRef.current!.innerText)) {
+        const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
+        inputRef.current!.innerHTML = ht;
+        moveCursorToEnd(inputRef.current!);
+        return;
+      }
+
       const textEditor = document.getElementById("luckysheet-rich-text-editor");
       if (!textEditor) return;
 
@@ -316,11 +311,11 @@ const InputBox: React.FC = () => {
       /* Arrow navigation for cell reference starts here */
       let allowListNavigation = true;
 
-      if (e.key === "Delete" || e.key === "Backspace") {
-        setTimeout(() => {
-          moveCursorToEnd(inputRef?.current!);
-        }, 5);
-      }
+      // if (e.key === "Delete" || e.key === "Backspace") {
+      //   setTimeout(() => {
+      //     moveCursorToEnd(inputRef?.current!);
+      //   }, 5);
+      // }
 
       let refCell = placeRef.current;
 
@@ -365,8 +360,10 @@ const InputBox: React.FC = () => {
             lastSpan?.innerText === "," ||
             lastSpan?.innerText.includes(":") ||
             lastSpan?.innerText !== ")") &&
+          !lastSpan?.innerText.includes('"') &&
           !isLetterNumberPattern(lastSpan?.innerText) &&
-          !arrowRefNotAllowed
+          !arrowRefNotAllowed &&
+          !/^[a-zA-Z]+$/.test(lastSpan?.innerText)
         ) {
           allowListNavigation = false;
           inputRef.current!.innerHTML = `${
@@ -670,6 +667,26 @@ const InputBox: React.FC = () => {
     // Always show above the input box
     return { top: "-18px", left: "0", display: "block" };
   }, [firstSelection, context.rangeDialog?.show]);
+
+  // Generate cell address string (e.g., "A1", "B5")
+  const getCellAddress = useCallback(() => {
+    if (!firstSelection) return "";
+
+    const rowIndex = firstSelection.row_focus || 0;
+    const colIndex = firstSelection.column_focus || 0;
+
+    const columnChar = indexToColumnChar(colIndex);
+    const rowNumber = rowIndex + 1;
+
+    return `${columnChar}${rowNumber}`;
+  }, [firstSelection]);
+
+  useEffect(() => {
+    if (isInputBoxActive) {
+      setActiveCell(getCellAddress());
+      setFirstSelectionActiveCell(context.luckysheet_select_save?.[0]);
+    }
+  }, [isInputBoxActive]);
 
   const wraperGetCell = () => {
     const cell = getCellAddress();

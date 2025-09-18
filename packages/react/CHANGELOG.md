@@ -1,10 +1,90 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.53
+
+### Patch Changes
+
+- Fix some tab navigation
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.53
+
+## 1.1.52
+
+### Patch Changes
+
+- handle if cell reference is AB1 as well
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.52
+
+## 1.1.51
+
+### Patch Changes
+
+- remove console
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.51
+
+## 1.1.50
+
+### Patch Changes
+
+- fix minor issue for tab navigation
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.50
+
+## 1.1.49
+
+### Patch Changes
+
+- N/A fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.49
+
+## 1.1.48
+
+### Patch Changes
+
+- Minor fixes for function with name like =A1
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.48
+
+## 1.1.47
+
+### Patch Changes
+
+- handle both comma and decimal
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.47
+
+## 1.1.46
+
+### Patch Changes
+
+- fix function return type for number
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.46
+
+## 1.1.45
+
+### Patch Changes
+
+- Freah build after conflit
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.45
+
+## 1.1.44
+
+### Patch Changes
+
+- N/A fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.44
+
 ## 1.1.43
 
 ### Patch Changes
 
-- Update sort function
+- improvment in auto number type detection
 - Updated dependencies
   - @fileverse-dev/fortune-core@1.1.43
 

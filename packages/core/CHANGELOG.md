@@ -1,12 +1,70 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.53
+
+### Patch Changes
+
+- Fix some tab navigation
+
+## 1.1.52
+
+### Patch Changes
+
+- handle if cell reference is AB1 as well
+
+## 1.1.51
+
+### Patch Changes
+
+- remove console
+
+## 1.1.50
+
+### Patch Changes
+
+- fix minor issue for tab navigation
+
+## 1.1.49
+
+### Patch Changes
+
+- N/A fresh build
+
+## 1.1.48
+
+### Patch Changes
+
+- Minor fixes for function with name like =A1
+
+## 1.1.47
+
+### Patch Changes
+
+- handle both comma and decimal
+
+## 1.1.46
+
+### Patch Changes
+
+- fix function return type for number
+
+## 1.1.45
+
+### Patch Changes
+
+- Freah build after conflit
+
+## 1.1.44
+
+### Patch Changes
+
+- N/A fresh build
+
 ## 1.1.43
 
 ### Patch Changes
 
-- Update sort function
-- Updated dependencies
-  - @fileverse-dev/formula-parser@0.2.70
+- improvment in auto number type detection
 
 ## 1.1.42
 

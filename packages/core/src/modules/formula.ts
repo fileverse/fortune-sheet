@@ -18,7 +18,6 @@ import {
   setCellValue,
 } from "./cell";
 import { error } from "./validation";
-import { moveToEnd } from "./cursor";
 import { locale } from "../locale";
 import { colors } from "./color";
 import { colLocation, mousePosition, rowLocation } from "./location";
@@ -2092,6 +2091,22 @@ export function createRangeHightlight(
   ctx.formulaRangeHighlight = formulaRanges;
 }
 
+export function moveCursorToEnd(editableDiv: HTMLDivElement) {
+  editableDiv.focus(); // Ensure the element is focused
+
+  const range = document.createRange();
+  const selection = window.getSelection();
+
+  // Set range to cover the entire content
+  range.selectNodeContents(editableDiv);
+  range.collapse(false); // Collapse to the end
+
+  if (selection) {
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
+
 export function setCaretPosition(
   ctx: Context,
   textDom: HTMLElement,
@@ -2120,7 +2135,9 @@ export function setCaretPosition(
     el.focus();
   } catch (err) {
     console.error(err);
-    moveToEnd(ctx.formulaCache.rangeResizeTo[0]);
+    setTimeout(() => {
+      moveCursorToEnd(textDom as HTMLDivElement);
+    }, 10);
   }
 }
 

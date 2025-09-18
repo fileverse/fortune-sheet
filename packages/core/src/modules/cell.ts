@@ -1,7 +1,13 @@
 import _ from "lodash";
 import { Context, getFlowdata } from "../context";
 import { Cell, CellMatrix, Range, Selection, SingleRange } from "../types";
-import { getSheetIndex, indexToColumnChar, rgbToHex } from "../utils";
+import {
+  getSheetIndex,
+  indexToColumnChar,
+  rgbToHex,
+  processArray,
+  getContentInParentheses,
+} from "../utils";
 import { checkCF, getComputeMap } from "./ConditionFormat";
 import { getFailureText, validateCellData } from "./dataVerification";
 import { genarate, update } from "./format";
@@ -180,6 +186,13 @@ export function setCellValue(
   } else {
     vupdate = v;
   }
+  let commaPresent = false;
+  if (vupdate && typeof vupdate === "string" && vupdate.includes(",")) {
+    commaPresent = vupdate.includes(",");
+    const removeCommasValidated = (str: string) =>
+      /^[\d,.]+$/.test(str) ? str?.replace(/,/g, "") : str;
+    vupdate = removeCommasValidated(vupdate);
+  }
 
   if (isRealNull(vupdate)) {
     if (_.isPlainObject(cell)) {
@@ -343,7 +356,26 @@ export function setCellValue(
         }
         cell.v =
           vupdate; /* 备注：如果使用parseFloat，1.1111111111111111会转换为1.1111111111111112 ? */
-        cell.ct = { fa: "General", t: "n" };
+        const strValue = String(vupdate);
+        let format;
+
+        const hasDecimal = strValue.includes(".");
+        const hasComma = commaPresent;
+
+        if (hasDecimal) {
+          const decimalCount = strValue.split(".")[1]?.length || 0;
+          format = hasComma
+            ? `#,##0.${"0".repeat(decimalCount)}`
+            : `0.${"0".repeat(decimalCount)}`;
+        } else if (hasComma) {
+          format = "#,##0";
+        } else {
+          format = "0";
+        }
+
+        cell.m = v.m ? v.m : update(format, cell.v);
+        cell.ht = 2;
+        cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
           cell.m = cell.v.toString();
         } else if (cell.v != null) {
@@ -696,7 +728,6 @@ export function updateCell(
   value?: any,
   canvas?: CanvasRenderingContext2D
 ) {
-  console.log("updateCell", r, c, $input, value);
   let inputText = $input?.innerText;
   const inputHtml = $input?.innerHTML;
   const flowdata = getFlowdata(ctx);
@@ -962,6 +993,20 @@ export function updateCell(
         v: v[1],
         f: v[2],
       };
+
+      if (/^[\d.,]+$/.test(value.v)) {
+        const args = getContentInParentheses(value?.f)?.split(",");
+        const cellRefs = args?.map((arg) => arg.trim().toUpperCase());
+        const formatted = processArray(cellRefs, d, flowdata);
+        if (formatted) {
+          value.m = update(formatted, value.v);
+          value.ct = {
+            fa: formatted,
+            t: "n",
+          };
+        }
+        value.ht = 2;
+      }
 
       // 打进单元格的sparklines的配置串， 报错需要单独处理。
       if (v.length === 4 && v[3].type === "sparklines") {

@@ -35,6 +35,7 @@ import FormulaHint from "./FormulaHint";
 import usePrevious from "../../hooks/usePrevious";
 import {
   moveCursorToEnd,
+  getCursorPosition,
   isLetterNumberPattern,
   removeLastSpan,
   incrementColumn,
@@ -84,6 +85,7 @@ const InputBox: React.FC = () => {
     context.luckysheetfile,
     context.currentSheetId,
     context.luckysheetCellUpdate,
+    context?.luckysheetCellUpdate?.length,
     firstSelectionActiveCell,
   ]);
 
@@ -182,6 +184,11 @@ const InputBox: React.FC = () => {
         const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
         inputRef.current!.innerHTML = ht;
         moveCursorToEnd(inputRef.current!);
+        setContext((draftCtx) => {
+          draftCtx.functionCandidates = [];
+          draftCtx.defaultCandidates = [];
+          draftCtx.functionHint = formulaName;
+        });
         return;
       }
 
@@ -311,11 +318,15 @@ const InputBox: React.FC = () => {
       /* Arrow navigation for cell reference starts here */
       let allowListNavigation = true;
 
-      // if (e.key === "Delete" || e.key === "Backspace") {
-      //   setTimeout(() => {
-      //     moveCursorToEnd(inputRef?.current!);
-      //   }, 5);
-      // }
+      if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        getCursorPosition(inputRef?.current!) ===
+          inputRef?.current!.innerText.length
+      ) {
+        setTimeout(() => {
+          moveCursorToEnd(inputRef?.current!);
+        }, 5);
+      }
 
       let refCell = placeRef.current;
 
@@ -331,10 +342,14 @@ const InputBox: React.FC = () => {
 
       // current hack to for arrow navigation, try to find a better way like using rangeDrag
       if (
-        e.key === "ArrowUp" ||
-        e.key === "ArrowDown" ||
-        e.key === "ArrowLeft" ||
-        e.key === "ArrowRight"
+        (e.key === "ArrowUp" ||
+          e.key === "ArrowDown" ||
+          e.key === "ArrowLeft" ||
+          e.key === "ArrowRight") &&
+        !(
+          getCursorPosition(inputRef?.current!) !==
+            inputRef?.current!.innerText.length && e.key === "ArrowRight"
+        )
       ) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(

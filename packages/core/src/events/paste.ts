@@ -1830,6 +1830,24 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
                   cell.v = txt;
                 }
               }
+              let pendingLink: { href: string; display: string } | null = null;
+              const anchor = td.querySelector(
+                "a[href]"
+              ) as HTMLAnchorElement | null;
+              const urlRegex = /^(https?:\/\/[^\s]+)$/i;
+              if (anchor) {
+                const hrefAttr = anchor.getAttribute("href")?.trim() || "";
+                const display = anchor.textContent?.trim() || hrefAttr;
+                if (hrefAttr && urlRegex.test(hrefAttr)) {
+                  pendingLink = { href: hrefAttr, display };
+                }
+              } else {
+                const raw = (td.textContent || "").trim();
+                if (urlRegex.test(raw)) {
+                  pendingLink = { href: raw, display: raw };
+                }
+              }
+
               const styleString =
                 typeof allStyleList[`.${className}`] === "string"
                   ? allStyleList[`.${className}`]
@@ -1950,6 +1968,18 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
 
                 const r_ab = ctx.luckysheet_select_save![0].row[0] + r;
                 const c_ab = ctx.luckysheet_select_save![0].column[0] + c;
+
+                // persist the hyperlink on the anchor cell position
+                if (pendingLink) {
+                  saveHyperlink(
+                    ctx,
+                    r_ab,
+                    c_ab,
+                    pendingLink.href,
+                    "webpage",
+                    pendingLink.display
+                  );
+                }
 
                 for (let rp = 0; rp < rowspan; rp += 1) {
                   for (let cp = 0; cp < colspan; cp += 1) {

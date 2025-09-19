@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.55
+
+### Patch Changes
+
+- fix issue with pasting hyper links in table
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.55
+
 ## 1.1.54
 
 ### Patch Changes

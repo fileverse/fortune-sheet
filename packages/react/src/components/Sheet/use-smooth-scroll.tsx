@@ -101,14 +101,15 @@ export const useSmoothScroll = (
         Math.min(maxScrollTop, verticalScrollbarEl.scrollTop + yPixels)
       );
 
-      if (targetScrollLeft !== horizontalScrollbarEl.scrollLeft) {
+      const didScrollX = targetScrollLeft !== horizontalScrollbarEl.scrollLeft;
+      const didScrollY = targetScrollTop !== verticalScrollbarEl.scrollTop;
+
+      if (didScrollX) {
         horizontalScrollbarEl.scrollLeft = targetScrollLeft;
       }
-      if (targetScrollTop !== verticalScrollbarEl.scrollTop) {
+      if (didScrollY) {
         verticalScrollbarEl.scrollTop = targetScrollTop;
       }
-      horizontalScrollbarEl.dispatchEvent(new Event("scroll"));
-      verticalScrollbarEl.dispatchEvent(new Event("scroll"));
     };
   };
 
@@ -135,13 +136,13 @@ export const useSmoothScroll = (
     if (!scrollContainerEl || !horizontalScrollbarEl || !verticalScrollbarEl)
       return () => {};
 
-    const unmountWheelScrollHandler = routeWheelScrollToScrollbars(
+    const unmountScrollHandler = routeWheelScrollToScrollbars(
       context,
       scrollContainerEl,
       horizontalScrollbarEl,
       verticalScrollbarEl
     );
 
-    return unmountWheelScrollHandler;
+    return unmountScrollHandler;
   }, [context.zoomRatio]);
 };

@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.57
+
+### Patch Changes
+
+- Fresh build after minor linting changes
+
 ## 1.1.56
 
 ### Patch Changes

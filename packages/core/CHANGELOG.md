@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.56
+
+### Patch Changes
+
+- Improve formula hint UX
+
 ## 1.1.55
 
 ### Patch Changes

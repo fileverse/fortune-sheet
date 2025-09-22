@@ -231,7 +231,7 @@ const buildCellFromTd = (
   const fontSizePt = Math.round(
     styles["font-size"]
       ? parseInt(styles["font-size"].replace("pt", ""), 10)
-      : (parseInt(td.style.fontSize || `${DEFAULT_PT}`, 10) * 72) / 96
+      : parseInt(td.style.fontSize || `${DEFAULT_PT}`, 10)
   );
   cell.fs = fontSizePt;
   cell.fc = td.style.color || styles.color;
@@ -261,6 +261,8 @@ const buildCellFromTd = (
   } else {
     cell.vt = 2;
   }
+
+  cell.tb = "1";
 
   // Rotation
   if ("mso-rotate" in styles) cell.rt = parseFloat(styles["mso-rotate"]);

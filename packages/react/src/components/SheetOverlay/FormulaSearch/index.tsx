@@ -22,7 +22,6 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     "PNL",
     "SAFE",
     "BLOCKSCOUT",
-    "GNOSIS",
     "LENS",
     "FARCASTER",
     "Ethereum",
@@ -59,9 +58,10 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     const hintAbove = hintHeight > availableBelow;
     const selectionHeight = firstSelection?.height_move || 0;
     const divOffset = hintRef.current?.offsetHeight || 0;
-    setTop(
-      hintAbove ? selectionHeight - (divOffset + 30) : selectionHeight + 4
-    );
+    const topV = hintAbove
+      ? selectionHeight - (divOffset + 80)
+      : selectionHeight + 4;
+    setTop(topV);
   };
 
   useEffect(() => {
@@ -76,158 +76,82 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
 
   return (
     <div
-      {...props}
-      ref={hintRef}
-      id="luckysheet-formula-search-c"
-      className="luckysheet-formula-search-c"
+      className="flex flex-col luckysheet-formula-search-c-p"
       style={{
         top,
       }}
     >
-      {context.defaultCandidates.length > 0 && (
-        <>
-          <div
-            style={{ marginBottom: "4px" }}
-            className="w-full flex flex-col p-2 gap-1"
-          >
-            <h4 className="text-helper-sm-bold color-text-secondary">
-              Onchain functions
-            </h4>
-            <p className="text-helper-text-sm color-text-secondary">
-              Every onchain function is a native data structure allowing dSheets
-              to read and structure data from smart contracts and APIs.
-            </p>
-          </div>
-          {!isAuthorized && (
+      <div
+        {...props}
+        ref={hintRef}
+        id="luckysheet-formula-search-c"
+        className="luckysheet-formula-search-c"
+      >
+        {context.defaultCandidates.length > 0 && (
+          <>
             <div
-              style={{ marginBottom: "8px", backgroundColor: "#F8F9FA" }}
+              style={{ marginBottom: "4px" }}
               className="w-full flex flex-col p-2 gap-1"
             >
-              <h4 className="font-semibold">dSheets account required</h4>
+              <h4 className="text-helper-sm-bold color-text-secondary">
+                Onchain functions
+              </h4>
               <p className="text-helper-text-sm color-text-secondary">
-                Use more onchain functions by creating a dSheets account.{" "}
-                <span
-                  className="sign-fortune"
-                  style={{ color: "#5C0AFF", cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    document.getElementById("triggerAuth")?.click();
-                  }}
-                >
-                  Signup/Login
-                </span>
+                Every onchain function is a native data structure allowing
+                dSheets to read and structure data from smart contracts and
+                APIs.
               </p>
-              <div className="flex gap-2 mt-2 mb-2">
-                {unfilteredDefaultCandidates.map((v, index) => {
-                  return (
-                    <img
-                      key={index}
-                      src={v.LOGO}
-                      alt="Service Logo"
-                      style={{ width: "16px", height: "16px" }}
-                    />
-                  );
-                })}
-              </div>
             </div>
-          )}
-        </>
-      )}
-
-      {context.defaultCandidates.length > 0 ? (
-        <>
-          {finalDefaultCandidates.map((v) => {
-            return (
+            {!isAuthorized && (
               <div
-                key={v.n}
-                data-func={v.n}
-                style={{
-                  cursor: "pointer",
-                }}
-                className="luckysheet-formula-search-item"
+                style={{ marginBottom: "8px", backgroundColor: "#F8F9FA" }}
+                className="w-full flex flex-col p-2 gap-1"
               >
-                <div
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  <div className="luckysheet-formula-search-func color-text-default text-body-sm">
-                    {v.n}
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "end",
-                      minWidth: "68px",
-                      alignItems: "center",
-                      gap: "6px",
+                <h4 className="font-semibold">dSheets account required</h4>
+                <p className="text-helper-text-sm color-text-secondary">
+                  Use more onchain functions by creating a dSheets account.{" "}
+                  <span
+                    className="sign-fortune"
+                    style={{ color: "#5C0AFF", cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      document.getElementById("triggerAuth")?.click();
                     }}
                   >
-                    {v.LOGO && (
+                    Signup/Login
+                  </span>
+                </p>
+                <div className="flex gap-2 mt-2 mb-2">
+                  {unfilteredDefaultCandidates.map((v, index) => {
+                    return (
                       <img
+                        key={index}
                         src={v.LOGO}
                         alt="Service Logo"
-                        style={{ width: "16px" }}
+                        style={{ width: "16px", height: "16px" }}
                       />
-                    )}
-                    {v.SECONDARY_LOGO && (
-                      <img
-                        src={v.SECONDARY_LOGO}
-                        alt="Service Logo"
-                        style={{ width: "16px" }}
-                      />
-                    )}
-                    {v.API_KEY && (
-                      <Tooltip
-                        text={
-                          localStorage.getItem(v.API_KEY)
-                            ? "API Key added"
-                            : "API key required"
-                        }
-                      >
-                        <div
-                          style={{
-                            borderRadius: "4px",
-                            backgroundColor: `${
-                              localStorage.getItem(v.API_KEY)
-                                ? "#177E23"
-                                : "#e8ebec"
-                            }`,
-                            width: "16px",
-                            height: "16px",
-                          }}
-                          className="flex justify-center"
-                        >
-                          <LucideIcon
-                            name="Key"
-                            style={{
-                              color: localStorage.getItem(v.API_KEY)
-                                ? "white"
-                                : "#77818A",
-                              width: "12px",
-                              height: "12px",
-                            }}
-                          />
-                        </div>
-                      </Tooltip>
-                    )}
-                  </div>
-                </div>
-                <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm  color-text-default">
-                  {v.d}
+                    );
+                  })}
                 </div>
               </div>
-            );
-          })}
-        </>
-      ) : (
-        <>
-          {finalFunctionCandidates.length > 0 &&
-            finalFunctionCandidates.map((v) => {
+            )}
+          </>
+        )}
+
+        {context.defaultCandidates.length > 0 ? (
+          <>
+            {finalDefaultCandidates.map((v, index) => {
               return (
                 <div
                   key={v.n}
                   data-func={v.n}
-                  className="luckysheet-formula-search-item"
+                  style={{
+                    cursor: "pointer",
+                  }}
+                  className={`luckysheet-formula-search-item ${
+                    index === 0 ? "luckysheet-formula-search-item-active" : ""
+                  }`}
                 >
                   <div
                     style={{ display: "flex", justifyContent: "space-between" }}
@@ -239,7 +163,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                       style={{
                         display: "flex",
                         justifyContent: "end",
-                        width: "68px",
+                        minWidth: "68px",
                         alignItems: "center",
                         gap: "6px",
                       }}
@@ -263,7 +187,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                           text={
                             localStorage.getItem(v.API_KEY)
                               ? "API Key added"
-                              : "API Key required"
+                              : "API key required"
                           }
                         >
                           <div
@@ -294,65 +218,154 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                       )}
                     </div>
                   </div>
-                  <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
+                  <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm  color-text-default">
                     {v.d}
                   </div>
                 </div>
               );
             })}
-          {finalFunctionCandidates.length === 0 && (
-            <span>
-              {!isAuthorized && (
-                <div
-                  style={{ marginBottom: "8px", backgroundColor: "#F8F9FA" }}
-                  className="w-full flex flex-col p-2 gap-1"
-                >
-                  <h4
-                    className="text-helper-sm-bold"
-                    style={{ fontWeight: "bold" }}
+          </>
+        ) : (
+          <>
+            {finalFunctionCandidates.length > 0 &&
+              finalFunctionCandidates.map((v, index) => {
+                return (
+                  <div
+                    key={v.n}
+                    data-func={v.n}
+                    className={`luckysheet-formula-search-item ${
+                      index === 0 ? "luckysheet-formula-search-item-active" : ""
+                    }`}
                   >
-                    dSheets account required
-                  </h4>
-                  <p className="text-helper-text-sm color-text-secondary">
-                    Use more onchain functions by creating a dSheets account.{" "}
-                    <span
-                      className="sign-fortune"
-                      style={{ color: "#5C0AFF", cursor: "pointer" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        document.getElementById("triggerAuth")?.click();
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
                       }}
                     >
-                      Signup/Login
-                    </span>
-                  </p>
-                  <div className="flex gap-2 mt-2 mb-2">
-                    {unfilteredDefaultCandidates.map((v, index) => {
-                      return (
-                        <img
-                          key={index}
-                          src={v.LOGO}
-                          alt="Service Logo"
-                          style={{ width: "16px", height: "16px" }}
-                        />
-                      );
-                    })}
+                      <div className="luckysheet-formula-search-func color-text-default text-body-sm">
+                        {v.n}
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "end",
+                          width: "68px",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        {v.LOGO && (
+                          <img
+                            src={v.LOGO}
+                            alt="Service Logo"
+                            style={{ width: "16px" }}
+                          />
+                        )}
+                        {v.SECONDARY_LOGO && (
+                          <img
+                            src={v.SECONDARY_LOGO}
+                            alt="Service Logo"
+                            style={{ width: "16px" }}
+                          />
+                        )}
+                        {v.API_KEY && (
+                          <Tooltip
+                            text={
+                              localStorage.getItem(v.API_KEY)
+                                ? "API Key added"
+                                : "API Key required"
+                            }
+                          >
+                            <div
+                              style={{
+                                borderRadius: "4px",
+                                backgroundColor: `${
+                                  localStorage.getItem(v.API_KEY)
+                                    ? "#177E23"
+                                    : "#e8ebec"
+                                }`,
+                                width: "16px",
+                                height: "16px",
+                              }}
+                              className="flex justify-center"
+                            >
+                              <LucideIcon
+                                name="Key"
+                                style={{
+                                  color: localStorage.getItem(v.API_KEY)
+                                    ? "white"
+                                    : "#77818A",
+                                  width: "12px",
+                                  height: "12px",
+                                }}
+                              />
+                            </div>
+                          </Tooltip>
+                        )}
+                      </div>
+                    </div>
+                    <div className="luckysheet-formula-search-detail mt-1 text-helper-text-sm color-text-secondary">
+                      {v.d}
+                    </div>
                   </div>
-                </div>
-              )}
-            </span>
-          )}
-        </>
-      )}
-
-      <hr className="color-border-default mb-2 mt-4 " />
-      <div
-        style={{ paddingLeft: "10px", paddingRight: "10px" }}
-        className="flex gap-1 items-center color-border-default text-helper-sm"
-      >
-        <div className="border p-1 color-text-default rounded">Tab</div>
-        <p className="color-text-secondary">to insert</p>
+                );
+              })}
+            {finalFunctionCandidates.length === 0 && (
+              <span>
+                {!isAuthorized && (
+                  <div
+                    style={{ marginBottom: "8px", backgroundColor: "#F8F9FA" }}
+                    className="w-full flex flex-col p-2 gap-1"
+                  >
+                    <h4
+                      className="text-helper-sm-bold"
+                      style={{ fontWeight: "bold" }}
+                    >
+                      dSheets account required
+                    </h4>
+                    <p className="text-helper-text-sm color-text-secondary">
+                      Use more onchain functions by creating a dSheets account.{" "}
+                      <span
+                        className="sign-fortune"
+                        style={{ color: "#5C0AFF", cursor: "pointer" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          document.getElementById("triggerAuth")?.click();
+                        }}
+                      >
+                        Signup/Login
+                      </span>
+                    </p>
+                    <div className="flex gap-2 mt-2 mb-2">
+                      {unfilteredDefaultCandidates.map((v, index) => {
+                        return (
+                          <img
+                            key={index}
+                            src={v.LOGO}
+                            alt="Service Logo"
+                            style={{ width: "16px", height: "16px" }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </span>
+            )}
+          </>
+        )}
+      </div>
+      <div className="p-2 pt-0">
+        <hr className="color-border-default mb-2" />
+        <div
+          style={{ paddingLeft: "10px", paddingRight: "10px" }}
+          className="flex gap-1 items-center color-border-default text-helper-sm"
+        >
+          <div className="border p-1 color-text-default rounded">Tab</div>
+          <p className="color-text-secondary">to insert</p>
+        </div>
       </div>
     </div>
   );

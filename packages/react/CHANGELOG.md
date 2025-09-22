@@ -1,5 +1,61 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.62
+
+### Patch Changes
+
+- N/A fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.62
+
+## 1.1.61
+
+### Patch Changes
+
+- Minor drag marging
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.61
+
+## 1.1.60
+
+### Patch Changes
+
+- minor css changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.60
+
+## 1.1.59
+
+### Patch Changes
+
+- Minor css changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.59
+
+## 1.1.58
+
+### Patch Changes
+
+- changes to handle jump on drag
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.58
+
+## 1.1.57
+
+### Patch Changes
+
+- Fresh build after minor linting changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.57
+
+## 1.1.56
+
+### Patch Changes
+
+- Improve formula hint UX
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.56
+
 ## 1.1.55
 
 ### Patch Changes

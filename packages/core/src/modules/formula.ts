@@ -2092,7 +2092,7 @@ export function createRangeHightlight(
 }
 
 export function moveCursorToEnd(editableDiv: HTMLDivElement) {
-  editableDiv.focus(); // Ensure the element is focused
+  editableDiv?.focus(); // Ensure the element is focused
 
   const range = document.createRange();
   const selection = window.getSelection();

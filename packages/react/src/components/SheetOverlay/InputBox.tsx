@@ -43,6 +43,7 @@ import {
   incrementRow,
   decrementRow,
 } from "./helper";
+import { LucideIcon } from "./LucideIcon";
 
 const InputBox: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
@@ -59,10 +60,29 @@ const InputBox: React.FC = () => {
   const [firstSelectionActiveCell, setFirstSelectionActiveCell] = useState<any>(
     {}
   );
+  const hideFormulaHintLocal = localStorage.getItem("formulaMore") === "true";
+  const [showFormulaHint, setShowFormulaHint] = useState(!hideFormulaHintLocal);
+  const [showSearchHint, setShowSearchHint] = useState(false);
   const row_index = firstSelection?.row_focus!;
   const col_index = firstSelection?.column_focus!;
   const preText = useRef("");
   const placeRef = useRef("");
+
+  const handleShowFormulaHint = () => {
+    localStorage.setItem("formulaMore", String(showFormulaHint));
+    setShowFormulaHint(!showFormulaHint);
+  };
+
+  const getLastInputSpanText = () => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(
+      `<div>${inputRef?.current?.innerHTML}</div>`,
+      "text/html"
+    );
+    const spans = doc.querySelectorAll("span");
+    const lastSpan = spans[spans.length - 1];
+    return lastSpan?.innerText;
+  };
 
   const inputBoxStyle = useMemo(() => {
     if (firstSelectionActiveCell && context.luckysheetCellUpdate.length > 0) {
@@ -276,7 +296,10 @@ const InputBox: React.FC = () => {
       const formulaName = getActiveFormula()?.querySelector(
         ".luckysheet-formula-search-func"
       )?.textContent;
-      if (formulaName) {
+
+      const lastSpanText = getLastInputSpanText();
+
+      if (formulaName && !isLetterNumberPattern(lastSpanText)) {
         insertSelectedFormula(formulaName);
         // User selects datablock
         e.preventDefault();
@@ -294,7 +317,10 @@ const InputBox: React.FC = () => {
       const formulaName = getActiveFormula()?.querySelector(
         ".luckysheet-formula-search-func"
       )?.textContent;
-      if (formulaName) {
+
+      const lastSpanText = getLastInputSpanText();
+
+      if (formulaName && !isLetterNumberPattern(lastSpanText)) {
         insertSelectedFormula(formulaName);
         e.preventDefault();
         e.stopPropagation();
@@ -511,6 +537,11 @@ const InputBox: React.FC = () => {
 
   const onChange = useCallback(
     (__: any, isBlur?: boolean) => {
+      if (inputRef?.current?.innerText.includes("=")) {
+        setShowSearchHint(true);
+      } else {
+        setShowSearchHint(false);
+      }
       // setInputHTML(html);
       // console.log("onChange", __);
       const e = lastKeyDownEventRef.current;
@@ -712,6 +743,9 @@ const InputBox: React.FC = () => {
     return activeCell || cell;
   };
 
+  const fn =
+    context.formulaCache.functionlistMap[context.functionHint as string];
+
   return (
     <div
       className="luckysheet-input-box"
@@ -719,7 +753,6 @@ const InputBox: React.FC = () => {
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}
     >
-      {/* Cell Address Indicator */}
       {firstSelection && !context.rangeDialog?.show && (
         <div
           className="luckysheet-cell-address-indicator"
@@ -767,27 +800,67 @@ const InputBox: React.FC = () => {
         context.functionHint ||
         context.defaultCandidates.length > 0) && (
         <>
-          <FormulaSearch
-            onMouseMove={(e) => {
-              if (document.getElementById("luckysheet-formula-search-c")) {
-                // apply hovered state on the function item
-                const hoveredItem = (e.target as HTMLElement).closest(
-                  ".luckysheet-formula-search-item"
-                ) as HTMLElement | null;
-                if (!hoveredItem) return;
+          {showSearchHint && (
+            <FormulaSearch
+              onMouseMove={(e) => {
+                if (document.getElementById("luckysheet-formula-search-c")) {
+                  // apply hovered state on the function item
+                  const hoveredItem = (e.target as HTMLElement).closest(
+                    ".luckysheet-formula-search-item"
+                  ) as HTMLElement | null;
+                  if (!hoveredItem) return;
 
-                clearSearchItemActiveClass();
-                hoveredItem.classList.add(
-                  "luckysheet-formula-search-item-active"
-                );
-              }
-              e.preventDefault();
-            }}
-            onMouseDown={(e) => {
-              selectActiveFormulaOnClick(e);
-            }}
-          />
-          <FormulaHint />
+                  clearSearchItemActiveClass();
+                  hoveredItem.classList.add(
+                    "luckysheet-formula-search-item-active"
+                  );
+                }
+                e.preventDefault();
+              }}
+              onMouseDown={(e) => {
+                selectActiveFormulaOnClick(e);
+              }}
+            />
+          )}
+          {showFormulaHint &&
+            fn &&
+            inputRef?.current?.innerText.includes("(") && (
+              <FormulaHint
+                handleShowFormulaHint={handleShowFormulaHint}
+                showFormulaHint={showFormulaHint}
+              />
+            )}
+          {!showFormulaHint && fn && (
+            <div
+              className="luckysheet-hin absolute"
+              style={{
+                top: "1px",
+                left: "-18px",
+                display: "block",
+                width: "17px",
+                height: "17px",
+                zIndex: 2000,
+                backgroundColor: "#efc703",
+                borderBottomLeftRadius: "4px",
+                borderTopLeftRadius: "4px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                handleShowFormulaHint();
+              }}
+            >
+              <LucideIcon
+                name="DSheetTextDisabled"
+                fill="black"
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  margin: "auto",
+                  marginTop: "1px",
+                }}
+              />
+            </div>
+          )}
         </>
       )}
     </div>

@@ -950,3 +950,18 @@
   pointer-events: none;
   user-select: none;
 }
+
+.luckysheet-hint {
+  /* position: absolute; */
+  top: -18px;
+  left: 0;
+  background-color: #efc703;
+  color: #000000;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 20;
+  pointer-events: none;
+  user-select: none;
+}

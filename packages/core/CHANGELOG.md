@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.62
+
+### Patch Changes
+
+- N/A fresh build
+
+## 1.1.61
+
+### Patch Changes
+
+- Minor drag marging
+
 ## 1.1.60
 
 ### Patch Changes

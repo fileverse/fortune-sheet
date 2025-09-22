@@ -77,23 +77,23 @@ export const DraggableDiv = ({
       const elementHeight = divRef.current?.offsetHeight || 0;
 
       // Apply boundaries for right and bottom
-      if (newX + initialWindowPos.x + 150 > window.innerWidth - elementWidth) {
+      if (newX + initialWindowPos.x + 320 > window.innerWidth - elementWidth) {
         newX = current.x;
       }
 
       if (
-        newY + initialWindowPos.y + 200 >
+        newY + initialWindowPos.y + 275 >
         window.innerHeight - elementHeight
       ) {
         newY = current.y;
       }
 
       // Apply boundaries for left and top
-      if (newX + initialWindowPos.x < 0) {
+      if (newX + initialWindowPos.x - 35 < 0) {
         newX = current.x;
       }
 
-      if (newY + initialWindowPos.y < 0) {
+      if (newY + initialWindowPos.y - 60 < 0) {
         newY = current.y;
       }
 
@@ -121,23 +121,23 @@ export const DraggableDiv = ({
       const elementHeight = divRef.current?.offsetHeight || 0;
 
       // Apply boundaries for right and bottom
-      if (newX + initialWindowPos.x + 100 > window.innerWidth - elementWidth) {
+      if (newX + initialWindowPos.x + 250 > window.innerWidth - elementWidth) {
         newX = current.x;
       }
 
       if (
-        newY + initialWindowPos.y + 200 >
+        newY + initialWindowPos.y + 220 >
         window.innerHeight - elementHeight
       ) {
         newY = current.y;
       }
 
       // Apply boundaries for left and top
-      if (newX + initialWindowPos.x < 0) {
+      if (newX + initialWindowPos.x - 10 < 0) {
         newX = current.x;
       }
 
-      if (newY + initialWindowPos.y < 0) {
+      if (newY + initialWindowPos.y - 25 < 0) {
         newY = current.y;
       }
 

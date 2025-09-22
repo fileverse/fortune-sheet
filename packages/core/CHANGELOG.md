@@ -1,5 +1,47 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.62
+
+### Patch Changes
+
+- N/A fresh build
+
+## 1.1.61
+
+### Patch Changes
+
+- Minor drag marging
+
+## 1.1.60
+
+### Patch Changes
+
+- minor css changes
+
+## 1.1.59
+
+### Patch Changes
+
+- Minor css changes
+
+## 1.1.58
+
+### Patch Changes
+
+- changes to handle jump on drag
+
+## 1.1.57
+
+### Patch Changes
+
+- Fresh build after minor linting changes
+
+## 1.1.56
+
+### Patch Changes
+
+- Improve formula hint UX
+
 ## 1.1.55
 
 ### Patch Changes

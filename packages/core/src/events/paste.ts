@@ -1823,7 +1823,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     if (!clipboardData) {
       // for IE
       // @ts-ignore
-      clipboardData = (window as any).clipboardData;
+      clipboardData = window.clipboardData;
     }
     const text = clipboardData?.getData("text/plain");
     if (text) {

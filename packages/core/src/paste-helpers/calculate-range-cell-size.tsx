@@ -75,7 +75,7 @@ export function calculateRangeCellSize(
       whiteSpace: "normal",
       wordBreak: "normal",
       overflowWrap: "break-word",
-    } as Partial<CSSStyleDeclaration>);
+    });
     document.body.appendChild(cellSizeMeasurer);
   }
 

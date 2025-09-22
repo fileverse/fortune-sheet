@@ -40,15 +40,13 @@ const parseInlineStyleBlock = (block?: string) => {
 
 const mapFontFamilyToIndex = (ff: string, ctx: Context) => {
   const families = ff.split(",");
-  const locale_fontjson = locale(ctx).fontjson;
+  const locale_fontjson = locale(ctx).fontjson as Record<string, number>;
   const found = families
     .map((raw) => raw.trim().toLowerCase())
     .find((key) => {
-      // @ts-ignore
       const mapped = locale_fontjson[key];
       return mapped != null;
     });
-  // @ts-ignore
   if (found != null) return locale_fontjson[found];
   return 0; // default font index
 };

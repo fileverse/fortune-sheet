@@ -1,10 +1,11 @@
 import { RefObject, useContext, useEffect } from "react";
+import { removeEditingComment } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../context";
 
 export const useSmoothScroll = (
   scrollContainerRef: RefObject<HTMLDivElement | null>
 ) => {
-  const { context, refs } = useContext(WorkbookContext);
+  const { context, refs, setContext } = useContext(WorkbookContext);
   function attachSmoothWheelScroll(
     scrollContainer: HTMLElement,
     moveScrollBy: (deltaX: number, deltaY: number) => void,
@@ -42,7 +43,9 @@ export const useSmoothScroll = (
 
     function handleWheelEvent(event: WheelEvent) {
       event.preventDefault();
-
+      setContext((ctx) => {
+        removeEditingComment(ctx, refs.globalCache);
+      });
       const functionDetailsElement =
         document.getElementById("function-details");
       const formulaSearchElement = document.getElementById(

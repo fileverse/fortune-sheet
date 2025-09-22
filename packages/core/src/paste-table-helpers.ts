@@ -7,7 +7,7 @@ import { genarate } from "./modules/format";
 import { Cell } from "./types";
 import { getSheetIndex } from "./utils";
 
-const DEFAULT_PT = 13;
+export const DEFAULT_FONT_SIZE = 12;
 
 const parseStylesheetPairs = (styleInner: string) => {
   const patternReg = /{([^}]*)}/g;
@@ -228,12 +228,12 @@ const buildCellFromTd = (
   // Font family / size / color
   const ff = td.style.fontFamily || styles["font-family"] || "";
   cell.ff = mapFontFamilyToIndex(ff, ctx);
-  const fontSizePt = Math.round(
+  const fontSize = Math.round(
     styles["font-size"]
       ? parseInt(styles["font-size"].replace("pt", ""), 10)
-      : parseInt(td.style.fontSize || `${DEFAULT_PT}`, 10)
+      : parseInt(td.style.fontSize || `${DEFAULT_FONT_SIZE}`, 10)
   );
-  cell.fs = fontSizePt;
+  cell.fs = fontSize;
   cell.fc = td.style.color || styles.color;
 
   // Horizontal align

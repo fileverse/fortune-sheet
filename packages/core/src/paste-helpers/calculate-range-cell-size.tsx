@@ -1,8 +1,12 @@
 /* eslint-disable no-plusplus */
+import { DEFAULT_FONT_SIZE } from "../paste-table-helpers";
 import { getSheetIndex } from "../utils";
 import { Context, getFlowdata } from "../context";
 import { Cell, Sheet } from "../types";
 import { setRowHeight } from "../api";
+
+const DEFAULT_FONT_FAMILY =
+  "Helvetica Neue, system-ui, Roboto, Lato, Segoe UI, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Arial, sans-serif";
 
 const getColumnWidth = (colIndex: number, ctx: Context, sheetFile: Sheet) => {
   const defaultColumnWidth = ctx.defaultcollen ?? 73;
@@ -27,10 +31,8 @@ const applyFontOnMeasurer = (
   cell: Cell | null | undefined,
   cellSizeMeasurer: HTMLDivElement | null
 ) => {
-  const fontSizePx = (cell?.fs as number | undefined) ?? 13;
-  const fontFamily =
-    (cell?.ff as string | undefined) ??
-    "Helvetica Neue, system-ui, Roboto, Lato, Segoe UI, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Arial, sans-serif";
+  const fontSizePx = (cell?.fs as number | undefined) ?? DEFAULT_FONT_SIZE;
+  const fontFamily = (cell?.ff as string | undefined) ?? DEFAULT_FONT_FAMILY;
   const fontWeight = cell?.bl === 1 ? "700" : "400";
   const fontStyle = cell?.it === 1 ? "italic" : "normal";
 

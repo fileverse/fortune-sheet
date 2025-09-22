@@ -1633,11 +1633,11 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     // $("#luckysheet-rich-text-editor").blur();
     selectionCache.isPasteAction = false;
 
-    let { clipboardData } = e as any;
+    let { clipboardData } = e;
     if (!clipboardData) {
       // @ts-ignore
       // for IE
-      clipboardData = (window as any).clipboardData;
+      clipboardData = window.clipboardData;
     }
 
     if (!clipboardData) return;
@@ -1657,7 +1657,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
       ctx.luckysheet_copy_save.copyRange.length > 0
     ) {
       // 剪贴板内容解析
-      const cpDataArr: string[][] = [];
+      const cpDataArr = [];
 
       const reg = /<tr.*?>(.*?)<\/tr>/g;
       const reg2 = /<td.*?>(.*?)<\/td>/g;
@@ -1665,7 +1665,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
       const regArr = txtdata.match(reg) || [];
 
       for (let i = 0; i < regArr.length; i += 1) {
-        const cpRowArr: string[] = [];
+        const cpRowArr = [];
 
         const reg2Arr = regArr[i].match(reg2);
 
@@ -1775,7 +1775,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
         clipboardData.files.length === 1 &&
         clipboardData.files[0].type.indexOf("image") > -1
       ) {
-        // image handling...
+        // imageCtrl.insertImg(clipboardData.files[0]);
       } else {
         txtdata = clipboardData.getData("text/plain");
         const isExcelFormula = txtdata.startsWith("=");
@@ -1819,7 +1819,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     // 阻止默认粘贴
     e.preventDefault();
 
-    let { clipboardData } = e as any;
+    let { clipboardData } = e;
     if (!clipboardData) {
       // for IE
       // @ts-ignore

@@ -1,13 +1,13 @@
 import _ from "lodash";
+import { handlePastedTable } from "../paste-table-helpers";
 import { Context, getFlowdata } from "../context";
-import { locale } from "../locale";
 import {
   // delFunctionGroup,
   execfunction,
   // execFunctionGroup,
   functionCopy,
 } from "../modules/formula";
-import { getdatabyselection, getQKBorder } from "../modules/cell";
+import { getdatabyselection } from "../modules/cell";
 import { genarate, update } from "../modules/format";
 import { normalizeSelection, selectionCache } from "../modules/selection";
 import { Cell, CellMatrix } from "../types";
@@ -16,9 +16,12 @@ import { hasPartMC, isRealNum } from "../modules/validation";
 import { getBorderInfoCompute } from "../modules/border";
 import { expandRowsAndColumns, storeSheetParamALL } from "../modules/sheet";
 import { jfrefreshgrid } from "../modules/refresh";
-import { setRowHeight } from "../api";
 import { CFSplitRange, sanitizeDuneUrl, saveHyperlink } from "../modules";
 import clipboard from "../modules/clipboard";
+import {
+  calculateRangeCellSize,
+  updateSheetCellSizes,
+} from "../paste-helpers/calculate-range-cell-size";
 
 function postPasteCut(
   ctx: Context,
@@ -1589,6 +1592,34 @@ export function parseAsLinkIfUrl(txtdata: string, ctx: Context) {
   }
 }
 
+function resizePastedCellsToContent(ctx: Context) {
+  const lastSelectedRange =
+    ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
+  if (!lastSelectedRange) return;
+
+  const startRow =
+    lastSelectedRange.row?.[0] ?? lastSelectedRange.row_focus ?? 0;
+  const endRow =
+    lastSelectedRange.row?.[1] ?? lastSelectedRange.row_focus ?? startRow;
+  const startCol =
+    lastSelectedRange.column?.[0] ?? lastSelectedRange.column_focus ?? 0;
+  const endCol =
+    lastSelectedRange.column?.[1] ?? lastSelectedRange.column_focus ?? startCol;
+
+  const rangeCellSize = calculateRangeCellSize(
+    ctx,
+    ctx.currentSheetId,
+    startRow,
+    endRow,
+    startCol,
+    endCol
+  );
+  const sheetIdx = getSheetIndex(ctx, ctx.currentSheetId);
+  if (sheetIdx == null) return;
+
+  updateSheetCellSizes(ctx, sheetIdx, rangeCellSize);
+}
+
 export function handlePaste(ctx: Context, e: ClipboardEvent) {
   // if (isEditMode()) {
   //   // 此模式下禁用粘贴
@@ -1699,14 +1730,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             v = "";
           }
           if (isInlineStr) {
-            // const cpData = $(cpDataArr[r - copy_r1][c - copy_c1])
-            //   .text()
-            //   .replace(/\s|\n/g, " ");
-            // const ctx.alue = v.replace(/\n/g, "").replace(/\s/g, " ");
-            // if (cpData !== ctx.alue) {
-            //   isEqual = false;
-            //   break;
-            // }
+            // (inlineStr comparison skipped)
           } else {
             if (_.trim(cpDataArr[r - copy_r1][c - copy_c1]) !== _.trim(v)) {
               isEqual = false;
@@ -1716,8 +1740,6 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
         }
       }
     }
-
-    const locale_fontjson = locale(ctx).fontjson;
 
     if (
       ctx.hooks.beforePaste?.(ctx.luckysheet_select_save, txtdata) === false
@@ -1740,373 +1762,20 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
       } else {
         pasteHandlerOfCopyPaste(ctx, ctx.luckysheet_copy_save);
       }
+      resizePastedCellsToContent(ctx);
     } else if (txtdata.indexOf("fortune-copy-action-image") > -1) {
       // imageCtrl.pasteImgItem();
     } else {
       if (txtdata.indexOf("table") > -1) {
-        const ele = document.createElement("div");
-        ele.innerHTML = txtdata;
-
-        const trList = ele.querySelectorAll("table tr");
-        if (trList.length === 0) {
-          ele.remove();
-          return;
-        }
-
-        const data = new Array(trList.length);
-        let colLen = 0;
-        _.forEach(trList[0].querySelectorAll("td, th"), (td) => {
-          let colspan = (td as HTMLTableCellElement).colSpan;
-          if (Number.isNaN(colspan)) {
-            colspan = 1;
-          }
-          colLen += colspan;
-        });
-
-        for (let i = 0; i < data.length; i += 1) {
-          data[i] = new Array(colLen);
-        }
-
-        let r = 0;
-        const borderInfo: any = {};
-        const styleInner = ele.querySelectorAll("style")[0]?.innerHTML || "";
-        const patternReg = /{([^}]*)}/g;
-        const patternStyle = styleInner.match(patternReg);
-        const nameReg = /^[^\t].*/gm;
-        const patternName = _.initial(styleInner.match(nameReg));
-        const allStyleList =
-          patternName.length === patternStyle?.length &&
-          typeof patternName === typeof patternStyle
-            ? _.fromPairs(_.zip(patternName, patternStyle))
-            : {};
-
-        const index = getSheetIndex(ctx, ctx.currentSheetId);
-        if (!_.isNil(index)) {
-          if (_.isNil(ctx.luckysheetfile[index].config)) {
-            ctx.luckysheetfile[index].config = {};
-          }
-          if (_.isNil(ctx.luckysheetfile[index].config!.rowlen)) {
-            ctx.luckysheetfile[index].config!.rowlen = {} as Record<
-              number,
-              number
-            >;
-          }
-          const rowHeightList = ctx.luckysheetfile[index].config!.rowlen!;
-          _.forEach(trList, (tr) => {
-            let c = 0;
-            const targetR = ctx.luckysheet_select_save![0].row[0] + r;
-
-            const targetRowHeight = !_.isNil(tr.getAttribute("height"))
-              ? parseInt(tr.getAttribute("height") as string, 10)
-              : null;
-            if (
-              (_.has(ctx.luckysheetfile[index].config!.rowlen, targetR) &&
-                ctx.luckysheetfile[index].config!.rowlen![targetR] !==
-                  targetRowHeight) ||
-              (!_.has(ctx.luckysheetfile[index].config!.rowlen, targetR) &&
-                ctx.luckysheetfile[index].defaultRowHeight !== targetRowHeight)
-            ) {
-              rowHeightList[targetR] = targetRowHeight as number;
-            }
-
-            _.forEach(tr.querySelectorAll("td, th"), (element) => {
-              // build cell from td
-              const td = element as HTMLTableCellElement;
-              const { className } = td;
-              const cell: Cell = {};
-              const txt =
-                (td as HTMLTableCellElement).innerText || td.innerHTML;
-              if (_.trim(txt).length === 0) {
-                cell.v = undefined;
-                cell.m = "";
-              } else {
-                const mask = genarate(txt);
-                // @ts-ignore
-                [cell.m, cell.ct, cell.v] = mask;
-                // check if hex value to handle hex address
-                if (/^0x?[a-fA-F0-9]+$/.test(txt)) {
-                  cell.ct = { fa: "@", t: "s" };
-                  cell.m = txt;
-                  cell.v = txt;
-                }
-              }
-              let pendingLink: { href: string; display: string } | null = null;
-              const anchor = td.querySelector(
-                "a[href]"
-              ) as HTMLAnchorElement | null;
-              const urlRegex = /^(https?:\/\/[^\s]+)$/i;
-              if (anchor) {
-                const hrefAttr = anchor.getAttribute("href")?.trim() || "";
-                const display = anchor.textContent?.trim() || hrefAttr;
-                if (hrefAttr && urlRegex.test(hrefAttr)) {
-                  pendingLink = { href: hrefAttr, display };
-                }
-              } else {
-                const raw = (td.textContent || "").trim();
-                if (urlRegex.test(raw)) {
-                  pendingLink = { href: raw, display: raw };
-                }
-              }
-
-              const styleString =
-                typeof allStyleList[`.${className}`] === "string"
-                  ? allStyleList[`.${className}`]
-                      .substring(1, allStyleList[`.${className}`].length - 1)
-                      .split("\n\t")
-                  : [];
-              const styles: Record<string, string> = {};
-              _.forEach(styleString, (s) => {
-                const styleList = s.split(":");
-                styles[styleList[0]] = styleList?.[1].replace(";", "");
-              });
-              if (!_.isNil(styles.border)) td.style.border = styles.border;
-              let bg: string | undefined =
-                td.style.backgroundColor || styles.background;
-              if (bg === "rgba(0, 0, 0, 0)" || _.isEmpty(bg)) {
-                bg = undefined;
-              }
-
-              cell.bg = bg;
-
-              const fontWight = td.style.fontWeight;
-              cell.bl =
-                (fontWight.toString() === "400" ||
-                  fontWight === "normal" ||
-                  _.isEmpty(fontWight)) &&
-                !_.includes(styles["font-style"], "bold") &&
-                (!styles["font-weight"] || styles["font-weight"] === "400")
-                  ? 0
-                  : 1;
-
-              cell.it =
-                (td.style.fontStyle === "normal" ||
-                  _.isEmpty(td.style.fontStyle)) &&
-                !_.includes(styles["font-style"], "italic")
-                  ? 0
-                  : 1;
-
-              cell.un = !_.includes(styles["text-decoration"], "underline")
-                ? undefined
-                : 1;
-
-              cell.cl = !_.includes(td.innerHTML, "<s>") ? undefined : 1;
-
-              const ff = td.style.fontFamily || styles["font-family"] || "";
-              const ffs = ff.split(",");
-              for (let i = 0; i < ffs.length; i += 1) {
-                let fa = _.trim(ffs[i].toLowerCase());
-                // @ts-ignore
-                fa = locale_fontjson[fa];
-                if (_.isNil(fa)) {
-                  cell.ff = 0;
-                } else {
-                  cell.ff = fa;
-                  break;
-                }
-              }
-              const fs = Math.round(
-                styles["font-size"]
-                  ? parseInt(styles["font-size"].replace("pt", ""), 10)
-                  : (parseInt(td.style.fontSize || "13", 10) * 72) / 96
-              );
-              cell.fs = fs;
-
-              cell.fc = td.style.color || styles.color;
-
-              const ht = td.style.textAlign || styles["text-align"] || "left";
-              if (ht === "center") {
-                cell.ht = 0;
-              } else if (ht === "right") {
-                cell.ht = 2;
-              } else {
-                cell.ht = 1;
-              }
-
-              const regex = /vertical-align:\s*(.*?);/;
-              const vt =
-                td.style.verticalAlign ||
-                styles["vertical-align"] ||
-                (!_.isNil(allStyleList.td) &&
-                  allStyleList.td.match(regex).length > 0 &&
-                  allStyleList.td.match(regex)[1]) ||
-                "top";
-              if (vt === "middle") {
-                cell.vt = 0;
-              } else if (vt === "top" || vt === "text-top") {
-                cell.vt = 1;
-              } else {
-                cell.vt = 2;
-              }
-
-              if ("mso-rotate" in styles) {
-                const rt = styles["mso-rotate"];
-                cell.rt = parseFloat(rt);
-              }
-
-              while (c < colLen && !_.isNil(data[r][c])) {
-                c += 1;
-              }
-
-              if (c === colLen) {
-                return true;
-              }
-
-              if (_.isNil(data[r][c])) {
-                data[r][c] = cell;
-                // @ts-ignore
-                let rowspan = parseInt(td.getAttribute("rowspan"), 10);
-                // @ts-ignore
-                let colspan = parseInt(td.getAttribute("colspan"), 10);
-
-                if (Number.isNaN(rowspan)) {
-                  rowspan = 1;
-                }
-
-                if (Number.isNaN(colspan)) {
-                  colspan = 1;
-                }
-
-                const r_ab = ctx.luckysheet_select_save![0].row[0] + r;
-                const c_ab = ctx.luckysheet_select_save![0].column[0] + c;
-
-                // persist the hyperlink on the anchor cell position
-                if (pendingLink) {
-                  saveHyperlink(
-                    ctx,
-                    r_ab,
-                    c_ab,
-                    pendingLink.href,
-                    "webpage",
-                    pendingLink.display
-                  );
-                }
-
-                for (let rp = 0; rp < rowspan; rp += 1) {
-                  for (let cp = 0; cp < colspan; cp += 1) {
-                    if (rp === 0) {
-                      const bt = td.style.borderTop;
-                      if (
-                        !_.isEmpty(bt) &&
-                        bt.substring(0, 3).toLowerCase() !== "0px"
-                      ) {
-                        const width = td.style.borderTopWidth;
-                        const type = td.style.borderTopStyle;
-                        const color = td.style.borderTopColor;
-                        const borderconfig = getQKBorder(width, type, color);
-
-                        if (!borderInfo[`${r + rp}_${c + cp}`]) {
-                          borderInfo[`${r + rp}_${c + cp}`] = {};
-                        }
-
-                        borderInfo[`${r + rp}_${c + cp}`].t = {
-                          style: borderconfig[0],
-                          color: borderconfig[1],
-                        };
-                      }
-                    }
-
-                    if (rp === rowspan - 1) {
-                      const bb = td.style.borderBottom;
-                      if (
-                        !_.isEmpty(bb) &&
-                        bb.substring(0, 3).toLowerCase() !== "0px"
-                      ) {
-                        const width = td.style.borderBottomWidth;
-                        const type = td.style.borderBottomStyle;
-                        const color = td.style.borderBottomColor;
-                        const borderconfig = getQKBorder(width, type, color);
-
-                        if (!borderInfo[`${r + rp}_${c + cp}`]) {
-                          borderInfo[`${r + rp}_${c + cp}`] = {};
-                        }
-
-                        borderInfo[`${r + rp}_${c + cp}`].b = {
-                          style: borderconfig[0],
-                          color: borderconfig[1],
-                        };
-                      }
-                    }
-
-                    if (cp === 0) {
-                      const bl = td.style.borderLeft;
-                      if (
-                        !_.isEmpty(bl) &&
-                        bl.substring(0, 3).toLowerCase() !== "0px"
-                      ) {
-                        const width = td.style.borderLeftWidth;
-                        const type = td.style.borderLeftStyle;
-                        const color = td.style.borderLeftColor;
-                        const borderconfig = getQKBorder(width, type, color);
-
-                        if (!borderInfo[`${r + rp}_${c + cp}`]) {
-                          borderInfo[`${r + rp}_${c + cp}`] = {};
-                        }
-
-                        borderInfo[`${r + rp}_${c + cp}`].l = {
-                          style: borderconfig[0],
-                          color: borderconfig[1],
-                        };
-                      }
-                    }
-
-                    if (cp === colspan - 1) {
-                      const br = td.style.borderLeft;
-                      if (
-                        !_.isEmpty(br) &&
-                        br.substring(0, 3).toLowerCase() !== "0px"
-                      ) {
-                        const width = td.style.borderRightWidth;
-                        const type = td.style.borderRightStyle;
-                        const color = td.style.borderRightColor;
-                        const borderconfig = getQKBorder(width, type, color);
-
-                        if (!borderInfo[`${r + rp}_${c + cp}`]) {
-                          borderInfo[`${r + rp}_${c + cp}`] = {};
-                        }
-
-                        borderInfo[`${r + rp}_${c + cp}`].r = {
-                          style: borderconfig[0],
-                          color: borderconfig[1],
-                        };
-                      }
-                    }
-
-                    if (rp === 0 && cp === 0) {
-                      continue;
-                    }
-
-                    data[r + rp][c + cp] = { mc: { r: r_ab, c: c_ab } };
-                  }
-                }
-
-                if (rowspan > 1 || colspan > 1) {
-                  const first = { rs: rowspan, cs: colspan, r: r_ab, c: c_ab };
-                  data[r][c].mc = first;
-                }
-              }
-              c += 1;
-              if (c === colLen) {
-                return true;
-              }
-              return true;
-            });
-
-            r += 1;
-          });
-          setRowHeight(ctx, rowHeightList);
-        }
-
-        ctx.luckysheet_selection_range = [];
-        pasteHandler(ctx, data, borderInfo);
-        // $("#fortune-copy-content").empty();
-        ele.remove();
+        handlePastedTable(ctx, txtdata, pasteHandler);
+        resizePastedCellsToContent(ctx);
       }
       // 复制的是图片
       else if (
         clipboardData.files.length === 1 &&
         clipboardData.files[0].type.indexOf("image") > -1
       ) {
-        //   imageCtrl.insertImg(clipboardData.files[0]);
+        // imageCtrl.insertImg(clipboardData.files[0]);
       } else {
         txtdata = clipboardData.getData("text/plain");
         const isExcelFormula = txtdata.startsWith("=");
@@ -2143,6 +1812,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             }
           }
         }
+        resizePastedCellsToContent(ctx);
       }
     }
   } else if (ctx.luckysheetCellUpdate.length > 0) {
@@ -2153,12 +1823,13 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     if (!clipboardData) {
       // for IE
       // @ts-ignore
-      clipboardData = window.clipboardData;
+      clipboardData = (window as any).clipboardData;
     }
     const text = clipboardData?.getData("text/plain");
     if (text) {
       document.execCommand("insertText", false, text);
       parseAsLinkIfUrl(text, ctx);
+      resizePastedCellsToContent(ctx);
     }
   }
 }

@@ -294,6 +294,7 @@ const FormulaHint = (props: any) => {
                   }`,
                   maxHeight: "284px",
                   overflowY: "scroll",
+                  cursor: "auto",
                 }}
               >
                 {fn.API_KEY && (

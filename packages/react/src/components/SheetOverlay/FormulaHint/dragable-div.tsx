@@ -25,7 +25,7 @@ export const DraggableDiv = ({
   const [initialWindowPos, setInitialWindowPos] = useState({ x: 0, y: 0 });
   const divRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
+  useEffect(() => {
     if (divRef.current) {
       const rect = divRef.current.getBoundingClientRect();
       const left = rect.left + window.scrollX;
@@ -61,86 +61,92 @@ export const DraggableDiv = ({
     });
   };
 
-const handleMouseMove = (e: MouseEvent) => {
-  if (!isDragging) return;
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return;
 
-  e.preventDefault();
-  dragHasMoved.current = true;
+    e.preventDefault();
+    dragHasMoved.current = true;
 
-  setPosition((current) => {
-    // Calculate new position using current offset
-    let newX = e.clientX - dragOffset.x;
-    let newY = e.clientY - dragOffset.y;
+    setPosition((current) => {
+      // Calculate new position using current offset
+      let newX = e.clientX - dragOffset.x;
+      let newY = e.clientY - dragOffset.y;
 
-    // Get element dimensions for boundary calculation
-    const elementWidth = divRef.current?.offsetWidth || 0;
-    const elementHeight = divRef.current?.offsetHeight || 0;
+      // Get element dimensions for boundary calculation
+      const elementWidth = divRef.current?.offsetWidth || 0;
+      const elementHeight = divRef.current?.offsetHeight || 0;
 
-    // Apply boundaries for right and bottom
-    if(newX + initialWindowPos.x + 150 > window.innerWidth - elementWidth) {
+      // Apply boundaries for right and bottom
+      if (newX + initialWindowPos.x + 150 > window.innerWidth - elementWidth) {
         newX = current.x;
-    }
+      }
 
-    if(newY + initialWindowPos.y + 200 > window.innerHeight - elementHeight) {
+      if (
+        newY + initialWindowPos.y + 200 >
+        window.innerHeight - elementHeight
+      ) {
         newY = current.y;
-    }
+      }
 
-    // Apply boundaries for left and top
-    if(newX + initialWindowPos.x < 0) {
+      // Apply boundaries for left and top
+      if (newX + initialWindowPos.x < 0) {
         newX = current.x;
-    }
+      }
 
-    if(newY + initialWindowPos.y < 0) {
+      if (newY + initialWindowPos.y < 0) {
         newY = current.y;
-    }
+      }
 
-    return {
-      x: newX,
-      y: newY,
-    };
-  });
-};
+      return {
+        x: newX,
+        y: newY,
+      };
+    });
+  };
 
-const handleTouchMove = (e: TouchEvent) => {
-  if (!isDragging) return;
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isDragging) return;
 
-  e.preventDefault();
-  dragHasMoved.current = true;
+    e.preventDefault();
+    dragHasMoved.current = true;
 
-  const touch = e.touches[0];
-  setPosition((current) => {
-    // Calculate new position using current offset
-    let newX = touch.clientX - dragOffset.x;
-    let newY = touch.clientY - dragOffset.y;
+    const touch = e.touches[0];
+    setPosition((current) => {
+      // Calculate new position using current offset
+      let newX = touch.clientX - dragOffset.x;
+      let newY = touch.clientY - dragOffset.y;
 
-    // Get element dimensions for boundary calculation
-    const elementWidth = divRef.current?.offsetWidth || 0;
-    const elementHeight = divRef.current?.offsetHeight || 0;
+      // Get element dimensions for boundary calculation
+      const elementWidth = divRef.current?.offsetWidth || 0;
+      const elementHeight = divRef.current?.offsetHeight || 0;
 
-    // Apply boundaries for right and bottom
-    if(newX + initialWindowPos.x + 100 > window.innerWidth - elementWidth) {
+      // Apply boundaries for right and bottom
+      if (newX + initialWindowPos.x + 100 > window.innerWidth - elementWidth) {
         newX = current.x;
-    }
+      }
 
-    if(newY + initialWindowPos.y + 200 > window.innerHeight - elementHeight) {
+      if (
+        newY + initialWindowPos.y + 200 >
+        window.innerHeight - elementHeight
+      ) {
         newY = current.y;
-    }
+      }
 
-    // Apply boundaries for left and top
-    if(newX + initialWindowPos.x < 0) {
+      // Apply boundaries for left and top
+      if (newX + initialWindowPos.x < 0) {
         newX = current.x;
-    }
+      }
 
-    if(newY + initialWindowPos.y < 0) {
+      if (newY + initialWindowPos.y < 0) {
         newY = current.y;
-    }
+      }
 
-    return {
-      x: newX,
-      y: newY,
-    };
-  });
-};
+      return {
+        x: newX,
+        y: newY,
+      };
+    });
+  };
   const handleMouseUp = () => {
     setIsDragging(false);
   };

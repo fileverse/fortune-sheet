@@ -178,7 +178,7 @@ const FormulaHint = (props: any) => {
                   setShouldShowFunctionBody(!showFunctionBody);
                   setTimeout(() => {
                     calcuatePopUpPlacement();
-                  },50)
+                  }, 50);
                 }
                 dragHasMoved.current = false;
               }}

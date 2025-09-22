@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.59
+
+### Patch Changes
+
+- Minor css changes
+
+## 1.1.58
+
+### Patch Changes
+
+- changes to handle jump on drag
+
 ## 1.1.57
 
 ### Patch Changes

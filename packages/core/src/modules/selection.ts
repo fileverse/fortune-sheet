@@ -2066,7 +2066,7 @@ export function deleteSelectedCellText(ctx: Context): string {
   // luckysheetContainerFocus();
 
   const allowEdit = isAllowEdit(ctx);
-  if (allowEdit === false) {
+  if (allowEdit === false || ctx.isFlvReadOnly) {
     return "allowEdit";
   }
 

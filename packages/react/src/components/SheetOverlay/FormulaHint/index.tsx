@@ -176,16 +176,22 @@ const FormulaHint = (props: any) => {
                     `${!showFunctionBody}`
                   );
                   setShouldShowFunctionBody(!showFunctionBody);
+                  setTimeout(() => {
+                    calcuatePopUpPlacement();
+                  },50)
                 }
                 dragHasMoved.current = false;
               }}
-              className="flex cursor-pointer items-start justify-between"
+              className="flex !cursor-grab active:cursor-grabbing items-start justify-between"
+              id="luckysheet-formula-help-title"
               style={{
                 backgroundColor: `${
                   fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
                 }`,
                 padding: "10px",
                 borderRadius: "10px",
+                cursor: "grab",
+                userSelect: "none",
               }}
             >
               <div className=" flex-grow  color-text-default">
@@ -232,6 +238,7 @@ const FormulaHint = (props: any) => {
                   height: "20px",
                   alignItems: "center",
                   gap: "6px",
+                  cursor: "pointer",
                 }}
               >
                 {fn.LOGO && (
@@ -324,6 +331,7 @@ const FormulaHint = (props: any) => {
                         name={showAPInput ? "ChevronUp" : "ChevronDown"}
                         width={24}
                         height={24}
+                        style={{ cursor: "pointer" }}
                       />
                     </div>
                     {showAPInput && (

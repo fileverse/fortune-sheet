@@ -22,18 +22,26 @@ export const DraggableDiv = ({
   const [position, setPosition] = useState({ x: initialX, y: initialY });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [initialWindowPos, setInitialWindowPos] = useState({ x: 0, y: 0 });
   const divRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+    if (divRef.current) {
+      const rect = divRef.current.getBoundingClientRect();
+      const left = rect.left + window.scrollX;
+      const top = rect.top + window.scrollY;
+      setInitialWindowPos({ x: left, y: top });
+    }
+  }, []);
 
   useEffect(() => {
     setPosition({ x: position.x, y: initialTop });
   }, [initialTop]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    // @ts-ignore
+    if (!e.target.closest("#luckysheet-formula-help-title")) return;
     setIsDragging(true);
-    const element = document.getElementById("luckysheet-formula-help-c");
-    if (element) {
-      element.style.userSelect = "none";
-    }
 
     setDragOffset({
       x: e.clientX - position.x,
@@ -42,11 +50,9 @@ export const DraggableDiv = ({
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // @ts-ignore
+    if (!e.target.closest("#luckysheet-formula-help-title")) return;
     setIsDragging(true);
-    const element = document.getElementById("luckysheet-formula-help-c");
-    if (element) {
-      element.style.userSelect = "none";
-    }
 
     const touch = e.touches[0];
     setDragOffset({
@@ -55,49 +61,88 @@ export const DraggableDiv = ({
     });
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
+const handleMouseMove = (e: MouseEvent) => {
+  if (!isDragging) return;
 
-    e.preventDefault();
-    dragHasMoved.current = true;
+  e.preventDefault();
+  dragHasMoved.current = true;
 
-    setPosition(() => {
-      // Calculate new position using current offset - no boundaries
-      const newX = e.clientX - dragOffset.x;
-      const newY = e.clientY - dragOffset.y;
+  setPosition((current) => {
+    // Calculate new position using current offset
+    let newX = e.clientX - dragOffset.x;
+    let newY = e.clientY - dragOffset.y;
 
-      return {
-        x: newX * 1.3,
-        y: newY * 1.3,
-      };
-    });
-  };
+    // Get element dimensions for boundary calculation
+    const elementWidth = divRef.current?.offsetWidth || 0;
+    const elementHeight = divRef.current?.offsetHeight || 0;
 
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!isDragging) return;
+    // Apply boundaries for right and bottom
+    if(newX + initialWindowPos.x + 150 > window.innerWidth - elementWidth) {
+        newX = current.x;
+    }
 
-    e.preventDefault();
-    dragHasMoved.current = true;
+    if(newY + initialWindowPos.y + 200 > window.innerHeight - elementHeight) {
+        newY = current.y;
+    }
 
-    const touch = e.touches[0];
-    setPosition(() => {
-      // Calculate new position using current offset - no boundaries
-      const newX = touch.clientX - dragOffset.x;
-      const newY = touch.clientY - dragOffset.y;
+    // Apply boundaries for left and top
+    if(newX + initialWindowPos.x < 0) {
+        newX = current.x;
+    }
 
-      return {
-        x: newX * 1.3,
-        y: newY * 1.3,
-      };
-    });
-  };
+    if(newY + initialWindowPos.y < 0) {
+        newY = current.y;
+    }
 
+    return {
+      x: newX,
+      y: newY,
+    };
+  });
+};
+
+const handleTouchMove = (e: TouchEvent) => {
+  if (!isDragging) return;
+
+  e.preventDefault();
+  dragHasMoved.current = true;
+
+  const touch = e.touches[0];
+  setPosition((current) => {
+    // Calculate new position using current offset
+    let newX = touch.clientX - dragOffset.x;
+    let newY = touch.clientY - dragOffset.y;
+
+    // Get element dimensions for boundary calculation
+    const elementWidth = divRef.current?.offsetWidth || 0;
+    const elementHeight = divRef.current?.offsetHeight || 0;
+
+    // Apply boundaries for right and bottom
+    if(newX + initialWindowPos.x + 100 > window.innerWidth - elementWidth) {
+        newX = current.x;
+    }
+
+    if(newY + initialWindowPos.y + 200 > window.innerHeight - elementHeight) {
+        newY = current.y;
+    }
+
+    // Apply boundaries for left and top
+    if(newX + initialWindowPos.x < 0) {
+        newX = current.x;
+    }
+
+    if(newY + initialWindowPos.y < 0) {
+        newY = current.y;
+    }
+
+    return {
+      x: newX,
+      y: newY,
+    };
+  });
+};
   const handleMouseUp = () => {
     setIsDragging(false);
-    const element = document.getElementById("luckysheet-formula-help-c");
-    if (element) {
-      element.style.userSelect = "auto";
-    }
   };
 
   const handleTouchEnd = () => {

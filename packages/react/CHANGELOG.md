@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.64
+
+### Patch Changes
+
+- Add null for updateCellFormate
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.64
+
 ## 1.1.63
 
 ### Patch Changes

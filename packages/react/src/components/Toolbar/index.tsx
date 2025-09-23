@@ -733,9 +733,10 @@ const Toolbar: React.FC<{
                             )}
                             <div>{text}</div>
                           </div>
-                          <div className="fortune-toolbar-subtext">
-                            {example}
-                          </div>
+                          <LucideIcon
+                            name="ChevronRight"
+                            className="w-4 h-4 color-icon-secondary"
+                          />
                         </div>
                       </Option>
                     );

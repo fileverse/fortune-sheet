@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.66
+
+### Patch Changes
+
+- Fix bug with mobile scrolling
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.66
+
 ## 1.1.65
 
 ### Patch Changes

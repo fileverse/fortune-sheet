@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.66
+
+### Patch Changes
+
+- Fix bug with mobile scrolling
+
 ## 1.1.65
 
 ### Patch Changes

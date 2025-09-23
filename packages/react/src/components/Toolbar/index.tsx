@@ -725,10 +725,18 @@ const Toolbar: React.FC<{
                         }}
                       >
                         <div className="fortune-toolbar-menu-line">
-                          <div>{text}</div>
-                          <div className="fortune-toolbar-subtext">
-                            {example}
+                          <div className="flex gap-2 items-center">
+                            {currentFmt === text ? (
+                              <LucideIcon name="Check" className="w-4 h-4" />
+                            ) : (
+                              <span className="w-4 h-4" />
+                            )}
+                            <div>{text}</div>
                           </div>
+                          <LucideIcon
+                            name="ChevronRight"
+                            className="w-4 h-4 color-icon-secondary"
+                          />
                         </div>
                       </Option>
                     );
@@ -751,8 +759,18 @@ const Toolbar: React.FC<{
                         });
                       }}
                     >
-                      <div className="fortune-toolbar-menu-line">
-                        <div>{text}</div>
+                      <div
+                        style={{ overflowX: "scroll" }}
+                        className="fortune-toolbar-menu-line scrollbar-hidden w-full"
+                      >
+                        <div className="flex gap-2 items-center">
+                          {currentFmt === text ? (
+                            <LucideIcon name="Check" className="w-4 h-4" />
+                          ) : (
+                            <span className="w-4 h-4" />
+                          )}
+                          <div>{text}</div>
+                        </div>
                         <div className="fortune-toolbar-subtext">{example}</div>
                       </div>
                     </Option>

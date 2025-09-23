@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.66
+
+### Patch Changes
+
+- Fix bug with mobile scrolling
+
+## 1.1.65
+
+### Patch Changes
+
+- Improve mobile scroll UX and add indication for format menu
+
 ## 1.1.64
 
 ### Patch Changes

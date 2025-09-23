@@ -17,7 +17,6 @@ import {
   handleOverlayMouseUp,
   selectAll,
   handleOverlayTouchEnd,
-  handleOverlayTouchMove,
   handleOverlayTouchStart,
   createDropCellRange,
   getCellRowColumn,
@@ -270,23 +269,6 @@ const SheetOverlay: React.FC = () => {
     [refs.globalCache, setContext]
   );
 
-  const onTouchMove = useCallback(
-    (e: React.TouchEvent<HTMLDivElement>) => {
-      const { nativeEvent } = e;
-      setContext((draftCtx) => {
-        handleOverlayTouchMove(
-          draftCtx,
-          nativeEvent,
-          refs.globalCache,
-          refs.scrollbarX.current!,
-          refs.scrollbarY.current!
-        );
-      });
-      // e.stopPropagation();
-    },
-    [refs.globalCache, refs.scrollbarX, refs.scrollbarY, setContext]
-  );
-
   const onTouchEnd = useCallback(() => {
     handleOverlayTouchEnd(refs.globalCache);
   }, [refs.globalCache]);
@@ -406,7 +388,6 @@ const SheetOverlay: React.FC = () => {
       className="fortune-sheet-overlay"
       ref={containerRef}
       onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
       tabIndex={-1}
       style={{

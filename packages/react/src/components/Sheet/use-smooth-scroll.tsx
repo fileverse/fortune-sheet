@@ -6,7 +6,7 @@ export const useSmoothScroll = (
   scrollContainerRef: RefObject<HTMLDivElement | null>
 ) => {
   const { context, refs, setContext } = useContext(WorkbookContext);
-  function attachSmoothWheelScroll(
+  function handleScroll(
     scrollContainer: HTMLElement,
     moveScrollBy: (deltaX: number, deltaY: number) => void,
     getPixelScale: () => number = () => window.devicePixelRatio || 1
@@ -41,7 +41,7 @@ export const useSmoothScroll = (
       queuedYPixels = 0;
     }
 
-    function scheduleScrollUpdate(x: number, y: number) {
+    function scrollHandler(x: number, y: number) {
       queuedXPixels += x;
       queuedYPixels += y;
       if (!animationFrameId)
@@ -76,17 +76,14 @@ export const useSmoothScroll = (
       }
 
       const scaleFactor = getPixelScale();
-      scheduleScrollUpdate(
-        event.deltaX * scaleFactor,
-        event.deltaY * scaleFactor
-      );
+      scrollHandler(event.deltaX * scaleFactor, event.deltaY * scaleFactor);
     }
 
     scrollContainer.addEventListener("wheel", handleWheelEvent, {
       passive: false,
     });
     return {
-      scheduleScrollUpdate,
+      scrollHandler,
       detach() {
         scrollContainer.removeEventListener("wheel", handleWheelEvent);
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
@@ -94,40 +91,68 @@ export const useSmoothScroll = (
     };
   }
 
-  function attachTouchPanToQueue(
+  function handleMobileScroll(
     containerEl: HTMLElement,
-    scheduleScrollUpdate: (x: number, y: number) => void,
+    scrollHandler: (x: number, y: number) => void,
     getPixelScale: () => number
   ) {
-    let dragging = false;
-    let lastX = 0;
-    let lastY = 0;
+    let isScrolling = false;
+    let gestureStartClientX = 0;
+    let gestureStartClientY = 0;
+    let lastPointerClientX = 0;
+    let lastPointerClientY = 0;
+    const PAN_DISTANCE_THRESHOLD_PX = 8;
 
-    function onPointerDown(e: PointerEvent) {
-      if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
-      dragging = true;
-      lastX = e.clientX;
-      lastY = e.clientY;
-      containerEl.setPointerCapture(e.pointerId);
-      e.preventDefault();
+    function onPointerDown(pointerEvent: PointerEvent) {
+      if (
+        pointerEvent.pointerType !== "touch" &&
+        pointerEvent.pointerType !== "pen"
+      )
+        return;
+      isScrolling = false;
+      gestureStartClientX = pointerEvent.clientX;
+      lastPointerClientX = pointerEvent.clientX;
+      gestureStartClientY = pointerEvent.clientY;
+      lastPointerClientY = pointerEvent.clientY;
+      containerEl.setPointerCapture(pointerEvent.pointerId);
     }
-    function onPointerMove(e: PointerEvent) {
-      if (!dragging) return;
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      lastX = e.clientX;
-      lastY = e.clientY;
+
+    function onPointerMove(pointerEvent: PointerEvent) {
+      if (
+        pointerEvent.pointerType !== "touch" &&
+        pointerEvent.pointerType !== "pen"
+      )
+        return;
+
+      const deltaXSinceLastMove = pointerEvent.clientX - lastPointerClientX;
+      const deltaYSinceLastMove = pointerEvent.clientY - lastPointerClientY;
+      lastPointerClientX = pointerEvent.clientX;
+      lastPointerClientY = pointerEvent.clientY;
+
+      if (!isScrolling) {
+        const totalXFromGestureStart = lastPointerClientX - gestureStartClientX;
+        const totalYFromGestureStart = lastPointerClientY - gestureStartClientY;
+        if (
+          totalXFromGestureStart * totalXFromGestureStart +
+            totalYFromGestureStart * totalYFromGestureStart <
+          PAN_DISTANCE_THRESHOLD_PX * PAN_DISTANCE_THRESHOLD_PX
+        ) {
+          return; // still a tap – do nothing
+        }
+        isScrolling = true;
+      }
+
+      // now we’re panning: prevent page scroll, move sheet
+      pointerEvent.preventDefault();
       const scale = getPixelScale();
-      // natural: finger right/down moves content left/up
-      scheduleScrollUpdate(-dx * scale, -dy * scale);
-      e.preventDefault();
+      scrollHandler(-deltaXSinceLastMove * scale, -deltaYSinceLastMove * scale);
     }
+
     function onPointerUp(e: PointerEvent) {
-      if (!dragging) return;
-      dragging = false;
       try {
         containerEl.releasePointerCapture(e.pointerId);
       } catch {}
+      isScrolling = false;
     }
 
     containerEl.addEventListener("pointerdown", onPointerDown, {
@@ -147,7 +172,7 @@ export const useSmoothScroll = (
     };
   }
 
-  const makeScrollbarsMoveByPixels = (
+  const makeScrollableAreaMoveByPixels = (
     horizontalScrollbarEl: HTMLDivElement,
     verticalScrollbarEl: HTMLDivElement
   ) => {
@@ -178,29 +203,29 @@ export const useSmoothScroll = (
     };
   };
 
-  function routeWheelScrollToScrollbars(
+  function mountScrollEventHandlers(
     scrollContainerEl: HTMLElement,
     horizontalScrollbarEl: HTMLDivElement,
     verticalScrollbarEl: HTMLDivElement
   ) {
-    const moveScrollbarsByPixels = makeScrollbarsMoveByPixels(
+    const moveScrollableAreaByPixels = makeScrollableAreaMoveByPixels(
       horizontalScrollbarEl,
       verticalScrollbarEl
     );
-    const { scheduleScrollUpdate, detach } = attachSmoothWheelScroll(
+    const { scrollHandler, detach: unmountScrollHandler } = handleScroll(
       scrollContainerEl,
-      moveScrollbarsByPixels,
+      moveScrollableAreaByPixels,
       () => (window.devicePixelRatio || 1) * context.zoomRatio
     );
-    const detachTouch = attachTouchPanToQueue(
+    const unmountMobileScrollHandler = handleMobileScroll(
       scrollContainerEl,
-      scheduleScrollUpdate,
+      scrollHandler,
       () => (window.devicePixelRatio || 1) * context.zoomRatio
     );
 
     return () => {
-      detach();
-      detachTouch();
+      unmountScrollHandler();
+      unmountMobileScrollHandler();
     };
   }
   useEffect(() => {
@@ -210,12 +235,12 @@ export const useSmoothScroll = (
     if (!scrollContainerEl || !horizontalScrollbarEl || !verticalScrollbarEl)
       return () => {};
 
-    const unmountScrollHandler = routeWheelScrollToScrollbars(
+    const unmountScrollEventHandlers = mountScrollEventHandlers(
       scrollContainerEl,
       horizontalScrollbarEl,
       verticalScrollbarEl
     );
 
-    return unmountScrollHandler;
+    return unmountScrollEventHandlers;
   }, [context.zoomRatio]);
 };

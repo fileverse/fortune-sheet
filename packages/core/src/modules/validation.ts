@@ -31,7 +31,7 @@ export function isHexValue(str: string): boolean {
 
 // 是否是纯数字
 export function isRealNum(val: any) {
-  if (isHexValue(val.toString())) {
+  if (isHexValue(val?.toString())) {
     return false;
   }
   if (_.isNil(val) || val.toString().replace(/\s/g, "") === "") {

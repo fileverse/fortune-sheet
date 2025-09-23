@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.64
+
+### Patch Changes
+
+- Add null for updateCellFormate
+
 ## 1.1.63
 
 ### Patch Changes

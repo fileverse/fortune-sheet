@@ -1,9 +1,8 @@
-import React, { useRef, useEffect, useContext, useCallback } from "react";
+import React, { useRef, useEffect, useContext } from "react";
 import {
   Canvas,
   updateContextWithCanvas,
   updateContextWithSheetData,
-  handleGlobalWheel,
   initFreeze,
   Sheet as SheetType,
   cellFadeAnimator,
@@ -11,6 +10,7 @@ import {
 import "./index.css";
 import WorkbookContext from "../../context";
 import SheetOverlay from "../SheetOverlay";
+import { useSmoothScroll } from "./use-smooth-scroll";
 
 type Props = {
   sheet: SheetType;
@@ -262,45 +262,7 @@ const Sheet: React.FC<Props> = ({ sheet }) => {
     return () => cellFadeAnimator.setOnTick(null);
   }, [context, refs.canvas, refs.globalCache.freezen, setContext, sheet.id]);
 
-  const onWheel = useCallback(
-    (e: WheelEvent) => {
-      const functionDetailsEl = document.getElementById("function-details");
-      const formulaSearchEl = document.getElementById(
-        "luckysheet-formula-search-c"
-      );
-      const isMouseOverFunctionDetails = functionDetailsEl?.matches(":hover");
-      const isMouseOverFormulaSearch = formulaSearchEl?.matches(":hover");
-      if (
-        (functionDetailsEl && isMouseOverFunctionDetails) ||
-        (formulaSearchEl && isMouseOverFormulaSearch) ||
-        refs?.globalCache?.searchDialog?.mouseEnter
-      )
-        return;
-      setContext((draftCtx) => {
-        handleGlobalWheel(
-          draftCtx,
-          e,
-          refs.globalCache,
-          refs.scrollbarX.current!,
-          refs.scrollbarY.current!
-        );
-      });
-      e.preventDefault();
-    },
-    [refs.globalCache, refs.scrollbarX, refs.scrollbarY, setContext]
-  );
-
-  /**
-   * Bind wheel event.
-   * Note: cannot use onWheel directly on the container because it behaves strange
-   */
-  useEffect(() => {
-    const container = containerRef.current;
-    container?.addEventListener("wheel", onWheel);
-    return () => {
-      container?.removeEventListener("wheel", onWheel);
-    };
-  }, [onWheel]);
+  useSmoothScroll(containerRef);
 
   return (
     <div ref={containerRef} className="fortune-sheet-container">

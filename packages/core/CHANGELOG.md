@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.64
+
+### Patch Changes
+
+- Add null for updateCellFormate
+
+## 1.1.63
+
+### Patch Changes
+
+- Add Smooth scroll and improve copy and paste UX
+
 ## 1.1.62
 
 ### Patch Changes

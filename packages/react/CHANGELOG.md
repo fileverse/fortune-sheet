@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.64
+
+### Patch Changes
+
+- Add null for updateCellFormate
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.64
+
+## 1.1.63
+
+### Patch Changes
+
+- Add Smooth scroll and improve copy and paste UX
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.63
+
 ## 1.1.62
 
 ### Patch Changes

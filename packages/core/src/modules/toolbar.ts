@@ -75,9 +75,13 @@ export function updateFormatCell(
         let value;
 
         if (_.isPlainObject(cell)) {
-          value = cell?.v || cell?.ct?.s[0]?.v;
+          value = cell?.v || cell?.ct?.s?.[0]?.v;
         } else {
           value = cell;
+        }
+
+        if (_.isNil(value)) {
+          continue;
         }
 
         if (foucsStatus !== "@" && isRealNum(value)) {

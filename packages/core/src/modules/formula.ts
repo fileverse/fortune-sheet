@@ -1,5 +1,6 @@
 // @ts-ignore
 import { Parser, ERROR_REF } from "@fileverse-dev/formula-parser";
+import _ from "lodash";
 import type { Cell, Rect, Selection } from "../types";
 import { Context, getFlowdata } from "../context";
 import {

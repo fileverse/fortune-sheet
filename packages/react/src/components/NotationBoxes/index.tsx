@@ -25,7 +25,9 @@ const NotationBoxes: React.FC = () => {
           }
         }
       }
-      setContext((ctx) => showComments(ctx, psShownCells));
+      setContext((ctx) => {
+        showComments(ctx, psShownCells);
+      });
     }
   }, [flowdata, setContext]);
   return (

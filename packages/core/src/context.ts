@@ -17,6 +17,7 @@ import {
   DataRegulationProps,
   ConditionRulesProps,
   GlobalCache,
+  CellError,
 } from "./types";
 import { getSheetIndex } from "./utils";
 
@@ -41,8 +42,10 @@ export type Context = {
   fullscreenmode: boolean;
   devicePixelRatio: number;
   commentBoxes?: CommentBox[];
+  errorBoxes?: CellError[];
   editingCommentBox?: CommentBox;
   hoveredCommentBox?: CommentBox;
+  hoverErrorBox?: CellError;
   insertedImgs?: Image[];
   editingInsertedImgs?: Image;
   activeImg?: string;

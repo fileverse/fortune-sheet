@@ -1,4 +1,3 @@
-import _ from "lodash";
 // @ts-ignore
 import { Parser, ERROR_REF } from "@fileverse-dev/formula-parser";
 import type { Cell, Rect, Selection } from "../types";
@@ -23,7 +22,9 @@ import { colors } from "./color";
 import { colLocation, mousePosition, rowLocation } from "./location";
 import {
   cancelFunctionrangeSelected,
+  clearCellError,
   seletedHighlistByindex,
+  setCellError,
   spillSortResult,
 } from ".";
 
@@ -1281,7 +1282,17 @@ export function execfunction(
       .toLowerCase();
     finalResult = `${resultStr} ${ctx.formulaCache.parser.cryptoDenomination}`;
   }
-  return [true, _.isNil(formulaError) ? finalResult : formulaError, txt];
+  const isError = !_.isNil(formulaError);
+  if (isError) {
+    setCellError(ctx, r, c, {
+      row_column: `${r}_${c}`,
+      title: "Error",
+      message: formulaError?.toString() || "Unknown Error",
+    });
+  } else {
+    clearCellError(ctx, r, c);
+  }
+  return [true, !isError ? finalResult : formulaError, txt];
 }
 
 function insertUpdateDynamicArray(ctx: Context, dynamicArrayItem: any) {

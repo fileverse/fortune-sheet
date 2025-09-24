@@ -205,6 +205,16 @@ export function generateAPIs(
         api.setCellValue(draftCtx, row, column, value, cellInput, options)
       ),
 
+    setCellError: (
+      row: number,
+      column: number,
+      errorMessage: { title: string; message: string }
+    ) => {
+      setContext((draftCtx) => {
+        api.setCellError(draftCtx, row, column, errorMessage);
+      });
+    },
+
     clearCell: (row: number, column: number, options: api.CommonOptions = {}) =>
       setContext((draftCtx) => api.clearCell(draftCtx, row, column, options)),
 

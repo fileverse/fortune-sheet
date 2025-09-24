@@ -48,6 +48,7 @@ import { useDialog } from "../../hooks/useDialog";
 import SVGIcon from "../SVGIcon";
 import DropDownList from "../DataVerification/DropdownList";
 import IframeBoxs from "../IFrameBoxs/iFrameBoxs";
+import ErrorBoxes from "../ErrorState";
 
 const SheetOverlay: React.FC = () => {
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
@@ -716,6 +717,7 @@ const SheetOverlay: React.FC = () => {
           <FilterOptions getContainer={() => containerRef.current!} />
           <InputBox />
           <NotationBoxes />
+          <ErrorBoxes />
           <div id="luckysheet-multipleRange-show" />
           <div id="luckysheet-dynamicArray-hightShow" />
           <ImgBoxs />

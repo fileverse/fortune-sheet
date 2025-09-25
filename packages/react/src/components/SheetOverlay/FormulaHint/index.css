@@ -10,9 +10,9 @@
 }
 
 .font-family-mono {
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 /* .luckysheet-formula-help-c .luckysheet-formula-help-content {

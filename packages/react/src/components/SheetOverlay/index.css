@@ -576,9 +576,7 @@
   top: 0;
 }
 
-.luckysheet-postil-show-active
-  .luckysheet-postil-dialog-move
-  .luckysheet-postil-dialog-move-item {
+.luckysheet-postil-show-active .luckysheet-postil-dialog-move .luckysheet-postil-dialog-move-item {
   border-color: #0188fb;
 }
 
@@ -965,4 +963,51 @@
   z-index: 20;
   pointer-events: none;
   user-select: none;
+}
+
+.show-more-btn {
+  top: 1px;
+  left: -18px;
+  display: block;
+  width: 17px;
+  height: 17px;
+  z-index: 2000;
+  background-color: #efc703;
+  border-bottom-left-radius: 4px;
+  border-top-left-radius: 4px;
+  cursor: pointer;
+}
+
+/** scroll bar**/
+
+* {
+  scrollbar-width: auto;
+  /* Firefox: normal thickness */
+  scrollbar-color: #888 transparent;
+  /* thumb | track */
+}
+
+/* Chrome, Edge, Safari */
+*::-webkit-scrollbar {
+  width: 14px;
+  /* thicker scrollbar (like macOS) */
+  height: 14px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  /* no track */
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #888;
+  /* scrollbar thumb color */
+  border-radius: 7px;
+  /* rounded edges like mac */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  /* darker on hover */
+  /* scrollbar */
 }

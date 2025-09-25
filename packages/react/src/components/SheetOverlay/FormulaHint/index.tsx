@@ -1,5 +1,5 @@
 import { locale } from "@fileverse-dev/fortune-core";
-import { Button, TextField, LucideIcon } from "@fileverse/ui";
+import { Button, TextField, LucideIcon, Tooltip } from "@fileverse/ui";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import WorkbookContext from "../../../context";
 import "./index.css";
@@ -43,7 +43,12 @@ const FormulaHint = (props: any) => {
     )
       return;
     const hintHeight = 360;
-    const inputBottom = firstSelection.top + firstSelection.height_move;
+    const inputBoxTop =
+      parseInt(
+        document.getElementById("luckysheet-input-box")?.style.top || "0",
+        10
+      ) - 85;
+    const inputBottom = inputBoxTop + firstSelection.height_move;
     const availableBelow = window.innerHeight - inputBottom;
     const hintAbove = hintHeight > availableBelow;
     const selectionHeight = firstSelection?.height_move || 0;
@@ -65,45 +70,6 @@ const FormulaHint = (props: any) => {
     }
   }, [top]);
 
-  useEffect(() => {
-    // this handle scroll for function details section
-    const el = document.getElementById("function-details");
-    let handleWheel: any;
-    if (el) {
-      let scrollLockTimeout: any = null;
-      const cache = {
-        verticalScrollLock: false,
-        horizontalScrollLock: false,
-      };
-
-      handleWheel = (e: WheelEvent) => {
-        e.preventDefault();
-
-        const step = 40;
-        const ratio = 1;
-
-        if (e.deltaY !== 0 && !cache.verticalScrollLock) {
-          cache.horizontalScrollLock = true;
-          el.scrollTop += (e.deltaY > 0 ? 1 : -1) * step * ratio;
-        } else if (e.deltaX !== 0 && !cache.horizontalScrollLock) {
-          cache.verticalScrollLock = true;
-          el.scrollLeft += (e.deltaX > 0 ? 1 : -1) * step * ratio;
-        }
-
-        clearTimeout(scrollLockTimeout);
-        scrollLockTimeout = setTimeout(() => {
-          cache.verticalScrollLock = false;
-          cache.horizontalScrollLock = false;
-        }, 50);
-      };
-
-      el.addEventListener("wheel", handleWheel, { passive: false });
-    }
-    return () => {
-      if (el && handleWheel) el.removeEventListener("wheel", handleWheel);
-    };
-  }, []);
-
   if (!fn) return null;
 
   return (
@@ -116,35 +82,49 @@ const FormulaHint = (props: any) => {
     >
       {showFormulaHint && (
         <div>
-          <button
-            type="button"
-            className="flex items-center justify-center w-4 h-4 rounded-full"
+          <Tooltip
+            text="Hide formula suggestions (F10)"
+            placement="top"
+            defaultOpen
             style={{
-              backgroundColor: "black",
-              zIndex: 2000,
               position: "absolute",
-              left: "327px",
-              top: "-8px",
+              left: "210px",
+              top: "-40px",
+              width: "200px",
             }}
-            onClick={handleShowFormulaHint}
-            aria-label="Close formula hint"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className=" text-white"
-              style={{ width: "12px", height: "12px" }}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="3"
+            <button
+              type="button"
+              className="flex items-center justify-center w-4 h-4 rounded-full"
+              style={{
+                backgroundColor: "black",
+                zIndex: 2000,
+                position: "absolute",
+                left: "327px",
+                top: "-8px",
+                padding: "2.4px",
+                color: "white",
+              }}
+              onClick={handleShowFormulaHint}
+              aria-label="Close formula hint"
             >
-              <path
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+                className="lucide lucide-x-icon lucide-x color-white"
+              >
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </button>
+          </Tooltip>
           <div
             {...props}
             ref={hintRef}
@@ -156,7 +136,7 @@ const FormulaHint = (props: any) => {
               borderWidth: "1px",
               borderColor: fn?.BRAND_SECONDARY_COLOR
                 ? fn?.BRAND_SECONDARY_COLOR
-                : "#F8F9FA",
+                : "rgba(0, 0, 0, 0.2)",
               backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"}`,
               width: "340px",
               padding: "0px",
@@ -391,9 +371,10 @@ const FormulaHint = (props: any) => {
                     <div
                       style={{
                         lineHeight: "16px",
-                        fontSize: "14px",
+                        fontSize: "12px",
+                        fontFamily: "Helvetica Neue",
                       }}
-                      className="font-family-mono mb-1 color-text-default jetbrains-mono"
+                      className="font-family-mono mb-1 color-text-secondary"
                     >
                       {formulaMore.helpExample}
                     </div>
@@ -432,10 +413,11 @@ const FormulaHint = (props: any) => {
                       <div
                         style={{
                           lineHeight: "16px",
-                          fontSize: "14px",
+                          fontSize: "12px",
                           padding: "0px",
+                          fontFamily: "Helvetica Neue",
                         }}
-                        className="font-family-mono mb-1 mt-2 color-text-default"
+                        className="font-family-mono mb-1 mt-2 color-text-secondary"
                       >
                         About
                       </div>

@@ -28,6 +28,7 @@ import React, {
   useState,
 } from "react";
 import _ from "lodash";
+import { Tooltip } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import ContentEditable from "./ContentEditable";
 import FormulaSearch from "./FormulaSearch";
@@ -734,6 +735,19 @@ const InputBox: React.FC = () => {
     }
   }, [isInputBoxActive]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "F10") {
+        event.preventDefault(); // stop default browser behavior if any
+        handleShowFormulaHint();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showFormulaHint]);
+
   const wraperGetCell = () => {
     const cell = getCellAddress();
     placeRef.current = cell;
@@ -749,6 +763,7 @@ const InputBox: React.FC = () => {
   return (
     <div
       className="luckysheet-input-box"
+      id="luckysheet-input-box"
       style={getInputBoxPosition()}
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}
@@ -831,35 +846,35 @@ const InputBox: React.FC = () => {
               />
             )}
           {!showFormulaHint && fn && (
-            <div
-              className="luckysheet-hin absolute"
+            <Tooltip
+              text="Turn on formula suggestions (F10)"
+              placement="top"
+              defaultOpen
               style={{
-                top: "1px",
-                left: "-18px",
-                display: "block",
-                width: "17px",
-                height: "17px",
-                zIndex: 2000,
-                backgroundColor: "#efc703",
-                borderBottomLeftRadius: "4px",
-                borderTopLeftRadius: "4px",
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                handleShowFormulaHint();
+                position: "absolute",
+                top: "-50px",
+                left: "-130px",
+                width: "210px",
               }}
             >
-              <LucideIcon
-                name="DSheetTextDisabled"
-                fill="black"
-                style={{
-                  width: "14px",
-                  height: "14px",
-                  margin: "auto",
-                  marginTop: "1px",
+              <div
+                className="luckysheet-hin absolute show-more-btn"
+                onClick={() => {
+                  handleShowFormulaHint();
                 }}
-              />
-            </div>
+              >
+                <LucideIcon
+                  name="DSheetTextDisabled"
+                  fill="black"
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    margin: "auto",
+                    marginTop: "1px",
+                  }}
+                />
+              </div>
+            </Tooltip>
           )}
         </>
       )}

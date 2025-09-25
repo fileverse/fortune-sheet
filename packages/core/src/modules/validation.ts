@@ -1,5 +1,17 @@
 import dayjs from "dayjs";
 import _ from "lodash";
+import {
+  error as cellErrorMessages,
+  ERROR_NAME,
+  ERROR_DIV_ZERO,
+  ERROR_NA,
+  ERROR_NULL,
+  ERROR_NUM,
+  ERROR_REF,
+  ERROR_VALUE,
+  ERROR,
+  // @ts-ignore
+} from "@fileverse-dev/formula-parser";
 import { Context } from "../context";
 import { hasChinaword } from "./text";
 
@@ -13,6 +25,28 @@ export const error = {
   nl: "#NULL!", // 交叉运算符（空格）使用不正确
   sp: "#SPILL!", // 数组范围有其它值
 };
+
+export const errorMessagesFromValue: Record<string, string> = {
+  [ERROR_DIV_ZERO]:
+    "Invalid calculation: the divisor (second value) cannot be zero",
+  [ERROR_NAME]: "Wrong function name or parameter",
+  [ERROR_NA]: "Empty value",
+  [ERROR_NULL]: "Formula returned null",
+  [ERROR_NUM]: "Invalid number",
+  [ERROR_REF]: "Invalid reference",
+  [ERROR_VALUE]: "Invalid value",
+  [ERROR]: "Unknown error",
+};
+
+export function detectErrorFromValue(input: string) {
+  return errorMessagesFromValue[input];
+}
+export function customErrorMessage(errorMessage: string) {
+  if (errorMessage === cellErrorMessages(ERROR_NAME)) {
+    return "#ERROR";
+  }
+  return errorMessage;
+}
 
 const errorValues = Object.values(error);
 

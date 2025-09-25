@@ -2353,10 +2353,10 @@ export class Canvas {
       const errorBorderColor = "#FB3449";
       const borderThicknessInPixels = 1;
 
-      const leftCellBoundary = Math.round(startX + offsetLeft - 1 + bodrder05);
-      const topCellBoundary = Math.round(startY + offsetTop - 1 + bodrder05);
-      const rightCellBoundary = Math.round(endX + offsetLeft - 2 + bodrder05);
-      const bottomCellBoundary = Math.round(endY + offsetTop - 2 + bodrder05);
+      const leftCellBoundary = Math.round(startX + offsetLeft - 3 + bodrder05);
+      const topCellBoundary = Math.round(startY + offsetTop - 3 + bodrder05);
+      const rightCellBoundary = Math.round(endX + offsetLeft - 3 + bodrder05);
+      const bottomCellBoundary = Math.round(endY + offsetTop - 3 + bodrder05);
 
       const innerCellWidth = rightCellBoundary - leftCellBoundary;
       const innerCellHeight = bottomCellBoundary - topCellBoundary;

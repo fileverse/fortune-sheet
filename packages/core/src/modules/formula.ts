@@ -17,7 +17,7 @@ import {
   mergeMoveMain,
   setCellValue,
 } from "./cell";
-import { error } from "./validation";
+import { customErrorMessage, error, detectErrorFromValue } from "./validation";
 import { locale } from "../locale";
 import { colors } from "./color";
 import { colLocation, mousePosition, rowLocation } from "./location";
@@ -1284,16 +1284,18 @@ export function execfunction(
     finalResult = `${resultStr} ${ctx.formulaCache.parser.cryptoDenomination}`;
   }
   const isError = !_.isNil(formulaError);
-  if (isError) {
+  const detectedErrorFromValue = detectErrorFromValue(finalResult?.toString());
+  if (isError || detectedErrorFromValue) {
     setCellError(ctx, r, c, {
       row_column: `${r}_${c}`,
       title: "Error",
-      message: formulaError?.toString() || "Unknown Error",
+      message:
+        formulaError?.toString() || detectedErrorFromValue || "Unknown Error",
     });
   } else {
     clearCellError(ctx, r, c);
   }
-  return [true, !isError ? finalResult : formulaError, txt];
+  return [true, !isError ? finalResult : customErrorMessage(formulaError), txt];
 }
 
 function insertUpdateDynamicArray(ctx: Context, dynamicArrayItem: any) {

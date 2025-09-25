@@ -49,7 +49,6 @@ export const useSmoothScroll = (
     }
 
     function handleWheelEvent(event: WheelEvent) {
-      //event.preventDefault();
       setContext((ctx) => {
         removeEditingComment(ctx, refs.globalCache);
       });
@@ -74,7 +73,7 @@ export const useSmoothScroll = (
       ) {
         return;
       }
-
+      event.preventDefault();
       const scaleFactor = getPixelScale();
       scrollHandler(event.deltaX * scaleFactor, event.deltaY * scaleFactor);
     }

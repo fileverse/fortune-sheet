@@ -12,11 +12,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     context,
     settings: { isAuthorized },
   } = useContext(WorkbookContext);
-  const authedFunction = [
-    "Ethereum",
-    "SMARTCONTRACT",
-    "DUNESIM",
-  ];
+  const authedFunction = ["Ethereum", "SMARTCONTRACT", "DUNESIM"];
   const filteredDefaultCandidates = context.defaultCandidates.filter(
     (item) => !authedFunction.includes(item.n)
   );
@@ -42,7 +38,11 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     )
       return;
     const hintHeight = 360;
-    const inputBoxTop = parseInt(document.getElementById("luckysheet-input-box")?.style.top || "0") - 85
+    const inputBoxTop =
+      parseInt(
+        document.getElementById("luckysheet-input-box")?.style.top || "0",
+        10
+      ) - 85;
     const inputBottom = inputBoxTop + firstSelection.height_move;
     const availableBelow = window.innerHeight - inputBottom;
     const hintAbove = hintHeight > availableBelow;
@@ -140,9 +140,8 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                   style={{
                     cursor: "pointer",
                   }}
-                  className={`luckysheet-formula-search-item ${
-                    index === 0 ? "luckysheet-formula-search-item-active" : ""
-                  }`}
+                  className={`luckysheet-formula-search-item ${index === 0 ? "luckysheet-formula-search-item-active" : ""
+                    }`}
                 >
                   <div
                     style={{ display: "flex", justifyContent: "space-between" }}
@@ -184,11 +183,10 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                           <div
                             style={{
                               borderRadius: "4px",
-                              backgroundColor: `${
-                                localStorage.getItem(v.API_KEY)
+                              backgroundColor: `${localStorage.getItem(v.API_KEY)
                                   ? "#177E23"
                                   : "#e8ebec"
-                              }`,
+                                }`,
                               width: "16px",
                               height: "16px",
                             }}
@@ -224,9 +222,8 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                   <div
                     key={v.n}
                     data-func={v.n}
-                    className={`luckysheet-formula-search-item ${
-                      index === 0 ? "luckysheet-formula-search-item-active" : ""
-                    }`}
+                    className={`luckysheet-formula-search-item ${index === 0 ? "luckysheet-formula-search-item-active" : ""
+                      }`}
                   >
                     <div
                       style={{
@@ -271,11 +268,10 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
                             <div
                               style={{
                                 borderRadius: "4px",
-                                backgroundColor: `${
-                                  localStorage.getItem(v.API_KEY)
+                                backgroundColor: `${localStorage.getItem(v.API_KEY)
                                     ? "#177E23"
                                     : "#e8ebec"
-                                }`,
+                                  }`,
                                 width: "16px",
                                 height: "16px",
                               }}

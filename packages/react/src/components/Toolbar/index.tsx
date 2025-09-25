@@ -669,7 +669,10 @@ const Toolbar: React.FC<{
                     pick(color);
                     setOpen(false);
                   }}
-                  onColorPick={pick}
+                  onColorPick={(color) => {
+                    pick(color);
+                    setOpen(false);
+                  }}
                 />
               )}
             </Combo>

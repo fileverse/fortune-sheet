@@ -85,7 +85,9 @@ export function removeHyperlink(ctx: Context, r: number, c: number) {
     _.set(ctx.luckysheetfile[sheetIndex], "hyperlink", hyperlink);
     const cell = flowdata[r][c];
     if (cell != null) {
-      flowdata[r][c] = { v: cell.v, m: cell.m };
+      delete flowdata[r][c]?.hl;
+      delete flowdata[r][c]?.un;
+      delete flowdata[r][c]?.fc;
     }
   }
   ctx.linkCard = undefined;

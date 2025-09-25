@@ -43,7 +43,8 @@ const FormulaHint = (props: any) => {
     )
       return;
     const hintHeight = 360;
-    const inputBottom = firstSelection.top + firstSelection.height_move;
+    const inputBoxTop = parseInt(document.getElementById("luckysheet-input-box")?.style.top || "0") - 85
+    const inputBottom = inputBoxTop + firstSelection.height_move;
     const availableBelow = window.innerHeight - inputBottom;
     const hintAbove = hintHeight > availableBelow;
     const selectionHeight = firstSelection?.height_move || 0;

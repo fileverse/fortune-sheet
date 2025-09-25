@@ -966,3 +966,31 @@
   pointer-events: none;
   user-select: none;
 }
+
+  /** scroll bar**/
+
+* {
+  scrollbar-width: auto;              /* Firefox: normal thickness */
+  scrollbar-color: #888 transparent;  /* thumb | track */
+}
+
+/* Chrome, Edge, Safari */
+*::-webkit-scrollbar {
+  width: 14px;                        /* thicker scrollbar (like macOS) */
+  height: 14px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;            /* no track */
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #888;                   /* scrollbar thumb color */
+  border-radius: 7px;                 /* rounded edges like mac */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #555;                   /* darker on hover */
+  /* scrollbar */
+}
+

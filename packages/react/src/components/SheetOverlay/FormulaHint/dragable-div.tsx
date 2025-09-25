@@ -93,7 +93,7 @@ export const DraggableDiv = ({
         newX = current.x;
       }
 
-      if (newY + initialWindowPos.y - 60 < 0) {
+      if (newY + initialWindowPos.y - 120 < 0) {
         newY = current.y;
       }
 
@@ -137,7 +137,7 @@ export const DraggableDiv = ({
         newX = current.x;
       }
 
-      if (newY + initialWindowPos.y - 25 < 0) {
+      if (newY + initialWindowPos.y - 40 < 0) {
         newY = current.y;
       }
 

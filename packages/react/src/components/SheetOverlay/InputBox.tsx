@@ -749,6 +749,7 @@ const InputBox: React.FC = () => {
   return (
     <div
       className="luckysheet-input-box"
+      id="luckysheet-input-box"
       style={getInputBoxPosition()}
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}

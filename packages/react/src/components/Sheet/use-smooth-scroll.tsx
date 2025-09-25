@@ -49,14 +49,14 @@ export const useSmoothScroll = (
     }
 
     function handleWheelEvent(event: WheelEvent) {
-      event.preventDefault();
+      //event.preventDefault();
       setContext((ctx) => {
         removeEditingComment(ctx, refs.globalCache);
       });
       const functionDetailsElement =
         document.getElementById("function-details");
       const formulaSearchElement = document.getElementById(
-        "luckysheet-formula-search-c"
+        "luckysheet-formula-search-c-p"
       );
       const isPointerOverFunctionDetails =
         functionDetailsElement?.matches(":hover");

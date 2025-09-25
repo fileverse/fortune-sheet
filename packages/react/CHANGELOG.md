@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.67
+
+### Patch Changes
+
+- fix opening of cell and scroll for suggestion
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.67
+
 ## 1.1.66
 
 ### Patch Changes

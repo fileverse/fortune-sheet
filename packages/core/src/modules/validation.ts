@@ -4,7 +4,6 @@ import {
   error as cellErrorMessages,
   ERROR_NAME,
   ERROR_DIV_ZERO,
-  ERROR_NA,
   ERROR_NULL,
   ERROR_NUM,
   ERROR_REF,
@@ -30,7 +29,6 @@ export const errorMessagesFromValue: Record<string, string> = {
   [ERROR_DIV_ZERO]:
     "Invalid calculation: the divisor (second value) cannot be zero",
   [ERROR_NAME]: "Wrong function name or parameter",
-  [ERROR_NA]: "Empty value",
   [ERROR_NULL]: "Formula returned null",
   [ERROR_NUM]: "Invalid number",
   [ERROR_REF]: "Invalid reference",

@@ -20,6 +20,9 @@ import {
   getFreezeState,
   toggleFreeze,
   clearFilter,
+  clearSelectedCellFormat,
+  clearColumnsCellsFormat,
+  clearRowsCellsFormat,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, { useContext, useRef, useCallback, useLayoutEffect } from "react";
@@ -1165,6 +1168,32 @@ const ContextMenu: React.FC = () => {
               </Menu>
             </div>
           </Tippy>
+        );
+      }
+      if (name === "clear-format") {
+        return (
+          <Menu
+            key={name}
+            onClick={() => {
+              if (context.allowEdit === false) return;
+              setContext((draftCtx) => {
+                draftCtx.contextMenu = {};
+                // @ts-ignore
+                if (draftCtx.contextMenu.headerMenu === "row") {
+                  clearRowsCellsFormat(draftCtx);
+                } else if (draftCtx.contextMenu.headerMenu === true) {
+                  clearColumnsCellsFormat(draftCtx);
+                } else if (!draftCtx.contextMenu.headerMenu) {
+                  clearSelectedCellFormat(draftCtx);
+                }
+              });
+            }}
+          >
+            <div className="context-item">
+              <LucideIcon name="RemoveFormatting" />
+              <p>Clear formatting</p>
+            </div>
+          </Menu>
         );
       }
       return null;

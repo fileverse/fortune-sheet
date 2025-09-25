@@ -113,6 +113,8 @@ const Template: StoryFn<typeof Workbook> = ({
           "comment",
           "freeze-row",
           "freeze-column",
+          "|",
+          "clear-format",
         ]}
         headerContextMenu={[
           "cut",
@@ -146,6 +148,8 @@ const Template: StoryFn<typeof Workbook> = ({
           "split-text",
           "freeze-row",
           "freeze-column",
+          "|",
+          "clear-format",
         ]}
       />
     </div>

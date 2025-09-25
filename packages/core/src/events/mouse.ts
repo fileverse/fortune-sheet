@@ -3430,7 +3430,7 @@ export function handleOverlayMouseMove(
   onCellsMove(ctx, globalCache, e, scrollX, scrollY, container);
 
   overShowComment(ctx, e, scrollX, scrollY, container); // 有批注显示
-  overShowError(ctx, e, scrollX, scrollY, container); // 有错误显示
+  overShowError(ctx, e, scrollX, scrollY, container);
   onSearchDialogMove(globalCache, e);
   onRangeSelectionModalMove(globalCache, e);
   // hyperlinkCtrl.overshow(event); // 链接提示显示

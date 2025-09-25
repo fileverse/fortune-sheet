@@ -2350,32 +2350,68 @@ export class Canvas {
       renderCtx
     );
     if (cell?.error) {
-      const errorColor = "#FB3449";
-      const bw = 1;
-      const L = Math.round(startX + offsetLeft - 1 + bodrder05);
-      const T = Math.round(startY + offsetTop - 1 + bodrder05);
-      const R = Math.round(endX + offsetLeft - 2 + bodrder05);
-      const B = Math.round(endY + offsetTop - 2 + bodrder05);
-      const wInside = R - L;
-      const hInside = B - T;
+      const errorBorderColor = "#FB3449";
+      const borderThicknessInPixels = 1;
 
-      const ctx2 = renderCtx;
-      ctx2.save();
-      ctx2.fillStyle = errorColor;
-      ctx2.fillRect(L, T, wInside, bw);
-      ctx2.fillRect(L, B - bw, wInside, bw);
-      ctx2.fillRect(L, T, bw, hInside);
-      ctx2.fillRect(R - bw, T, bw, hInside);
+      const leftCellBoundary = Math.round(startX + offsetLeft - 1 + bodrder05);
+      const topCellBoundary = Math.round(startY + offsetTop - 1 + bodrder05);
+      const rightCellBoundary = Math.round(endX + offsetLeft - 2 + bodrder05);
+      const bottomCellBoundary = Math.round(endY + offsetTop - 2 + bodrder05);
 
-      const ribbon = 8 * this.sheetCtx.zoomRatio;
-      ctx2.beginPath();
-      ctx2.moveTo(L + bw, T + bw);
-      ctx2.lineTo(L + bw + ribbon, T + bw);
-      ctx2.lineTo(L + bw, T + bw + ribbon);
-      ctx2.closePath();
-      ctx2.fill();
+      const innerCellWidth = rightCellBoundary - leftCellBoundary;
+      const innerCellHeight = bottomCellBoundary - topCellBoundary;
 
-      ctx2.restore();
+      const renderingContext = renderCtx;
+      renderingContext.save();
+      renderingContext.fillStyle = errorBorderColor;
+
+      // top border
+      renderingContext.fillRect(
+        leftCellBoundary,
+        topCellBoundary,
+        innerCellWidth,
+        borderThicknessInPixels
+      );
+      // bottom border
+      renderingContext.fillRect(
+        leftCellBoundary,
+        bottomCellBoundary - borderThicknessInPixels,
+        innerCellWidth,
+        borderThicknessInPixels
+      );
+      // left border
+      renderingContext.fillRect(
+        leftCellBoundary,
+        topCellBoundary,
+        borderThicknessInPixels,
+        innerCellHeight
+      );
+      // right border
+      renderingContext.fillRect(
+        rightCellBoundary - borderThicknessInPixels,
+        topCellBoundary,
+        borderThicknessInPixels,
+        innerCellHeight
+      );
+
+      const errorRibbonSize = 8 * this.sheetCtx.zoomRatio;
+      renderingContext.beginPath();
+      renderingContext.moveTo(
+        leftCellBoundary + borderThicknessInPixels,
+        topCellBoundary + borderThicknessInPixels
+      );
+      renderingContext.lineTo(
+        leftCellBoundary + borderThicknessInPixels + errorRibbonSize,
+        topCellBoundary + borderThicknessInPixels
+      );
+      renderingContext.lineTo(
+        leftCellBoundary + borderThicknessInPixels,
+        topCellBoundary + borderThicknessInPixels + errorRibbonSize
+      );
+      renderingContext.closePath();
+      renderingContext.fill();
+
+      renderingContext.restore();
     }
   }
 

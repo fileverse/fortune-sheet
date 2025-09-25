@@ -1,6 +1,5 @@
 import _ from "lodash";
 import { Context, getFlowdata } from "../context";
-import { getCommentBoxByRC } from "./comment";
 import { colLocation, rowLocation } from "./location";
 import { mergeBorder } from "./cell";
 import { CellError } from "../types";
@@ -71,7 +70,6 @@ export function overShowError(
   let top = err.top == null ? toY - 2 * zoom : err.top * zoom;
   if (top < 0) top = 2;
 
-  // 5) Set ephemeral hover box (consumed by your overlay renderer)
   ctx.hoverErrorBox = {
     row_column,
     left,
@@ -98,20 +96,4 @@ export function clearCellError(ctx: Context, r: number, c: number) {
   const flow = getFlowdata(ctx);
   if (!flow?.[r]?.[c]) return;
   delete flow[r][c]!.error;
-}
-
-export function showErrors(
-  ctx: Context,
-  errorShowCells: { r: number; c: number }[]
-) {
-  const flowdata = getFlowdata(ctx);
-  if (!flowdata) return;
-
-  const errorBoxes = errorShowCells.map(({ r, c }) =>
-    // reuse the SAME geometry helper so it anchors exactly like comments
-    getCommentBoxByRC(ctx, flowdata, r, c)
-  );
-
-  // mirror commentBoxes, but for errors
-  (ctx as any).errorBoxes = errorBoxes;
 }

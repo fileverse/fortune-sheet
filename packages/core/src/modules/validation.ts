@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import _ from "lodash";
 import {
-  error as cellErrorMessages,
   ERROR_NAME,
   ERROR_DIV_ZERO,
   ERROR_NULL,
@@ -38,12 +37,6 @@ export const errorMessagesFromValue: Record<string, string> = {
 
 export function detectErrorFromValue(input: string) {
   return errorMessagesFromValue[input];
-}
-export function customErrorMessage(errorMessage: string) {
-  if (errorMessage === cellErrorMessages(ERROR_NAME)) {
-    return "#ERROR";
-  }
-  return errorMessage;
 }
 
 const errorValues = Object.values(error);

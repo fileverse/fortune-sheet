@@ -734,6 +734,10 @@ export function updateCell(
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
 
+  if (!value?.toString()) {
+    clearCellError(ctx, r, c);
+  }
+
   // if (!_.isNil(rangetosheet) && rangetosheet !== ctx.currentSheetId) {
   //   sheetmanage.changeSheetExec(rangetosheet);
   // }

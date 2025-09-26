@@ -17,7 +17,7 @@ import {
   mergeMoveMain,
   setCellValue,
 } from "./cell";
-import { customErrorMessage, error, detectErrorFromValue } from "./validation";
+import { error, detectErrorFromValue } from "./validation";
 import { locale } from "../locale";
 import { colors } from "./color";
 import { colLocation, mousePosition, rowLocation } from "./location";
@@ -1295,7 +1295,7 @@ export function execfunction(
   } else {
     clearCellError(ctx, r, c);
   }
-  return [true, !isError ? finalResult : customErrorMessage(formulaError), txt];
+  return [true, !isError ? finalResult : "#ERROR", txt];
 }
 
 function insertUpdateDynamicArray(ctx: Context, dynamicArrayItem: any) {

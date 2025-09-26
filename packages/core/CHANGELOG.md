@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.70
+
+### Patch Changes
+
+- Fix feedbacks on error state design
+
 ## 1.1.69
 
 ### Patch Changes

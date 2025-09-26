@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.70
+
+### Patch Changes
+
+- Fix feedbacks on error state design
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.70
+
 ## 1.1.69
 
 ### Patch Changes

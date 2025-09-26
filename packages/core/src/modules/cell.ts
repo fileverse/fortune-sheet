@@ -12,7 +12,7 @@ import {
 import { checkCF, getComputeMap } from "./ConditionFormat";
 import { getFailureText, validateCellData } from "./dataVerification";
 import { genarate, update } from "./format";
-import { getRowHeight } from "../api";
+import { clearCellError, getRowHeight } from "../api";
 import {
   delFunctionGroup,
   execfunction,
@@ -947,8 +947,10 @@ export function updateCell(
           Object.keys(value).forEach((attr) => {
             curv![attr as keyof Cell] = value[attr];
           });
+          clearCellError(ctx, r, c);
         }
       } else {
+        clearCellError(ctx, r, c);
         delFunctionGroup(ctx, r, c);
 
         curv = _.cloneDeep(d?.[r]?.[c] || {});
@@ -1063,12 +1065,14 @@ export function updateCell(
           dynamicArrayItem = v[3].data;
         }
       } else {
+        clearCellError(ctx, r, c);
         const v = curv;
         if (_.isNil(value.v)) {
           value.v = v;
         }
       }
     } else {
+      clearCellError(ctx, r, c);
       delFunctionGroup(ctx, r, c);
       execFunctionGroup(ctx, r, c, value);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -36,6 +36,14 @@ export type CellStyle = {
   tr?: string;
 };
 
+export type CellError = {
+  title: string;
+  message: string;
+  left?: number;
+  top?: number;
+  row_column?: string;
+};
+
 export type Cell = {
   v?: string | number | boolean;
   m?: string | number;
@@ -60,6 +68,7 @@ export type Cell = {
     isShow: boolean;
   };
   hl?: { r: number; c: number; id: string };
+  error?: CellError;
 } & CellStyle;
 
 export type CellWithRowAndCol = {

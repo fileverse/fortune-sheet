@@ -2349,6 +2349,70 @@ export class Canvas {
       },
       renderCtx
     );
+    if (cell?.error) {
+      const errorBorderColor = "#FB3449";
+      const borderThicknessInPixels = 1;
+
+      const leftCellBoundary = Math.round(startX + offsetLeft - 3 + bodrder05);
+      const topCellBoundary = Math.round(startY + offsetTop - 3 + bodrder05);
+      const rightCellBoundary = Math.round(endX + offsetLeft - 3 + bodrder05);
+      const bottomCellBoundary = Math.round(endY + offsetTop - 3 + bodrder05);
+
+      const innerCellWidth = rightCellBoundary - leftCellBoundary;
+      const innerCellHeight = bottomCellBoundary - topCellBoundary;
+
+      const renderingContext = renderCtx;
+      renderingContext.save();
+      renderingContext.fillStyle = errorBorderColor;
+
+      // top border
+      renderingContext.fillRect(
+        leftCellBoundary,
+        topCellBoundary,
+        innerCellWidth,
+        borderThicknessInPixels
+      );
+      // bottom border
+      renderingContext.fillRect(
+        leftCellBoundary,
+        bottomCellBoundary - borderThicknessInPixels,
+        innerCellWidth,
+        borderThicknessInPixels
+      );
+      // left border
+      renderingContext.fillRect(
+        leftCellBoundary,
+        topCellBoundary,
+        borderThicknessInPixels,
+        innerCellHeight
+      );
+      // right border
+      renderingContext.fillRect(
+        rightCellBoundary - borderThicknessInPixels,
+        topCellBoundary,
+        borderThicknessInPixels,
+        innerCellHeight
+      );
+
+      const errorRibbonSize = 8 * this.sheetCtx.zoomRatio;
+      renderingContext.beginPath();
+      renderingContext.moveTo(
+        leftCellBoundary + borderThicknessInPixels,
+        topCellBoundary + borderThicknessInPixels
+      );
+      renderingContext.lineTo(
+        leftCellBoundary + borderThicknessInPixels + errorRibbonSize,
+        topCellBoundary + borderThicknessInPixels
+      );
+      renderingContext.lineTo(
+        leftCellBoundary + borderThicknessInPixels,
+        topCellBoundary + borderThicknessInPixels + errorRibbonSize
+      );
+      renderingContext.closePath();
+      renderingContext.fill();
+
+      renderingContext.restore();
+    }
   }
 
   // 溢出单元格渲染

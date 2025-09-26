@@ -13,3 +13,4 @@ export * from "./range";
 export * from "./merge";
 export * from "./sheet";
 export * from "./workbook";
+export * from "../modules/error-state-helpers";

@@ -258,6 +258,8 @@ export const defaultSettings: Required<Settings> = {
     "data", // 数据验证
     "cell-format", // 设置单元格格式
     "comment", // 添加注释
+    "|",
+    "clear-format",
   ], // 自定义单元格右键菜单
   headerContextMenu: [
     "copy", // 复制
@@ -278,6 +280,8 @@ export const defaultSettings: Required<Settings> = {
     "sort", // 排序选区
     "orderAZ", // 升序
     "orderZA", // 降序
+    "|",
+    "clear-format",
   ], // header菜单
   sheetTabContextMenu: [
     "delete",

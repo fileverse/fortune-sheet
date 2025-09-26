@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 import _ from "lodash";
 import { Context, getFlowdata } from "../context";
 import { Cell, CellMatrix, Range, Selection, SingleRange } from "../types";
@@ -1807,4 +1808,106 @@ export function getDataBySelectionNoCopy(ctx: Context, range: Selection) {
     data.push(row);
   }
   return data;
+}
+
+function keepOnlyValueParts(cell: Cell | null | undefined): Cell | null {
+  if (!cell) return cell ?? null;
+  const { v: rawValue, m: displayText, f: formula } = cell;
+  return rawValue !== undefined ||
+    displayText !== undefined ||
+    formula !== undefined
+    ? { v: rawValue, m: displayText, f: formula }
+    : null;
+}
+
+export function clearSelectedCellFormat(ctx: Context) {
+  const activeSheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
+  if (activeSheetIndex == null) return;
+
+  const activeSheetFile = ctx.luckysheetfile[activeSheetIndex];
+  const selectedRanges = ctx.luckysheet_select_save;
+  if (!activeSheetFile || !selectedRanges) return;
+
+  const sheetData = activeSheetFile.data;
+
+  selectedRanges.forEach(({ row: rowRange, column: columnRange }) => {
+    const [startRow, endRow] = rowRange;
+    const [startColumn, endColumn] = columnRange;
+
+    for (let rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
+      const rowCells = sheetData?.[rowIndex];
+      if (!rowCells) continue;
+
+      for (
+        let columnIndex = startColumn;
+        columnIndex <= endColumn;
+        columnIndex++
+      ) {
+        if (rowCells[columnIndex] === undefined) continue;
+        rowCells[columnIndex] = keepOnlyValueParts(
+          rowCells[columnIndex]
+        ) as Cell;
+      }
+    }
+  });
+}
+
+export function clearRowsCellsFormat(ctx: Context) {
+  const activeSheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
+  if (activeSheetIndex == null) return;
+
+  const activeSheetFile = ctx.luckysheetfile[activeSheetIndex];
+  const selectedRanges = ctx.luckysheet_select_save;
+  if (!activeSheetFile || !selectedRanges) return;
+
+  const sheetData = activeSheetFile.data;
+  const columnCount = sheetData?.[0]?.length ?? 0;
+
+  selectedRanges.forEach(({ row: rowRange }) => {
+    const [startRow, endRow] = rowRange;
+
+    for (let rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
+      const rowCells = sheetData?.[rowIndex];
+      if (!rowCells) continue;
+
+      for (let columnIndex = 0; columnIndex < columnCount; columnIndex++) {
+        if (rowCells[columnIndex] === undefined) continue;
+        rowCells[columnIndex] = keepOnlyValueParts(
+          rowCells[columnIndex]
+        ) as Cell;
+      }
+    }
+  });
+}
+
+export function clearColumnsCellsFormat(ctx: Context) {
+  const activeSheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
+  if (activeSheetIndex == null) return;
+
+  const activeSheetFile = ctx.luckysheetfile[activeSheetIndex];
+  const selectedRanges = ctx.luckysheet_select_save;
+  if (!activeSheetFile || !selectedRanges) return;
+
+  const sheetData = activeSheetFile.data as Cell[][];
+  const rowCount = sheetData.length;
+
+  selectedRanges.forEach(({ column: columnRange }) => {
+    const [startColumn, endColumn] = columnRange;
+
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      const rowCells = sheetData[rowIndex];
+      if (!rowCells) continue;
+
+      for (
+        let columnIndex = startColumn;
+        columnIndex <= endColumn;
+        columnIndex++
+      ) {
+        if (rowCells[columnIndex] === undefined) continue;
+        rowCells[columnIndex] = keepOnlyValueParts(
+          rowCells[columnIndex]
+        ) as Cell;
+      }
+    }
+  });
 }

@@ -538,7 +538,7 @@ const InputBox: React.FC = () => {
 
   const onChange = useCallback(
     (__: any, isBlur?: boolean) => {
-      if (inputRef?.current?.innerText.includes("=")) {
+      if (inputRef?.current?.innerText.includes("=") && /^=?[A-Za-z]*$/.test(getLastInputSpanText())) {
         setShowSearchHint(true);
       } else {
         setShowSearchHint(false);

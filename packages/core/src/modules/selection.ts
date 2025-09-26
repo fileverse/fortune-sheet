@@ -23,6 +23,7 @@ import { update } from "./format";
 // @ts-ignore
 import SSF from "./ssf";
 import { CFSplitRange } from "./ConditionFormat";
+import { clearCellError } from "./error-state-helpers";
 
 export const selectionCache = {
   isPasteAction: false,
@@ -2137,6 +2138,7 @@ export function deleteSelectedCellText(ctx: Context): string {
               delete cell?.baseValue;
               delete cell?.baseCurrency;
             }
+            clearCellError(ctx, r, c);
           } else {
             d[r][c] = null;
           }

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.71
+
+### Patch Changes
+
+- fix error state deletion issue
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.71
+
 ## 1.1.70
 
 ### Patch Changes

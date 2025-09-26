@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.69
+
+### Patch Changes
+
+- hide suggestion pannel if it is naked funtion reference
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.69
+
 ## 1.1.68
 
 ### Patch Changes

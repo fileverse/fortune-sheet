@@ -12,7 +12,21 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     context,
     settings: { isAuthorized },
   } = useContext(WorkbookContext);
-  const authedFunction = ["Ethereum", "SMARTCONTRACT", "DUNESIM"];
+  const authedFunction = [
+    "COINGECKO",
+    "ETHERSCAN",
+    "DEFILLAMA",
+    "GNOSIS",
+    "BASE",
+    "EOA",
+    "PNL",
+    "SAFE",
+    "BLOCKSCOUT",
+    "LENS",
+    "FARCASTER",
+    "Ethereum",
+    "SMARTCONTRACT",
+    "DUNESIM",];
   const filteredDefaultCandidates = context.defaultCandidates.filter(
     (item) => !authedFunction.includes(item.n)
   );

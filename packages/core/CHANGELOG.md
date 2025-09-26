@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.71
+
+### Patch Changes
+
+- fix error state deletion issue
+
 ## 1.1.70
 
 ### Patch Changes

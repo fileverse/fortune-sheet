@@ -8,6 +8,7 @@ export const ERROR_REF = "REF";
 export const ERROR_VALUE = "VALUE";
 
 const errors = {
+  ['Error: lookup_range and result_range are required']: "Lookup range and result range are required",
   [ERROR]: "Syntax error",
   [ERROR_DIV_ZERO]: "#DIV/0!",
   [ERROR_NAME]: "Wrong function name or parameter",
@@ -16,6 +17,15 @@ const errors = {
   [ERROR_NUM]: "#NUM!",
   [ERROR_REF]: "#REF!",
   [ERROR_VALUE]: "#VALUE!",
+  ['search_key']: "Error: search_key is required",
+  ['lookup_range']: "Error: lookup_range is required",
+  ['result_range']: "Error: result_range is required",
+  ['lookup_range_single']: "Error: lookup_range must be a singular row or column",
+  ['result_range_invalid']: "Error: result_range is invalid",
+  ['lookup_range_and_result_range']: "Error: lookup_range and result_range must have the same number of columns",
+  ['match_mode_must']: "Error: match_mode must be 0, 1, -1, or 2",
+  ['search_mode_must']: "Error: search_mode must be 1, -1, 2, or -2",
+  ['binary_search_and_wildcard']: "'Error: Binary search (search_mode ±2) cannot be used with wildcard matching (match_mode 2)",
 };
 
 /**

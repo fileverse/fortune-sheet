@@ -8,6 +8,7 @@ import {
   rgbToHex,
   processArray,
   getContentInParentheses,
+  getNumberFormat,
 } from "../utils";
 import { checkCF, getComputeMap } from "./ConditionFormat";
 import { getFailureText, validateCellData } from "./dataVerification";
@@ -275,6 +276,18 @@ export function setCellValue(
         cell.ct = { fa: "General", t: "n" };
       }
 
+      // if output is number fetch fa from referenced cells
+      const isDigit = /^\d+$/.test(vupdate);
+      if (isDigit) {
+        const flowdata = getFlowdata(ctx);
+        const args = getContentInParentheses(cell?.f)?.split(",");
+        const cellRefs = args?.map((arg) => arg.trim().toUpperCase());
+        const formatted = processArray(cellRefs, d, flowdata);
+        if (formatted) {
+          cell.ct.fa = formatted;
+        }
+      }
+
       if (cell.v === Infinity || cell.v === -Infinity) {
         cell.m = cell.v.toString();
       } else {
@@ -320,11 +333,27 @@ export function setCellValue(
       !_.isNil(cell.ct.fa) &&
       cell.ct.fa !== "General"
     ) {
+      let { fa } = cell.ct;
       if (isRealNum(vupdate)) {
+        if (
+          (commaPresent && !fa.includes(",")) ||
+          (String(vupdate).includes(".") &&
+            String(vupdate).split(".")?.[1]?.length !==
+              fa.split(".")?.[1]?.length) ||
+          fa.includes(",") !== String(vupdate).includes(",")
+        ) {
+          if (fa.includes(",") !== String(vupdate).includes(",")) {
+            commaPresent = true;
+          }
+          fa = getNumberFormat(String(vupdate), commaPresent);
+        }
         vupdate = parseFloat(vupdate);
+        if (cell?.ct) {
+          cell.ct = { ...cell.ct, fa, t: "n" };
+        }
       }
 
-      let mask = update(cell.ct.fa, vupdate);
+      let mask = update(fa, vupdate);
 
       if (mask === vupdate) {
         // 若原来单元格格式 应用不了 要更新的值，则获取更新值的 格式
@@ -358,21 +387,7 @@ export function setCellValue(
         cell.v =
           vupdate; /* 备注：如果使用parseFloat，1.1111111111111111会转换为1.1111111111111112 ? */
         const strValue = String(vupdate);
-        let format;
-
-        const hasDecimal = strValue.includes(".");
-        const hasComma = commaPresent;
-
-        if (hasDecimal) {
-          const decimalCount = strValue.split(".")[1]?.length || 0;
-          format = hasComma
-            ? `#,##0.${"0".repeat(decimalCount)}`
-            : `0.${"0".repeat(decimalCount)}`;
-        } else if (hasComma) {
-          format = "#,##0";
-        } else {
-          format = "0";
-        }
+        const format = getNumberFormat(strValue, commaPresent);
 
         cell.m = v.m ? v.m : update(format, cell.v);
         cell.ht = 2;

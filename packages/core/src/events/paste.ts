@@ -541,7 +541,7 @@ function pasteHandlerOfCutPaste(
   //   return;
   // }
   const allowEdit = isAllowEdit(ctx);
-  if (!allowEdit) return;
+  if (!allowEdit || ctx.isFlvReadOnly) return;
 
   if (!copyRange) return;
 

@@ -3482,6 +3482,69 @@ export default {
       ],
     },
     {
+      n: "XLOOKUP",
+      t: 2,
+      d: "Cross lookup. Returns the values in the result range at the position where a match was found in the lookup range.",
+      a: "Cross lookup.",
+      m: [3, 4],
+      p: [
+        {
+          name: "search_key",
+          detail:
+            'The value to search for. For example, `42`, `"Cats"`, or `I24`.',
+          example: "10003",
+          require: "m",
+          repeat: "n",
+          type: "rangeall",
+        },
+        {
+          name: "lookup_range",
+          detail:
+            "The range to consider for the search. This range must be a singular row or column.",
+          example: "A2:B26",
+          require: "m",
+          repeat: "n",
+          type: "rangeall",
+        },
+        {
+          name: "result_range",
+          detail:
+            "The range to consider for the result. This range's row or column size should be the same as the lookup_range's, depending on how the lookup is done.",
+          example: "A2:B26",
+          require: "m",
+          repeat: "n",
+          type: "rangeall",
+        },
+        {
+          name: "missing_value",
+          detail:
+            "The value to return if no match is found. If unspecified, an error is returned.",
+          example: "N/A",
+          require: "o",
+          repeat: "n",
+          type: "rangeall",
+        },
+        {
+          name: "match_mode",
+          detail:
+            "How to find a match for the search_key. 0 is for an exact match, 1 for an exact match or the next value that is bigger than the search_key, -1 for an exact match or the next value that is lower than the search_key, and 2 for a wildcard match. If unspecified, this defaults to finding an exact match.",
+          example: "0",
+          require: "o",
+          repeat: "n",
+          type: "rangeall",
+        },
+        {
+          name: "search_mode",
+          detail:
+            "How to search through the lookup range. 1 is to search from the first entry to the last one, -1 to search from the last entry to the first, 2 to search through the range using binary search and assuming the range is sorted in ascending order, and -2 to search through the range using binary search and assuming the range is sorted in descending order. If unspecified, this defaults to searching through the range from the first entry to the last one.",
+          example: "1",
+          require: "o",
+          repeat: "n",
+          type: "rangeall",
+        },
+      ],
+    },
+    {
       n: "VLOOKUP",
       t: 2,
       d: "Vertical lookup. Searches down the first column of a range for a key and returns the value of a specified cell in the row found.",

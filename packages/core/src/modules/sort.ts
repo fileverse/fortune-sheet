@@ -268,7 +268,13 @@ export function spillSortResult(
   const formulaValue = formulaResult?.v;
 
   // make sure it is a SORT formula result
-  if (typeof formulaString !== "string" || !/= *SORT\s*\(/i.test(formulaString))
+  if (
+    typeof formulaString !== "string" ||
+    !(
+      /= *SORT\s*\(/i.test(formulaString) ||
+      /= *XLOOKUP\s*\(/i.test(formulaString)
+    )
+  )
     return false;
   if (!Array.isArray(formulaValue)) return false;
 

@@ -72,6 +72,20 @@
   }
 */
 
+export function checkIsCol(str) {
+  if (!str) return null;
+  // match pattern like A1:B10
+  const match = str.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/i);
+  if (!match) return null;
+  const [, col1, row1, col2, row2] = match;
+  // same column, different rows → false
+  if (col1 === col2 && row1 !== row2) return false;
+  // same row, different columns → true
+  if (row1 === row2 && col1 !== col2) return true;
+  // otherwise not a straight row/col selection
+  return null;
+}
+
 /* addresses */
 const simpleSheetName = "[A-Za-z0-9_\u00C0-\u02AF]+";
 const quotedSheetName = "'(?:(?!').|'')*'";
@@ -250,9 +264,17 @@ var parser = {
     yy,
     yystate /* action[1] */,
     $$ /* vstack */,
-    _$ /* lstack */
+    _$ /* lstack */,
+    initialInput,
   ) {
     /* this == yyval */
+
+    let isXlookuoColReference;
+    if(initialInput.toLowerCase().includes('xlookup')){
+      let t = initialInput.includes('XLOOKUP') ? initialInput?.split('XLOOKUP(')?.[1]?.split(',')?.[1] : initialInput?.split('xlookup(')?.[1]?.split(',')?.[1];
+      isXlookuoColReference = checkIsCol(t);
+    }
+
 
     var $0 = $$.length - 1;
     switch (yystate) {
@@ -353,7 +375,7 @@ var parser = {
 
         break;
       case 22:
-        this.$ = yy.callFunction($$[$0 - 3], $$[$0 - 1]);
+        this.$ = yy.callFunction($$[$0 - 3], $$[$0 - 1], isXlookuoColReference);
 
         break;
       case 26:
@@ -1179,6 +1201,7 @@ var parser = {
               action[1],
               vstack,
               lstack,
+              input
             ].concat(args)
           );
 

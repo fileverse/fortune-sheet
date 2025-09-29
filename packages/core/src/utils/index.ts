@@ -453,15 +453,58 @@ export function processArray(cellReferences: any, d: any, flowData: any) {
         flowData?.[row][col]?.ct?.fa &&
         flowData?.[row][col]?.ct?.fa?.includes("#,##0")
       ) {
-        formated = "#,##0";
-      } else if (
+        formated = flowData?.[row][col]?.ct?.fa;
+      }
+      if (
         flowData?.[row][col]?.ct?.fa &&
-        flowData?.[row][col]?.ct?.fa?.includes("#,##0.00")
+        flowData?.[row][col]?.ct?.fa?.includes("#,##0.")
       ) {
-        formated = "#,##0.00";
+        formated = flowData?.[row][col]?.ct?.fa;
       }
     }
   });
 
   return formated;
+}
+
+export function getNumberFormat(strValue: any, commaPresent: boolean) {
+  let format = "";
+  const hasDecimal = strValue.includes(".");
+  const hasComma = commaPresent;
+
+  if (hasDecimal) {
+    const decimalCount = strValue.split(".")[1]?.length || 0;
+    format = hasComma
+      ? `#,##0.${"0".repeat(decimalCount)}`
+      : `0.${"0".repeat(decimalCount)}`;
+  } else if (hasComma) {
+    format = "#,##0";
+  } else {
+    format = "0";
+  }
+  return format;
+}
+
+export function checkIsCol(str: string) {
+  // take substring after first comma
+  const afterComma = str.split(",")[1]?.trim();
+  if (!afterComma) return null;
+
+  // first range is before the next comma or closing paren
+  const firstRange = afterComma.split(/[),]/)[0].trim();
+
+  // match pattern like A1:B10
+  const match = firstRange.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/i);
+  if (!match) return null;
+
+  const [, col1, row1, col2, row2] = match;
+
+  // same column, different rows → false
+  if (col1 === col2 && row1 !== row2) return false;
+
+  // same row, different columns → true
+  if (row1 === row2 && col1 !== col2) return true;
+
+  // otherwise not a straight row/col selection
+  return null;
 }

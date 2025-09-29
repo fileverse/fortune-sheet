@@ -26,7 +26,8 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     "FARCASTER",
     "Ethereum",
     "SMARTCONTRACT",
-    "DUNESIM",];
+    "DUNESIM",
+  ];
   const filteredDefaultCandidates = context.defaultCandidates.filter(
     (item) => !authedFunction.includes(item.n)
   );

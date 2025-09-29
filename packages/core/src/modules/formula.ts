@@ -1410,6 +1410,7 @@ export function execFunctionGroup(
     // 此处setcellvalue 中this.execFunctionGroupData会保存想要更新的值，本函数结尾不要设为null,以备后续函数使用
     // setcellvalue(origin_r, origin_c, _this.execFunctionGroupData, value);
     const cellCache: Cell[][] = [[{ v: undefined }]];
+    console.log("cellCache hhaahahah setCell value", cellCache);
     setCellValue(ctx, 0, 0, cellCache, value);
     [
       [

@@ -34,7 +34,7 @@ class Parser extends Emitter {
       throwError: (errorName) => this._throwError(errorName),
       callVariable: (variable) => this._callVariable(variable),
       evaluateByOperator,
-      callFunction: (name, params) => this._callFunction(name, params),
+      callFunction: (name, params, isXlookuoColReference) => this._callFunction(name, params, isXlookuoColReference),
       cellValue: (value) => this._callCellValue(value),
       rangeValue: (start, end) => this._callRangeValue(start, end),
     };
@@ -166,7 +166,10 @@ class Parser extends Emitter {
    * @returns {*}
    * @private
    */
-  _callFunction(name, params = []) {
+  _callFunction(name, params = [], isXlookuoColReference = false) {
+    if (name.toLowerCase().includes('xlookup')) {
+      params.splice(3, 0, String(isXlookuoColReference));
+    }
     const fn = this.getFunction(name);
     let value;
 

@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.72
+
+### Patch Changes
+
+- resoleve cell refernce with % if % formate
+
 ## 0.2.71
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.74
+
+### Patch Changes
+
+- resoleve cell refernce with % if % formate
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.72
+
 ## 1.1.73
 
 ### Patch Changes

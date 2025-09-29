@@ -449,15 +449,10 @@ export function processArray(cellReferences: any, d: any, flowData: any) {
 
     // Check if coordinates are within bounds
     if (row >= 0 && row < d.length && col >= 0 && col < d[row].length) {
+      const fa = flowData?.[row][col]?.ct?.fa;
       if (
-        flowData?.[row][col]?.ct?.fa &&
-        flowData?.[row][col]?.ct?.fa?.includes("#,##0")
-      ) {
-        formated = flowData?.[row][col]?.ct?.fa;
-      }
-      if (
-        flowData?.[row][col]?.ct?.fa &&
-        flowData?.[row][col]?.ct?.fa?.includes("#,##0.")
+        fa &&
+        (fa?.includes("#,##0") || fa?.includes("#,##0.") || fa?.includes("%"))
       ) {
         formated = flowData?.[row][col]?.ct?.fa;
       }

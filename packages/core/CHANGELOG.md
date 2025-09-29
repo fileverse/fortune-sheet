@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.73
+
+### Patch Changes
+
+- add xllokup, fix decimal for formula response
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.71
+
 ## 1.1.72
 
 ### Patch Changes

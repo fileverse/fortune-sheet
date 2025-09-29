@@ -142,7 +142,6 @@ export function setCellValue(
   d: CellMatrix | null | undefined,
   v: any
 ) {
-  console.log("setCellValue", r, c, v);
   if (_.isNil(d)) {
     d = getFlowdata(ctx);
   }
@@ -278,7 +277,8 @@ export function setCellValue(
       }
 
       // if output is number fetch fa from referenced cells
-      if (/^[\d.,]+$/.test(vupdate)) {
+      const isDigit = /^\d+$/.test(vupdate);
+      if (isDigit) {
         const flowdata = getFlowdata(ctx);
         const args = getContentInParentheses(cell?.f)?.split(",");
         const cellRefs = args?.map((arg) => arg.trim().toUpperCase());
@@ -744,7 +744,6 @@ export function updateCell(
   value?: any,
   canvas?: CanvasRenderingContext2D
 ) {
-  console.log("updateCell", ctx, r, c, $input, value, canvas);
   let inputText = $input?.innerText;
   const inputHtml = $input?.innerHTML;
   const flowdata = getFlowdata(ctx);

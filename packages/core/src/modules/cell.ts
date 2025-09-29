@@ -734,10 +734,6 @@ export function updateCell(
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
 
-  if (!value?.toString()) {
-    clearCellError(ctx, r, c);
-  }
-
   // if (!_.isNil(rangetosheet) && rangetosheet !== ctx.currentSheetId) {
   //   sheetmanage.changeSheetExec(rangetosheet);
   // }
@@ -830,6 +826,13 @@ export function updateCell(
 
   // API, we get value from user
   value = value || $input?.innerText;
+  const shouldClearError = oldValue?.f
+    ? oldValue.f !== value
+    : oldValue?.v !== value;
+
+  if (shouldClearError) {
+    clearCellError(ctx, r, c);
+  }
 
   // Hook function
   if (ctx.hooks.beforeUpdateCell?.(r, c, value) === false) {

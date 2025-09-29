@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.72
+
+### Patch Changes
+
+- Fix error state issue
+
 ## 1.1.71
 
 ### Patch Changes

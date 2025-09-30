@@ -1,9 +1,8 @@
 .luckysheet-sheet-area {
   width: 100%;
   box-sizing: border-box;
-  background-color: #fafafc;
   color: #444;
-  height: 31px;
+  height: 36px;
   padding: 0 30px 0 44px;
   margin: 0;
   -webkit-touch-callout: none;
@@ -19,6 +18,7 @@
   flex: 3;
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 #luckysheet-bottom-pager {
@@ -92,21 +92,19 @@
 
 .luckysheet-sheet-area div.luckysheet-sheets-item {
   padding: 2px 6px;
-  height: 29px;
+  height: 34px;
   line-height: 29px;
   background-color: #fafafc;
-  color: #676464;
+  color: var(--color-text-default);
   min-width: 30px;
   top: 0px;
   position: relative;
   margin-right: -1px;
   cursor: pointer;
   transition: all 0.1s;
-  font-size: 13px;
+  font-size: 14px;
   padding: 2px 19px 0px 5px;
   box-sizing: border-box;
-  border-left: 1px solid #e0e0e0;
-  border-right: 1px solid #e0e0e0;
   vertical-align: middle;
 }
 
@@ -115,9 +113,8 @@
 }
 
 .luckysheet-sheet-area div.luckysheet-sheets-item:hover {
-  background-color: #efefef;
+  background-color: hsl(var(--color-button-secondary-hover));
   /* border-color: #a5a5a5; */
-  color: #490500;
 }
 
 .luckysheet-sheet-area div.luckysheet-sheets-item .luckysheet-sheets-item-menu {
@@ -155,7 +152,7 @@
 .luckysheet-sheet-area
   div.luckysheet-sheets-item
   .luckysheet-sheets-item-name[contenteditable="true"] {
-  border: 1px solid #d9d9d9;
+  border-bottom: 1px solid #d9d9d9;
   display: inline-block;
   height: 18px;
   line-height: 18px;
@@ -180,22 +177,15 @@
 
 .luckysheet-sheet-area div.luckysheet-sheets-item-active {
   /* padding: 2px 8px; */
-  height: 29px;
+  height: 34px;
   line-height: 29px;
-  background-color: #efefef;
   /* border-color: #aaa; */
-  border-top-color: #fff;
-  color: #222;
+    border-bottom: 5px solid #EFC703;
+  color: hsl(var(--color-text-default));
   /* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); */
   /* top: -2px; */
   /* border-bottom: none; */
   /* padding-right: 20px; */
-}
-
-.luckysheet-sheet-area div.luckysheet-sheets-item-active:hover {
-  background-color: #ececec;
-  /* border-color: #aaa; */
-  color: #222;
 }
 
 .fortune-sheettab-button {
@@ -204,6 +194,7 @@
   justify-content: center;
   height: 29px;
   width: 29px;
+  background-color: hsl(var(--color-bg-secondary)) !important;
 }
 
 .fortune-sheettab-button:hover {
@@ -212,7 +203,7 @@
   justify-content: center;
   height: 29px;
   width: 29px;
-  background-color: #efefef;
+  background-color: hsl(var(--color-button-secondary-hover)) !important;
 }
 
 .luckysheet-noselected-text {

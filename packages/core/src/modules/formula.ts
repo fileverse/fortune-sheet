@@ -225,11 +225,11 @@ export class FormulaCache {
       return Number(splitedNumberString);
     }
     // FLV crypto denomination --END--
-    if (cell?.ct?.t === "n" && !String(cell?.m).includes('%')) {
+    if (cell?.ct?.t === "n" && !String(cell?.m).includes("%")) {
       const n = Number(cell?.v);
       return Number.isNaN(n) ? cell.v : n;
     }
-    return String(cell?.m).includes('%') ? cell?.m : cell?.v;
+    return String(cell?.m).includes("%") ? cell?.m : cell?.v;
   }
 }
 

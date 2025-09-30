@@ -203,7 +203,7 @@
   justify-content: center;
   height: 29px;
   width: 29px;
-  background-color: hsl(var(--color-button-secondary-hover));
+  background-color: hsl(var(--color-button-secondary-hover)) !important;
 }
 
 .luckysheet-noselected-text {

@@ -12,6 +12,7 @@ import {
   PopoverContent,
   LucideIcon,
   Button,
+  IconButton,
 } from "@fileverse/ui";
 import { useMediaQuery } from "usehooks-ts";
 import {
@@ -21,7 +22,6 @@ import {
 } from "@fileverse-dev/fortune-core";
 // @ts-ignore
 import WorkbookContext from "../../context";
-import SVGIcon from "../SVGIcon";
 import "./index.css";
 import SheetItem from "./SheetItem";
 import ZoomControl from "../ZoomControl";
@@ -93,7 +93,7 @@ const SheetTab: React.FC = () => {
     const selection = context.luckysheet_select_save;
     // const { lang } = props;
     if (selection) {
-      const re = calcSelectionInfo(context, "en");
+      const re = calcSelectionInfo(context /* "en" */);
       setCalInfo(re);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -199,15 +199,20 @@ const SheetTab: React.FC = () => {
         </div>
       )}
       <div
-        className="luckysheet-sheet-area luckysheet-noselected-text"
+        className="luckysheet-sheet-area luckysheet-noselected-text border-t color-border-default color-bg-secondary"
         onContextMenu={(e) => e.preventDefault()}
         id="luckysheet-sheet-area"
       >
         <div id="luckysheet-sheet-content">
           {context.allowEdit && (
-            <div className="fortune-sheettab-button" onClick={onAddSheetClick}>
-              <SVGIcon name="plus" width={16} height={16} />
-            </div>
+            <IconButton
+              className="fortune-sheettab-button border-none shadow-none"
+              onClick={onAddSheetClick}
+              elevation={1}
+              icon="Plus"
+              size="md"
+              variant="secondary"
+            />
           )}
           {context.allowEdit && (
             <div className="sheet-list-container">
@@ -225,7 +230,14 @@ const SheetTab: React.FC = () => {
                   });
                 }}
               >
-                <SVGIcon name="all-sheets" width={16} height={16} />
+                <IconButton
+                  className="fortune-sheettab-button border-none shadow-none"
+                  elevation={1}
+                  icon="Menu"
+                  size="md"
+                  variant="secondary"
+                />
+                {/* <SVGIcon name="all-sheets" width={16} height={16} /> */}
               </div>
             </div>
           )}
@@ -269,7 +281,17 @@ const SheetTab: React.FC = () => {
               }}
               tabIndex={0}
             >
-              <SVGIcon name="arrow-doubleleft" width={12} height={12} />
+              <IconButton
+                name="arrow-doubleleft"
+                className="fortune-sheettab-button border-none shadow-none"
+                onClick={() => {
+                  scrollBy(-scrollDelta);
+                }}
+                elevation={1}
+                icon="ChevronLeft"
+                size="md"
+                variant="secondary"
+              />
             </div>
           )}
           {isShowScrollBtn && (
@@ -282,7 +304,17 @@ const SheetTab: React.FC = () => {
               }}
               tabIndex={0}
             >
-              <SVGIcon name="arrow-doubleright" width={12} height={12} />
+              <IconButton
+                name="arrow-doubleright"
+                className="fortune-sheettab-button border-none shadow-none"
+                onClick={() => {
+                  scrollBy(scrollDelta);
+                }}
+                elevation={1}
+                icon="ChevronRight"
+                size="md"
+                variant="secondary"
+              />
             </div>
           )}
         </div>

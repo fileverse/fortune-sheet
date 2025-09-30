@@ -11,8 +11,9 @@ import {
   MIN_ZOOM_RATIO,
   getSheetIndex,
 } from "@fileverse-dev/fortune-core";
+import { IconButton } from "@fileverse/ui";
 import WorkbookContext from "../../context";
-import SVGIcon from "../SVGIcon";
+// import SVGIcon from "../SVGIcon";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import "./index.css";
 
@@ -107,16 +108,17 @@ const ZoomControl: React.FC = () => {
 
   return (
     <div className="fortune-zoom-container">
-      <div
-        className="fortune-zoom-button"
-        onClick={(e) => {
+      <IconButton
+        className="fortune-sheettab-button border-none shadow-none"
+        onClick={(e: React.MouseEvent) => {
           zoomTo(context.zoomRatio - 0.1);
           e.stopPropagation();
         }}
-        tabIndex={0}
-      >
-        <SVGIcon name="minus" width={16} height={16} />
-      </div>
+        elevation={1}
+        icon="Minus"
+        size="md"
+        variant="secondary"
+      />
       <div className="fortune-zoom-ratio">
         <div
           className="fortune-zoom-ratio-current fortune-zoom-button"
@@ -143,16 +145,17 @@ const ZoomControl: React.FC = () => {
           </div>
         )}
       </div>
-      <div
-        className="fortune-zoom-button"
-        onClick={(e) => {
+      <IconButton
+        className="fortune-sheettab-button border-none shadow-none"
+        onClick={(e: React.MouseEvent) => {
           zoomTo(context.zoomRatio + 0.1);
           e.stopPropagation();
         }}
-        tabIndex={0}
-      >
-        <SVGIcon name="plus" width={16} height={16} />
-      </div>
+        elevation={1}
+        icon="Plus"
+        size="md"
+        variant="secondary"
+      />
     </div>
   );
 };

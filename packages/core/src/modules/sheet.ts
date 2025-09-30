@@ -247,7 +247,6 @@ export function editSheetName(ctx: Context, editable: HTMLSpanElement) {
   }
 
   if (
-    txt.length > 31 ||
     txt.charAt(0) === "'" ||
     txt.charAt(txt.length - 1) === "'" ||
     /[：:\\/？?*[\]]+/.test(txt)

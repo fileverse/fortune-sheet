@@ -1,5 +1,29 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.77
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.77
+
+## 1.1.76
+
+### Patch Changes
+
+- minor changes for stats
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.76
+
+## 1.1.75
+
+### Patch Changes
+
+- footer UI changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.75
+
 ## 1.1.74
 
 ### Patch Changes

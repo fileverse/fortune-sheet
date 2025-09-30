@@ -395,11 +395,6 @@ const ContextMenu: React.FC = () => {
                   const position =
                     context.luckysheet_select_save?.[0]?.column?.[0];
                   if (position == null) return;
-                  // const countStr = (e.target as HTMLDivElement).querySelector(
-                  //   "input"
-                  // )?.value;
-                  // if (countStr == null) return;
-                  // const count = parseInt(countStr, 10);
                   const count = 1;
                   if (count < 1) return;
                   const direction = "rightbottom";
@@ -436,33 +431,6 @@ const ContextMenu: React.FC = () => {
                   <LucideIcon name="Plus" />
                   <div>
                     Insert column to the right
-                    {/* {_.startsWith(context.lang ?? "", "zh") && (
-                      <>
-                        {rightclick.to}
-                        <span className={`luckysheet-cols-rows-shift-${dir}`}>
-                          {(rightclick as any)[dir]}
-                        </span>
-                      </>
-                    )}
-                    {`${rightclick.insert}  `} */}
-                    {/* <input
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  tabIndex={0}
-                  type="text"
-                  className="luckysheet-mousedown-cancel"
-                  placeholder={rightclick.number}
-                  defaultValue="1"
-                /> */}
-                    {/* 1
-                    <span className="luckysheet-cols-rows-shift-word luckysheet-mousedown-cancel">
-                      {` ${rightclick.column}  `}
-                    </span>
-                    {!_.startsWith(context.lang ?? "", "zh") && (
-                      <span className={`luckysheet-cols-rows-shift-${dir}`}>
-                        {(rightclick as any)[dir]}
-                      </span>
-                    )} */}
                   </div>
                 </div>
               </Menu>
@@ -478,10 +446,7 @@ const ContextMenu: React.FC = () => {
                   const position =
                     context.luckysheet_select_save?.[0]?.row?.[0];
                   if (position == null) return;
-                  // const countStr = container.querySelector("input")?.value;
-                  // if (countStr == null) return;
                   const count = 1;
-                  // const count = parseInt(countStr, 10);
                   if (count < 1) return;
                   const direction = dir === "top" ? "lefttop" : "rightbottom";
                   const insertRowColOp: SetContextOptions["insertRowColOp"] = {
@@ -587,32 +552,6 @@ const ContextMenu: React.FC = () => {
                   <LucideIcon name="Plus" />
                   <div>
                     Insert row above
-                    {/* {_.startsWith(context.lang ?? "", "zh") && (
-                      <>
-                        {rightclick.to}
-                        <span className={`luckysheet-cols-rows-shift-${dir}`}>
-                          {(rightclick as any)[dir]}
-                        </span>
-                      </>
-                    )}
-                    {`${rightclick.insert}  `}1 */}
-                    {/* <input
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  tabIndex={0}
-                  type="text"
-                  className="luckysheet-mousedown-cancel"
-                  placeholder={rightclick.number}
-                  defaultValue="1"
-                /> */}
-                    {/* <span className="luckysheet-cols-rows-shift-word luckysheet-mousedown-cancel">
-                      {` ${rightclick.row}  `}
-                    </span>
-                    {!_.startsWith(context.lang ?? "", "zh") && (
-                      <span className={`luckysheet-cols-rows-shift-${dir}`}>
-                        {(rightclick as any)[dir]}
-                      </span>
-                    )} */}
                   </div>
                 </div>
               </Menu>

@@ -21,7 +21,7 @@ import {
 import { hasPartMC } from "./validation";
 import { update } from "./format";
 // @ts-ignore
-import SSF from "./ssf";
+// import SSF from "./ssf";
 import { CFSplitRange } from "./ConditionFormat";
 import { clearCellError } from "./error-state-helpers";
 
@@ -2641,7 +2641,10 @@ export function fixColumnStyleOverflowInFreeze(
   return ret;
 }
 
-export function calcSelectionInfo(ctx: Context, lang?: string | null) {
+export function calcSelectionInfo(
+  ctx: Context
+  // lang?: string | null
+) {
   const selection = ctx.luckysheet_select_save!;
   let numberC = 0;
   let count = 0;
@@ -2688,11 +2691,8 @@ export function calcSelectionInfo(ctx: Context, lang?: string | null) {
       }
     }
   }
-  const formatString =
-    lang && !["zh", "zh_tw"].includes(lang) ? "0.00" : "0.00";
-  const average: string = SSF.format(formatString, sum / numberC);
-  sum = SSF.format(formatString, sum);
-  max = SSF.format(formatString, max);
-  min = SSF.format(formatString, min);
+  // const formatString =
+  //   lang && !["zh", "zh_tw"].includes(lang) ? "0.00000" : "0.00000";
+  const average = String(sum / numberC);
   return { numberC, count, sum, max, min, average };
 }

@@ -1,5 +1,57 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.80
+
+### Patch Changes
+
+- N/A
+
+## 1.1.79
+
+### Patch Changes
+
+- N/A
+
+## 1.1.78
+
+### Patch Changes
+
+- n/A
+
+## 1.1.77
+
+### Patch Changes
+
+- N/A
+
+## 1.1.76
+
+### Patch Changes
+
+- minor changes for stats
+
+## 1.1.75
+
+### Patch Changes
+
+- footer UI changes
+
+## 1.1.74
+
+### Patch Changes
+
+- resoleve cell refernce with % if % formate
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.72
+
+## 1.1.73
+
+### Patch Changes
+
+- add xllokup, fix decimal for formula response
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.71
+
 ## 1.1.72
 
 ### Patch Changes

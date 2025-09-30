@@ -1,5 +1,69 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.80
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.80
+
+## 1.1.79
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.79
+
+## 1.1.78
+
+### Patch Changes
+
+- n/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.78
+
+## 1.1.77
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.77
+
+## 1.1.76
+
+### Patch Changes
+
+- minor changes for stats
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.76
+
+## 1.1.75
+
+### Patch Changes
+
+- footer UI changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.75
+
+## 1.1.74
+
+### Patch Changes
+
+- resoleve cell refernce with % if % formate
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.74
+
+## 1.1.73
+
+### Patch Changes
+
+- add xllokup, fix decimal for formula response
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.73
+
 ## 1.1.72
 
 ### Patch Changes

@@ -12,11 +12,14 @@
   align-items: center;
   justify-content: center;
   width: 24px;
-  height: 24px;
+  height: 28px;
+  border-radius: 3px;
+  color: var(--color-text-default);
+  font-size: 14px;
 }
 
 .fortune-zoom-button:hover {
-  background: #efefef;
+  background-color: hsl(var(--color-button-secondary-hover));
 }
 
 .fortune-zoom-ratio {

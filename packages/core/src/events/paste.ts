@@ -541,7 +541,7 @@ function pasteHandlerOfCutPaste(
   //   return;
   // }
   const allowEdit = isAllowEdit(ctx);
-  if (!allowEdit) return;
+  if (!allowEdit || ctx.isFlvReadOnly) return;
 
   if (!copyRange) return;
 
@@ -1097,7 +1097,7 @@ function pasteHandlerOfCopyPaste(
   //   return;
   // }
   const allowEdit = isAllowEdit(ctx);
-  if (!allowEdit) return;
+  if (!allowEdit || ctx.isFlvReadOnly) return;
 
   if (!copyRange) return;
 
@@ -1626,7 +1626,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
   //   return;
   // }
   const allowEdit = isAllowEdit(ctx);
-  if (!allowEdit) return;
+  if (!allowEdit || ctx.isFlvReadOnly) return;
 
   if (selectionCache.isPasteAction) {
     ctx.luckysheetCellUpdate = [];
@@ -1840,7 +1840,7 @@ export function handlePasteByClick(
   triggerType?: string
 ) {
   const allowEdit = isAllowEdit(ctx);
-  if (!allowEdit) return;
+  if (!allowEdit || ctx.isFlvReadOnly) return;
 
   // if (clipboardData) clipboard.writeHtml(clipboardData);
   if (clipboardData) {

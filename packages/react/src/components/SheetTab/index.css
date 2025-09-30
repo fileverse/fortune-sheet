@@ -194,7 +194,7 @@
   justify-content: center;
   height: 29px;
   width: 29px;
-  background-color: var(--color-bg-secondary);
+  background-color: hsl(var(--color-bg-secondary)) !important;
 }
 
 .fortune-sheettab-button:hover {

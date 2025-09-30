@@ -4,7 +4,14 @@ import { dataToCelldata, getSheet } from "./common";
 import { Context } from "../context";
 import { CellMatrix, CellWithRowAndCol, Sheet } from "../types";
 import { getSheetIndex } from "../utils";
-import { api, execfunction, insertUpdateFunctionGroup, locale } from "..";
+import {
+  api,
+  execfunction,
+  getFlowdata,
+  insertUpdateFunctionGroup,
+  locale,
+  spillSortResult,
+} from "..";
 
 export function getAllSheets(ctx: Context) {
   return ctx.luckysheetfile;
@@ -155,7 +162,13 @@ export function calculateSheetFromula(ctx: Context, id: string) {
         c,
         id
       );
-      api.setCellValue(ctx, r, c, result[1], null);
+      const isValueArray = Array.isArray(result[1]);
+      if (isValueArray) {
+        const value = { f: result[2], v: result[1] };
+        spillSortResult(ctx, r, c, value, getFlowdata(ctx)!);
+      } else {
+        api.setCellValue(ctx, r, c, result[1], null);
+      }
       insertUpdateFunctionGroup(ctx, r, c, id);
     }
   }

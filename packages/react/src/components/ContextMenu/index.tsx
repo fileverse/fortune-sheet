@@ -52,41 +52,42 @@ const ContextMenu: React.FC = () => {
   const { rightclick, drag, generalDialog, info, toolbar, splitText } =
     locale(context);
 
-    const addRowColRightAvobe = (type: "row" | "column", direction: "lefttop" | "rightbottom") => {
-                  const position =
-                    context.luckysheet_select_save?.[0]?.column?.[0];
-                  if (position == null) return;
-                  const count = 1;
-                  if (count < 1) return;
-                  // const direction = "rightbottom";
-                  const insertRowColOp: SetContextOptions["insertRowColOp"] = {
-                    type,
-                    index: position,
-                    count,
-                    direction,
-                    id: context.currentSheetId,
-                  };
-                  setContext(
-                    (draftCtx) => {
-                      try {
-                        insertRowCol(draftCtx, insertRowColOp);
-                        draftCtx.contextMenu = {};
-                      } catch (err: any) {
-                        if (err.message === "maxExceeded")
-                          showAlert(rightclick.columnOverLimit, "ok");
-                        else if (err.message === "readOnly")
-                          showAlert(
-                            rightclick.cannotInsertOnColumnReadOnly,
-                            "ok"
-                          );
-                        draftCtx.contextMenu = {};
-                      }
-                    },
-                    {
-                      insertRowColOp,
-                    }
-                  );
-                }
+  const addRowColRightAvobe = (
+    type: "row" | "column",
+    direction: "lefttop" | "rightbottom"
+  ) => {
+    const positionCol = context.luckysheet_select_save?.[0]?.column?.[0];
+    const positionRow = context.luckysheet_select_save?.[0]?.row?.[0];
+    const position = type === "row" ? positionRow : positionCol;
+    if (position == null) return;
+    const count = 1;
+    if (count < 1) return;
+    // const direction = "rightbottom";
+    const insertRowColOp: SetContextOptions["insertRowColOp"] = {
+      type,
+      index: position,
+      count,
+      direction,
+      id: context.currentSheetId,
+    };
+    setContext(
+      (draftCtx) => {
+        try {
+          insertRowCol(draftCtx, insertRowColOp);
+          draftCtx.contextMenu = {};
+        } catch (err: any) {
+          if (err.message === "maxExceeded")
+            showAlert(rightclick.columnOverLimit, "ok");
+          else if (err.message === "readOnly")
+            showAlert(rightclick.cannotInsertOnColumnReadOnly, "ok");
+          draftCtx.contextMenu = {};
+        }
+      },
+      {
+        insertRowColOp,
+      }
+    );
+  };
 
   const getMenuElement = useCallback(
     (name: string, i: number) => {
@@ -345,44 +346,7 @@ const ContextMenu: React.FC = () => {
               <Menu
                 key={`add-col-${dir}`}
                 onClick={() => {
-                  const position =
-                    context.luckysheet_select_save?.[0]?.column?.[0];
-                  if (position == null) return;
-                  // const countStr = (e.target as HTMLDivElement).querySelector(
-                  //   "input"
-                  // )?.value;
-                  // if (countStr == null) return;
-                  // const count = parseInt(countStr, 10);
-                  const count = 1;
-                  if (count < 1) return;
-                  const direction = dir === "left" ? "lefttop" : "rightbottom";
-                  const insertRowColOp: SetContextOptions["insertRowColOp"] = {
-                    type: "column",
-                    index: position,
-                    count,
-                    direction,
-                    id: context.currentSheetId,
-                  };
-                  setContext(
-                    (draftCtx) => {
-                      try {
-                        insertRowCol(draftCtx, insertRowColOp);
-                        draftCtx.contextMenu = {};
-                      } catch (err: any) {
-                        if (err.message === "maxExceeded")
-                          showAlert(rightclick.columnOverLimit, "ok");
-                        else if (err.message === "readOnly")
-                          showAlert(
-                            rightclick.cannotInsertOnColumnReadOnly,
-                            "ok"
-                          );
-                        draftCtx.contextMenu = {};
-                      }
-                    },
-                    {
-                      insertRowColOp,
-                    }
-                  );
+                  addRowColRightAvobe("column", "lefttop");
                 }}
               >
                 <div className="context-item">
@@ -450,9 +414,7 @@ const ContextMenu: React.FC = () => {
               >
                 <div className="context-item">
                   <LucideIcon name="Plus" />
-                  <div>
-                    Insert row below
-                  </div>
+                  <div>Insert row below</div>
                 </div>
               </Menu>
             ));
@@ -464,37 +426,7 @@ const ContextMenu: React.FC = () => {
               <Menu
                 key={`add-row-${dir}`}
                 onClick={() => {
-                  const position =
-                    context.luckysheet_select_save?.[0]?.row?.[0];
-                  if (position == null) return;
-                  // const countStr = container.querySelector("input")?.value;
-                  // if (countStr == null) return;
-                  const count = 1;
-                  // const count = parseInt(countStr, 10);
-                  if (count < 1) return;
-                  const direction = "lefttop";
-                  const insertRowColOp: SetContextOptions["insertRowColOp"] = {
-                    type: "row",
-                    index: position,
-                    count,
-                    direction,
-                    id: context.currentSheetId,
-                  };
-                  setContext(
-                    (draftCtx) => {
-                      try {
-                        insertRowCol(draftCtx, insertRowColOp);
-                        draftCtx.contextMenu = {};
-                      } catch (err: any) {
-                        if (err.message === "maxExceeded")
-                          showAlert(rightclick.rowOverLimit, "ok");
-                        else if (err.message === "readOnly")
-                          showAlert(rightclick.cannotInsertOnRowReadOnly, "ok");
-                        draftCtx.contextMenu = {};
-                      }
-                    },
-                    { insertRowColOp }
-                  );
+                  addRowColRightAvobe("row", "lefttop");
                 }}
               >
                 <div className="context-item">

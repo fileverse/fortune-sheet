@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.81
+
+### Patch Changes
+
+- Update fx icon in header
+
 ## 1.1.80
 
 ### Patch Changes

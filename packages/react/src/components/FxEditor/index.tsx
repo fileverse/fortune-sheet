@@ -25,10 +25,10 @@ import React, {
 import "./index.css";
 import _ from "lodash";
 import WorkbookContext from "../../context";
-import SVGIcon from "../SVGIcon";
 import ContentEditable from "../SheetOverlay/ContentEditable";
 import NameBox from "./NameBox";
 import usePrevious from "../../hooks/usePrevious";
+import { LucideIcon } from "../../components/SheetOverlay/LucideIcon";
 
 const FxEditor: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
@@ -293,7 +293,17 @@ const FxEditor: React.FC = () => {
     <div className="fortune-fx-editor">
       <NameBox />
       <div className="fortune-fx-icon">
-        <SVGIcon name="fx" width={18} height={18} />
+        {/* <SVGIcon name="fx" width={18} height={18} /> */}
+        <LucideIcon
+          name="DSheetOnlyText"
+          fill="black"
+          style={{
+            width: "14px",
+            height: "14px",
+            margin: "auto",
+            marginTop: "1px",
+          }}
+        />
       </div>
       <div ref={inputContainerRef} className="fortune-fx-input-container">
         <ContentEditable

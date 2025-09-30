@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.81
+
+### Patch Changes
+
+- Update fx icon in header
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.81
+
 ## 1.1.80
 
 ### Patch Changes

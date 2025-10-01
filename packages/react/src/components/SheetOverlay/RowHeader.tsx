@@ -59,18 +59,11 @@ const RowHeader: React.FC = () => {
     return context.scrollTop;
   }, [context.visibledatarow, sheet?.frozen, context.scrollTop]);
 
-  // Keep latest context/selection available inside document listeners
-  const contextRef = useRef(context);
-  useEffect(() => {
-    contextRef.current = context;
-  }, [context]);
-
   const selectedLocationRef = useRef(selectedLocation);
   useEffect(() => {
     selectedLocationRef.current = selectedLocation;
   }, [selectedLocation]);
 
-  // Hover highlight tracking (freeze-aware)
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       if (context.luckysheet_rows_change_size) return;
@@ -102,6 +95,53 @@ const RowHeader: React.FC = () => {
       hoverLocation.row_pre,
       refs.globalCache.freezen,
       context.currentSheetId,
+    ]
+  );
+
+  const { initiateDrag, getRowIndexClicked, isRowDoubleClicked } =
+    useRowDragAndDrop(containerRef, selectedLocationRef);
+
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (e.button !== 0) return; // left button only
+      const targetEl = e.target as HTMLElement;
+      if (
+        targetEl.closest(".fortune-rows-change-size") ||
+        targetEl.closest(".fortune-rows-freeze-handle")
+      )
+        return;
+
+      const headerEl = containerRef.current;
+      if (!headerEl) return;
+
+      const clickedRowIndex = getRowIndexClicked(e.pageY, headerEl);
+      if (clickedRowIndex < 0) return;
+
+      if (!isRowDoubleClicked(clickedRowIndex)) {
+        const { nativeEvent } = e;
+        setContext((draft) => {
+          handleRowHeaderMouseDown(
+            draft,
+            refs.globalCache,
+            nativeEvent,
+            containerRef.current!,
+            refs.cellInput.current!,
+            refs.fxInput.current!
+          );
+        });
+        return;
+      }
+
+      // handle drag and drop
+      e.preventDefault();
+      e.stopPropagation();
+      initiateDrag(clickedRowIndex, e.pageY);
+    },
+    [
+      refs.globalCache,
+      context.visibledatarow,
+      context.currentSheetId,
+      setContext,
     ]
   );
 
@@ -190,53 +230,6 @@ const RowHeader: React.FC = () => {
     [refs.workbookContainer, setContext, settings, refs.cellArea]
   );
 
-  const { initiateDrag, getRowIndexClicked, isRowDoubleClicked } =
-    useRowDragAndDrop(containerRef, selectedLocationRef);
-
-  const onMouseDown = useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (e.button !== 0) return; // left button only
-      const targetEl = e.target as HTMLElement;
-      if (
-        targetEl.closest(".fortune-rows-change-size") ||
-        targetEl.closest(".fortune-rows-freeze-handle")
-      )
-        return;
-
-      const headerEl = containerRef.current;
-      if (!headerEl) return;
-
-      const clickedRowIndex = getRowIndexClicked(e.pageY, headerEl);
-      if (clickedRowIndex < 0) return;
-
-      if (!isRowDoubleClicked(clickedRowIndex)) {
-        const { nativeEvent } = e;
-        setContext((draft) => {
-          handleRowHeaderMouseDown(
-            draft,
-            refs.globalCache,
-            nativeEvent,
-            containerRef.current!,
-            refs.cellInput.current!,
-            refs.fxInput.current!
-          );
-        });
-        return;
-      }
-
-      // handle drag and drop
-      e.preventDefault();
-      e.stopPropagation();
-      initiateDrag(clickedRowIndex, e.pageY);
-    },
-    [
-      refs.globalCache,
-      context.visibledatarow,
-      context.currentSheetId,
-      setContext,
-    ]
-  );
-
   return (
     <div
       ref={containerRef}
@@ -285,7 +278,7 @@ const RowHeader: React.FC = () => {
       {selectedLocation.map(({ row, row_pre, r1, r2 }, i) => (
         <div
           className="fortune-row-header-selected"
-          key={`${r1}-${r2}-${i}`}
+          key={i}
           style={_.assign(
             {
               top: row_pre,
@@ -303,7 +296,7 @@ const RowHeader: React.FC = () => {
           )}
         />
       ))}
-      {/* overflow spacer to make the container scrollable */}
+      {/* placeholder to overflow the container, making the container scrollable */}
       <div
         style={{ height: context.rh_height, width: 1 }}
         id="luckysheetrowHeader_0"

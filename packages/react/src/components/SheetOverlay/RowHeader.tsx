@@ -145,6 +145,11 @@ const RowHeader: React.FC = () => {
     ]
   );
 
+  const onMouseLeave = useCallback(() => {
+    if (context.luckysheet_rows_change_size) return;
+    setHoverLocation({ row: -1, row_pre: -1, row_index: -1 });
+  }, [context.luckysheet_rows_change_size]);
+
   // Selection: compute header selection bands from grid selection
   useEffect(() => {
     const s = context.luckysheet_select_save || [];
@@ -171,11 +176,6 @@ const RowHeader: React.FC = () => {
     }
     setSelectedLocation(selects);
   }, [context.luckysheet_select_save, context.visibledatarow]);
-
-  const onMouseLeave = useCallback(() => {
-    if (context.luckysheet_rows_change_size) return;
-    setHoverLocation({ row: -1, row_pre: -1, row_index: -1 });
-  }, [context.luckysheet_rows_change_size]);
 
   const onRowSizeHandleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

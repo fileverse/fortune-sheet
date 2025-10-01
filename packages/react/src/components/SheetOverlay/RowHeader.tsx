@@ -167,31 +167,6 @@ const RowHeader: React.FC = () => {
     },
     [refs.cellArea, refs.globalCache, refs.workbookContainer, setContext]
   );
-  useEffect(() => {
-    const s = context.luckysheet_select_save || [];
-    if (_.isNil(s)) return;
-    setSelectedLocation([]);
-    if (s[0]?.column_select) return;
-
-    let rowTitleMap = {};
-    for (let i = 0; i < s.length; i += 1) {
-      const r1 = s[i].row[0];
-      const r2 = s[i].row[1];
-      rowTitleMap = selectTitlesMap(rowTitleMap, r1, r2);
-    }
-    const rowTitleRange = selectTitlesRange(rowTitleMap);
-    const selects = [];
-    for (let i = 0; i < rowTitleRange.length; i += 1) {
-      const r1 = rowTitleRange[i][0];
-      const r2 = rowTitleRange[i][rowTitleRange[i].length - 1];
-      const row = rowLocationByIndex(r2, context.visibledatarow)[1];
-      const row_pre = rowLocationByIndex(r1, context.visibledatarow)[0];
-      if (_.isNumber(row_pre) && _.isNumber(row)) {
-        selects.push({ row, row_pre, r1, r2 });
-      }
-    }
-    setSelectedLocation(selects);
-  }, [context.luckysheet_select_save, context.visibledatarow]);
 
   const onRowFreezeHandleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -227,6 +202,35 @@ const RowHeader: React.FC = () => {
     },
     [refs.workbookContainer, setContext, settings, refs.cellArea]
   );
+
+  useEffect(() => {
+    const s = context.luckysheet_select_save || [];
+    if (_.isNil(s)) return;
+    setSelectedLocation([]);
+    if (s[0]?.column_select) return;
+
+    let rowTitleMap = {};
+    for (let i = 0; i < s.length; i += 1) {
+      const r1 = s[i].row[0];
+      const r2 = s[i].row[1];
+      rowTitleMap = selectTitlesMap(rowTitleMap, r1, r2);
+    }
+    const rowTitleRange = selectTitlesRange(rowTitleMap);
+    const selects = [];
+    for (let i = 0; i < rowTitleRange.length; i += 1) {
+      const r1 = rowTitleRange[i][0];
+      const r2 = rowTitleRange[i][rowTitleRange[i].length - 1];
+      const row = rowLocationByIndex(r2, context.visibledatarow)[1];
+      const row_pre = rowLocationByIndex(r1, context.visibledatarow)[0];
+      if (_.isNumber(row_pre) && _.isNumber(row)) {
+        selects.push({ row, row_pre, r1, r2 });
+      }
+    }
+    setSelectedLocation(selects);
+  }, [context.luckysheet_select_save, context.visibledatarow]);
+  useEffect(() => {
+    containerRef.current!.scrollTop = context.scrollTop;
+  }, [context.scrollTop]);
 
   return (
     <div

@@ -2,24 +2,24 @@ import { RefObject, useContext, useRef } from "react";
 import {
   fixPositionOnFrozenCells,
   getSheetIndex,
-  rowLocation,
-  rowLocationByIndex,
+  colLocation,
+  colLocationByIndex,
   updateContextWithSheetData,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../../context";
 
-export const useRowDragAndDrop = (
+export const useColumnDragAndDrop = (
   containerRef: RefObject<HTMLDivElement | null>,
   selectedLocationRef: RefObject<any[]>
 ) => {
-  const DOUBLE_MS = 300;
+  const DOUBLE_CLICK_MS = 300;
   const START_DRAG_THRESHOLD_PX = 6;
-  const clickRef = useRef({ lastTime: 0, lastRow: -1 });
+  const clickRef = useRef({ lastTime: 0, lastCol: -1 });
   const { context, setContext, refs } = useContext(WorkbookContext);
 
   const dragRef = useRef({
     mouseDown: false,
-    startY: 0,
+    startX: 0,
     source: -1,
     active: false,
     lineEl: null as HTMLDivElement | null,
@@ -29,7 +29,7 @@ export const useRowDragAndDrop = (
     prevUserSelect: "" as string,
     prevWebkitUserSelect: "" as string,
     lastNativeEvent: null as MouseEvent | null,
-    ghostHeightPx: 24,
+    ghostWidthPx: 60,
   });
 
   const removeDragLine = () => {
@@ -44,86 +44,90 @@ export const useRowDragAndDrop = (
     dragRef.current.ghostEl = null;
     dragRef.current.active = false;
   };
-  const getRowIndexClicked = (pageY: number, headerEl: HTMLDivElement) => {
+
+  const getColIndexClicked = (pageX: number, headerEl: HTMLDivElement) => {
     const rect = headerEl.getBoundingClientRect();
-    const mouseYInHeader = pageY - rect.top - window.scrollY;
-    const localYInHeader = mouseYInHeader + headerEl.scrollTop;
+    const mouseXInHeader = pageX - rect.left - window.scrollX;
+    const localXInHeader = mouseXInHeader + headerEl.scrollLeft;
     const freeze = refs.globalCache.freezen?.[context.currentSheetId];
-    const { y: adjustedY } = fixPositionOnFrozenCells(
+    const { x: adjustedX } = fixPositionOnFrozenCells(
       freeze,
+      localXInHeader,
       0,
-      localYInHeader,
-      0,
-      mouseYInHeader
+      mouseXInHeader,
+      0
     );
-    const [, , rowIndex] = rowLocation(adjustedY, context.visibledatarow);
-    return rowIndex;
+    const [, , colIndex] = colLocation(adjustedX, context.visibledatacolumn);
+    return colIndex;
   };
 
-  const isRowDoubleClicked = (clickedRowIndex: number) => {
+  const isColDoubleClicked = (clickedColIndex: number) => {
     const now = performance.now();
     const isDoubleClicked =
-      now - clickRef.current.lastTime < DOUBLE_MS &&
-      clickRef.current.lastRow === clickedRowIndex;
+      now - clickRef.current.lastTime < DOUBLE_CLICK_MS &&
+      clickRef.current.lastCol === clickedColIndex;
     clickRef.current.lastTime = now;
-    clickRef.current.lastRow = clickedRowIndex;
+    clickRef.current.lastCol = clickedColIndex;
     return isDoubleClicked;
   };
 
-  const computeInsertionFromPageY = (pageY: number) => {
+  const computeInsertionFromPageX = (pageX: number) => {
     const workbookEl = containerRef.current;
     if (!workbookEl)
-      return { insertionIndex: -1, lineTopPx: 0, mouseYInWorkbook: 0 };
+      return { insertionIndex: -1, lineLeftPx: 0, mouseXInWorkbook: 0 };
 
     const wbRect = workbookEl.getBoundingClientRect();
-    const mouseYInWorkbook = pageY - wbRect.top - window.scrollY;
-    const localYInWorkbook =
-      mouseYInWorkbook +
-      (containerRef?.current?.scrollTop ?? context.scrollTop);
+    const mouseXInWorkbook = pageX - wbRect.left - window.scrollX;
+    const localXInWorkbook =
+      mouseXInWorkbook +
+      (containerRef?.current?.scrollLeft ?? context.scrollLeft);
 
     const freeze = refs.globalCache.freezen?.[context.currentSheetId];
-    const { y: yWorkbook } = fixPositionOnFrozenCells(
+    const { x: xWorkbook } = fixPositionOnFrozenCells(
       freeze,
+      localXInWorkbook,
       0,
-      localYInWorkbook,
-      0,
-      mouseYInWorkbook
+      mouseXInWorkbook,
+      0
     );
 
-    const [rowTopPx, rowBottomPx, hoveredRowIndex] = rowLocation(
-      yWorkbook,
-      context.visibledatarow
+    const [colLeftPx, colRightPx, hoveredColIndex] = colLocation(
+      xWorkbook,
+      context.visibledatacolumn
     );
 
-    const rowMidPx = (rowTopPx + rowBottomPx) / 2;
-    let insertionIndex = hoveredRowIndex + (yWorkbook > rowMidPx ? 1 : 0);
+    const colMidPx = (colLeftPx + colRightPx) / 2;
+    let insertionIndex = hoveredColIndex + (xWorkbook > colMidPx ? 1 : 0);
 
     const sheetIdx = getSheetIndex(context, context.currentSheetId);
     const sheetLocal =
       sheetIdx == null ? null : context.luckysheetfile[sheetIdx];
-    const maxRows = sheetLocal?.data?.length ?? context.visibledatarow.length;
-    insertionIndex = Math.max(0, Math.min(maxRows, insertionIndex));
+    const maxCols =
+      sheetLocal?.data?.[0]?.length ?? context.visibledatacolumn.length;
+    insertionIndex = Math.max(0, Math.min(maxCols, insertionIndex));
 
-    const lineTopPx = yWorkbook > rowMidPx ? rowBottomPx : rowTopPx;
-    return { insertionIndex, lineTopPx, mouseYInWorkbook };
+    const lineLeftPx = xWorkbook > colMidPx ? colRightPx : colLeftPx;
+    return { insertionIndex, lineLeftPx, mouseXInWorkbook };
   };
+
   const createInsertionLine = (host: HTMLElement) => {
     const el = document.createElement("div");
     el.style.position = "absolute";
-    el.style.left = "0px";
-    el.style.right = "0px";
-    el.style.height = "2px";
+    el.style.top = "0px";
+    el.style.bottom = "0px";
+    el.style.width = "2px";
     el.style.background = "#1a73e8";
     el.style.zIndex = "9999";
     el.style.pointerEvents = "none";
     host.appendChild(el);
     return el;
   };
+
   const createGhost = (host: HTMLElement) => {
     const el = document.createElement("div");
     el.style.position = "fixed";
-    el.style.left = "45px";
-    el.style.width = `${window.innerWidth}px`;
+    el.style.top = "124px";
+    el.style.height = `${window.innerHeight}px`;
     el.style.boxSizing = "border-box";
     el.style.padding = "6px 8px";
     el.style.background = "rgba(26,115,232,0.10)";
@@ -132,41 +136,46 @@ export const useRowDragAndDrop = (
     el.style.zIndex = "10000";
     el.style.pointerEvents = "none";
     el.style.display = "flex";
-    el.style.alignItems = "center";
+    el.style.alignItems = "start";
+    el.style.justifyContent = "center";
     el.style.fontSize = "12px";
     el.style.fontWeight = "500";
 
-    let ghostHeightPx = 24;
-    let ghostLabel = `${dragRef.current.source + 1} row`;
+    let ghostWidthPx = 60;
+    let ghostLabel = `Col ${String.fromCharCode(65 + dragRef.current.source)}`;
 
     const selectedBlock = selectedLocationRef.current.find(
-      (s) => s.r1 <= dragRef.current.source && dragRef.current.source <= s.r2
+      (s) => s.c1 <= dragRef.current.source && dragRef.current.source <= s.c2
     );
 
     if (selectedBlock) {
-      ghostHeightPx = Math.max(
-        24,
-        selectedBlock.row - selectedBlock.row_pre - 1
+      ghostWidthPx = Math.max(
+        60,
+        selectedBlock.col - selectedBlock.col_pre - 1
       );
-      const count = selectedBlock.r2 - selectedBlock.r1 + 1;
-      ghostLabel = count > 1 ? `${count} rows` : `${selectedBlock.r1 + 1} row`;
+      const count = selectedBlock.c2 - selectedBlock.c1 + 1;
+      ghostLabel =
+        count > 1
+          ? `${count} cols`
+          : `Col ${String.fromCharCode(65 + selectedBlock.c1)}`;
     } else {
-      const [pre, end] = rowLocationByIndex(
+      const [pre, end] = colLocationByIndex(
         dragRef.current.source,
-        context.visibledatarow
+        context.visibledatacolumn
       );
-      const sourceRowHeight = end - pre - 1;
-      ghostHeightPx = Math.max(24, sourceRowHeight);
+      const sourceColWidth = end - pre - 1;
+      ghostWidthPx = Math.max(60, sourceColWidth);
     }
 
-    el.style.height = `${ghostHeightPx}px`;
+    el.style.width = `${ghostWidthPx}px`;
     el.textContent = ghostLabel;
     host.appendChild(el);
-    return { el, ghostHeightPx };
+    return { el, ghostWidthPx };
   };
-  const isDragActivated = (host: HTMLElement, pixelDeltaY: number) => {
+
+  const isDragActivated = (host: HTMLElement, pixelDeltaX: number) => {
     if (dragRef.current.active) return true;
-    if (pixelDeltaY < START_DRAG_THRESHOLD_PX) return false;
+    if (pixelDeltaX < START_DRAG_THRESHOLD_PX) return false;
 
     dragRef.current.active = true;
 
@@ -180,36 +189,36 @@ export const useRowDragAndDrop = (
 
     // visuals
     dragRef.current.lineEl = createInsertionLine(host);
-    const { el, ghostHeightPx } = createGhost(host);
+    const { el, ghostWidthPx } = createGhost(host);
     dragRef.current.ghostEl = el;
-    dragRef.current.ghostHeightPx = ghostHeightPx;
+    dragRef.current.ghostWidthPx = ghostWidthPx;
 
     return true;
   };
 
-  const handleRowDrag = (ev: MouseEvent) => {
+  const handleColumnDrag = (ev: MouseEvent) => {
     if (!dragRef.current.mouseDown) return;
     dragRef.current.lastNativeEvent = ev;
 
     const host = containerRef.current;
     if (!host) return;
 
-    const dragOffset = Math.abs(ev.pageY - dragRef.current.startY);
+    const dragOffset = Math.abs(ev.pageX - dragRef.current.startX);
     if (!isDragActivated(host, dragOffset)) return;
 
-    const { lineTopPx } = computeInsertionFromPageY(ev.pageY);
-    const ghostPosOffset = dragRef.current.startY > ev.pageY ? 0 : 25;
+    const { lineLeftPx } = computeInsertionFromPageX(ev.pageX);
+    const ghostPosOffset = dragRef.current.startX > ev.pageX ? 0 : 120;
 
     if (dragRef.current.lineEl) {
-      dragRef.current.lineEl.style.top = `${lineTopPx}px`;
+      dragRef.current.lineEl.style.left = `${lineLeftPx}px`;
     }
 
     if (dragRef.current.ghostEl) {
-      dragRef.current.ghostEl.style.top = `${ev.pageY - ghostPosOffset}px`;
+      dragRef.current.ghostEl.style.left = `${ev.pageX - ghostPosOffset}px`;
     }
   };
 
-  const handleRowDragEnd = (ev: MouseEvent) => {
+  const handleColumnDragEnd = (ev: MouseEvent) => {
     if (!dragRef.current.mouseDown) return;
     dragRef.current.mouseDown = false;
 
@@ -221,8 +230,8 @@ export const useRowDragAndDrop = (
     } catch {}
 
     if (dragRef.current.active) {
-      const { insertionIndex: finalInsertionIndex } = computeInsertionFromPageY(
-        ev.pageY
+      const { insertionIndex: finalInsertionIndex } = computeInsertionFromPageX(
+        ev.pageX
       );
 
       const sourceIndex = dragRef.current.source;
@@ -238,16 +247,25 @@ export const useRowDragAndDrop = (
           const _sheet = draft.luckysheetfile[sheetIdx];
           if (!_sheet?.data) return;
           const rows = _sheet.data;
-          if (sourceIndex < 0 || sourceIndex >= rows.length) return;
+          if (rows.length === 0) return;
+
+          const numCols = rows[0]?.length ?? 0;
+          if (sourceIndex < 0 || sourceIndex >= numCols) return;
 
           // remove-then-insert adjustment
           let targetIndex = finalInsertionIndex;
           if (targetIndex > sourceIndex) targetIndex -= 1;
 
-          const [rowData] = rows.splice(sourceIndex, 1);
-          if (targetIndex < 0) targetIndex = 0;
-          if (targetIndex > rows.length) targetIndex = rows.length;
-          rows.splice(targetIndex, 0, rowData);
+          // Move column data in each row
+          for (let i = 0; i < rows.length; i += 1) {
+            const row = rows[i];
+            if (!row || sourceIndex >= row.length) continue;
+
+            const [cellData] = row.splice(sourceIndex, 1);
+            if (targetIndex < 0) targetIndex = 0;
+            if (targetIndex > row.length) targetIndex = row.length;
+            row.splice(targetIndex, 0, cellData);
+          }
 
           _sheet.data = rows;
           updateContextWithSheetData(draft, _sheet.data);
@@ -268,17 +286,18 @@ export const useRowDragAndDrop = (
     dragRef.current.onDocUp = null;
   };
 
-  const initiateDrag = (clickedRowIndex: number, startY: number) => {
+  const initiateDrag = (clickedColIndex: number, startX: number) => {
     dragRef.current.mouseDown = true;
-    dragRef.current.startY = startY;
-    dragRef.current.source = clickedRowIndex;
+    dragRef.current.startX = startX;
+    dragRef.current.source = clickedColIndex;
     dragRef.current.active = false;
+    console.log("initiateDrag", startX);
 
-    dragRef.current.onDocMove = handleRowDrag;
-    dragRef.current.onDocUp = handleRowDragEnd;
-    document.addEventListener("mousemove", handleRowDrag);
-    document.addEventListener("mouseup", handleRowDragEnd);
+    dragRef.current.onDocMove = handleColumnDrag;
+    dragRef.current.onDocUp = handleColumnDragEnd;
+    document.addEventListener("mousemove", handleColumnDrag);
+    document.addEventListener("mouseup", handleColumnDragEnd);
   };
 
-  return { initiateDrag, getRowIndexClicked, isRowDoubleClicked };
+  return { initiateDrag, getColIndexClicked, isColDoubleClicked };
 };

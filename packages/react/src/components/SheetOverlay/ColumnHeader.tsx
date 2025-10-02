@@ -24,6 +24,7 @@ import React, {
 } from "react";
 import WorkbookContext from "../../context";
 import SVGIcon from "../SVGIcon";
+import { useColumnDragAndDrop } from "./drag_and_drop/column-helpers";
 
 const ColumnHeader: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
@@ -41,6 +42,7 @@ const ColumnHeader: React.FC = () => {
   const allowEditRef = useRef<boolean>(true);
   const sheetIndex = getSheetIndex(context, context.currentSheetId);
   const sheet = sheetIndex == null ? null : context.luckysheetfile[sheetIndex];
+
   const freezeHandleLeft = useMemo(() => {
     if (
       sheet?.frozen?.type === "column" ||
@@ -59,6 +61,14 @@ const ColumnHeader: React.FC = () => {
     }
     return context.scrollLeft;
   }, [context.visibledatacolumn, sheet?.frozen, context.scrollLeft]);
+
+  const selectedLocationRef = useRef(selectedLocation);
+  useEffect(() => {
+    selectedLocationRef.current = selectedLocation;
+  }, [selectedLocation]);
+
+  const { initiateDrag, getColIndexClicked, isColDoubleClicked } =
+    useColumnDragAndDrop(containerRef, selectedLocationRef);
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -100,19 +110,54 @@ const ColumnHeader: React.FC = () => {
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      const { nativeEvent } = e;
-      setContext((draftCtx) => {
-        handleColumnHeaderMouseDown(
-          draftCtx,
-          refs.globalCache,
-          nativeEvent,
-          containerRef.current!,
-          refs.cellInput.current!,
-          refs.fxInput.current!
-        );
-      });
+      if (e.button !== 0) return; // left button only
+      const targetEl = e.target as HTMLElement;
+      if (
+        targetEl.closest(".fortune-cols-change-size") ||
+        targetEl.closest(".fortune-cols-freeze-handle") ||
+        targetEl.closest(".header-arrow")
+      )
+        return;
+
+      const headerEl = containerRef.current;
+      if (!headerEl) return;
+
+      const clickedColIndex = getColIndexClicked(e.pageX, headerEl);
+      if (clickedColIndex < 0) return;
+
+      if (isColDoubleClicked(clickedColIndex)) {
+        setContext((draft) => {
+          draft.luckysheet_scroll_status = true;
+        });
+      } else {
+        const { nativeEvent } = e;
+        setContext((draft) => {
+          handleColumnHeaderMouseDown(
+            draft,
+            refs.globalCache,
+            nativeEvent,
+            containerRef.current!,
+            refs.cellInput.current!,
+            refs.fxInput.current!
+          );
+        });
+        return;
+      }
+
+      // handle drag and drop
+      e.preventDefault();
+      e.stopPropagation();
+      initiateDrag(clickedColIndex, e.pageX);
     },
-    [refs.globalCache, refs.cellInput, refs.fxInput, setContext]
+    [
+      refs.globalCache,
+      refs.cellInput,
+      refs.fxInput,
+      setContext,
+      getColIndexClicked,
+      isColDoubleClicked,
+      initiateDrag,
+    ]
   );
 
   const onMouseLeave = useCallback(() => {

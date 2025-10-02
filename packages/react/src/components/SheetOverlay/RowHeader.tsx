@@ -117,7 +117,11 @@ const RowHeader: React.FC = () => {
       const clickedRowIndex = getRowIndexClicked(e.pageY, headerEl);
       if (clickedRowIndex < 0) return;
 
-      if (!isRowDoubleClicked(clickedRowIndex)) {
+      if (isRowDoubleClicked(clickedRowIndex)) {
+        setContext((draft) => {
+          draft.luckysheet_scroll_status = true;
+        });
+      } else {
         const { nativeEvent } = e;
         setContext((draft) => {
           handleRowHeaderMouseDown(

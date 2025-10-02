@@ -1760,15 +1760,18 @@ function mouseRender(
       scrollY.scrollTop = stop;
     }
 
-    if (x < 0 || x > winW) {
+    if (x <= 0 || x > winW) {
       let sleft;
-      if (x < 0) {
+      if (x <= 0) {
         sleft = left + x / 2;
       } else {
         sleft = left + (x - winW) / 2;
       }
-
-      scrollX.scrollLeft = sleft;
+      if (sleft === scrollX.scrollLeft) {
+        scrollX.scrollLeft -= 25;
+      } else {
+        scrollX.scrollLeft = sleft;
+      }
     }
   }
 
@@ -4400,6 +4403,7 @@ export function handleRowHeaderMouseDown(
   cellInput: HTMLDivElement,
   fxInput: HTMLDivElement | null
 ) {
+  ctx.luckysheet_scroll_status = true;
   if (!checkProtectionAllSelected(ctx, ctx.currentSheetId)) {
     return;
   }
@@ -4844,6 +4848,7 @@ export function handleColumnHeaderMouseDown(
   cellInput: HTMLDivElement,
   fxInput: HTMLDivElement | null
 ) {
+  ctx.luckysheet_scroll_status = true;
   if (!checkProtectionAllSelected(ctx, ctx.currentSheetId)) {
     return;
   }

@@ -126,7 +126,7 @@ export const useColumnDragAndDrop = (
   const createGhost = (host: HTMLElement) => {
     const el = document.createElement("div");
     el.style.position = "fixed";
-    el.style.top = "135px";
+    el.style.top = "134px";
     el.style.height = `${window.innerHeight}px`;
     el.style.boxSizing = "border-box";
     el.style.padding = "6px 8px";

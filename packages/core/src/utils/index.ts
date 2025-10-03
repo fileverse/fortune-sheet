@@ -475,7 +475,7 @@ export function getNumberFormat(strValue: any, commaPresent: boolean) {
   } else if (hasComma) {
     format = "#,##0";
   } else {
-    format = "0";
+    format = "General";
   }
   return format;
 }

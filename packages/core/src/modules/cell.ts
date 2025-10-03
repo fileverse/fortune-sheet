@@ -390,11 +390,11 @@ export function setCellValue(
         const format = getNumberFormat(strValue, commaPresent);
 
         cell.m = v.m ? v.m : update(format, cell.v);
-        cell.ht = 2;
+        cell.ht = v?.ct ? cell.ht : 2;
         cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
           cell.m = cell.v.toString();
-        } else if (cell.v != null) {
+        } else if (cell.v != null && !cell.m) {
           const mask = genarate(cell.v as string);
           if (mask) {
             if (v.m) {
@@ -409,6 +409,15 @@ export function setCellValue(
         if (mask) {
           cell.m = mask[0].toString();
           [, cell.ct, cell.v] = mask;
+          if (
+            v?.ct &&
+            v.ct.t === "n" &&
+            cell?.ct &&
+            cell.ct.t !== "n" &&
+            cell?.ht === 2
+          ) {
+            cell.ht = 1;
+          }
         }
       }
     }

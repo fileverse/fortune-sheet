@@ -210,7 +210,7 @@ const SheetTab: React.FC = () => {
               onClick={onAddSheetClick}
               elevation={1}
               icon="Plus"
-              size="md"
+              size="sm"
               variant="secondary"
             />
           )}
@@ -234,19 +234,19 @@ const SheetTab: React.FC = () => {
                   className="fortune-sheettab-button border-none shadow-none"
                   elevation={1}
                   icon="Menu"
-                  size="md"
+                  size="sm"
                   variant="secondary"
                 />
                 {/* <SVGIcon name="all-sheets" width={16} height={16} /> */}
               </div>
             </div>
           )}
-          <div
+          {/* <div
             id="luckysheet-sheets-m"
             className="luckysheet-sheets-m lucky-button-custom"
           >
             <i className="iconfont luckysheet-iconfont-caidan2" />
-          </div>
+          </div> */}
           <div
             className="fortune-sheettab-container"
             id="fortune-sheettab-container"
@@ -267,9 +267,9 @@ const SheetTab: React.FC = () => {
               sheet={{ name: "", id: "drop-placeholder" }}
             /> */}
             </div>
-            {isShowBoundary && isShowScrollBtn && (
+            {/* {isShowBoundary && isShowScrollBtn && (
               <div className="boundary boundary-right" />
-            )}
+            )} */}
           </div>
           {isShowScrollBtn && (
             <div
@@ -289,7 +289,7 @@ const SheetTab: React.FC = () => {
                 }}
                 elevation={1}
                 icon="ChevronLeft"
-                size="md"
+                size="sm"
                 variant="secondary"
               />
             </div>
@@ -312,14 +312,14 @@ const SheetTab: React.FC = () => {
                 }}
                 elevation={1}
                 icon="ChevronRight"
-                size="md"
+                size="sm"
                 variant="secondary"
               />
             </div>
           )}
         </div>
         <div className="fortune-sheet-area-right">
-          {statsFilter.length === 6 && (
+          {statsFilter.length === 6 && calInfo.count > 1 && (
             <Popover>
               <PopoverTrigger className="p-0 m-0 mr-2">
                 <Button
@@ -327,12 +327,29 @@ const SheetTab: React.FC = () => {
                   className="w-full !h-6 p-2 m-1 text-left flex items-center justify-center transition mr-2 !rounded-[0px]"
                   style={{ height: "24px !important" }}
                 >
-                  {calInfo.count > 0 && (
-                    <p className="text-body-sm">
+                  <div className="flex items-center">
+                    <p
+                      className="text-body-sm"
+                      style={{ fontWeight: "500", marginRight: "8px" }}
+                    >
                       {STATS_LABELS[selectedStat as keyof typeof STATS_LABELS]}:{" "}
                       {calInfo[selectedStat as keyof typeof calInfo]}
                     </p>
-                  )}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="lucide lucide-chevron-down-icon lucide-chevron-down"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </div>
                 </Button>
               </PopoverTrigger>
               <PopoverContent

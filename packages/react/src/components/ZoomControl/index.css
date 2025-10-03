@@ -4,6 +4,8 @@
   display: flex;
   align-items: center;
   user-select: none;
+  border-left: 1px solid hsl(var(--color-border-default));
+  border-right: 1px solid hsl(var(--color-border-default));
 }
 
 .fortune-zoom-button {

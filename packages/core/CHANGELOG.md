@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.83
+
+### Patch Changes
+
+- Minor css fix in footer sub list
+
+## 1.1.82
+
+### Patch Changes
+
+- QA review fiex for footer, icon update context menu
+
 ## 1.1.81
 
 ### Patch Changes

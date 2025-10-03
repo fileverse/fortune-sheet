@@ -1,5 +1,37 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.87
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.87
+
+## 1.1.86
+
+### Patch Changes
+
+- minor changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.86
+
+## 1.1.85
+
+### Patch Changes
+
+- minor css changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.85
+
+## 1.1.84
+
+### Patch Changes
+
+- support for drag row/col
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.84
+
 ## 1.1.83
 
 ### Patch Changes

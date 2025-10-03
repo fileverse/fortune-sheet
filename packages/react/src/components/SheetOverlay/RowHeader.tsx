@@ -21,22 +21,27 @@ import React, {
   useMemo,
 } from "react";
 import WorkbookContext from "../../context";
+import { useRowDragAndDrop } from "./drag_and_drop/row-helpers";
+
+type HoverLoc = { row: number; row_pre: number; row_index: number };
+type SelectedLoc = { row: number; row_pre: number; r1: number; r2: number };
 
 const RowHeader: React.FC = () => {
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
   const rowChangeSizeRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hoverLocation, setHoverLocation] = useState({
+
+  const [hoverLocation, setHoverLocation] = useState<HoverLoc>({
     row: -1,
     row_pre: -1,
     row_index: -1,
   });
   const [hoverInFreeze, setHoverInFreeze] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<
-    { row: number; row_pre: number; r1: number; r2: number }[]
-  >([]);
+  const [selectedLocation, setSelectedLocation] = useState<SelectedLoc[]>([]);
+
   const sheetIndex = getSheetIndex(context, context.currentSheetId);
   const sheet = sheetIndex == null ? null : context.luckysheetfile[sheetIndex];
+
   const freezeHandleTop = useMemo(() => {
     if (
       sheet?.frozen?.type === "row" ||
@@ -54,16 +59,21 @@ const RowHeader: React.FC = () => {
     return context.scrollTop;
   }, [context.visibledatarow, sheet?.frozen, context.scrollTop]);
 
+  const selectedLocationRef = useRef(selectedLocation);
+  useEffect(() => {
+    selectedLocationRef.current = selectedLocation;
+  }, [selectedLocation]);
+
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (context.luckysheet_rows_change_size) {
-        return;
-      }
+      if (context.luckysheet_rows_change_size) return;
+
+      const container = containerRef.current;
+      if (!container) return;
+
       const mouseY =
-        e.pageY -
-        containerRef.current!.getBoundingClientRect().top -
-        window.scrollY;
-      const _y = mouseY + containerRef.current!.scrollTop;
+        e.pageY - container.getBoundingClientRect().top - window.scrollY;
+      const _y = mouseY + container.scrollTop;
       const freeze = refs.globalCache.freezen?.[context.currentSheetId];
       const { y, inHorizontalFreeze } = fixPositionOnFrozenCells(
         freeze,
@@ -72,8 +82,7 @@ const RowHeader: React.FC = () => {
         0,
         mouseY
       );
-      const row_location = rowLocation(y, context.visibledatarow);
-      const [row_pre, row, row_index] = row_location;
+      const [row_pre, row, row_index] = rowLocation(y, context.visibledatarow);
       if (row_pre !== hoverLocation.row_pre || row !== hoverLocation.row) {
         setHoverLocation({ row_pre, row, row_index });
         setHoverInFreeze(inHorizontalFreeze);
@@ -89,27 +98,59 @@ const RowHeader: React.FC = () => {
     ]
   );
 
+  const { initiateDrag, getRowIndexClicked, isRowDoubleClicked } =
+    useRowDragAndDrop(containerRef, selectedLocationRef);
+
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      const { nativeEvent } = e;
-      setContext((draftCtx) => {
-        handleRowHeaderMouseDown(
-          draftCtx,
-          refs.globalCache,
-          nativeEvent,
-          containerRef.current!,
-          refs.cellInput.current!,
-          refs.fxInput.current!
-        );
-      });
+      if (e.button !== 0) return; // left button only
+      const targetEl = e.target as HTMLElement;
+      if (
+        targetEl.closest(".fortune-rows-change-size") ||
+        targetEl.closest(".fortune-rows-freeze-handle")
+      )
+        return;
+
+      const headerEl = containerRef.current;
+      if (!headerEl) return;
+
+      const clickedRowIndex = getRowIndexClicked(e.pageY, headerEl);
+      if (clickedRowIndex < 0) return;
+
+      if (isRowDoubleClicked(clickedRowIndex)) {
+        setContext((draft) => {
+          draft.luckysheet_scroll_status = true;
+        });
+      } else {
+        const { nativeEvent } = e;
+        setContext((draft) => {
+          handleRowHeaderMouseDown(
+            draft,
+            refs.globalCache,
+            nativeEvent,
+            containerRef.current!,
+            refs.cellInput.current!,
+            refs.fxInput.current!
+          );
+        });
+        return;
+      }
+
+      // handle drag and drop
+      e.preventDefault();
+      e.stopPropagation();
+      initiateDrag(clickedRowIndex, e.pageY);
     },
-    [refs.globalCache, refs.cellInput, refs.fxInput, setContext]
+    [
+      refs.globalCache,
+      context.visibledatarow,
+      context.currentSheetId,
+      setContext,
+    ]
   );
 
   const onMouseLeave = useCallback(() => {
-    if (context.luckysheet_rows_change_size) {
-      return;
-    }
+    if (context.luckysheet_rows_change_size) return;
     setHoverLocation({ row: -1, row_pre: -1, row_index: -1 });
   }, [context.luckysheet_rows_change_size]);
 
@@ -171,15 +212,15 @@ const RowHeader: React.FC = () => {
     if (_.isNil(s)) return;
     setSelectedLocation([]);
     if (s[0]?.column_select) return;
-    let rowTitleMap: Record<number, number> = {};
+
+    let rowTitleMap = {};
     for (let i = 0; i < s.length; i += 1) {
       const r1 = s[i].row[0];
       const r2 = s[i].row[1];
       rowTitleMap = selectTitlesMap(rowTitleMap, r1, r2);
     }
     const rowTitleRange = selectTitlesRange(rowTitleMap);
-    const selects: { row: number; row_pre: number; r1: number; r2: number }[] =
-      [];
+    const selects = [];
     for (let i = 0; i < rowTitleRange.length; i += 1) {
       const r1 = rowTitleRange[i][0];
       const r2 = rowTitleRange[i][rowTitleRange[i].length - 1];
@@ -191,7 +232,6 @@ const RowHeader: React.FC = () => {
     }
     setSelectedLocation(selects);
   }, [context.luckysheet_select_save, context.visibledatarow]);
-
   useEffect(() => {
     containerRef.current!.scrollTop = context.scrollTop;
   }, [context.scrollTop]);
@@ -212,9 +252,7 @@ const RowHeader: React.FC = () => {
       <div
         className="fortune-rows-freeze-handle"
         onMouseDown={onRowFreezeHandleMouseDown}
-        style={{
-          top: freezeHandleTop,
-        }}
+        style={{ top: freezeHandleTop }}
       />
       <div
         className="fortune-rows-change-size"

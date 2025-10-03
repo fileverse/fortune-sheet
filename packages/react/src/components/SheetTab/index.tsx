@@ -283,7 +283,7 @@ const SheetTab: React.FC = () => {
             >
               <IconButton
                 name="arrow-doubleleft"
-                className="fortune-sheettab-button border-none shadow-none"
+                className="fortune-sheettab-button-arrow border-none shadow-none"
                 onClick={() => {
                   scrollBy(-scrollDelta);
                 }}
@@ -306,7 +306,7 @@ const SheetTab: React.FC = () => {
             >
               <IconButton
                 name="arrow-doubleright"
-                className="fortune-sheettab-button border-none shadow-none"
+                className="fortune-sheettab-button-arrow border-none shadow-none"
                 onClick={() => {
                   scrollBy(scrollDelta);
                 }}

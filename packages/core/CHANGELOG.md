@@ -1,5 +1,29 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.87
+
+### Patch Changes
+
+- N/A
+
+## 1.1.86
+
+### Patch Changes
+
+- minor changes
+
+## 1.1.85
+
+### Patch Changes
+
+- minor css changes
+
+## 1.1.84
+
+### Patch Changes
+
+- support for drag row/col
+
 ## 1.1.83
 
 ### Patch Changes

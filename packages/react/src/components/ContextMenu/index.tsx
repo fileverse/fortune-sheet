@@ -369,24 +369,7 @@ const ContextMenu: React.FC = () => {
               >
                 <div className="context-item">
                   <LocalLucidIcon name="AddColRight" />
-                  <div>Insert column to the left</div>
-                </div>
-              </Menu>
-            ));
-      }
-      if (name === "insert-column-right") {
-        return selection?.row_select
-          ? null
-          : ["left"].map((dir) => (
-              <Menu
-                key={`add-col-right-${dir}`}
-                onClick={() => {
-                  addRowColRightAvobe("column", "rightbottom");
-                }}
-              >
-                <div className="context-item">
-                  <LocalLucidIcon name="AddColRight" />
-                  <div>Insert column to the left</div>
+                  <div>Insert column to the right</div>
                 </div>
               </Menu>
             ));

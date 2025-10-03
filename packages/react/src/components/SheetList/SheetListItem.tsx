@@ -69,11 +69,11 @@ const SheetListItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
         )}
       </span>
       {!!sheet.color && (
-          <div
-            className="luckysheet-sheets-list-item-color"
-            style={{ background: sheet.color }}
-          />
-        )}
+        <div
+          className="luckysheet-sheets-list-item-color"
+          style={{ background: sheet.color }}
+        />
+      )}
       <span
         className="luckysheet-sheets-item-name fortune-sheet-list-item-name"
         spellCheck="false"

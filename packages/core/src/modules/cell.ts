@@ -352,7 +352,6 @@ export function setCellValue(
           cell.ct = { ...cell.ct, fa, t: "n" };
         }
       }
-      console.log(fa, vupdate, "heeere or not");
 
       let mask = update(fa, vupdate);
 

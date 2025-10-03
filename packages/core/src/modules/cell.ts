@@ -142,7 +142,6 @@ export function setCellValue(
   d: CellMatrix | null | undefined,
   v: any
 ) {
-
   if (_.isNil(d)) {
     d = getFlowdata(ctx);
   }
@@ -411,7 +410,13 @@ export function setCellValue(
         if (mask) {
           cell.m = mask[0].toString();
           [, cell.ct, cell.v] = mask;
-          if(v?.ct && v.ct.t === "n" && cell?.ct && cell.ct.t !== "n" && cell?.ht === 2) {
+          if (
+            v?.ct &&
+            v.ct.t === "n" &&
+            cell?.ct &&
+            cell.ct.t !== "n" &&
+            cell?.ht === 2
+          ) {
             cell.ht = 1;
           }
         }

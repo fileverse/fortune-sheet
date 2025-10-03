@@ -68,17 +68,17 @@ const SheetListItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
           />
         )}
       </span>
-      <span
-        className="luckysheet-sheets-item-name fortune-sheet-list-item-name"
-        spellCheck="false"
-      >
-        {!!sheet.color && (
+      {!!sheet.color && (
           <div
             className="luckysheet-sheets-list-item-color"
             style={{ background: sheet.color }}
           />
         )}
-        <div style={{ marginLeft: "8px" }}>{sheet.name}</div>
+      <span
+        className="luckysheet-sheets-item-name fortune-sheet-list-item-name"
+        spellCheck="false"
+      >
+        <div>{sheet.name}</div>
       </span>
       {sheet.hide && <SheetHiddenButton sheet={sheet} />}
     </div>

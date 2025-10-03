@@ -22,12 +22,9 @@
   position: relative;
 }
 
-.fortune-sheet-list-item-name .luckysheet-sheets-list-item-color {
-  width: 28%;
+.luckysheet-sheets-list-item-color {
+  width: 9px;
   height: 30%;
-  position: absolute;
-  bottom: 11px;
-  left: -6px;
   border-radius: 20px;
 }
 

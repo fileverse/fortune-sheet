@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.84
+
+### Patch Changes
+
+- support for drag row/col
+
 ## 1.1.83
 
 ### Patch Changes

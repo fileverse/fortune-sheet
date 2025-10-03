@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.85
+
+### Patch Changes
+
+- minor css changes
+
 ## 1.1.84
 
 ### Patch Changes

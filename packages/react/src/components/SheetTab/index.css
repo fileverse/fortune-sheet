@@ -215,6 +215,19 @@
   background-color: hsl(var(--color-button-secondary-hover)) !important;
 }
 
+.fortune-sheettab-button-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  width: 30px;
+  background-color: hsl(var(--color-bg-secondary)) !important;
+}
+
+.fortune-sheettab-button-arrow:hover {
+  background-color: hsl(var(--color-button-secondary-hover)) !important;
+}
+
 .luckysheet-noselected-text {
   -moz-user-select: -moz-test;
   -khtml-user-select: none;

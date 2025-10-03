@@ -18,7 +18,7 @@
 }
 
 .fortune-sheet-list-item-name {
-  margin-right: 15px;
+  /* margin-right: 15px; */
   position: relative;
 }
 
@@ -34,10 +34,9 @@
 }
 
 .fortune-sheet-hidden-button {
-  margin-right: 15px;
   display: inline-flex;
-  position: absolute;
-  right: 0;
+  /* position: absolute;
+  right: 0; */
   justify-content: flex-end;
 }
 

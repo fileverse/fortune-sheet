@@ -122,7 +122,7 @@ export const useRowDragAndDrop = (
   const createGhost = (host: HTMLElement) => {
     const el = document.createElement("div");
     el.style.position = "fixed";
-    el.style.left = "45px";
+    el.style.left = "55px";
     el.style.width = `${window.innerWidth}px`;
     el.style.boxSizing = "border-box";
     el.style.padding = "6px 8px";

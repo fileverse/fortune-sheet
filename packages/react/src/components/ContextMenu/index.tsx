@@ -425,40 +425,6 @@ const ContextMenu: React.FC = () => {
               </Menu>
             ));
       }
-      // if (name === "insert-row") {
-      //   return selection?.column_select
-      //     ? null
-      //     : ["bottom"].map((dir) => (
-      //         <Menu
-      //           key={`add-row-${dir}`}
-      //           onClick={() => {
-      //             addRowColRightAvobe("row", "rightbottom");
-      //           }}
-      //         >
-      //           <div className="context-item">
-      //             <LucideIcon name="AddRowBelow" />
-      //             <div>Insert row below</div>
-      //           </div>
-      //         </Menu>
-      //       ));
-      // }
-      // if (name === "insert-row-above") {
-      //   return selection?.column_select
-      //     ? null
-      //     : ["bottom"].map((dir) => (
-      //         <Menu
-      //           key={`add-row-above-${dir}`}
-      //           onClick={() => {
-      //             addRowColRightAvobe("row", "lefttop");
-      //           }}
-      //         >
-      //           <div className="context-item">
-      //             <LucideIcon name="AddRowAboveLocal" />
-      //             <div>Insert row above</div>
-      //           </div>
-      //         </Menu>
-      //       ));
-      // }
       if (name === "delete-column") {
         return (
           selection?.column_select && (

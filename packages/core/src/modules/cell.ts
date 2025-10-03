@@ -142,7 +142,7 @@ export function setCellValue(
   d: CellMatrix | null | undefined,
   v: any
 ) {
-  console.log("setCellValue", r, c, v);
+
   if (_.isNil(d)) {
     d = getFlowdata(ctx);
   }
@@ -353,8 +353,9 @@ export function setCellValue(
           cell.ct = { ...cell.ct, fa, t: "n" };
         }
       }
+      console.log(fa, vupdate, "heeere or not");
 
-      let mask = update("General", vupdate);
+      let mask = update(fa, vupdate);
 
       if (mask === vupdate) {
         // 若原来单元格格式 应用不了 要更新的值，则获取更新值的 格式
@@ -391,11 +392,11 @@ export function setCellValue(
         const format = getNumberFormat(strValue, commaPresent);
 
         cell.m = v.m ? v.m : update(format, cell.v);
-        cell.ht = 2;
+        cell.ht = v?.ct ? cell.ht : 2;
         cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
           cell.m = cell.v.toString();
-        } else if (cell.v != null) {
+        } else if (cell.v != null && !cell.m) {
           const mask = genarate(cell.v as string);
           if (mask) {
             if (v.m) {
@@ -410,6 +411,9 @@ export function setCellValue(
         if (mask) {
           cell.m = mask[0].toString();
           [, cell.ct, cell.v] = mask;
+          if(v?.ct && v.ct.t === "n" && cell?.ct && cell.ct.t !== "n" && cell?.ht === 2) {
+            cell.ht = 1;
+          }
         }
       }
     }

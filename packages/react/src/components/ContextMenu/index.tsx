@@ -42,6 +42,7 @@ import Menu from "./Menu";
 import "tippy.js/dist/tippy.css";
 import ConditionalFormat from "../ConditionFormat";
 import SVGIcon from "../SVGIcon";
+import { LucideIcon as LocalLucidIcon } from "../../components/SheetOverlay/LucideIcon";
 
 const ContextMenu: React.FC = () => {
   const { showDialog } = useDialog();
@@ -350,37 +351,8 @@ const ContextMenu: React.FC = () => {
                 }}
               >
                 <div className="context-item">
-                  <LucideIcon name="Plus" />
-                  <div>
-                    Insert column to the left
-                    {/* {_.startsWith(context.lang ?? "", "zh") && (
-                      <>
-                        {rightclick.to}
-                        <span className={`luckysheet-cols-rows-shift-${dir}`}>
-                          {(rightclick as any)[dir]}
-                        </span>
-                      </>
-                    )}
-                    {`${rightclick.insert}  `} */}
-                    {/* <input
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  tabIndex={0}
-                  type="text"
-                  className="luckysheet-mousedown-cancel"
-                  placeholder={rightclick.number}
-                  defaultValue="1"
-                /> */}
-                    {/* 1
-                    <span className="luckysheet-cols-rows-shift-word luckysheet-mousedown-cancel">
-                      {` ${rightclick.column}  `}
-                    </span>
-                    {!_.startsWith(context.lang ?? "", "zh") && (
-                      <span className={`luckysheet-cols-rows-shift-${dir}`}>
-                        {(rightclick as any)[dir]}
-                      </span>
-                    )} */}
-                  </div>
+                  <LocalLucidIcon name="AddColLeft" />
+                  <div>Insert column to the left</div>
                 </div>
               </Menu>
             ));
@@ -390,52 +362,103 @@ const ContextMenu: React.FC = () => {
           ? null
           : ["left"].map((dir) => (
               <Menu
-                key={`add-col-${dir}`}
+                key={`add-col-right-${dir}`}
                 onClick={() => {
                   addRowColRightAvobe("column", "rightbottom");
                 }}
               >
                 <div className="context-item">
-                  <LucideIcon name="Plus" />
-                  <div>Insert column to the right</div>
+                  <LocalLucidIcon name="AddColRight" />
+                  <div>Insert column to the left</div>
                 </div>
               </Menu>
             ));
       }
-      if (name === "insert-row") {
-        return selection?.column_select
+      if (name === "insert-column-right") {
+        return selection?.row_select
           ? null
-          : ["bottom"].map((dir) => (
+          : ["left"].map((dir) => (
               <Menu
-                key={`add-row-${dir}`}
+                key={`add-col-right-${dir}`}
                 onClick={() => {
-                  addRowColRightAvobe("row", "rightbottom");
+                  addRowColRightAvobe("column", "rightbottom");
                 }}
               >
                 <div className="context-item">
-                  <LucideIcon name="Plus" />
-                  <div>Insert row below</div>
+                  <LocalLucidIcon name="AddColRight" />
+                  <div>Insert column to the left</div>
                 </div>
               </Menu>
             ));
       }
       if (name === "insert-row-above") {
-        return selection?.column_select
+        return selection?.row_select
           ? null
-          : ["bottom"].map((dir) => (
+          : ["left"].map((dir) => (
               <Menu
-                key={`add-row-${dir}`}
+                key={`add-row-above-${dir}`}
                 onClick={() => {
                   addRowColRightAvobe("row", "lefttop");
                 }}
               >
                 <div className="context-item">
-                  <LucideIcon name="Plus" />
+                  <LocalLucidIcon name="AddRowAboveLocal" />
                   <div>Insert row above</div>
                 </div>
               </Menu>
             ));
       }
+      if (name === "insert-row") {
+        return selection?.row_select
+          ? null
+          : ["left"].map((dir) => (
+              <Menu
+                key={`add-row-below-${dir}`}
+                onClick={() => {
+                  addRowColRightAvobe("row", "rightbottom");
+                }}
+              >
+                <div className="context-item">
+                  <LocalLucidIcon name="AddRowBelowLocal" />
+                  <div>Insert row below</div>
+                </div>
+              </Menu>
+            ));
+      }
+      // if (name === "insert-row") {
+      //   return selection?.column_select
+      //     ? null
+      //     : ["bottom"].map((dir) => (
+      //         <Menu
+      //           key={`add-row-${dir}`}
+      //           onClick={() => {
+      //             addRowColRightAvobe("row", "rightbottom");
+      //           }}
+      //         >
+      //           <div className="context-item">
+      //             <LucideIcon name="AddRowBelow" />
+      //             <div>Insert row below</div>
+      //           </div>
+      //         </Menu>
+      //       ));
+      // }
+      // if (name === "insert-row-above") {
+      //   return selection?.column_select
+      //     ? null
+      //     : ["bottom"].map((dir) => (
+      //         <Menu
+      //           key={`add-row-above-${dir}`}
+      //           onClick={() => {
+      //             addRowColRightAvobe("row", "lefttop");
+      //           }}
+      //         >
+      //           <div className="context-item">
+      //             <LucideIcon name="AddRowAboveLocal" />
+      //             <div>Insert row above</div>
+      //           </div>
+      //         </Menu>
+      //       ));
+      // }
       if (name === "delete-column") {
         return (
           selection?.column_select && (

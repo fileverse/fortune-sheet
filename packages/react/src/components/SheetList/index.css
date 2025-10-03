@@ -23,11 +23,12 @@
 }
 
 .fortune-sheet-list-item-name .luckysheet-sheets-list-item-color {
-  width: 6%;
-  height: 100%;
+  width: 28%;
+  height: 30%;
   position: absolute;
-  bottom: 0;
+  bottom: 11px;
   left: -6px;
+  border-radius: 20px;
 }
 
 .fortune-sheet-list :hover {

@@ -78,7 +78,7 @@ const SheetListItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
             style={{ background: sheet.color }}
           />
         )}
-        {sheet.name}
+        <div style={{ marginLeft: "8px" }}>{sheet.name}</div>
       </span>
       {sheet.hide && <SheetHiddenButton sheet={sheet} />}
     </div>

@@ -142,6 +142,7 @@ export function setCellValue(
   d: CellMatrix | null | undefined,
   v: any
 ) {
+  console.log("setCellValue", r, c, v);
   if (_.isNil(d)) {
     d = getFlowdata(ctx);
   }
@@ -353,7 +354,7 @@ export function setCellValue(
         }
       }
 
-      let mask = update(fa, vupdate);
+      let mask = update("General", vupdate);
 
       if (mask === vupdate) {
         // 若原来单元格格式 应用不了 要更新的值，则获取更新值的 格式

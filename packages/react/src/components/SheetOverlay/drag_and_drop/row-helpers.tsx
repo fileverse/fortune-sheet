@@ -252,7 +252,6 @@ export const useRowDragAndDrop = (
 
           _sheet.data = rows;
           updateContextWithSheetData(draft, _sheet.data);
-          console.log("rows", sourceIndex);
 
           const d = getFlowdata(draft);
           d?.forEach((row) => {
@@ -329,7 +328,6 @@ export const useRowDragAndDrop = (
               item.r += 1;
             }
           });
-          console.log("_sheet.calcChain", _sheet.calcChain);
           // @ts-expect-error
           window?.updateDataBlockCalcFunctionAfterRowDrag?.(
             sourceIndex,

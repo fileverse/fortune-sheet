@@ -254,7 +254,6 @@ export const useColumnDragAndDrop = (
         Number.isFinite(finalInsertionIndex) &&
         finalInsertionIndex >= 0
       ) {
-        console.log("sourceIndex", sourceIndex);
 
         setContext((draft) => {
           const _sheet = draft.luckysheetfile[sheetIdx];
@@ -403,7 +402,6 @@ export const useColumnDragAndDrop = (
     dragRef.current.startX = startX;
     dragRef.current.source = clickedColIndex;
     dragRef.current.active = false;
-    console.log("initiateDrag", startX);
 
     dragRef.current.onDocMove = handleColumnDrag;
     dragRef.current.onDocUp = handleColumnDragEnd;

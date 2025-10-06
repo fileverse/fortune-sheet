@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.90
+
+### Patch Changes
+
+- ghost position, insert for header
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.90
+
 ## 1.1.89
 
 ### Patch Changes

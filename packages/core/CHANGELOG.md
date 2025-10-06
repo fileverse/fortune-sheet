@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.90
+
+### Patch Changes
+
+- ghost position, insert for header
+
 ## 1.1.89
 
 ### Patch Changes

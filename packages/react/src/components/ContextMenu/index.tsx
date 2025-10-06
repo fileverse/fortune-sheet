@@ -375,7 +375,7 @@ const ContextMenu: React.FC = () => {
             ));
       }
       if (name === "insert-row-above") {
-        return selection?.row_select
+        return selection?.column_select
           ? null
           : ["left"].map((dir) => (
               <Menu
@@ -392,7 +392,7 @@ const ContextMenu: React.FC = () => {
             ));
       }
       if (name === "insert-row") {
-        return selection?.row_select
+        return selection?.column_select
           ? null
           : ["left"].map((dir) => (
               <Menu

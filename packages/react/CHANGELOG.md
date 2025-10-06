@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.89
+
+### Patch Changes
+
+- data block refresh
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.89
+
+## 1.1.88
+
+### Patch Changes
+
+- update formula and cell in between drag rage
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.88
+
 ## 1.1.87
 
 ### Patch Changes

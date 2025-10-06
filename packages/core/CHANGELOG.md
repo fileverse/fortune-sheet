@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.89
+
+### Patch Changes
+
+- data block refresh
+
+## 1.1.88
+
+### Patch Changes
+
+- update formula and cell in between drag rage
+
 ## 1.1.87
 
 ### Patch Changes

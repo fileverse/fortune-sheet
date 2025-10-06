@@ -30,6 +30,9 @@ const Template: StoryFn<typeof Workbook> = ({
         {...args}
         data={data}
         rowHeaderWidth={60}
+        columnHeaderHeight={24}
+        defaultColWidth={100}
+        defaultRowHeight={21}
         onChange={onChange}
         isAuthorized={false}
         customToolbarItems={[

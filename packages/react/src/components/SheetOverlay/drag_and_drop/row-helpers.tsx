@@ -3,6 +3,7 @@ import {
   fixPositionOnFrozenCells,
   getSheetIndex,
   rowLocation,
+  getFlowdata,
   rowLocationByIndex,
   updateContextWithSheetData,
 } from "@fileverse-dev/fortune-core";
@@ -251,6 +252,91 @@ export const useRowDragAndDrop = (
 
           _sheet.data = rows;
           updateContextWithSheetData(draft, _sheet.data);
+          console.log("rows", sourceIndex);
+
+          const d = getFlowdata(draft);
+          d?.forEach((row) => {
+            row.forEach((cell) => {
+              if (cell) {
+                const startingIndex = sourceIndex + 1;
+                const targetingIndex = targetIndex + 1;
+                if (cell.f) {
+                  cell.f = cell.f.replace(
+                    new RegExp(`\\b([A-Z]+)${startingIndex}\\b`, "g"),
+                    (match, p1) => {
+                      return `${p1}${targetingIndex}`;
+                    }
+                  );
+                }
+
+                const otherAffectedRows: any[] = [];
+                if (sourceIndex < targetIndex) {
+                  for (let c = startingIndex + 1; c < targetingIndex; c += 1) {
+                    otherAffectedRows.push({ source: c, target: c - 1 });
+                  }
+                } else {
+                  for (let c = targetingIndex; c < startingIndex; c += 1) {
+                    otherAffectedRows.push({ source: c, target: c + 1 });
+                  }
+                }
+                // otherAffectedRows.forEach(({source, target}) => {
+                //   if (cell.f) cell.f = cell.f.replace(new RegExp(`\\b([A-Z]+)${source}\\b`, 'g'), (match, p1) => {
+                //     return `${p1}${target}`;
+                //   });
+                // });
+
+                if (cell.f) {
+                  let formula = cell.f;
+                  const replacements: any[] = [];
+
+                  // Collect all replacement positions first
+                  otherAffectedRows.forEach(({ source, target }) => {
+                    const regex = new RegExp(`\\b([A-Z]+)${source}\\b`, "g");
+                    let match;
+
+                    // eslint-disable-next-line no-cond-assign
+                    while ((match = regex.exec(formula)) !== null) {
+                      replacements.push({
+                        start: match.index,
+                        end: match.index + match[0].length,
+                        original: match[0],
+                        replacement: `${match[1]}${target}`,
+                      });
+                    }
+                  });
+
+                  // Sort by position (descending) and apply replacements from end to start
+                  replacements.sort((a, b) => b.start - a.start);
+
+                  replacements.forEach((rep) => {
+                    formula =
+                      formula.substring(0, rep.start) +
+                      rep.replacement +
+                      formula.substring(rep.end);
+                  });
+
+                  cell.f = formula;
+                }
+              }
+            });
+          });
+          _sheet.calcChain?.forEach((item) => {
+            if (item.r === sourceIndex) {
+              item.r = targetIndex;
+            } else if (item.r > sourceIndex && item.r < targetIndex) {
+              item.r -= 1;
+            } else if (item.r < sourceIndex && item.r >= targetIndex) {
+              item.r += 1;
+            }
+          });
+          console.log("_sheet.calcChain", _sheet.calcChain);
+          // @ts-expect-error
+          window?.updateDataBlockCalcFunctionAfterRowDrag?.(
+            sourceIndex,
+            targetIndex,
+            "row",
+            context.currentSheetId
+          );
         });
       }
     }

@@ -483,37 +483,32 @@ export function getFailureText(ctx: Context, item: any) {
       type === "number_integer" ||
       type === "number_decimal"
     ) {
-      failureText += `आपने जो दर्ज किया है वह ${optionLabel_hi[item.type]} ${
-        optionLabel_hi[item.type2]
-      } ${item.value1} नहीं है`;
+      failureText += `आपने जो दर्ज किया है वह ${optionLabel_hi[item.type]} ${optionLabel_hi[item.type2]
+        } ${item.value1} नहीं है`;
 
       if (item.type2 === "between" || item.type2 === "notBetween") {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "text_content") {
-      failureText += `आपने जो दर्ज किया है वह पाठ नहीं है जो ${
-        optionLabel_hi[item.type2]
-      } ${item.value1} है`;
+      failureText += `आपने जो दर्ज किया है वह पाठ नहीं है जो ${optionLabel_hi[item.type2]
+        } ${item.value1} है`;
     } else if (type === "text_length") {
-      failureText += `आपके द्वारा दर्ज किया गया पाठ की लंबाई ${
-        optionLabel_hi[item.type2]
-      } ${item.value1} नहीं है`;
+      failureText += `आपके द्वारा दर्ज किया गया पाठ की लंबाई ${optionLabel_hi[item.type2]
+        } ${item.value1} नहीं है`;
 
       if (item.type2 === "between" || item.type2 === "notBetween") {
         failureText += ` और ${item.value2}`;
       }
     } else if (type === "date") {
-      failureText += `आपके द्वारा दर्ज की गई तिथि ${
-        optionLabel_hi[item.type2]
-      } ${item.value1} नहीं है।`;
+      failureText += `आपके द्वारा दर्ज की गई तिथि ${optionLabel_hi[item.type2]
+        } ${item.value1} नहीं है।`;
 
       if (type2 === "between" || type2 === "notBetween") {
         failureText += ` और ${item.value2}`;
       }
     } else if (type === "validity") {
-      failureText += `आपने जो दर्ज किया है वह सही ${
-        optionLabel_hi[item.type2]
-      } नहीं है।`;
+      failureText += `आपने जो दर्ज किया है वह सही ${optionLabel_hi[item.type2]
+        } नहीं है।`;
     }
   } else {
     // default language english (en, en-US, en-GB, etc.)
@@ -526,37 +521,32 @@ export function getFailureText(ctx: Context, item: any) {
       type === "number_integer" ||
       type === "number_decimal"
     ) {
-      failureText += `What you entered is not a ${optionLabel_en[item.type]} ${
-        optionLabel_en[item.type2]
-      } ${item.value1}`;
+      failureText += `What you entered is not a ${optionLabel_en[item.type]} ${optionLabel_en[item.type2]
+        } ${item.value1}`;
 
       if (item.type2 === "between" || item.type2 === "notBetween") {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "text_content") {
-      failureText += `What you entered is not text that ${
-        optionLabel_en[item.type2]
-      } ${item.value1}`;
+      failureText += `What you entered is not text that ${optionLabel_en[item.type2]
+        } ${item.value1}`;
     } else if (type === "text_length") {
-      failureText += `The text you entered is not length ${
-        optionLabel_en[item.type2]
-      } ${item.value1}`;
+      failureText += `The text you entered is not length ${optionLabel_en[item.type2]
+        } ${item.value1}`;
 
       if (item.type2 === "between" || item.type2 === "notBetween") {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "date") {
-      failureText += `The date you entered is not ${
-        optionLabel_en[item.type2]
-      } ${item.value1}`;
+      failureText += `The date you entered is not ${optionLabel_en[item.type2]
+        } ${item.value1}`;
 
       if (type2 === "between" || type2 === "notBetween") {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "validity") {
-      failureText += `What you entered is not a correct ${
-        optionLabel_en[item.type2]
-      }`;
+      failureText += `What you entered is not a correct ${optionLabel_en[item.type2]
+        }`;
     }
   }
   return failureText;
@@ -737,7 +727,12 @@ export function cellFocus(
   dropDownBtn.style.display = "none";
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
   const { dataVerification } = ctx.luckysheetfile[index];
-  ctx.dataVerificationDropDownList = false;
+  const item = dataVerification?.[`${r}_${c}`];
+  if (!item) {
+    ctx.dataVerificationDropDownList = false;
+  } else if (item.type === "dropdown") {
+    ctx.dataVerificationDropDownList = true;
+  }
   if (!dataVerification) return;
   let row = ctx.visibledatarow[r];
   let row_pre = r === 0 ? 0 : ctx.visibledatarow[r - 1];
@@ -750,7 +745,6 @@ export function cellFocus(
     [row_pre, row] = margeSet.row;
     [col_pre, col] = margeSet.column;
   }
-  const item = dataVerification[`${r}_${c}`];
   if (!item) return;
 
   // 单元格数据验证 类型是 复选
@@ -841,7 +835,39 @@ export function setDropdownValue(ctx: Context, value: string, arr: any) {
   } else {
     ctx.dataVerificationDropDownList = false;
   }
-  setCellValue(ctx, rowIndex, colIndex, d, value);
+
+  let valueData = item?.value1;
+  let color = item?.color;
+  let selectedColor = "";
+
+  if (valueData && color) {
+    // const color = context.dataVerification!.dataRegulation!.color.split(",")
+    const colorValues = color?.split(',').map(v => v.trim());
+    // Group every 3 values into RGB arrays
+    const rgbArray = [];
+    for (let i = 0; i < colorValues.length; i += 3) {
+      rgbArray.push(colorValues.slice(i, i + 3).join(', '));
+    }
+    valueData = valueData?.split(",")
+    let valueIndex;
+    for (let i = 0; i < valueData?.length; i += 1) {
+      if (value.includes(valueData[i])) {
+        valueIndex = i;
+        break;
+      }
+    }
+    selectedColor = typeof valueIndex === "number" ? rgbArray[valueIndex] : "";
+  }
+
+  setCellValue(ctx, rowIndex, colIndex, d, {
+    "m": "Option 1",
+    "ct": {
+      "fa": "General",
+      "t": "g"
+    },
+    "v": value,
+    pillColor: selectedColor
+  });
   jfrefreshgrid(ctx, null, undefined);
 }
 

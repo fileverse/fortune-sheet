@@ -384,6 +384,10 @@ const SheetOverlay: React.FC = () => {
     };
   }, [onKeyDownForZoom]);
 
+  // useEffect(() => {
+  //   console.log(context.luckysheet_select_save);
+  // }, [context.luckysheet_select_save]);
+
   return (
     <div
       className="fortune-sheet-overlay"
@@ -733,7 +737,7 @@ const SheetOverlay: React.FC = () => {
             tabIndex={0}
             style={{ display: "none" }}
           >
-            <SVGIcon name="caret-down-fill" width={16} height={16} />
+            {/* <SVGIcon name="caret-down-fill" width={16} height={16} /> */}
           </div>
           {context.dataVerificationDropDownList &&
             (context.dataVerification!.dataRegulation!.value1 !== "" ||

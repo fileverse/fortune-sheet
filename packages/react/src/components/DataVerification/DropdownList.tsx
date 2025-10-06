@@ -28,9 +28,9 @@ const DropDownList: React.FC = () => {
   const [selected, setSelected] = useState<any[]>([]);
 
   const close = useCallback(() => {
-    setContext((ctx) => {
-      ctx.dataVerificationDropDownList = false;
-    });
+    // setContext((ctx) => {
+    //   ctx.dataVerificationDropDownList = false;
+    // });
   }, [setContext]);
 
   useOutsideClick(containerRef, close, [close]);
@@ -54,7 +54,9 @@ const DropDownList: React.FC = () => {
     }
     const index = getSheetIndex(context, context.currentSheetId) as number;
     const { dataVerification } = context.luckysheetfile[index];
+    if(!dataVerification) return
     const item = dataVerification[`${rowIndex}_${colIndex}`];
+    if (!item) return;
     const dropdownList = getDropdownList(context, item.value1);
     // 初始化多选的下拉列表
     const cellValue = getCellValue(rowIndex, colIndex, d);
@@ -69,7 +71,7 @@ const DropDownList: React.FC = () => {
     });
     setIsMul(item.type2 === "true");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [context.luckysheet_select_save]);
 
   // 设置下拉列表的值
   useEffect(() => {
@@ -81,7 +83,9 @@ const DropDownList: React.FC = () => {
     if (rowIndex == null || colIndex == null) return;
     const index = getSheetIndex(context, context.currentSheetId) as number;
     const { dataVerification } = context.luckysheetfile[index];
+    if(!dataVerification) return
     const item = dataVerification[`${rowIndex}_${colIndex}`];
+    if(!item) return
     if (item.type2 !== "true") return;
     const d = getFlowdata(context);
     if (!d) return;

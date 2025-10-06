@@ -20,11 +20,38 @@ import {
   SelectValue,
   TextField,
 } from "@fileverse/ui";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState, useMemo } from "react";
+import DynamicInputList from "./DropdownOption"
 import WorkbookContext from "../../context";
 import { useDialog } from "../../hooks/useDialog";
 import { injectDatepickerStyles } from "../../utils/datepickerStyles";
 import "./index.css";
+
+type Item = { id: string; value: string; color?: string | null }
+
+function createId() {
+  return `${Date.now()}_${Math.random().toString(36).slice(2)}`
+}
+
+function excelToIndices(cell: string): string {
+  const match = cell.match(/^([A-Z]+)(\d+)$/);
+  if (!match) {
+    throw new Error('Invalid cell reference');
+  }
+
+  const letters = match[1];
+  const numbers = match[2];
+
+  let colIndex = 0;
+  for (let i = 0; i < letters.length; i++) {
+    colIndex = colIndex * 26 + (letters.charCodeAt(i) - 65 + 1);
+  }
+  colIndex -= 1; // Make it zero-based
+
+  const rowIndex = parseInt(numbers) - 1;
+
+  return `${rowIndex}_${colIndex}`;
+}
 
 // Initialize datepicker styles
 injectDatepickerStyles();
@@ -33,16 +60,6 @@ const DataVerification: React.FC = () => {
   const { context, setContext } = useContext(WorkbookContext);
   const { showDialog, hideDialog } = useDialog();
   const { dataVerification, button, generalDialog } = locale(context);
-  // const [numberCondition] = useState<string[]>([
-  //   "between",
-  //   "notBetween",
-  //   "equal",
-  //   "notEqualTo",
-  //   "moreThanThe",
-  //   "lessThan",
-  //   "greaterOrEqualTo",
-  //   "lessThanOrEqualTo",
-  // ]);
 
   const [dateCondition] = useState<string[]>([
     "between",
@@ -54,6 +71,51 @@ const DataVerification: React.FC = () => {
     "laterThan",
     "noLaterThan",
   ]);
+
+  function getSheetIndex() {
+    for (let i = 0; i < context.luckysheetfile.length; i += 1) {
+      if (context.luckysheetfile[i]?.id === context.currentSheetId) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  const [optionItems, setOptionItems] = useState<Item[]>([
+    { id: createId(), value: "Option 1", color: "228, 232, 237" },
+  ])
+
+  const valuesFromArray = useMemo(() => optionItems.map((i) => i.value).join(","), [optionItems])
+  const colors = useMemo(() => optionItems.map((i) => i.color).join(","), [optionItems])
+
+  useEffect(() => {
+    setContext((ctx) => {
+      ctx.dataVerification!.dataRegulation!.color = colors,
+        ctx.dataVerification!.dataRegulation!.value1 = valuesFromArray;
+    })
+
+  }, [optionItems])
+
+  useEffect(() => {
+    const selectRow = context.luckysheet_select_save?.[0]?.row?.[0];
+    const selectCol = context.luckysheet_select_save?.[0]?.column?.[0];
+    const sheetIndex = getSheetIndex();
+    const { dataVerification } = context.luckysheetfile[sheetIndex];
+    let value = dataVerification?.[`${selectRow}_${selectCol}`]?.value1;
+    let color = dataVerification?.[`${selectRow}_${selectCol}`]?.color;
+
+    if (value && color) {
+      // const color = context.dataVerification!.dataRegulation!.color.split(",")
+      const colorValues = color?.split(',').map(v => v.trim());
+      // Group every 3 values into RGB arrays
+      const rgbArray = [];
+      for (let i = 0; i < colorValues.length; i += 3) {
+        rgbArray.push(colorValues.slice(i, i + 3).join(', '));
+      }
+      value = value?.split(",")
+      setOptionItems(value.map((v, i) => ({ id: createId(), value: v, color: rgbArray[i] })))
+    }
+  }, [])
 
   // 开启鼠标选区
   const dataSelectRange = useCallback(
@@ -319,23 +381,8 @@ const DataVerification: React.FC = () => {
 
           {context.dataVerification?.dataRegulation?.type === "dropdown" && (
             <div className="mt-4">
-              <TextField
-                // rightIcon={<LucideIcon name="Grid2x2" size="sm" />}
-                value={context.dataVerification!.dataRegulation!.value1}
-                placeholder={dataVerification.placeholder1}
-                onChange={(e) => {
-                  const { value } = e.target;
-                  setContext((ctx) => {
-                    ctx.dataVerification!.dataRegulation!.value1 = value;
-                  });
-                }}
-                // onClick={() =>
-                //   dataSelectRange(
-                //     "dropDown",
-                //     context.dataVerification!.dataRegulation!.value1
-                //   )
-                // }
-              />
+              <DynamicInputList optionItems={optionItems} setOptionItems={setOptionItems} />
+
               <div className="mt-4 flex items-center">
                 <Checkbox
                   className="border-2"
@@ -530,7 +577,7 @@ const DataVerification: React.FC = () => {
               </Select>
 
               {context.dataVerification.dataRegulation.type2 === "between" ||
-              context.dataVerification.dataRegulation.type2 === "notBetween" ? (
+                context.dataVerification.dataRegulation.type2 === "notBetween" ? (
                 <div className="mt-4 flex gap-2 items-center">
                   <div className="datepicker-toggle">
                     <input

@@ -1305,12 +1305,21 @@ export function handleCellAreaDoubleClick(
   const col_location = colLocation(x, ctx.visibledatacolumn);
   let col_index = col_location[2];
 
+  console.log(row_index, col_index);
+
   removeOverShowComment(ctx);
   removeEditingComment(ctx, globalCache);
 
   // 如果当前单元格是复选框则取消双击事件不让编辑
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
   const { dataVerification } = ctx.luckysheetfile[index];
+
+  if (
+    dataVerification &&
+    dataVerification[`${row_index}_${col_index}`]?.type === "dropdown"
+  ) {
+    return;
+  }
 
   if (dataVerification) {
     const item = dataVerification[`${row_index}_${col_index}`];

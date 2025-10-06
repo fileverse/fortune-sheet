@@ -8,6 +8,7 @@ import {
   getFontSet,
   getMeasureText,
 } from "./modules/text";
+import { getColumnWidth } from "./api";
 import { isInlineStringCell } from "./modules/inline-string";
 import { getSheetIndex, indexToColumnChar } from "./utils";
 import { getBorderInfoComputeRange } from "./modules/border";
@@ -1328,7 +1329,7 @@ export class Canvas {
             if (mergeCell) {
               const mergeCellOffset =
                 borderOffset[
-                  `${bdRow + mergeCell.rs - 1}_${bdCol + mergeCell.cs - 1}`
+                `${bdRow + mergeCell.rs - 1}_${bdCol + mergeCell.cs - 1}`
                 ];
               mergeCellEndX = mergeCellOffset.endX;
               mergeCellEndY = mergeCellOffset.endY;
@@ -1719,6 +1720,47 @@ export class Canvas {
       renderCtx.closePath();
     }
 
+    const index = getSheetIndex(
+      this.sheetCtx,
+      this.sheetCtx.currentSheetId
+    ) as number;
+
+    const { dataVerification } = this.sheetCtx.luckysheetfile[index];
+
+    // console.log("r", r, "c", c, dataVerification);
+    if (dataVerification?.[`${r}_${c}`] && dataVerification?.[`${r}_${c}`].type === "dropdown") {
+      const columnWidth = getColumnWidth(this.sheetCtx, [c]);
+
+      const finalPillWidth = (columnWidth?.[c] || 70) - 5;
+      const ps_w = finalPillWidth * this.sheetCtx.zoomRatio;
+      const ps_h = 16 * this.sheetCtx.zoomRatio;
+      const radius = 5 * this.sheetCtx.zoomRatio;
+
+      const x = endX + offsetLeft - 4 - ps_w;
+      const y = startY + offsetTop + 2;
+
+      // Draw rounded rectangle
+      renderCtx.beginPath();
+      renderCtx.fillStyle = "rgba(232, 235, 236, 1)";
+      renderCtx.roundRect(x, y, ps_w, ps_h, radius);
+      renderCtx.fill();
+      renderCtx.closePath();
+
+      const chevronWidth = 7 * this.sheetCtx.zoomRatio;
+      const chevronHeight = 4 * this.sheetCtx.zoomRatio;
+      const chevronX = x + ps_w - chevronWidth - 2 * this.sheetCtx.zoomRatio;
+      const chevronY = y + (ps_h - chevronHeight) / 2;
+
+      renderCtx.beginPath();
+      renderCtx.fillStyle = "rgba(0, 0, 0, 1)";
+      // Draw triangle pointing down
+      renderCtx.moveTo(chevronX, chevronY); // Top left
+      renderCtx.lineTo(chevronX + chevronWidth, chevronY); // Top right
+      renderCtx.lineTo(chevronX + chevronWidth / 2, chevronY + chevronHeight); // Bottom center (point)
+      renderCtx.closePath();
+      renderCtx.fill();
+    }
+
     // 此单元格 与  溢出单元格关系
     const cellOverflow_colInObj = this.cellOverflow_colIn(
       cellOverflowMap,
@@ -1899,6 +1941,42 @@ export class Canvas {
     ) as number;
 
     const { dataVerification } = this.sheetCtx.luckysheetfile[index];
+
+    if (dataVerification?.[`${r}_${c}`] && dataVerification?.[`${r}_${c}`].type === "dropdown") {
+      const columnWidth = getColumnWidth(this.sheetCtx, [c]);
+      console.log("r", r, "c", "inside", columnWidth?.[c],dataVerification?.[`${r}_${c}`]);
+
+
+      const finalPillWidth = (columnWidth?.[c] || 70) - 5;
+      const ps_w = finalPillWidth * this.sheetCtx.zoomRatio;
+      const ps_h = 16 * this.sheetCtx.zoomRatio;
+      const radius = 5 * this.sheetCtx.zoomRatio;
+
+      const x = endX + offsetLeft - 4 - ps_w;
+      const y = startY + offsetTop + 2;
+      console.log("x", x, "y", y, cell);
+
+      // Draw rounded rectangle
+      renderCtx.beginPath();
+      renderCtx.fillStyle = `rgba(${cell?.pillColor}, 1)`;
+      renderCtx.roundRect(x, y, ps_w - 8, ps_h, radius);
+      renderCtx.fill();
+      renderCtx.closePath();
+
+      const chevronWidth = 7 * this.sheetCtx.zoomRatio;
+      const chevronHeight = 4 * this.sheetCtx.zoomRatio;
+      const chevronX = x + 3 + ps_w - chevronWidth - 2 * this.sheetCtx.zoomRatio;
+      const chevronY = y + (ps_h - chevronHeight) / 2;
+
+      renderCtx.beginPath();
+      renderCtx.fillStyle = "rgba(0, 0, 0, 1)";
+      // Draw triangle pointing down
+      renderCtx.moveTo(chevronX, chevronY); // Top left
+      renderCtx.lineTo(chevronX + chevronWidth, chevronY); // Top right
+      renderCtx.lineTo(chevronX + chevronWidth / 2, chevronY + chevronHeight); // Bottom center (point)
+      renderCtx.closePath();
+      renderCtx.fill();
+    }
 
     if (
       dataVerification?.[`${r}_${c}`] &&
@@ -2218,19 +2296,19 @@ export class Canvas {
 
       const textInfo = cell
         ? getCellTextInfo(
-            cell,
-            renderCtx,
-            this.sheetCtx,
-            {
-              cellWidth,
-              cellHeight,
-              space_width,
-              space_height,
-              r,
-              c,
-            },
-            this.sheetCtx
-          )
+          cell,
+          renderCtx,
+          this.sheetCtx,
+          {
+            cellWidth,
+            cellHeight,
+            space_width,
+            space_height,
+            r,
+            c,
+          },
+          this.sheetCtx
+        )
         : undefined;
 
       // 若单元格有条件格式图标集
@@ -2479,19 +2557,19 @@ export class Canvas {
 
     const textInfo = cell
       ? getCellTextInfo(
-          cell,
-          renderCtx,
-          this.sheetCtx,
-          {
-            cellWidth,
-            cellHeight,
-            space_width,
-            space_height,
-            r,
-            c,
-          },
-          this.sheetCtx
-        )
+        cell,
+        renderCtx,
+        this.sheetCtx,
+        {
+          cellWidth,
+          cellHeight,
+          space_width,
+          space_height,
+          r,
+          c,
+        },
+        this.sheetCtx
+      )
       : undefined;
 
     // 交替颜色

@@ -444,6 +444,7 @@ export function setCellValue(
   //     }
   //   }
   // }
+  console.log("r", r, "c", c, cell, v, d);
 
   d[r][c] = cell;
 }

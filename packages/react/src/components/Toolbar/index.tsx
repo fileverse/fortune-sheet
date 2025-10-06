@@ -1970,6 +1970,7 @@ const Toolbar: React.FC<{
       customColor,
       customStyle,
       toolbarFormat.moreCurrency,
+      context.dataVerification?.dataRegulation
     ]
   );
 

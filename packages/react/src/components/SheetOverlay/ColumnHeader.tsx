@@ -111,7 +111,7 @@ const ColumnHeader: React.FC = () => {
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       // @ts-expect-error
-      if(e.button === 0 && e.target.tagName === "use") {
+      if (e.button === 0 && e.target.tagName === "use") {
         const { nativeEvent } = e;
         setContext((draft) => {
           handleColumnHeaderMouseDown(

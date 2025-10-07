@@ -254,7 +254,6 @@ export const useColumnDragAndDrop = (
         Number.isFinite(finalInsertionIndex) &&
         finalInsertionIndex >= 0
       ) {
-
         setContext((draft) => {
           const _sheet = draft.luckysheetfile[sheetIdx];
           if (!_sheet?.data) return;

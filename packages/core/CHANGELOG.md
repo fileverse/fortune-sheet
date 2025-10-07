@@ -1,5 +1,47 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.97
+
+### Patch Changes
+
+- No changable data verification range after selection
+
+## 1.1.96
+
+### Patch Changes
+
+- data verification as portal
+
+## 1.1.95
+
+### Patch Changes
+
+- N/A
+
+## 1.1.94
+
+### Patch Changes
+
+- N/A
+
+## 1.1.93
+
+### Patch Changes
+
+- N/A
+
+## 1.1.92
+
+### Patch Changes
+
+- expose data verification component
+
+## 1.1.91
+
+### Patch Changes
+
+- Data verification revamp
+
 ## 1.1.90
 
 ### Patch Changes

@@ -37,6 +37,10 @@ import {
   insertDuneChart,
   Cell,
 } from "@fileverse-dev/fortune-core";
+import {
+  setSelection,
+  getSelection,
+} from "@fileverse-dev/fortune-core/lib/api";
 import _ from "lodash";
 import {
   IconButton,
@@ -49,6 +53,7 @@ import {
   CommandGroup,
   CommandItem,
 } from "@fileverse/ui";
+import DataVerificationPortal from "./dataVerificationPortal";
 import WorkbookContext from "../../context";
 import "./index.css";
 import Button from "./Button";
@@ -59,7 +64,6 @@ import SVGIcon from "../SVGIcon";
 import { useDialog } from "../../hooks/useDialog";
 import { SplitColumn } from "../SplitColumn";
 import { LocationCondition } from "../LocationCondition";
-import DataVerification from "../DataVerification";
 import ConditionalFormat from "../ConditionFormat";
 import CustomButton from "./CustomButton";
 import { CustomColor } from "./CustomColor";
@@ -541,8 +545,6 @@ const Toolbar: React.FC<{
 
   // Add window resize listener to update desktop state
   useEffect(() => {
-    // @ts-ignore
-    window.getDataValidationComponent = () => <DataVerification />;
     const handleResize = () => {
       setIsDesktop(window.innerWidth >= 1280);
     };
@@ -609,6 +611,8 @@ const Toolbar: React.FC<{
     sheetWidth,
     isDesktop,
   ]);
+
+  const [showDataValidation, setShowDataValidation] = useState(false);
 
   const getToolbarItem = useCallback(
     (name: string, i: number) => {
@@ -1082,19 +1086,34 @@ const Toolbar: React.FC<{
       }
       if (name === "dataVerification") {
         return (
-          <Button
-            iconId={name}
-            tooltip={tooltip}
-            key={name}
-            onClick={() => {
-              if (context.allowEdit === false) return;
-              showDialog(
-                <DataVerification />,
-                undefined,
-                toolbar.dataVerification
-              );
-            }}
-          />
+          <>
+            <DataVerificationPortal visible={showDataValidation} />
+            <Button
+              iconId={name}
+              tooltip={tooltip}
+              key={name}
+              onClick={() => {
+                const selection = getSelection(context);
+                if (!selection) {
+                  setContext((ctx) => {
+                    setSelection(ctx, [{ row: [0, 0], column: [0, 0] }], {
+                      id: context.currentSheetId,
+                    });
+                  });
+                }
+                document.getElementById("data-verification-button")?.click();
+                // if (context.allowEdit === false) return;
+                // showDialog(
+                //   <DataVerification />,
+                //   undefined,
+                //   toolbar.dataVerification
+                // );
+                setTimeout(() => {
+                  setShowDataValidation(true);
+                }, 100);
+              }}
+            />
+          </>
         );
       }
       if (name === "locationCondition") {

@@ -112,7 +112,6 @@ export function generateAPIs(
     },
 
     getCryptoPrice,
-
     getCellValue: (
       row: number,
       column: number,

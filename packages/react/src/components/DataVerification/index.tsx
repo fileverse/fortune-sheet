@@ -77,8 +77,9 @@ const DataVerification: React.FC = () => {
     const selectRow = context.luckysheet_select_save?.[0]?.row?.[0];
     const selectCol = context.luckysheet_select_save?.[0]?.column?.[0];
     const sheetIndex = getSheetIndex();
-    const { dataVerification: dataVerificationInfo } =
-      context.luckysheetfile[sheetIndex as number];
+    const dataVerificationInfo =
+      context.luckysheetfile[sheetIndex as number]?.dataVerification ?? {};
+    if (!dataVerificationInfo) return;
     let value = dataVerificationInfo?.[`${selectRow}_${selectCol}`]?.value1;
     const color = dataVerificationInfo?.[`${selectRow}_${selectCol}`]?.color;
 
@@ -102,17 +103,17 @@ const DataVerification: React.FC = () => {
   }, []);
 
   // 开启鼠标选区
-  const dataSelectRange = useCallback(
-    (type: string, value: string) => {
-      hideDialog();
-      setContext((ctx) => {
-        ctx.rangeDialog!.show = true;
-        ctx.rangeDialog!.type = type;
-        ctx.rangeDialog!.rangeTxt = value;
-      });
-    },
-    [hideDialog, setContext]
-  );
+  // const dataSelectRange = useCallback(
+  //   (type: string, value: string) => {
+  //     hideDialog();
+  //     setContext((ctx) => {
+  //       ctx.rangeDialog!.show = true;
+  //       ctx.rangeDialog!.type = type;
+  //       ctx.rangeDialog!.rangeTxt = value;
+  //     });
+  //   },
+  //   [hideDialog, setContext]
+  // );
 
   // 确定和取消按钮
   const btn = useCallback(
@@ -283,7 +284,10 @@ const DataVerification: React.FC = () => {
 
   return (
     <div id="fortune-data-verification">
-      <div className="flex flex-col gap-4">
+      <div
+        className="flex flex-col gap-4"
+        style={{ width: "345px", padding: "16px" }}
+      >
         <div className="flex flex-col">
           <div className="text-heading-xsm mb-2">
             {dataVerification.cellRange}
@@ -293,19 +297,19 @@ const DataVerification: React.FC = () => {
             aria-hidden="true"
             readOnly
             value={context.dataVerification!.dataRegulation?.rangeTxt}
-            onChange={(e) => {
-              const { value } = e.target;
-              setContext((ctx) => {
-                ctx.dataVerification!.dataRegulation!.rangeTxt = value;
-              });
-            }}
-            onClick={() => {
-              hideDialog();
-              dataSelectRange(
-                "rangeTxt",
-                context.dataVerification!.dataRegulation!.value1
-              );
-            }}
+            // onChange={(e) => {
+            //   const { value } = e.target;
+            //   setContext((ctx) => {
+            //     ctx.dataVerification!.dataRegulation!.rangeTxt = value;
+            //   });
+            // }}
+            // onClick={() => {
+            //   hideDialog();
+            //   dataSelectRange(
+            //     "rangeTxt",
+            //     context.dataVerification!.dataRegulation!.value1
+            //   );
+            // }}
           />
         </div>
 
@@ -684,8 +688,15 @@ const DataVerification: React.FC = () => {
       </div>
 
       <Divider className="w-full border-t-[1px] my-4" />
-      <div className="flex gap-2 justify-between items-center">
-        <Button
+      <div
+        className="flex gap-2 justify-between items-center"
+        style={{
+          width: "345px",
+          paddingRight: "16px",
+          justifyContent: "flex-end",
+        }}
+      >
+        {/* <Button
           variant="secondary"
           style={{
             minWidth: "80px",
@@ -695,7 +706,7 @@ const DataVerification: React.FC = () => {
           }}
         >
           {button.cancel}
-        </Button>
+        </Button> */}
         <div className="flex gap-2">
           <Button
             variant="secondary"

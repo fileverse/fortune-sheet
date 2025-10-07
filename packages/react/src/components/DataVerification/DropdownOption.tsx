@@ -234,20 +234,22 @@ const DynamicInputList = ({
             </div>
 
             {/* Delete button */}
-            <IconButton
-              icon="Trash2"
-              type="button"
-              variant="ghost"
-              onClick={() => handleRemove(index)}
-              className=""
-              aria-label={`Delete row ${index + 1}`}
-              title="Delete"
-            />
+            {optionItems.length > 1 && (
+              <IconButton
+                icon="Trash2"
+                type="button"
+                variant="ghost"
+                onClick={() => handleRemove(index)}
+                className=""
+                aria-label={`Delete row ${index + 1}`}
+                title="Delete"
+              />
+            )}
           </li>
         ))}
       </ul>
 
-      <div className="mt-8">
+      <div className="">
         <Button variant="secondary" onClick={handleAdd} className="">
           Add another item
         </Button>

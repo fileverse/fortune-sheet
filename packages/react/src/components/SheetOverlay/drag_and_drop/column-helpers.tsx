@@ -2,11 +2,22 @@ import { RefObject, useContext, useRef } from "react";
 import {
   fixPositionOnFrozenCells,
   getSheetIndex,
+  getFlowdata,
   colLocation,
   colLocationByIndex,
   updateContextWithSheetData,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../../context";
+
+export function numberToColumnName(num: number): string {
+  let columnName = "";
+  while (num >= 0) {
+    const remainder = num % 26;
+    columnName = String.fromCharCode(65 + remainder) + columnName;
+    num = Math.floor(num / 26) - 1; // Move to the next significant position
+  }
+  return columnName;
+}
 
 export const useColumnDragAndDrop = (
   containerRef: RefObject<HTMLDivElement | null>,
@@ -207,7 +218,7 @@ export const useColumnDragAndDrop = (
     if (!isDragActivated(host, dragOffset)) return;
 
     const { lineLeftPx } = computeInsertionFromPageX(ev.pageX);
-    const ghostPosOffset = dragRef.current.startX > ev.pageX ? 0 : 120;
+    const ghostPosOffset = dragRef.current.startX > ev.pageX ? 0 : 80;
 
     if (dragRef.current.lineEl) {
       dragRef.current.lineEl.style.left = `${lineLeftPx}px`;
@@ -243,6 +254,7 @@ export const useColumnDragAndDrop = (
         Number.isFinite(finalInsertionIndex) &&
         finalInsertionIndex >= 0
       ) {
+
         setContext((draft) => {
           const _sheet = draft.luckysheetfile[sheetIdx];
           if (!_sheet?.data) return;
@@ -269,6 +281,105 @@ export const useColumnDragAndDrop = (
 
           _sheet.data = rows;
           updateContextWithSheetData(draft, _sheet.data);
+          const d = getFlowdata(draft);
+          d?.forEach((row) => {
+            row.forEach((cell) => {
+              if (cell) {
+                const sourceColName = numberToColumnName(sourceIndex);
+                const targetColName = numberToColumnName(targetIndex);
+                if (cell.f) {
+                  cell.f = cell.f.replace(
+                    new RegExp(`\\b${sourceColName}(\\d+)\\b`, "g"),
+                    (match, p1) => {
+                      if (/^\d+$/.test(p1)) {
+                        return `${targetColName}${p1}`;
+                      }
+                      return match;
+                    }
+                  );
+                }
+                const otherAffectedCols: any[] = [];
+                if (sourceIndex < targetIndex) {
+                  for (let c = sourceIndex + 1; c < targetIndex; c += 1) {
+                    otherAffectedCols.push({
+                      source: numberToColumnName(c),
+                      target: numberToColumnName(c - 1),
+                    });
+                  }
+                } else if (sourceIndex > targetIndex) {
+                  for (let c = targetIndex; c < sourceIndex; c += 1) {
+                    otherAffectedCols.push({
+                      source: numberToColumnName(c),
+                      target: numberToColumnName(c + 1),
+                    });
+                  }
+                }
+                // otherAffectedCols.forEach((col) => {
+                //   if (cell.f) {
+                //     cell.f = cell.f.replace(new RegExp(`\\b${col.source}(\\d+)\\b`, 'g'), (match, p1) => {
+                //       if (/^\d+$/.test(p1)) {
+                //         return `${col.target}${p1}`;
+                //       }
+                //       return match;
+                //     });
+                //     console.log("updated formula", cell.f, col.source, col.target);
+                //   }
+                // })
+
+                if (cell.f) {
+                  let formula = cell.f;
+                  const replacements: any[] = [];
+
+                  // Collect all replacement positions first
+                  otherAffectedCols.forEach((col) => {
+                    const regex = new RegExp(`\\b${col.source}(\\d+)\\b`, "g");
+                    let match;
+
+                    // eslint-disable-next-line no-cond-assign
+                    while ((match = regex.exec(formula)) !== null) {
+                      if (/^\d+$/.test(match[1])) {
+                        replacements.push({
+                          start: match.index,
+                          end: match.index + match[0].length,
+                          original: match[0],
+                          replacement: `${col.target}${match[1]}`,
+                        });
+                      }
+                    }
+                  });
+
+                  // Sort by position (descending) and apply replacements from end to start
+                  replacements?.sort((a, b) => b.start - a.start);
+
+                  replacements?.forEach((rep) => {
+                    formula =
+                      formula.substring(0, rep.start) +
+                      rep.replacement +
+                      formula.substring(rep.end);
+                  });
+
+                  cell.f = formula;
+                }
+              }
+            });
+          });
+
+          _sheet.calcChain?.forEach((item) => {
+            if (item.c === sourceIndex) {
+              item.c = targetIndex;
+            } else if (item.c > sourceIndex && item.c < targetIndex) {
+              item.c -= 1;
+            } else if (item.c < sourceIndex && item.c >= targetIndex) {
+              item.c += 1;
+            }
+          });
+          // @ts-expect-error
+          window?.updateDataBlockCalcFunctionAfterRowDrag?.(
+            sourceIndex,
+            targetIndex,
+            "column",
+            context.currentSheetId
+          );
         });
       }
     }
@@ -291,7 +402,6 @@ export const useColumnDragAndDrop = (
     dragRef.current.startX = startX;
     dragRef.current.source = clickedColIndex;
     dragRef.current.active = false;
-    console.log("initiateDrag", startX);
 
     dragRef.current.onDocMove = handleColumnDrag;
     dragRef.current.onDocUp = handleColumnDragEnd;

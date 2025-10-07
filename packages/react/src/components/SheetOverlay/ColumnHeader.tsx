@@ -110,6 +110,20 @@ const ColumnHeader: React.FC = () => {
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      // @ts-expect-error
+      if (e.button === 0 && e.target.tagName === "use") {
+        const { nativeEvent } = e;
+        setContext((draft) => {
+          handleColumnHeaderMouseDown(
+            draft,
+            refs.globalCache,
+            nativeEvent,
+            containerRef.current!,
+            refs.cellInput.current!,
+            refs.fxInput.current!
+          );
+        });
+      }
       if (e.button !== 0) return; // left button only
       const targetEl = e.target as HTMLElement;
       if (

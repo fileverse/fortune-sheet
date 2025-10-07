@@ -67,7 +67,7 @@ const DataVerification: React.FC = () => {
 
   useEffect(() => {
     setContext((ctx) => {
-      // @ts-expect-error later
+      // @ts-ignore
       ctx.dataVerification!.dataRegulation!.color = colors;
       ctx.dataVerification!.dataRegulation!.value1 = valuesFromArray;
     });

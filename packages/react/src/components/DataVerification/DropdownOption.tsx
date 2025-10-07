@@ -218,7 +218,7 @@ const DynamicInputList = ({
             <div className="flex optionItems-center">
               <ColorPicker
                 onPick={(c: any) => handleColorChange(index, c)}
-                trigerColor={item.color}
+                trigerColor={item.color as string}
               />
             </div>
 

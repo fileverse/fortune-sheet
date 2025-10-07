@@ -541,6 +541,8 @@ const Toolbar: React.FC<{
 
   // Add window resize listener to update desktop state
   useEffect(() => {
+    // @ts-ignore
+    window.getDataValidationComponent = () => <DataVerification />;
     const handleResize = () => {
       setIsDesktop(window.innerWidth >= 1280);
     };
@@ -1970,7 +1972,7 @@ const Toolbar: React.FC<{
       customColor,
       customStyle,
       toolbarFormat.moreCurrency,
-      context.dataVerification?.dataRegulation
+      context.dataVerification?.dataRegulation,
     ]
   );
 

@@ -1305,8 +1305,6 @@ export function handleCellAreaDoubleClick(
   const col_location = colLocation(x, ctx.visibledatacolumn);
   let col_index = col_location[2];
 
-  console.log(row_index, col_index);
-
   removeOverShowComment(ctx);
   removeEditingComment(ctx, globalCache);
 

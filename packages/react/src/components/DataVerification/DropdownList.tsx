@@ -26,6 +26,7 @@ const DropDownList: React.FC = () => {
   const [isMul, setIsMul] = useState<boolean>(false);
   const [position, setPosition] = useState<{ left: number; top: number }>();
   const [selected, setSelected] = useState<any[]>([]);
+  const [rbgColor, setRbgColor] = useState<string[]>([]);
 
   const close = useCallback(() => {
     // setContext((ctx) => {
@@ -54,7 +55,7 @@ const DropDownList: React.FC = () => {
     }
     const index = getSheetIndex(context, context.currentSheetId) as number;
     const { dataVerification } = context.luckysheetfile[index];
-    if(!dataVerification) return
+    if (!dataVerification) return;
     const item = dataVerification[`${rowIndex}_${colIndex}`];
     if (!item) return;
     const dropdownList = getDropdownList(context, item.value1);
@@ -64,6 +65,17 @@ const DropDownList: React.FC = () => {
     if (cellValue) {
       setSelected(cellValue.toString().split(","));
     }
+
+    const { color } = item;
+    // const color = context.dataVerification!.dataRegulation!.color.split(",")
+    const colorValues = color?.split(",").map((v: any) => v.trim());
+    // Group every 3 values into RGB arrays
+    const rbgColorArr = [];
+    for (let i = 0; i < colorValues.length; i += 3) {
+      rbgColorArr.push(colorValues.slice(i, i + 3).join(", "));
+    }
+    setRbgColor(rbgColorArr);
+
     setList(dropdownList);
     setPosition({
       left: col_pre,
@@ -83,9 +95,9 @@ const DropDownList: React.FC = () => {
     if (rowIndex == null || colIndex == null) return;
     const index = getSheetIndex(context, context.currentSheetId) as number;
     const { dataVerification } = context.luckysheetfile[index];
-    if(!dataVerification) return
+    if (!dataVerification) return;
     const item = dataVerification[`${rowIndex}_${colIndex}`];
-    if(!item) return
+    if (!item) return;
     if (item.type2 !== "true") return;
     const d = getFlowdata(context);
     if (!d) return;
@@ -109,36 +121,39 @@ const DropDownList: React.FC = () => {
       onMouseUp={(e) => e.stopPropagation()}
       tabIndex={0}
     >
-      {list.map((v, i) => (
-        <div
-          className="dropdown-List-item"
-          key={i}
-          onClick={() => {
-            setContext((ctx) => {
-              const arr = selected;
-              const index = arr.indexOf(v);
-              if (index < 0) {
-                arr.push(v);
-              } else {
-                arr.splice(index, 1);
-              }
-              setSelected(arr);
-              setDropdownValue(ctx, v, arr);
-            });
-          }}
-          tabIndex={0}
-        >
-          <SVGIcon
-            name="check"
-            width={12}
-            style={{
-              verticalAlign: "middle",
-              display: isMul && selected.indexOf(v) >= 0 ? "inline" : "none",
+      {list.map((v, i) => {
+        return (
+          <div
+            className="dropdown-List-item mb-1"
+            style={{ backgroundColor: `rgb(${rbgColor[i]})` || "red" }}
+            key={i}
+            onClick={() => {
+              setContext((ctx) => {
+                const arr = selected;
+                const index = arr.indexOf(v);
+                if (index < 0) {
+                  arr.push(v);
+                } else {
+                  arr.splice(index, 1);
+                }
+                setSelected(arr);
+                setDropdownValue(ctx, v, arr);
+              });
             }}
-          />
-          {v}
-        </div>
-      ))}
+            tabIndex={0}
+          >
+            <SVGIcon
+              name="check"
+              width={12}
+              style={{
+                verticalAlign: "middle",
+                display: isMul && selected.indexOf(v) >= 0 ? "inline" : "none",
+              }}
+            />
+            {v}
+          </div>
+        );
+      })}
     </div>
   );
 };

@@ -45,7 +45,7 @@ import ImgBoxs from "../ImgBoxs";
 import NotationBoxes from "../NotationBoxes";
 import RangeDialog from "../DataVerification/RangeDialog";
 import { useDialog } from "../../hooks/useDialog";
-import SVGIcon from "../SVGIcon";
+// import SVGIcon from "../SVGIcon";
 import DropDownList from "../DataVerification/DropdownList";
 import IframeBoxs from "../IFrameBoxs/iFrameBoxs";
 import ErrorBoxes from "../ErrorState";
@@ -383,10 +383,6 @@ const SheetOverlay: React.FC = () => {
       document.removeEventListener("keydown", onKeyDownForZoom);
     };
   }, [onKeyDownForZoom]);
-
-  // useEffect(() => {
-  //   console.log(context.luckysheet_select_save);
-  // }, [context.luckysheet_select_save]);
 
   return (
     <div

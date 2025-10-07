@@ -3,7 +3,6 @@ import {
   getFlowdata,
   getRangeByTxt,
   getRangetxt,
-  getSheetIndex,
   locale,
   setCellValue,
   confirmMessage,
@@ -20,37 +19,17 @@ import {
   SelectValue,
   TextField,
 } from "@fileverse/ui";
-import React, { useCallback, useContext, useEffect, useState, useMemo } from "react";
-import DynamicInputList from "./DropdownOption"
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import DynamicInputList from "./DropdownOption";
 import WorkbookContext from "../../context";
 import { useDialog } from "../../hooks/useDialog";
 import { injectDatepickerStyles } from "../../utils/datepickerStyles";
 import "./index.css";
 
-type Item = { id: string; value: string; color?: string | null }
+type Item = { id: string; value: string; color?: string | null };
 
 function createId() {
-  return `${Date.now()}_${Math.random().toString(36).slice(2)}`
-}
-
-function excelToIndices(cell: string): string {
-  const match = cell.match(/^([A-Z]+)(\d+)$/);
-  if (!match) {
-    throw new Error('Invalid cell reference');
-  }
-
-  const letters = match[1];
-  const numbers = match[2];
-
-  let colIndex = 0;
-  for (let i = 0; i < letters.length; i++) {
-    colIndex = colIndex * 26 + (letters.charCodeAt(i) - 65 + 1);
-  }
-  colIndex -= 1; // Make it zero-based
-
-  const rowIndex = parseInt(numbers) - 1;
-
-  return `${rowIndex}_${colIndex}`;
+  return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 }
 
 // Initialize datepicker styles
@@ -81,41 +60,46 @@ const DataVerification: React.FC = () => {
     return null;
   }
 
-  const [optionItems, setOptionItems] = useState<Item[]>([
-    { id: createId(), value: "Option 1", color: "228, 232, 237" },
-  ])
+  const [optionItems, setOptionItems] = useState<Item[]>([]);
 
-  const valuesFromArray = useMemo(() => optionItems.map((i) => i.value).join(","), [optionItems])
-  const colors = useMemo(() => optionItems.map((i) => i.color).join(","), [optionItems])
+  const valuesFromArray = optionItems.map((i) => i.value).join(",");
+  const colors = optionItems.map((i) => i.color).join(",");
 
   useEffect(() => {
     setContext((ctx) => {
-      ctx.dataVerification!.dataRegulation!.color = colors,
-        ctx.dataVerification!.dataRegulation!.value1 = valuesFromArray;
-    })
-
-  }, [optionItems])
+      // @ts-expect-error later
+      ctx.dataVerification!.dataRegulation!.color = colors;
+      ctx.dataVerification!.dataRegulation!.value1 = valuesFromArray;
+    });
+  }, [optionItems]);
 
   useEffect(() => {
     const selectRow = context.luckysheet_select_save?.[0]?.row?.[0];
     const selectCol = context.luckysheet_select_save?.[0]?.column?.[0];
     const sheetIndex = getSheetIndex();
-    const { dataVerification } = context.luckysheetfile[sheetIndex];
-    let value = dataVerification?.[`${selectRow}_${selectCol}`]?.value1;
-    let color = dataVerification?.[`${selectRow}_${selectCol}`]?.color;
+    const { dataVerification: dataVerificationInfo } =
+      context.luckysheetfile[sheetIndex as number];
+    let value = dataVerificationInfo?.[`${selectRow}_${selectCol}`]?.value1;
+    const color = dataVerificationInfo?.[`${selectRow}_${selectCol}`]?.color;
 
     if (value && color) {
       // const color = context.dataVerification!.dataRegulation!.color.split(",")
-      const colorValues = color?.split(',').map(v => v.trim());
+      const colorValues = color?.split(",").map((v: string) => v.trim());
       // Group every 3 values into RGB arrays
-      const rgbArray = [];
+      const rgbArray: string[] = [];
       for (let i = 0; i < colorValues.length; i += 3) {
-        rgbArray.push(colorValues.slice(i, i + 3).join(', '));
+        rgbArray.push(colorValues.slice(i, i + 3).join(", "));
       }
-      value = value?.split(",")
-      setOptionItems(value.map((v, i) => ({ id: createId(), value: v, color: rgbArray[i] })))
+      value = value?.split(",");
+      setOptionItems(
+        value.map((v: string, i: number) => ({
+          id: createId(),
+          value: v,
+          color: rgbArray[i],
+        }))
+      );
     }
-  }, [])
+  }, []);
 
   // 开启鼠标选区
   const dataSelectRange = useCallback(
@@ -156,9 +140,8 @@ const DataVerification: React.FC = () => {
               item.value1 = list.join(",");
             }
             const currentDataVerification =
-              ctx.luckysheetfile[
-                getSheetIndex(ctx, ctx.currentSheetId) as number
-              ].dataVerification ?? {};
+              ctx.luckysheetfile[getSheetIndex() as number].dataVerification ??
+              {};
 
             const str = range[range.length - 1].row[0];
             const edr = range[range.length - 1].row[1];
@@ -175,9 +158,8 @@ const DataVerification: React.FC = () => {
                 }
               }
             }
-            ctx.luckysheetfile[
-              getSheetIndex(ctx, ctx.currentSheetId) as number
-            ].dataVerification = currentDataVerification;
+            ctx.luckysheetfile[getSheetIndex() as number].dataVerification =
+              currentDataVerification;
           }
         });
       } else if (type === "delete") {
@@ -191,8 +173,8 @@ const DataVerification: React.FC = () => {
             return;
           }
           const currentDataVerification =
-            ctx.luckysheetfile[getSheetIndex(ctx, ctx.currentSheetId) as number]
-              .dataVerification ?? {};
+            ctx.luckysheetfile[getSheetIndex() as number].dataVerification ??
+            {};
           const str = range[range.length - 1].row[0];
           const edr = range[range.length - 1].row[1];
           const stc = range[range.length - 1].column[0];
@@ -227,7 +209,7 @@ const DataVerification: React.FC = () => {
       }
 
       // 初始化值
-      const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
+      const index = getSheetIndex() as number;
       const ctxDataVerification = ctx.luckysheetfile[index].dataVerification;
       if (ctxDataVerification) {
         if (!ctx.luckysheet_select_save) return;
@@ -381,7 +363,10 @@ const DataVerification: React.FC = () => {
 
           {context.dataVerification?.dataRegulation?.type === "dropdown" && (
             <div className="mt-4">
-              <DynamicInputList optionItems={optionItems} setOptionItems={setOptionItems} />
+              <DynamicInputList
+                optionItems={optionItems}
+                setOptionItems={setOptionItems}
+              />
 
               <div className="mt-4 flex items-center">
                 <Checkbox
@@ -577,7 +562,7 @@ const DataVerification: React.FC = () => {
               </Select>
 
               {context.dataVerification.dataRegulation.type2 === "between" ||
-                context.dataVerification.dataRegulation.type2 === "notBetween" ? (
+              context.dataVerification.dataRegulation.type2 === "notBetween" ? (
                 <div className="mt-4 flex gap-2 items-center">
                   <div className="datepicker-toggle">
                     <input

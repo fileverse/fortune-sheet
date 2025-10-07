@@ -19,6 +19,7 @@ import {
   rowLocationByIndex,
   setCellValue,
 } from "..";
+import { setRowHeight } from "../api";
 
 // TODO: 后期增加鼠标可以选择多个选区
 // 开启范围选区
@@ -483,32 +484,37 @@ export function getFailureText(ctx: Context, item: any) {
       type === "number_integer" ||
       type === "number_decimal"
     ) {
-      failureText += `आपने जो दर्ज किया है वह ${optionLabel_hi[item.type]} ${optionLabel_hi[item.type2]
-        } ${item.value1} नहीं है`;
+      failureText += `आपने जो दर्ज किया है वह ${optionLabel_hi[item.type]} ${
+        optionLabel_hi[item.type2]
+      } ${item.value1} नहीं है`;
 
       if (item.type2 === "between" || item.type2 === "notBetween") {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "text_content") {
-      failureText += `आपने जो दर्ज किया है वह पाठ नहीं है जो ${optionLabel_hi[item.type2]
-        } ${item.value1} है`;
+      failureText += `आपने जो दर्ज किया है वह पाठ नहीं है जो ${
+        optionLabel_hi[item.type2]
+      } ${item.value1} है`;
     } else if (type === "text_length") {
-      failureText += `आपके द्वारा दर्ज किया गया पाठ की लंबाई ${optionLabel_hi[item.type2]
-        } ${item.value1} नहीं है`;
+      failureText += `आपके द्वारा दर्ज किया गया पाठ की लंबाई ${
+        optionLabel_hi[item.type2]
+      } ${item.value1} नहीं है`;
 
       if (item.type2 === "between" || item.type2 === "notBetween") {
         failureText += ` और ${item.value2}`;
       }
     } else if (type === "date") {
-      failureText += `आपके द्वारा दर्ज की गई तिथि ${optionLabel_hi[item.type2]
-        } ${item.value1} नहीं है।`;
+      failureText += `आपके द्वारा दर्ज की गई तिथि ${
+        optionLabel_hi[item.type2]
+      } ${item.value1} नहीं है।`;
 
       if (type2 === "between" || type2 === "notBetween") {
         failureText += ` और ${item.value2}`;
       }
     } else if (type === "validity") {
-      failureText += `आपने जो दर्ज किया है वह सही ${optionLabel_hi[item.type2]
-        } नहीं है।`;
+      failureText += `आपने जो दर्ज किया है वह सही ${
+        optionLabel_hi[item.type2]
+      } नहीं है।`;
     }
   } else {
     // default language english (en, en-US, en-GB, etc.)
@@ -521,32 +527,37 @@ export function getFailureText(ctx: Context, item: any) {
       type === "number_integer" ||
       type === "number_decimal"
     ) {
-      failureText += `What you entered is not a ${optionLabel_en[item.type]} ${optionLabel_en[item.type2]
-        } ${item.value1}`;
+      failureText += `What you entered is not a ${optionLabel_en[item.type]} ${
+        optionLabel_en[item.type2]
+      } ${item.value1}`;
 
       if (item.type2 === "between" || item.type2 === "notBetween") {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "text_content") {
-      failureText += `What you entered is not text that ${optionLabel_en[item.type2]
-        } ${item.value1}`;
+      failureText += `What you entered is not text that ${
+        optionLabel_en[item.type2]
+      } ${item.value1}`;
     } else if (type === "text_length") {
-      failureText += `The text you entered is not length ${optionLabel_en[item.type2]
-        } ${item.value1}`;
+      failureText += `The text you entered is not length ${
+        optionLabel_en[item.type2]
+      } ${item.value1}`;
 
       if (item.type2 === "between" || item.type2 === "notBetween") {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "date") {
-      failureText += `The date you entered is not ${optionLabel_en[item.type2]
-        } ${item.value1}`;
+      failureText += `The date you entered is not ${
+        optionLabel_en[item.type2]
+      } ${item.value1}`;
 
       if (type2 === "between" || type2 === "notBetween") {
         failureText += ` and ${item.value2}`;
       }
     } else if (type === "validity") {
-      failureText += `What you entered is not a correct ${optionLabel_en[item.type2]
-        }`;
+      failureText += `What you entered is not a correct ${
+        optionLabel_en[item.type2]
+      }`;
     }
   }
   return failureText;
@@ -837,18 +848,18 @@ export function setDropdownValue(ctx: Context, value: string, arr: any) {
   }
 
   let valueData = item?.value1;
-  let color = item?.color;
+  const color = item?.color;
   let selectedColor = "";
 
   if (valueData && color) {
     // const color = context.dataVerification!.dataRegulation!.color.split(",")
-    const colorValues = color?.split(',').map(v => v.trim());
+    const colorValues = color?.split(",").map((v: string) => v.trim());
     // Group every 3 values into RGB arrays
     const rgbArray = [];
     for (let i = 0; i < colorValues.length; i += 3) {
-      rgbArray.push(colorValues.slice(i, i + 3).join(', '));
+      rgbArray.push(colorValues.slice(i, i + 3).join(", "));
     }
-    valueData = valueData?.split(",")
+    valueData = valueData?.split(",");
     let valueIndex;
     for (let i = 0; i < valueData?.length; i += 1) {
       if (value.includes(valueData[i])) {
@@ -860,13 +871,17 @@ export function setDropdownValue(ctx: Context, value: string, arr: any) {
   }
 
   setCellValue(ctx, rowIndex, colIndex, d, {
-    "m": "Option 1",
-    "ct": {
-      "fa": "General",
-      "t": "g"
+    ct: {
+      fa: "General",
+      t: "g",
     },
-    "v": value,
-    pillColor: selectedColor
+    v: value,
+    pillColor: selectedColor,
+  });
+  setRowHeight(ctx, {
+    [String(rowIndex)]:
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      22 * (value.split(",").length || valueData?.length) || 22,
   });
   jfrefreshgrid(ctx, null, undefined);
 }

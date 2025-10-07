@@ -26,10 +26,6 @@ const Template: StoryFn<typeof Workbook> = ({
   return (
     <div style={{ width: "100%", height: "100vh" }}>
       <Workbook
-        rowHeaderWidth={60}
-        columnHeaderHeight={24}
-        defaultColWidth={100}
-        defaultRowHeight={21}
         ref={ref}
         {...args}
         data={data}

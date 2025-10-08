@@ -29,9 +29,17 @@ const DropDownList: React.FC = () => {
   const [rbgColor, setRbgColor] = useState<string[]>([]);
 
   const close = useCallback(() => {
-    // setContext((ctx) => {
-    //   ctx.dataVerificationDropDownList = false;
-    // });
+    setContext((ctx) => {
+      const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
+      const verification = context.luckysheetfile[index].dataVerification;
+      if (
+        !verification[
+          `${ctx.luckysheet_select_save?.[0].row_focus}_${ctx.luckysheet_select_save?.[0].column_focus}`
+        ]
+      ) {
+        ctx.dataVerificationDropDownList = false;
+      }
+    });
   }, [setContext]);
 
   useOutsideClick(containerRef, close, [close]);

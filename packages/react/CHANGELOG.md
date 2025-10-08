@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.99
+
+### Patch Changes
+
+- Fix data verification input focus issue
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.99
+
+## 1.1.98
+
+### Patch Changes
+
+- Function parameter highlight
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.98
+
 ## 1.1.97
 
 ### Patch Changes

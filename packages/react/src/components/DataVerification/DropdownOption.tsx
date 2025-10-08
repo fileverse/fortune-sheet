@@ -222,13 +222,25 @@ const DynamicInputList = ({
               />
             </div>
 
-            {/* Input container mimicking the screenshot style */}
             <div className="flex flex-1 optionItems-center transition">
               <TextField
+                type="text"
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  (e.target as HTMLInputElement).focus();
+                }}
+                key={item.id}
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                }}
                 className="w-full"
                 placeholder={`Option ${index + 1}`}
                 value={item.value}
-                onChange={(e) => handleChange(index, e.target.value)}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  handleChange(index, e.target.value);
+                  (e.target as HTMLInputElement).focus();
+                }}
                 aria-label={`Option ${index + 1}`}
               />
             </div>

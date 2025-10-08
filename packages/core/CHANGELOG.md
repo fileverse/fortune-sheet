@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.1.99
+
+### Patch Changes
+
+- Fix data verification input focus issue
+
+## 1.1.98
+
+### Patch Changes
+
+- Function parameter highlight
+
 ## 1.1.97
 
 ### Patch Changes

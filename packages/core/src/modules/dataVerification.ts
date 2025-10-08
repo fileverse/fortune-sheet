@@ -19,7 +19,7 @@ import {
   rowLocationByIndex,
   setCellValue,
 } from "..";
-import { setRowHeight } from "../api";
+import { getRowHeight, setRowHeight } from "../api";
 
 // TODO: 后期增加鼠标可以选择多个选区
 // 开启范围选区
@@ -878,11 +878,15 @@ export function setDropdownValue(ctx: Context, value: string, arr: any) {
     v: value,
     pillColor: selectedColor,
   });
-  setRowHeight(ctx, {
-    [String(rowIndex)]:
-      // eslint-disable-next-line no-unsafe-optional-chaining
-      22 * (value.split(",").length || valueData?.length) || 22,
-  });
+  const currentRowHeight = getRowHeight(ctx, [rowIndex])[rowIndex];
+  // eslint-disable-next-line no-unsafe-optional-chaining
+  const newHeight = 22 * (value.split(",").length || valueData?.length) || 22;
+  if (currentRowHeight < newHeight) {
+    setRowHeight(ctx, {
+      [String(rowIndex)]: newHeight,
+    });
+  }
+
   jfrefreshgrid(ctx, null, undefined);
 }
 

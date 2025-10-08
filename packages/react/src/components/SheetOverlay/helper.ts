@@ -129,12 +129,12 @@ export function countCommasBeforeCursor(editableDiv: HTMLDivElement): number {
   let inQuotes = false;
   let count = 0;
 
-  for (let i = 0; i < textBeforeCursor.length; i = i+1) {
+  for (let i = 0; i < textBeforeCursor.length; i += 1) {
     const char = textBeforeCursor[i];
     if (char === '"') {
       inQuotes = !inQuotes;
     } else if (char === "," && !inQuotes) {
-      count = count + 1;
+      count += 1;
     }
   }
 

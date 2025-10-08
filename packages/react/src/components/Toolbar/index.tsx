@@ -40,7 +40,7 @@ import {
 import {
   setSelection,
   getSelection,
-} from "@fileverse-dev/fortune-core/lib/api";
+} from "@fileverse-dev/fortune-core/src/api";
 import _ from "lodash";
 import {
   IconButton,

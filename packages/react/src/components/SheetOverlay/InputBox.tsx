@@ -43,6 +43,7 @@ import {
   decrementColumn,
   incrementRow,
   decrementRow,
+  countCommasBeforeCursor,
 } from "./helper";
 import { LucideIcon } from "./LucideIcon";
 
@@ -61,6 +62,7 @@ const InputBox: React.FC = () => {
   const [firstSelectionActiveCell, setFirstSelectionActiveCell] = useState<any>(
     {}
   );
+  const [commaCount, setCommaCount] = useState(0);
   const hideFormulaHintLocal = localStorage.getItem("formulaMore") === "true";
   const [showFormulaHint, setShowFormulaHint] = useState(!hideFormulaHintLocal);
   const [showSearchHint, setShowSearchHint] = useState(false);
@@ -342,6 +344,10 @@ const InputBox: React.FC = () => {
       //   return;
       // }
 
+      const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
+      console.log("currentCommaCount", currentCommaCount);
+      setCommaCount(currentCommaCount);
+
       /* Arrow navigation for cell reference starts here */
       let allowListNavigation = true;
 
@@ -546,6 +552,8 @@ const InputBox: React.FC = () => {
       } else {
         setShowSearchHint(false);
       }
+      const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
+      setCommaCount(currentCommaCount);
       // setInputHTML(html);
       // console.log("onChange", __);
       const e = lastKeyDownEventRef.current;
@@ -792,6 +800,12 @@ const InputBox: React.FC = () => {
         }
       >
         <ContentEditable
+          onMouseUp={() => {
+            const currentCommaCount = countCommasBeforeCursor(
+              inputRef?.current!
+            );
+            setCommaCount(currentCommaCount);
+          }}
           innerRef={(e) => {
             // @ts-ignore
             inputRef.current = e;
@@ -846,6 +860,7 @@ const InputBox: React.FC = () => {
               <FormulaHint
                 handleShowFormulaHint={handleShowFormulaHint}
                 showFormulaHint={showFormulaHint}
+                commaCount={commaCount}
               />
             )}
           {!showFormulaHint && fn && (

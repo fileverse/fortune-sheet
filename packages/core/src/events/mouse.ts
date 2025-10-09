@@ -1312,6 +1312,13 @@ export function handleCellAreaDoubleClick(
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
   const { dataVerification } = ctx.luckysheetfile[index];
 
+  if (
+    dataVerification &&
+    dataVerification[`${row_index}_${col_index}`]?.type === "dropdown"
+  ) {
+    return;
+  }
+
   if (dataVerification) {
     const item = dataVerification[`${row_index}_${col_index}`];
     if (item && item.type === "checkbox") return;

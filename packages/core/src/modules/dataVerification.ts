@@ -19,6 +19,7 @@ import {
   rowLocationByIndex,
   setCellValue,
 } from "..";
+import { getRowHeight, setRowHeight } from "../api";
 
 // TODO: 后期增加鼠标可以选择多个选区
 // 开启范围选区
@@ -737,7 +738,12 @@ export function cellFocus(
   dropDownBtn.style.display = "none";
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
   const { dataVerification } = ctx.luckysheetfile[index];
-  ctx.dataVerificationDropDownList = false;
+  const item = dataVerification?.[`${r}_${c}`];
+  if (!item) {
+    ctx.dataVerificationDropDownList = false;
+  } else if (item.type === "dropdown") {
+    ctx.dataVerificationDropDownList = true;
+  }
   if (!dataVerification) return;
   let row = ctx.visibledatarow[r];
   let row_pre = r === 0 ? 0 : ctx.visibledatarow[r - 1];
@@ -750,7 +756,6 @@ export function cellFocus(
     [row_pre, row] = margeSet.row;
     [col_pre, col] = margeSet.column;
   }
-  const item = dataVerification[`${r}_${c}`];
   if (!item) return;
 
   // 单元格数据验证 类型是 复选
@@ -841,7 +846,47 @@ export function setDropdownValue(ctx: Context, value: string, arr: any) {
   } else {
     ctx.dataVerificationDropDownList = false;
   }
-  setCellValue(ctx, rowIndex, colIndex, d, value);
+
+  let valueData = item?.value1;
+  const color = item?.color;
+  let selectedColor = "";
+
+  if (valueData && color) {
+    // const color = context.dataVerification!.dataRegulation!.color.split(",")
+    const colorValues = color?.split(",").map((v: string) => v.trim());
+    // Group every 3 values into RGB arrays
+    const rgbArray = [];
+    for (let i = 0; i < colorValues.length; i += 3) {
+      rgbArray.push(colorValues.slice(i, i + 3).join(", "));
+    }
+    valueData = valueData?.split(",");
+    let valueIndex;
+    for (let i = 0; i < valueData?.length; i += 1) {
+      if (value.includes(valueData[i])) {
+        valueIndex = i;
+        break;
+      }
+    }
+    selectedColor = typeof valueIndex === "number" ? rgbArray[valueIndex] : "";
+  }
+
+  setCellValue(ctx, rowIndex, colIndex, d, {
+    ct: {
+      fa: "General",
+      t: "g",
+    },
+    v: value,
+    pillColor: selectedColor,
+  });
+  const currentRowHeight = getRowHeight(ctx, [rowIndex])[rowIndex];
+  // eslint-disable-next-line no-unsafe-optional-chaining
+  const newHeight = 22 * (value.split(",").length || valueData?.length) || 22;
+  if (currentRowHeight < newHeight) {
+    setRowHeight(ctx, {
+      [String(rowIndex)]: newHeight,
+    });
+  }
+
   jfrefreshgrid(ctx, null, undefined);
 }
 

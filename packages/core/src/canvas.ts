@@ -8,6 +8,7 @@ import {
   getFontSet,
   getMeasureText,
 } from "./modules/text";
+import { getColumnWidth } from "./api";
 import { isInlineStringCell } from "./modules/inline-string";
 import { getSheetIndex, indexToColumnChar } from "./utils";
 import { getBorderInfoComputeRange } from "./modules/border";
@@ -1719,6 +1720,50 @@ export class Canvas {
       renderCtx.closePath();
     }
 
+    const index = getSheetIndex(
+      this.sheetCtx,
+      this.sheetCtx.currentSheetId
+    ) as number;
+
+    const { dataVerification } = this.sheetCtx.luckysheetfile[index];
+
+    // console.log("r", r, "c", c, dataVerification);
+    if (
+      dataVerification?.[`${r}_${c}`] &&
+      dataVerification?.[`${r}_${c}`].type === "dropdown"
+    ) {
+      const columnWidth = getColumnWidth(this.sheetCtx, [c]);
+
+      const finalPillWidth = (columnWidth?.[c] || 70) - 5;
+      const ps_w = finalPillWidth * this.sheetCtx.zoomRatio;
+      const ps_h = 16 * this.sheetCtx.zoomRatio;
+      const radius = 5 * this.sheetCtx.zoomRatio;
+
+      const x = endX + offsetLeft - 4 - ps_w;
+      const y = startY + offsetTop + 2;
+
+      // Draw rounded rectangle
+      renderCtx.beginPath();
+      renderCtx.fillStyle = "rgba(232, 235, 236, 1)";
+      renderCtx.roundRect(x, y, ps_w, ps_h, radius);
+      renderCtx.fill();
+      renderCtx.closePath();
+
+      const chevronWidth = 7 * this.sheetCtx.zoomRatio;
+      const chevronHeight = 4 * this.sheetCtx.zoomRatio;
+      const chevronX = x + ps_w - chevronWidth - 2 * this.sheetCtx.zoomRatio;
+      const chevronY = y + (ps_h - chevronHeight) / 2;
+
+      renderCtx.beginPath();
+      renderCtx.fillStyle = "rgba(0, 0, 0, 1)";
+      // Draw triangle pointing down
+      renderCtx.moveTo(chevronX, chevronY); // Top left
+      renderCtx.lineTo(chevronX + chevronWidth, chevronY); // Top right
+      renderCtx.lineTo(chevronX + chevronWidth / 2, chevronY + chevronHeight); // Bottom center (point)
+      renderCtx.closePath();
+      renderCtx.fill();
+    }
+
     // 此单元格 与  溢出单元格关系
     const cellOverflow_colInObj = this.cellOverflow_colIn(
       cellOverflowMap,
@@ -1899,6 +1944,97 @@ export class Canvas {
     ) as number;
 
     const { dataVerification } = this.sheetCtx.luckysheetfile[index];
+
+    const isDataVlidationAvailable =
+      dataVerification?.[`${r}_${c}`] &&
+      dataVerification?.[`${r}_${c}`].type === "dropdown";
+    if (isDataVlidationAvailable) {
+      const option = cell?.v;
+      const color = dataVerification?.[`${r}_${c}`]?.color;
+      const allOptions = dataVerification?.[`${r}_${c}`]?.value1.split(",");
+
+      // const color = context.dataVerification!.dataRegulation!.color.split(",")
+      const colorValues = color?.split(",").map((v: any) => v.trim());
+      // Group every 3 values into RGB arrays
+      const rgbArray: string[] = [];
+      for (let i = 0; i < colorValues?.length; i += 3) {
+        rgbArray.push(colorValues.slice(i, i + 3).join(", "));
+      }
+      const optionValue = String(option)?.split(",");
+
+      const columnWidth = getColumnWidth(this.sheetCtx, [c]);
+      // const rowHeight = getRowHeight(this.sheetCtx, [r]);
+
+      const finalPillWidth = (columnWidth?.[c] || 70) - 5;
+      // const finalPillHeight = (rowHeight?.[r] || 22) - 5;
+      const ps_w = finalPillWidth * this.sheetCtx.zoomRatio;
+      const ps_h = 16 * this.sheetCtx.zoomRatio;
+      const radius = 5 * this.sheetCtx.zoomRatio;
+
+      const baseX = endX + offsetLeft - 4 - ps_w;
+      const baseY = startY + offsetTop + 2;
+
+      // Array of options to display
+      const pillSpacing = 2 * this.sheetCtx.zoomRatio; // Space between pills
+
+      // Draw 3 pills in a stack
+      for (let i = 0; i < optionValue?.length; i += 1) {
+        const x = baseX;
+        const y = baseY + i * (ps_h + pillSpacing);
+
+        // Draw rounded rectangle
+        let bgColor;
+        allOptions?.forEach((opt: any, idx: number) => {
+          if (opt === optionValue[i]) {
+            bgColor = `rgba(${rgbArray?.[idx]}, 1)`;
+          }
+        });
+        renderCtx.beginPath();
+        renderCtx.fillStyle = bgColor || "rgba(232, 235, 236, 1)";
+        renderCtx.roundRect(x, y, ps_w - 8, ps_h, radius);
+        renderCtx.fill();
+        renderCtx.closePath();
+
+        if (i === 0) {
+          // Draw chevron
+          const chevronWidth = 7 * this.sheetCtx.zoomRatio;
+          const chevronHeight = 4 * this.sheetCtx.zoomRatio;
+          const chevronX =
+            x + 3 + ps_w - chevronWidth - 2 * this.sheetCtx.zoomRatio;
+          const chevronY = y + (ps_h - chevronHeight) / 2;
+
+          renderCtx.beginPath();
+          renderCtx.fillStyle = "rgba(0, 0, 0, 1)";
+          renderCtx.moveTo(chevronX, chevronY);
+          renderCtx.lineTo(chevronX + chevronWidth, chevronY);
+          renderCtx.lineTo(
+            chevronX + chevronWidth / 2,
+            chevronY + chevronHeight
+          );
+          renderCtx.closePath();
+          renderCtx.fill();
+        }
+
+        // Draw text inside the pill
+        const text = optionValue[i]; // Use different text for each pill
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        const fontSize = cell?.fs! * this.sheetCtx.zoomRatio;
+
+        renderCtx.font = `${fontSize}px sans-serif`;
+        renderCtx.fillStyle = "rgba(0, 0, 0, 0.8)";
+        renderCtx.textBaseline = "middle";
+        renderCtx.textAlign = "left";
+
+        // Clip text if too long
+        renderCtx.save();
+        renderCtx.beginPath();
+        renderCtx.rect(x, y, finalPillWidth - 12, ps_h);
+        renderCtx.clip();
+
+        renderCtx.fillText(text, x + 4, y + ps_h / 2);
+        renderCtx.restore();
+      }
+    }
 
     if (
       dataVerification?.[`${r}_${c}`] &&
@@ -2294,9 +2430,11 @@ export class Canvas {
       if (opacity < 0.999) {
         renderCtx.save();
         renderCtx.globalAlpha = opacity;
-        this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
+        if (!isDataVlidationAvailable) {
+          this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
+        }
         renderCtx.restore();
-      } else {
+      } else if (!isDataVlidationAvailable) {
         this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
       }
 

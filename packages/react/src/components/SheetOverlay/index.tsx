@@ -45,7 +45,7 @@ import ImgBoxs from "../ImgBoxs";
 import NotationBoxes from "../NotationBoxes";
 import RangeDialog from "../DataVerification/RangeDialog";
 import { useDialog } from "../../hooks/useDialog";
-import SVGIcon from "../SVGIcon";
+// import SVGIcon from "../SVGIcon";
 import DropDownList from "../DataVerification/DropdownList";
 import IframeBoxs from "../IFrameBoxs/iFrameBoxs";
 import ErrorBoxes from "../ErrorState";
@@ -733,7 +733,7 @@ const SheetOverlay: React.FC = () => {
             tabIndex={0}
             style={{ display: "none" }}
           >
-            <SVGIcon name="caret-down-fill" width={16} height={16} />
+            {/* <SVGIcon name="caret-down-fill" width={16} height={16} /> */}
           </div>
           {context.dataVerificationDropDownList &&
             (context.dataVerification!.dataRegulation!.value1 !== "" ||

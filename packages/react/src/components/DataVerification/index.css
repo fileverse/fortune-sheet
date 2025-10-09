@@ -200,3 +200,7 @@
 .data-verification-checkbox-label {
   min-width: 100px;
 }
+
+.color-picker:hover {
+  background: hsl(var(--color-bg-default-hover, #F2F4F5));
+}

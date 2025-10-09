@@ -3,7 +3,6 @@ import {
   getFlowdata,
   getRangeByTxt,
   getRangetxt,
-  getSheetIndex,
   locale,
   setCellValue,
   confirmMessage,
@@ -21,10 +20,17 @@ import {
   TextField,
 } from "@fileverse/ui";
 import React, { useCallback, useContext, useEffect, useState } from "react";
+import DynamicInputList from "./DropdownOption";
 import WorkbookContext from "../../context";
 import { useDialog } from "../../hooks/useDialog";
 import { injectDatepickerStyles } from "../../utils/datepickerStyles";
 import "./index.css";
+
+type Item = { id: string; value: string; color?: string | null };
+
+function createId() {
+  return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+}
 
 // Initialize datepicker styles
 injectDatepickerStyles();
@@ -33,16 +39,6 @@ const DataVerification: React.FC = () => {
   const { context, setContext } = useContext(WorkbookContext);
   const { showDialog, hideDialog } = useDialog();
   const { dataVerification, button, generalDialog } = locale(context);
-  // const [numberCondition] = useState<string[]>([
-  //   "between",
-  //   "notBetween",
-  //   "equal",
-  //   "notEqualTo",
-  //   "moreThanThe",
-  //   "lessThan",
-  //   "greaterOrEqualTo",
-  //   "lessThanOrEqualTo",
-  // ]);
 
   const [dateCondition] = useState<string[]>([
     "between",
@@ -55,18 +51,69 @@ const DataVerification: React.FC = () => {
     "noLaterThan",
   ]);
 
+  function getSheetIndex() {
+    for (let i = 0; i < context.luckysheetfile.length; i += 1) {
+      if (context.luckysheetfile[i]?.id === context.currentSheetId) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  const [optionItems, setOptionItems] = useState<Item[]>([]);
+
+  const valuesFromArray = optionItems.map((i) => i.value).join(",");
+  const colors = optionItems.map((i) => i.color).join(",");
+
+  useEffect(() => {
+    setContext((ctx) => {
+      // @ts-ignore
+      ctx.dataVerification!.dataRegulation!.color = colors;
+      ctx.dataVerification!.dataRegulation!.value1 = valuesFromArray;
+    });
+  }, [optionItems]);
+
+  useEffect(() => {
+    const selectRow = context.luckysheet_select_save?.[0]?.row?.[0];
+    const selectCol = context.luckysheet_select_save?.[0]?.column?.[0];
+    const sheetIndex = getSheetIndex();
+    const dataVerificationInfo =
+      context.luckysheetfile[sheetIndex as number]?.dataVerification ?? {};
+    if (!dataVerificationInfo) return;
+    let value = dataVerificationInfo?.[`${selectRow}_${selectCol}`]?.value1;
+    const color = dataVerificationInfo?.[`${selectRow}_${selectCol}`]?.color;
+
+    if (value && color) {
+      // const color = context.dataVerification!.dataRegulation!.color.split(",")
+      const colorValues = color?.split(",").map((v: string) => v.trim());
+      // Group every 3 values into RGB arrays
+      const rgbArray: string[] = [];
+      for (let i = 0; i < colorValues.length; i += 3) {
+        rgbArray.push(colorValues.slice(i, i + 3).join(", "));
+      }
+      value = value?.split(",");
+      setOptionItems(
+        value.map((v: string, i: number) => ({
+          id: createId(),
+          value: v,
+          color: rgbArray[i],
+        }))
+      );
+    }
+  }, []);
+
   // 开启鼠标选区
-  const dataSelectRange = useCallback(
-    (type: string, value: string) => {
-      hideDialog();
-      setContext((ctx) => {
-        ctx.rangeDialog!.show = true;
-        ctx.rangeDialog!.type = type;
-        ctx.rangeDialog!.rangeTxt = value;
-      });
-    },
-    [hideDialog, setContext]
-  );
+  // const dataSelectRange = useCallback(
+  //   (type: string, value: string) => {
+  //     hideDialog();
+  //     setContext((ctx) => {
+  //       ctx.rangeDialog!.show = true;
+  //       ctx.rangeDialog!.type = type;
+  //       ctx.rangeDialog!.rangeTxt = value;
+  //     });
+  //   },
+  //   [hideDialog, setContext]
+  // );
 
   // 确定和取消按钮
   const btn = useCallback(
@@ -94,9 +141,8 @@ const DataVerification: React.FC = () => {
               item.value1 = list.join(",");
             }
             const currentDataVerification =
-              ctx.luckysheetfile[
-                getSheetIndex(ctx, ctx.currentSheetId) as number
-              ].dataVerification ?? {};
+              ctx.luckysheetfile[getSheetIndex() as number].dataVerification ??
+              {};
 
             const str = range[range.length - 1].row[0];
             const edr = range[range.length - 1].row[1];
@@ -113,9 +159,8 @@ const DataVerification: React.FC = () => {
                 }
               }
             }
-            ctx.luckysheetfile[
-              getSheetIndex(ctx, ctx.currentSheetId) as number
-            ].dataVerification = currentDataVerification;
+            ctx.luckysheetfile[getSheetIndex() as number].dataVerification =
+              currentDataVerification;
           }
         });
       } else if (type === "delete") {
@@ -129,8 +174,8 @@ const DataVerification: React.FC = () => {
             return;
           }
           const currentDataVerification =
-            ctx.luckysheetfile[getSheetIndex(ctx, ctx.currentSheetId) as number]
-              .dataVerification ?? {};
+            ctx.luckysheetfile[getSheetIndex() as number].dataVerification ??
+            {};
           const str = range[range.length - 1].row[0];
           const edr = range[range.length - 1].row[1];
           const stc = range[range.length - 1].column[0];
@@ -165,7 +210,7 @@ const DataVerification: React.FC = () => {
       }
 
       // 初始化值
-      const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
+      const index = getSheetIndex() as number;
       const ctxDataVerification = ctx.luckysheetfile[index].dataVerification;
       if (ctxDataVerification) {
         if (!ctx.luckysheet_select_save) return;
@@ -239,7 +284,10 @@ const DataVerification: React.FC = () => {
 
   return (
     <div id="fortune-data-verification">
-      <div className="flex flex-col gap-4">
+      <div
+        className="flex flex-col gap-4"
+        style={{ width: "345px", padding: "16px" }}
+      >
         <div className="flex flex-col">
           <div className="text-heading-xsm mb-2">
             {dataVerification.cellRange}
@@ -249,19 +297,19 @@ const DataVerification: React.FC = () => {
             aria-hidden="true"
             readOnly
             value={context.dataVerification!.dataRegulation?.rangeTxt}
-            onChange={(e) => {
-              const { value } = e.target;
-              setContext((ctx) => {
-                ctx.dataVerification!.dataRegulation!.rangeTxt = value;
-              });
-            }}
-            onClick={() => {
-              hideDialog();
-              dataSelectRange(
-                "rangeTxt",
-                context.dataVerification!.dataRegulation!.value1
-              );
-            }}
+            // onChange={(e) => {
+            //   const { value } = e.target;
+            //   setContext((ctx) => {
+            //     ctx.dataVerification!.dataRegulation!.rangeTxt = value;
+            //   });
+            // }}
+            // onClick={() => {
+            //   hideDialog();
+            //   dataSelectRange(
+            //     "rangeTxt",
+            //     context.dataVerification!.dataRegulation!.value1
+            //   );
+            // }}
           />
         </div>
 
@@ -319,23 +367,11 @@ const DataVerification: React.FC = () => {
 
           {context.dataVerification?.dataRegulation?.type === "dropdown" && (
             <div className="mt-4">
-              <TextField
-                // rightIcon={<LucideIcon name="Grid2x2" size="sm" />}
-                value={context.dataVerification!.dataRegulation!.value1}
-                placeholder={dataVerification.placeholder1}
-                onChange={(e) => {
-                  const { value } = e.target;
-                  setContext((ctx) => {
-                    ctx.dataVerification!.dataRegulation!.value1 = value;
-                  });
-                }}
-                // onClick={() =>
-                //   dataSelectRange(
-                //     "dropDown",
-                //     context.dataVerification!.dataRegulation!.value1
-                //   )
-                // }
+              <DynamicInputList
+                optionItems={optionItems}
+                setOptionItems={setOptionItems}
               />
+
               <div className="mt-4 flex items-center">
                 <Checkbox
                   className="border-2"
@@ -652,8 +688,15 @@ const DataVerification: React.FC = () => {
       </div>
 
       <Divider className="w-full border-t-[1px] my-4" />
-      <div className="flex gap-2 justify-between items-center">
-        <Button
+      <div
+        className="flex gap-2 justify-between items-center"
+        style={{
+          width: "345px",
+          paddingRight: "16px",
+          justifyContent: "flex-end",
+        }}
+      >
+        {/* <Button
           variant="secondary"
           style={{
             minWidth: "80px",
@@ -663,7 +706,7 @@ const DataVerification: React.FC = () => {
           }}
         >
           {button.cancel}
-        </Button>
+        </Button> */}
         <div className="flex gap-2">
           <Button
             variant="secondary"

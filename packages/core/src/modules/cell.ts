@@ -142,6 +142,7 @@ export function setCellValue(
   d: CellMatrix | null | undefined,
   v: any
 ) {
+  if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
   if (_.isNil(d)) {
     d = getFlowdata(ctx);
   }
@@ -753,6 +754,8 @@ export function updateCell(
   value?: any,
   canvas?: CanvasRenderingContext2D
 ) {
+  if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
+
   let inputText = $input?.innerText;
   const inputHtml = $input?.innerHTML;
   const flowdata = getFlowdata(ctx);

@@ -1,5 +1,77 @@
 # @fileverse-dev/fortune-react
 
+## 1.1.99
+
+### Patch Changes
+
+- Fix data verification input focus issue
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.99
+
+## 1.1.98
+
+### Patch Changes
+
+- Function parameter highlight
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.98
+
+## 1.1.97
+
+### Patch Changes
+
+- No changable data verification range after selection
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.97
+
+## 1.1.96
+
+### Patch Changes
+
+- data verification as portal
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.96
+
+## 1.1.95
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.95
+
+## 1.1.94
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.94
+
+## 1.1.93
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.93
+
+## 1.1.92
+
+### Patch Changes
+
+- expose data verification component
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.92
+
+## 1.1.91
+
+### Patch Changes
+
+- Data verification revamp
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.91
+
 ## 1.1.90
 
 ### Patch Changes

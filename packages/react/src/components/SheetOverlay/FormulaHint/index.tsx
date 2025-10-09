@@ -6,7 +6,7 @@ import "./index.css";
 import { DraggableDiv } from "./dragable-div";
 
 const FormulaHint = (props: any) => {
-  const { showFormulaHint, handleShowFormulaHint } = props;
+  const { showFormulaHint, handleShowFormulaHint, commaCount } = props;
   const dragHasMoved = useRef(false);
   const { context } = useContext(WorkbookContext);
   const firstSelection = context.luckysheet_select_save?.[0];
@@ -198,6 +198,12 @@ const FormulaHint = (props: any) => {
                         className="luckysheet-arguments-help-parameter font-family-mono mb-1 mt-2 color-text-default"
                         dir="auto"
                         key={name}
+                        style={{
+                          backgroundColor:
+                            commaCount === i
+                              ? fn?.BRAND_SECONDARY_COLOR || "#FFDF0A"
+                              : "transparent",
+                        }}
                       >
                         {name}
                         {i !== fn.p.length - 1 && ", "}
@@ -430,10 +436,18 @@ const FormulaHint = (props: any) => {
                     style={{ paddingTop: "16px" }}
                     className="luckysheet-formula-help-content-param"
                   >
-                    {fn.p.map((param: any) => (
+                    {fn.p.map((param: any, index: number) => (
                       <div className="" key={param.name}>
                         <div>
-                          <code className="font-family-mono mb-1 mt-2 color-text-default font-family-mono">
+                          <code
+                            className="font-family-mono mb-1 mt-2 color-text-default font-family-mono"
+                            style={{
+                              backgroundColor:
+                                commaCount === index
+                                  ? fn?.BRAND_SECONDARY_COLOR || "#FFDF0A"
+                                  : "transparent",
+                            }}
+                          >
                             {param.name}
                             {param.repeat === "y" && (
                               <span

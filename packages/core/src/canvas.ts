@@ -1957,7 +1957,7 @@ export class Canvas {
       const colorValues = color?.split(",").map((v: any) => v.trim());
       // Group every 3 values into RGB arrays
       const rgbArray: string[] = [];
-      for (let i = 0; i < colorValues.length; i += 3) {
+      for (let i = 0; i < colorValues?.length; i += 3) {
         rgbArray.push(colorValues.slice(i, i + 3).join(", "));
       }
       const optionValue = String(option)?.split(",");

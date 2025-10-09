@@ -366,6 +366,7 @@ export const useColumnDragAndDrop = (
           });
 
           // update dataVerification
+          if (_sheet.dataVerification) {
           const newDataVerification: any = {};
           Object.keys(_sheet.dataVerification).forEach((item) => {
             const itemData = _sheet.dataVerification?.[item];
@@ -383,6 +384,7 @@ export const useColumnDragAndDrop = (
             newDataVerification[`${colRow[0]}_${updatedCol}`] = itemData;
           });
           _sheet.dataVerification = newDataVerification;
+        }
 
           // update calc chain
           _sheet.calcChain?.forEach((item) => {

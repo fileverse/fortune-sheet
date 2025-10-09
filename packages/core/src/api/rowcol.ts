@@ -209,8 +209,6 @@ export function setRowHeight(
   }
 
   const sheet = getSheet(ctx, options);
-  console.log("sheet=======", sheet);
-
   const cfg = sheet.config || {};
   if (cfg.rowlen == null) {
     cfg.rowlen = {};

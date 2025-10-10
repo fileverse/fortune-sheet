@@ -204,3 +204,23 @@
 .color-picker:hover {
   background: hsl(var(--color-bg-default-hover, #F2F4F5));
 }
+
+.color-picker-container {
+  border: 1px solid hsl(var(--color-border-default, #E8EBEC)) !important;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.15);
+  width: 230px !important;
+}
+
+.color-picker-reset {
+  min-width: 0px;
+  padding-left: 0px;
+  margin-left: 0px;
+}
+
+.color-picker-reset:hover {
+  background-color: white;
+}
+
+.color-picker-icon:hover {
+  background-color: white;
+}

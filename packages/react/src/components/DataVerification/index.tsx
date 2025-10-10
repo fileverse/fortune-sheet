@@ -103,17 +103,17 @@ const DataVerification: React.FC = () => {
   }, []);
 
   // 开启鼠标选区
-  // const dataSelectRange = useCallback(
-  //   (type: string, value: string) => {
-  //     hideDialog();
-  //     setContext((ctx) => {
-  //       ctx.rangeDialog!.show = true;
-  //       ctx.rangeDialog!.type = type;
-  //       ctx.rangeDialog!.rangeTxt = value;
-  //     });
-  //   },
-  //   [hideDialog, setContext]
-  // );
+  const dataSelectRange = useCallback(
+    (type: string, value: string) => {
+      hideDialog();
+      setContext((ctx) => {
+        ctx.rangeDialog!.show = true;
+        ctx.rangeDialog!.type = type;
+        ctx.rangeDialog!.rangeTxt = value;
+      });
+    },
+    [hideDialog, setContext]
+  );
 
   // 确定和取消按钮
   const btn = useCallback(
@@ -285,7 +285,7 @@ const DataVerification: React.FC = () => {
   return (
     <div id="fortune-data-verification">
       <div
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-4 h-[calc(100vh-270px)] overflow-y-auto no-scrollbar"
         style={{ width: "345px", padding: "16px" }}
       >
         <div className="flex flex-col">
@@ -297,19 +297,19 @@ const DataVerification: React.FC = () => {
             aria-hidden="true"
             readOnly
             value={context.dataVerification!.dataRegulation?.rangeTxt}
-            // onChange={(e) => {
-            //   const { value } = e.target;
-            //   setContext((ctx) => {
-            //     ctx.dataVerification!.dataRegulation!.rangeTxt = value;
-            //   });
-            // }}
-            // onClick={() => {
-            //   hideDialog();
-            //   dataSelectRange(
-            //     "rangeTxt",
-            //     context.dataVerification!.dataRegulation!.value1
-            //   );
-            // }}
+            onChange={(e) => {
+              const { value } = e.target;
+              setContext((ctx) => {
+                ctx.dataVerification!.dataRegulation!.rangeTxt = value;
+              });
+            }}
+            onClick={() => {
+              hideDialog();
+              dataSelectRange(
+                "rangeTxt",
+                context.dataVerification!.dataRegulation!.value1
+              );
+            }}
           />
         </div>
 
@@ -385,7 +385,7 @@ const DataVerification: React.FC = () => {
                     });
                   }}
                 />
-                <span className="ml-2">
+                <span className="ml-2 text-body-sm">
                   {dataVerification.allowMultiSelect}
                 </span>
               </div>
@@ -667,7 +667,9 @@ const DataVerification: React.FC = () => {
                   });
                 }}
               />
-              <span className="ml-2">{(dataVerification as any)[v]}</span>
+              <span className="ml-2 text-body-sm">
+                {(dataVerification as any)[v]}
+              </span>
             </div>
           ))}
           {context.dataVerification?.dataRegulation?.hintShow && (
@@ -687,7 +689,10 @@ const DataVerification: React.FC = () => {
         </div>
       </div>
 
-      <Divider className="w-full border-t-[1px] my-4" />
+      <Divider
+        className="border-t-[1px]"
+        style={{ width: "315px", margin: "0 16px 16px 16px" }}
+      />
       <div
         className="flex gap-2 justify-between items-center"
         style={{

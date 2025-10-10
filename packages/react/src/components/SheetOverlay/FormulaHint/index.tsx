@@ -58,6 +58,29 @@ const FormulaHint = (props: any) => {
     );
   };
 
+  const hexToRgbString = (hex: string) => {
+    // Remove the '#' if present
+    hex = hex.replace("#", "");
+
+    // Extract RGB values
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    // Return the RGB as a string
+    return `${r}, ${g}, ${b}`;
+  };
+
+  const bgColor = (BRAND_SECONDARY_COLOR: string) => {
+    const bg = BRAND_SECONDARY_COLOR
+      ? `rgb(${hexToRgbString(
+        BRAND_SECONDARY_COLOR
+      )}, 0.4)`
+      : "#FFDF0A"
+
+      return bg;
+  }
+
   useEffect(() => {
     calcuatePopUpPlacement();
   }, []);
@@ -76,9 +99,8 @@ const FormulaHint = (props: any) => {
     <DraggableDiv
       initialTop={top}
       dragHasMoved={dragHasMoved}
-      className={`bg-secondary text-secondary-foreground p-4 rounded-lg flex items-center justify-center ${
-        showDelayedHint ? "opacity-100" : "opacity-0"
-      }`}
+      className={`bg-secondary text-secondary-foreground p-4 rounded-lg flex items-center justify-center ${showDelayedHint ? "opacity-100" : "opacity-0"
+        }`}
     >
       {showFormulaHint && (
         <div>
@@ -165,9 +187,8 @@ const FormulaHint = (props: any) => {
               className="flex !cursor-grab active:cursor-grabbing items-start justify-between"
               id="luckysheet-formula-help-title"
               style={{
-                backgroundColor: `${
-                  fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
-                }`,
+                backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
+                  }`,
                 padding: "10px",
                 borderRadius: "10px",
                 cursor: "grab",
@@ -201,7 +222,7 @@ const FormulaHint = (props: any) => {
                         style={{
                           backgroundColor:
                             commaCount === i
-                              ? fn?.BRAND_SECONDARY_COLOR || "#FFDF0A"
+                              ? bgColor(fn.BRAND_SECONDARY_COLOR)
                               : "transparent",
                         }}
                       >
@@ -275,9 +296,8 @@ const FormulaHint = (props: any) => {
                 className="luckysheet-formula-help-content"
                 id="function-details"
                 style={{
-                  backgroundColor: `${
-                    fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
-                  }`,
+                  backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
+                    }`,
                   maxHeight: "284px",
                   overflowY: "scroll",
                   cursor: "auto",
@@ -286,9 +306,8 @@ const FormulaHint = (props: any) => {
                 {fn.API_KEY && (
                   <div
                     style={{
-                      borderLeft: `4px solid ${
-                        isKeyAdded ? "#177E23" : "#fb923c"
-                      }`,
+                      borderLeft: `4px solid ${isKeyAdded ? "#177E23" : "#fb923c"
+                        }`,
                       backgroundColor: "white",
                       padding: "8px",
                       paddingBottom: "2px",
@@ -444,7 +463,7 @@ const FormulaHint = (props: any) => {
                             style={{
                               backgroundColor:
                                 commaCount === index
-                                  ? fn?.BRAND_SECONDARY_COLOR || "#FFDF0A"
+                                  ? bgColor(fn.BRAND_SECONDARY_COLOR)
                                   : "transparent",
                             }}
                           >
@@ -482,9 +501,8 @@ const FormulaHint = (props: any) => {
             {showFunctionBody && (
               <div
                 style={{
-                  backgroundColor: `${
-                    fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
-                  }`,
+                  backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
+                    }`,
                   padding: "8px",
                   borderBottomLeftRadius: "10px",
                   borderBottomRightRadius: "10px",

@@ -9,8 +9,10 @@ import {
   fixRowStyleOverflowInFreeze,
   handleRowFreezeHandleMouseDown,
   getSheetIndex,
+  showSelected,
   fixPositionOnFrozenCells,
 } from "@fileverse-dev/fortune-core";
+import { setSelection } from "@fileverse-dev/fortune-core/src/api";
 import _ from "lodash";
 import React, {
   useContext,
@@ -103,7 +105,21 @@ const RowHeader: React.FC = () => {
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (e.button !== 0) return; // left button only
+      // @ts-expect-error
+      if ((e.button === 0 && e.target.tagName === "use") || e.button === 2) {
+        const { nativeEvent } = e;
+        setContext((draft) => {
+          handleRowHeaderMouseDown(
+            draft,
+            refs.globalCache,
+            nativeEvent,
+            containerRef.current!,
+            refs.cellInput.current!,
+            refs.fxInput.current!
+          );
+        });
+      }
+      if (e.button !== 0 || context.isFlvReadOnly) return; // left button only
       const targetEl = e.target as HTMLElement;
       if (
         targetEl.closest(".fortune-rows-change-size") ||
@@ -232,6 +248,50 @@ const RowHeader: React.FC = () => {
     }
     setSelectedLocation(selects);
   }, [context.luckysheet_select_save, context.visibledatarow]);
+
+  const [hiddenPointers, setHiddenPointers] = useState([]);
+
+  useEffect(() => {
+    if (sheetIndex == null) return;
+    const tempPointers: any = [];
+    if (context.luckysheetfile[sheetIndex]?.config?.rowhidden) {
+      Object.keys(
+        context.luckysheetfile[sheetIndex]?.config?.rowhidden
+      ).forEach((key) => {
+        const item = { row: key, top: context.visibledatarow[Number(key) - 1] };
+        tempPointers.push(item);
+      });
+      setHiddenPointers(tempPointers);
+    } else {
+      setHiddenPointers([]);
+    }
+  }, [context.visibledatarow, sheetIndex]);
+
+  const showRow = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    item: any
+  ) => {
+    if (context.isFlvReadOnly) return;
+    e.stopPropagation();
+    setContext((ctx) => {
+      setSelection(
+        ctx,
+        [
+          {
+            row: [Number(item.row) - 1, Number(item.row) + 1],
+            column: [0, context.visibledatacolumn?.length],
+          },
+        ],
+        {
+          id: context.currentSheetId,
+        }
+      );
+    });
+    setContext((ctx) => {
+      showSelected(ctx, "row");
+    });
+  };
+
   useEffect(() => {
     containerRef.current!.scrollTop = context.scrollTop;
   }, [context.scrollTop]);
@@ -249,6 +309,47 @@ const RowHeader: React.FC = () => {
       onMouseLeave={onMouseLeave}
       onContextMenu={onContextMenu}
     >
+      {hiddenPointers.map((item: any) => {
+        return (
+          <div
+            className="flex flex-col gap-4 cursor-pointer align-center hide-btn-row hide-btn"
+            style={{
+              top: `${item.top - 16}px`,
+              zIndex: 100,
+            }}
+            onClick={(e) => showRow(e, item)}
+          >
+            <div className="rotate-row-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="5"
+                height="8"
+                viewBox="0 0 5 8"
+                fill="none"
+              >
+                <path
+                  d="M0.164574 4.20629L3.54376 7.58548C3.7275 7.76922 4.04167 7.63909 4.04167 7.37924L4.04167 0.620865C4.04167 0.361018 3.7275 0.230885 3.54376 0.414625L0.164575 3.79381C0.0506717 3.90772 0.0506715 4.09239 0.164574 4.20629Z"
+                  fill="#363B3F"
+                />
+              </svg>
+            </div>
+            <div className="rotate-90">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="5"
+                height="8"
+                viewBox="0 0 5 8"
+                fill="none"
+              >
+                <path
+                  d="M0.164574 4.20629L3.54376 7.58548C3.7275 7.76922 4.04167 7.63909 4.04167 7.37924L4.04167 0.620865C4.04167 0.361018 3.7275 0.230885 3.54376 0.414625L0.164575 3.79381C0.0506717 3.90772 0.0506715 4.09239 0.164574 4.20629Z"
+                  fill="#363B3F"
+                />
+              </svg>
+            </div>
+          </div>
+        );
+      })}
       <div
         className="fortune-rows-freeze-handle"
         onMouseDown={onRowFreezeHandleMouseDown}

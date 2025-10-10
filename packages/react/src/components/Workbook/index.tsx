@@ -884,6 +884,11 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             }
           });
         }
+        setContextWithProduce((ctx: any) => {
+          if (ctx.luckysheet_selection_range) {
+            ctx.luckysheet_selection_range = [];
+          }
+        });
       },
       [context, setContextWithProduce]
     );
@@ -935,6 +940,16 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
 
     return (
       <WorkbookContext.Provider value={providerValue}>
+        <div
+          id="placeholder-data-verification"
+          style={{
+            width: "500px",
+            height: "500px",
+            position: "fixed",
+            zIndex: "1000",
+            backgroundColor: "white",
+          }}
+        />
         <ModalProvider>
           <div
             className="fortune-container"

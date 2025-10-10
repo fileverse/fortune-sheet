@@ -11,8 +11,10 @@ import { getDisplayedRangeTxt } from "./getDisplayedRangeTxt";
 const RangeDialog: React.FC = () => {
   const { context, setContext } = useContext(WorkbookContext);
   const { showDialog } = useDialog();
-  const { dataVerification, button, 
-    //toolbar 
+  const {
+    dataVerification,
+    button,
+    // toolbar
   } = locale(context);
   const [rangeTxt2, setRangeTxt2] = useState<string>(
     getDisplayedRangeTxt(context)

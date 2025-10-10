@@ -13,8 +13,8 @@ import {
   getSheetIndex,
   fixPositionOnFrozenCells,
   showSelected,
+  api,
 } from "@fileverse-dev/fortune-core";
-import { api } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, {
   useContext,

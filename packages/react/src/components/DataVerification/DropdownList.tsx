@@ -163,10 +163,14 @@ const DropDownList: React.FC = () => {
           </div>
         );
       })}
-      <div className="w-full flex align-center" style={{ height: "28px" }} onClick={() => {
-            // @ts-ignore
-            window?.dataVerificationClick?.();
-          }}>
+      <div
+        className="w-full flex align-center"
+        style={{ height: "28px" }}
+        onClick={() => {
+          // @ts-ignore
+          window?.dataVerificationClick?.();
+        }}
+      >
         <IconButton
           icon="Pencil"
           size="sm"

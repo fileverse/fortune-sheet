@@ -49,7 +49,7 @@ const RangeDialog: React.FC = () => {
       );
     }
     console.log("rangeDialogType", rangeDialogType);
-    //document.getElementById("data-verification-button")?.click();
+    // document.getElementById("data-verification-button")?.click();
     // showDialog(<DataVerification />, undefined, toolbar.dataVerification);
   }, [setContext, showDialog, context]);
 

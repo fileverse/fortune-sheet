@@ -1,5 +1,12 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.1
+
+### Patch Changes
+
+- :wq!
+  An empty message aborts the editor.
+
 ## 1.2.0
 
 ### Minor Changes

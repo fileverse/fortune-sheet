@@ -25,7 +25,13 @@ import {
   clearRowsCellsFormat,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
-import React, { useContext, useRef, useCallback, useLayoutEffect } from "react";
+import React, {
+  useContext,
+  useRef,
+  useCallback,
+  useLayoutEffect,
+  useState,
+} from "react";
 import regeneratorRuntime from "regenerator-runtime";
 import Tippy from "@tippyjs/react";
 import { LucideIcon } from "@fileverse/ui";
@@ -52,6 +58,8 @@ const ContextMenu: React.FC = () => {
   const { showAlert } = useAlert();
   const { rightclick, drag, generalDialog, info, toolbar, splitText } =
     locale(context);
+
+  const [activeMenu, setActiveMenu] = useState("");
 
   const addRowColRightAvobe = (
     type: "row" | "column",
@@ -881,6 +889,12 @@ const ContextMenu: React.FC = () => {
             arrow={false}
             zIndex={3000}
             appendTo={document.body}
+            onShow={() => {
+              setActiveMenu("sort");
+            }}
+            onHide={() => {
+              if (activeMenu === "sort") setActiveMenu("");
+            }}
             content={
               <div
                 className="fortune-toolbar-select"
@@ -946,7 +960,7 @@ const ContextMenu: React.FC = () => {
             hideOnClick={false}
           >
             <div>
-              <Menu>
+              <Menu isActive={activeMenu === "sort"}>
                 <div className="flex items-center justify-between w-full">
                   <div className="context-item">
                     <LucideIcon name="ArrowDownUp" />
@@ -987,7 +1001,7 @@ const ContextMenu: React.FC = () => {
                   >
                     <div
                       className="context-item p-2 w-full"
-                      style={{ height: "40px" }}
+                      style={{ height: "32px" }}
                     >
                       <LucideIcon name="Filter" className="w-4 h-4" />
                       <p>{filter.filter}</p>
@@ -1003,7 +1017,7 @@ const ContextMenu: React.FC = () => {
                   >
                     <div
                       className="context-item p-2 w-full"
-                      style={{ height: "40px" }}
+                      style={{ height: "32px" }}
                     >
                       <LucideIcon name="Eraser" />
                       <p>{filter.clearFilter}</p>
@@ -1014,9 +1028,15 @@ const ContextMenu: React.FC = () => {
             }
             trigger="mouseenter focus"
             hideOnClick={false}
+            onShow={() => {
+              setActiveMenu("filter");
+            }}
+            onHide={() => {
+              if (activeMenu === "filter") setActiveMenu("");
+            }}
           >
             <div>
-              <Menu>
+              <Menu isActive={activeMenu === "filter"}>
                 <div className="flex items-center justify-between w-full">
                   <div className="context-item">
                     <LucideIcon name="Filter" />
@@ -1083,6 +1103,12 @@ const ContextMenu: React.FC = () => {
             arrow={false}
             zIndex={3000}
             appendTo={document.body}
+            onShow={() => {
+              setActiveMenu("conditionFormat");
+            }}
+            onHide={() => {
+              if (activeMenu === "conditionFormat") setActiveMenu("");
+            }}
             content={
               <div style={{ minWidth: 220 }}>
                 <ConditionalFormat
@@ -1100,7 +1126,7 @@ const ContextMenu: React.FC = () => {
             hideOnClick={false}
           >
             <div>
-              <Menu>
+              <Menu isActive={activeMenu === "conditionFormat"}>
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2 context-item">
                     <LucideIcon name="PaintbrushVertical" />
@@ -1159,6 +1185,7 @@ const ContextMenu: React.FC = () => {
       generalDialog.partiallyError,
       generalDialog.readOnlyError,
       generalDialog.dataNullError,
+      activeMenu,
     ]
   );
 

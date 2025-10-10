@@ -141,12 +141,24 @@
 
 .fortune-toolbar-combo-button {
   font-size: 12px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 4px;
+  gap: 8px;
+}
+.fortune-toolbar-combo-button:hover {
+  background: hsl(var(--color-bg-default-hover));
 }
 
 .fortune-toolbar-select-option {
   font-size: 12px;
   min-width: 60px;
-  padding: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 6px;
+  padding-bottom: 6px;
   cursor: pointer;
   user-select: none;
 }
@@ -171,6 +183,10 @@
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
+  max-width: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fortune-toolbar-color-picker-item {

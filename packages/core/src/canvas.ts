@@ -18,7 +18,7 @@ import { cellFadeAnimator } from "./animate";
 export const defaultStyle = {
   fillStyle: "#000000",
   textBaseline: "middle",
-  strokeStyle: "#dfdfdf",
+  strokeStyle: "#e8ebec",
   rowFillStyle: "#5e5e5e",
   textAlign: "center",
 };

@@ -4,6 +4,8 @@ import React, {
   useMemo,
   useCallback,
   useLayoutEffect,
+  useRef,
+  useEffect,
 } from "react";
 import {
   locale,
@@ -77,12 +79,20 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
         e.stopPropagation(),
       onMouseUp: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
         e.stopPropagation(),
-      onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) =>
-        e.stopPropagation(),
+      onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+        if (isButtonDisabled) return;
+        if (e.key === "Enter") {
+          _.set(refs.globalCache, "linkCard.mouseEnter", false);
+          setContext((draftCtx) =>
+            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress)
+          );
+        }
+      },
       onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
         e.stopPropagation(),
     }),
-    [refs.globalCache]
+    [refs.globalCache, isButtonDisabled]
   );
 
   const renderToolbarButton = useCallback(
@@ -99,6 +109,49 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
     setLinkText(originText);
     setLinkType(originType);
   }, [rc, originAddress, originText, originType]);
+
+  const hintRef = useRef<HTMLDivElement | null>(null);
+  const [popupTopPx, setPopupTopPx] = useState<number>(
+    (position?.cellBottom ?? 0) + 4
+  );
+
+  const calculatePopupPlacement = useCallback(() => {
+    const firstSelection = context?.luckysheet_select_save?.[0];
+    if (
+      !firstSelection?.top?.toString?.() ||
+      !firstSelection?.height_move?.toString?.() ||
+      !hintRef.current
+    ) {
+      return;
+    }
+
+    const selectionHeight = firstSelection?.height_move || 0;
+    const cellBottom = position?.cellBottom;
+    const cellTop = cellBottom - selectionHeight;
+
+    const inputBottom = cellTop + selectionHeight;
+    const availableBelow = window.innerHeight - inputBottom;
+    const divOffset = hintRef.current?.offsetHeight;
+    const hintAbove = divOffset > availableBelow;
+
+    // Final absolute top (document coordinates):
+    //  - place just below the selection or just above it with a small margin
+    const nextTop = hintAbove
+      ? Math.max(0, cellTop - (divOffset + 30))
+      : cellBottom + 4;
+
+    setPopupTopPx(nextTop);
+  }, [context?.luckysheet_select_save, position?.cellBottom]);
+
+  useLayoutEffect(() => {
+    calculatePopupPlacement();
+  }, [calculatePopupPlacement, isEditing, rc, position]);
+
+  useEffect(() => {
+    const onResize = () => calculatePopupPlacement();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [calculatePopupPlacement]);
 
   if (!isEditing) {
     return (
@@ -161,9 +214,10 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
   return (
     <div
       className="fortune-link-card"
+      ref={hintRef}
       style={{
         left: position.cellLeft + 20,
-        top: position.cellBottom,
+        top: popupTopPx,
       }}
       {...containerEvent}
     >
@@ -204,6 +258,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
           value={linkText}
           onChange={(e) => setLinkText(e.target.value)}
           className="fortune-link-input"
+          autoFocus={!linkText}
         />
       </div>
 
@@ -215,6 +270,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
           <TextField
             placeholder="Paste URL"
             value={linkAddress}
+            autoFocus={!!linkText}
             onChange={(e) => setLinkAddress(e.target.value)}
             className={`fortune-link-input ${
               !linkAddress || isLinkAddressValid.isValid ? "" : "error-input"

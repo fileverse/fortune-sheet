@@ -1007,3 +1007,26 @@
   /* darker on hover */
   /* scrollbar */
 }
+
+.hide-btn {
+  padding-top: 1px;
+  position: absolute;
+  right: 5;
+  top: 5px;
+  z-index: 200;
+  width: 9px;
+}
+
+.hide-btn:hover {
+  border: 1px solid #0188fb;
+}
+
+.rotate-row-icon {
+  transform: rotate(-90deg);
+}
+
+.hide-btn-row {
+  position: absolute;
+   left: 4px;
+  z-index: 200;
+}

@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@fileverse/ui";
+import {
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  IconButton,
+} from "@fileverse/ui";
 
 export const TEXT_COLORS = [
   { name: "Light Gray", value: "228, 232, 237" },
@@ -39,7 +45,12 @@ export const ColorSection = ({
       >
         <div
           className="flex items-center justify-between  color-picker rounded transition-all cursor-pointer border border-gray-300"
-          style={{ padding: "7px" }}
+          style={{
+            padding: "7px",
+            border:
+              "var(--border-width-md, 1px) solid hsl(var(--color-border-default, #E8EBEC))",
+            borderRadius: "var(--border-radius-sm, 4px)",
+          }}
         >
           <div className="flex items-center gap-3 color-text-secondary">
             <div
@@ -58,7 +69,7 @@ export const ColorSection = ({
       <PopoverContent
         align="start"
         alignOffset={0}
-        className="w-[200px] export-content-popover"
+        className="color-picker-container"
         elevation={2}
         side="bottom"
         sideOffset={4}
@@ -66,23 +77,52 @@ export const ColorSection = ({
         <div className="transition-all p-2 duration-200 w-full">
           <div className="flex gap-2 flex-wrap w-full">
             {TEXT_COLORS.map((color) => (
-              /* eslint-disable-next-line  jsx-a11y/control-has-associated-label */
-              <button
-                type="button"
+              <div
                 key={color.value}
-                onClick={() => {
-                  onPick(color.value);
-                  setIsOpen(false);
-                }}
                 className="w-7 h-7 rounded-full transition-all hover:scale-110 hover:shadow-md"
-                style={
-                  {
-                    backgroundColor: `rgb(${color.value})`,
-                  } as React.CSSProperties
-                }
-                title={color.name}
-              />
+                style={{
+                  border:
+                    `${color.value}` === trigerColor
+                      ? `2px solid rgb(${color.value})`
+                      : "none",
+                  padding: "2px",
+                }}
+              >
+                {/* eslint-disable-next-line  jsx-a11y/control-has-associated-label */}
+                <button
+                  type="button"
+                  key={color.value}
+                  onClick={() => {
+                    onPick(color.value);
+                    setIsOpen(false);
+                  }}
+                  className="w-full h-full rounded-full transition-all hover:scale-110 hover:shadow-md"
+                  style={
+                    {
+                      backgroundColor: `rgb(${color.value})`,
+                    } as React.CSSProperties
+                  }
+                  title={color.name}
+                />
+              </div>
             ))}
+            <div
+              className="w-full flex justify-center"
+              onClick={() => {
+                onPick("228, 232, 237");
+                setIsOpen(false);
+              }}
+            >
+              <IconButton
+                icon="DropletOff"
+                size="md"
+                variant="ghost"
+                className="color-picker-icon"
+              />
+              <Button size="md" variant="ghost" className="color-picker-reset">
+                Reset
+              </Button>
+            </div>
           </div>
         </div>
       </PopoverContent>

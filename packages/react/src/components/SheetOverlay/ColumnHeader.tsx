@@ -12,7 +12,9 @@ import {
   handleColFreezeHandleMouseDown,
   getSheetIndex,
   fixPositionOnFrozenCells,
+  showSelected,
 } from "@fileverse-dev/fortune-core";
+import { api } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, {
   useContext,
@@ -111,7 +113,7 @@ const ColumnHeader: React.FC = () => {
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       // @ts-expect-error
-      if (e.button === 0 && e.target.tagName === "use") {
+      if ((e.button === 0 && e.target.tagName === "use") || e.button === 2) {
         const { nativeEvent } = e;
         setContext((draft) => {
           handleColumnHeaderMouseDown(
@@ -124,7 +126,7 @@ const ColumnHeader: React.FC = () => {
           );
         });
       }
-      if (e.button !== 0) return; // left button only
+      if (e.button !== 0 || context.isFlvReadOnly) return; // left button only
       const targetEl = e.target as HTMLElement;
       if (
         targetEl.closest(".fortune-cols-change-size") ||
@@ -261,6 +263,54 @@ const ColumnHeader: React.FC = () => {
     setSelectedLocation(selects);
   }, [context.luckysheet_select_save, context.visibledatacolumn]);
 
+  const [hiddenPointers, setHiddenPointers] = useState([]);
+
+  useEffect(() => {
+    if (sheetIndex == null) return;
+
+    const tempPointers: any = [];
+    const colhidden = context.luckysheetfile[sheetIndex]?.config?.colhidden;
+
+    if (colhidden) {
+      Object.keys(colhidden).forEach((key) => {
+        const item = {
+          col: key,
+          left: context.visibledatacolumn[Number(key) - 1],
+        };
+        tempPointers.push(item);
+      });
+      console.log(tempPointers);
+      setHiddenPointers(tempPointers);
+    } else {
+      setHiddenPointers([]);
+    }
+  }, [context.visibledatacolumn, sheetIndex]);
+
+  const showColumn = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    item: any
+  ) => {
+    if (context.isFlvReadOnly) return;
+    e.stopPropagation();
+    setContext((ctx) => {
+      api.setSelection(
+        ctx,
+        [
+          {
+            row: [0, context.visibledatarow?.length],
+            column: [Number(item.col) - 1, Number(item.col) + 1],
+          },
+        ],
+        {
+          id: context.currentSheetId,
+        }
+      );
+    });
+    setContext((ctx) => {
+      showSelected(ctx, "column");
+    });
+  };
+
   useEffect(() => {
     containerRef.current!.scrollLeft = context.scrollLeft;
   }, [context.scrollLeft]);
@@ -286,6 +336,60 @@ const ColumnHeader: React.FC = () => {
         });
       }}
     >
+      {hiddenPointers.map((item: any) => {
+        return (
+          <div
+            className="flex gap-4 cursor-pointer hide-btn align-center"
+            style={{
+              height: context.columnHeaderHeight - 12,
+              left: `${item.left - 12}px`,
+            }}
+            onClick={(e) => showColumn(e, item)}
+          >
+            <div className="">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="5"
+                height="8"
+                viewBox="0 0 5 8"
+                fill="none"
+              >
+                <path
+                  d="M0.164574 4.20629L3.54376 7.58548C3.7275 7.76922 4.04167 7.63909 4.04167 7.37924L4.04167 0.620865C4.04167 0.361018 3.7275 0.230885 3.54376 0.414625L0.164575 3.79381C0.0506717 3.90772 0.0506715 4.09239 0.164574 4.20629Z"
+                  fill="#363B3F"
+                />
+              </svg>
+            </div>
+          </div>
+        );
+      })}
+      {hiddenPointers.map((item: any) => {
+        return (
+          <div
+            className="flex gap-4 cursor-pointer hide-btn align-center"
+            style={{
+              height: context.columnHeaderHeight - 12,
+              left: `${item.left + 6}px`,
+            }}
+            onClick={(e) => showColumn(e, item)}
+          >
+            <div className="">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="5"
+                height="8"
+                viewBox="0 0 5 8"
+                fill="none"
+              >
+                <path
+                  d="M4.68811 4.35359L1.81188 7.22982C1.4969 7.5448 0.958328 7.32172 0.958328 6.87627L0.958328 1.12381C0.958328 0.678362 1.4969 0.455279 1.81188 0.770261L4.68811 3.64649C4.88337 3.84175 4.88337 4.15833 4.68811 4.35359Z"
+                  fill="#363B3F"
+                />
+              </svg>
+            </div>
+          </div>
+        );
+      })}
       <div
         className="fortune-cols-freeze-handle"
         onMouseDown={onColFreezeHandleMouseDown}
@@ -323,7 +427,7 @@ const ColumnHeader: React.FC = () => {
         >
           {allowEditRef.current && (
             <span
-              className="header-arrow"
+              className="header-arrow mr-2"
               onClick={(e) => {
                 setContext((ctx) => {
                   ctx.contextMenu = {

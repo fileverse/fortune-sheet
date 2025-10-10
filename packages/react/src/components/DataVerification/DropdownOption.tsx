@@ -178,7 +178,7 @@ const DynamicInputList = ({
           <li
             key={item.id}
             className={cn(
-              "relative flex optionItems-center gap-3 transition mb-4",
+              "relative flex optionItems-center gap-2 transition mb-4",
               draggingIndex === index &&
                 "scale-[0.99] opacity-80 shadow-lg rounded-xl"
             )}
@@ -262,7 +262,12 @@ const DynamicInputList = ({
       </ul>
 
       <div className="">
-        <Button variant="secondary" onClick={handleAdd} className="">
+        <Button
+          variant="secondary"
+          onClick={handleAdd}
+          size="sm"
+          style={{ fontWeight: 500 }}
+        >
           Add another item
         </Button>
       </div>

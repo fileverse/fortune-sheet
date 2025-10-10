@@ -58,6 +58,27 @@ const FormulaHint = (props: any) => {
     );
   };
 
+  const hexToRgbString = (hex: string) => {
+    // Remove the '#' if present
+    hex = hex.replace("#", "");
+
+    // Extract RGB values
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    // Return the RGB as a string
+    return `${r}, ${g}, ${b}`;
+  };
+
+  const bgColor = (BRAND_SECONDARY_COLOR: string) => {
+    const bg = BRAND_SECONDARY_COLOR
+      ? `rgb(${hexToRgbString(BRAND_SECONDARY_COLOR)}, 0.4)`
+      : "#FFDF0A";
+
+    return bg;
+  };
+
   useEffect(() => {
     calcuatePopUpPlacement();
   }, []);
@@ -201,7 +222,7 @@ const FormulaHint = (props: any) => {
                         style={{
                           backgroundColor:
                             commaCount === i
-                              ? fn?.BRAND_SECONDARY_COLOR || "#FFDF0A"
+                              ? bgColor(fn.BRAND_SECONDARY_COLOR)
                               : "transparent",
                         }}
                       >
@@ -444,7 +465,7 @@ const FormulaHint = (props: any) => {
                             style={{
                               backgroundColor:
                                 commaCount === index
-                                  ? fn?.BRAND_SECONDARY_COLOR || "#FFDF0A"
+                                  ? bgColor(fn.BRAND_SECONDARY_COLOR)
                                   : "transparent",
                             }}
                           >

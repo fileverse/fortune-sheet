@@ -321,24 +321,27 @@ export const useRowDragAndDrop = (
           });
 
           if (_sheet.dataVerification) {
-          const newDataVerification: any = {};
-          Object.keys(_sheet.dataVerification).forEach((item) => {
-            const itemData = _sheet.dataVerification?.[item];
-            const colRow = item.split("_");
-            if (colRow.length !== 2) return;
-            const presentRow = parseInt(colRow[0], 10);
-            let updatedRow = presentRow;
-            if (presentRow === sourceIndex) {
-              updatedRow = targetIndex;
-            } else if (presentRow > sourceIndex && presentRow < targetIndex) {
-              updatedRow -= 1;
-            } else if (presentRow < sourceIndex && presentRow >= targetIndex) {
-              updatedRow += 1;
-            }
-            newDataVerification[`${updatedRow}_${colRow[1]}`] = itemData;
-          });
-          _sheet.dataVerification = newDataVerification;
-        }
+            const newDataVerification: any = {};
+            Object.keys(_sheet.dataVerification).forEach((item) => {
+              const itemData = _sheet.dataVerification?.[item];
+              const colRow = item.split("_");
+              if (colRow.length !== 2) return;
+              const presentRow = parseInt(colRow[0], 10);
+              let updatedRow = presentRow;
+              if (presentRow === sourceIndex) {
+                updatedRow = targetIndex;
+              } else if (presentRow > sourceIndex && presentRow < targetIndex) {
+                updatedRow -= 1;
+              } else if (
+                presentRow < sourceIndex &&
+                presentRow >= targetIndex
+              ) {
+                updatedRow += 1;
+              }
+              newDataVerification[`${updatedRow}_${colRow[1]}`] = itemData;
+            });
+            _sheet.dataVerification = newDataVerification;
+          }
 
           _sheet.calcChain?.forEach((item) => {
             if (item.r === sourceIndex) {

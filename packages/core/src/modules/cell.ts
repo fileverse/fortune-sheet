@@ -447,6 +447,10 @@ export function setCellValue(
   // }
 
   d[r][c] = cell;
+  // after cell data update
+  if (ctx.luckysheet_selection_range) {
+    ctx.luckysheet_selection_range = [];
+  }
 }
 
 export function getRealCellValue(

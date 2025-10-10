@@ -1,7 +1,7 @@
 import { locale } from "@fileverse-dev/fortune-core";
 import { Button, cn, IconButton, TextField } from "@fileverse/ui";
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import DataVerification from ".";
+// import DataVerification from ".";
 import WorkbookContext from "../../context";
 import { useDialog } from "../../hooks/useDialog";
 import ConditionRules from "../ConditionFormat/ConditionRules";
@@ -11,7 +11,9 @@ import { getDisplayedRangeTxt } from "./getDisplayedRangeTxt";
 const RangeDialog: React.FC = () => {
   const { context, setContext } = useContext(WorkbookContext);
   const { showDialog } = useDialog();
-  const { dataVerification, button, toolbar } = locale(context);
+  const { dataVerification, button, 
+    //toolbar 
+  } = locale(context);
   const [rangeTxt2, setRangeTxt2] = useState<string>(
     getDisplayedRangeTxt(context)
   );
@@ -41,9 +43,8 @@ const RangeDialog: React.FC = () => {
         undefined,
         (locale(context).conditionformat as any)[`conditionformat_${rulesType}`]
       );
-      return;
     }
-    showDialog(<DataVerification />, undefined, toolbar.dataVerification);
+    // showDialog(<DataVerification />, undefined, toolbar.dataVerification);
   }, [setContext, showDialog, context]);
 
   useEffect(() => {

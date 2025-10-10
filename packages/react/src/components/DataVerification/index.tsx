@@ -731,6 +731,7 @@ const DataVerification: React.FC = () => {
             }}
             onClick={() => {
               btn("confirm");
+              document.getElementById("data-verification-button")?.click();
             }}
           >
             {button.confirm}

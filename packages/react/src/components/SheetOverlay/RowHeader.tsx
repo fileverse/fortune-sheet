@@ -253,11 +253,12 @@ const RowHeader: React.FC = () => {
 
   useEffect(() => {
     if (sheetIndex == null) return;
+
     const tempPointers: any = [];
-    if (context.luckysheetfile[sheetIndex]?.config?.rowhidden) {
-      Object.keys(
-        context.luckysheetfile[sheetIndex]?.config?.rowhidden
-      ).forEach((key) => {
+    const rowhidden = context.luckysheetfile[sheetIndex]?.config?.rowhidden;
+
+    if (rowhidden) {
+      Object.keys(rowhidden).forEach((key) => {
         const item = { row: key, top: context.visibledatarow[Number(key) - 1] };
         tempPointers.push(item);
       });

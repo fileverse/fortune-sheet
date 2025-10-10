@@ -1210,8 +1210,8 @@ const ContextMenu: React.FC = () => {
       onContextMenu={(e) => e.stopPropagation()}
       style={{ left: contextMenu.x, top: contextMenu.y }}
     >
-      {/* @ts-ignore */}
       {context.contextMenu.headerMenu === true ||
+      /* @ts-ignore */
       context.contextMenu.headerMenu === "row"
         ? settings.headerContextMenu.map((menu, i) => {
             return getMenuElement(menu, i);

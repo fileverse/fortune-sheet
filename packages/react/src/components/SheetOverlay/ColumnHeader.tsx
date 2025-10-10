@@ -267,11 +267,12 @@ const ColumnHeader: React.FC = () => {
 
   useEffect(() => {
     if (sheetIndex == null) return;
+
     const tempPointers: any = [];
-    if (context.luckysheetfile[sheetIndex]?.config?.colhidden) {
-      Object.keys(
-        context.luckysheetfile[sheetIndex]?.config?.colhidden
-      ).forEach((key) => {
+    const colhidden = context.luckysheetfile[sheetIndex]?.config?.colhidden;
+
+    if (colhidden) {
+      Object.keys(colhidden).forEach((key) => {
         const item = {
           col: key,
           left: context.visibledatacolumn[Number(key) - 1],

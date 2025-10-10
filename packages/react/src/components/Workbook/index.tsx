@@ -940,7 +940,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
 
     return (
       <WorkbookContext.Provider value={providerValue}>
-        <div
+        {/* <div
           id="placeholder-data-verification"
           style={{
             width: "500px",
@@ -949,7 +949,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             zIndex: "1000",
             backgroundColor: "white",
           }}
-        />
+        /> */}
         <ModalProvider>
           <div
             className="fortune-container"

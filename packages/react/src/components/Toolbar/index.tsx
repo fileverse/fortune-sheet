@@ -37,10 +37,7 @@ import {
   insertDuneChart,
   Cell,
 } from "@fileverse-dev/fortune-core";
-import {
-  setSelection,
-  getSelection,
-} from "@fileverse-dev/fortune-core/src/api";
+import { api } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import {
   IconButton,
@@ -613,13 +610,19 @@ const Toolbar: React.FC<{
     isDesktop,
   ]);
 
+    useEffect(() => {
+      setContext((ctx) => {
+        ctx.dataVerification!.dataRegulation!.value1 = "value1";
+      });
+    }, []);
+
   const [showDataValidation, setShowDataValidation] = useState(false);
 
   const dataVerificationClick = () => {
-    const selection = getSelection(context);
+    const selection = api.getSelection(context);
     if (!selection) {
       setContext((ctx) => {
-        setSelection(ctx, [{ row: [0, 0], column: [0, 0] }], {
+        api.setSelection(ctx, [{ row: [0, 0], column: [0, 0] }], {
           id: context.currentSheetId,
         });
       });

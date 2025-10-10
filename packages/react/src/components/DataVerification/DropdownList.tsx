@@ -163,21 +163,20 @@ const DropDownList: React.FC = () => {
           </div>
         );
       })}
-      <div className="w-full flex align-center" style={{ height: "28px" }}>
+      <div className="w-full flex align-center" style={{ height: "28px" }} onClick={() => {
+            // @ts-ignore
+            window?.dataVerificationClick?.();
+          }}>
         <IconButton
           icon="Pencil"
           size="sm"
           variant="ghost"
-          className="color-picker-icon pt-2"
+          className="color-picker-icon pt-2 color-picker"
         />
         <Button
           size="md"
           variant="ghost"
-          className="color-picker-reset"
-          onClick={() => {
-            // @ts-ignore
-            window?.dataVerificationClick?.();
-          }}
+          className="color-picker-reset color-picker"
         >
           Edit
         </Button>

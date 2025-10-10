@@ -304,6 +304,7 @@ const DataVerification: React.FC = () => {
               });
             }}
             onClick={() => {
+              document.getElementById("data-verification-button")?.click();
               hideDialog();
               dataSelectRange(
                 "rangeTxt",

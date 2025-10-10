@@ -14,7 +14,7 @@ import {
   fixPositionOnFrozenCells,
   showSelected,
 } from "@fileverse-dev/fortune-core";
-import { setSelection } from "@fileverse-dev/fortune-core/src/api";
+import { api } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, {
   useContext,
@@ -293,7 +293,7 @@ const ColumnHeader: React.FC = () => {
     if (context.isFlvReadOnly) return;
     e.stopPropagation();
     setContext((ctx) => {
-      setSelection(
+      api.setSelection(
         ctx,
         [
           {

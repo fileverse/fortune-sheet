@@ -202,7 +202,7 @@
 }
 
 .color-picker:hover {
-  background: hsl(var(--color-bg-default-hover, #F2F4F5));
+  background: hsl(var(--color-bg-default-hover, #F2F4F5))!important;
 }
 
 .color-picker-container {
@@ -212,15 +212,15 @@
 }
 
 .color-picker-reset {
-  min-width: 0px;
-  padding-left: 0px;
-  margin-left: 0px;
+  min-width: 0px !important;
+  padding-left: 0px !important;
+  margin-left: 0px !important;
 }
 
 .color-picker-reset:hover {
-  background-color: white;
+  background-color: white!important;
 }
 
 .color-picker-icon:hover {
-  background-color: white;
+  background-color: white!important;
 }

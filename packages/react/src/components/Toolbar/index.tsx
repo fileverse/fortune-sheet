@@ -37,10 +37,7 @@ import {
   insertDuneChart,
   Cell,
 } from "@fileverse-dev/fortune-core";
-import {
-  setSelection,
-  getSelection,
-} from "@fileverse-dev/fortune-core/src/api";
+import { api } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import {
   IconButton,
@@ -613,7 +610,39 @@ const Toolbar: React.FC<{
     isDesktop,
   ]);
 
+    useEffect(() => {
+      setContext((ctx) => {
+        ctx.dataVerification!.dataRegulation!.value1 = "value1";
+      });
+    }, []);
+
   const [showDataValidation, setShowDataValidation] = useState(false);
+
+  const dataVerificationClick = () => {
+    const selection = api.getSelection(context);
+    if (!selection) {
+      setContext((ctx) => {
+        api.setSelection(ctx, [{ row: [0, 0], column: [0, 0] }], {
+          id: context.currentSheetId,
+        });
+      });
+    }
+    document.getElementById("data-verification-button")?.click();
+    // if (context.allowEdit === false) return;
+    // showDialog(
+    //   <DataVerification />,
+    //   undefined,
+    //   toolbar.dataVerification
+    // );
+    setTimeout(() => {
+      setShowDataValidation(true);
+    }, 100);
+  };
+
+  useEffect(() => {
+    // @ts-ignore
+    window.dataVerificationClick = dataVerificationClick;
+  }, []);
 
   const getToolbarItem = useCallback(
     (name: string, i: number) => {
@@ -1093,26 +1122,7 @@ const Toolbar: React.FC<{
               iconId={name}
               tooltip={tooltip}
               key={name}
-              onClick={() => {
-                const selection = getSelection(context);
-                if (!selection) {
-                  setContext((ctx) => {
-                    setSelection(ctx, [{ row: [0, 0], column: [0, 0] }], {
-                      id: context.currentSheetId,
-                    });
-                  });
-                }
-                document.getElementById("data-verification-button")?.click();
-                // if (context.allowEdit === false) return;
-                // showDialog(
-                //   <DataVerification />,
-                //   undefined,
-                //   toolbar.dataVerification
-                // );
-                setTimeout(() => {
-                  setShowDataValidation(true);
-                }, 100);
-              }}
+              onClick={dataVerificationClick}
             />
           </>
         );

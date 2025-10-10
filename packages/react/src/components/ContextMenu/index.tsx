@@ -636,7 +636,7 @@ const ContextMenu: React.FC = () => {
       }
       if (name === "hide-row") {
         return (
-          selection?.row_select === true &&
+          selection?.row_select &&
           ["hideSelected", "showHide"].map((item) => (
             <Menu
               key={item}
@@ -1210,8 +1210,12 @@ const ContextMenu: React.FC = () => {
       onContextMenu={(e) => e.stopPropagation()}
       style={{ left: contextMenu.x, top: contextMenu.y }}
     >
-      {context.contextMenu.headerMenu === true
-        ? settings.headerContextMenu.map((menu, i) => getMenuElement(menu, i))
+      {context.contextMenu.headerMenu === true ||
+      /* @ts-ignore */
+      context.contextMenu.headerMenu === "row"
+        ? settings.headerContextMenu.map((menu, i) => {
+            return getMenuElement(menu, i);
+          })
         : settings.cellContextMenu.map((menu, i) => getMenuElement(menu, i))}
     </div>
   );

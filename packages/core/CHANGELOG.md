@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.0
+
+### Minor Changes
+
+- Hide col/row
+
 ## 1.1.99
 
 ### Patch Changes

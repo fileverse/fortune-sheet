@@ -367,24 +367,27 @@ export const useColumnDragAndDrop = (
 
           // update dataVerification
           if (_sheet.dataVerification) {
-          const newDataVerification: any = {};
-          Object.keys(_sheet.dataVerification).forEach((item) => {
-            const itemData = _sheet.dataVerification?.[item];
-            const colRow = item.split("_");
-            if (colRow.length !== 2) return;
-            const presentcol = parseInt(colRow[1], 10);
-            let updatedCol = presentcol;
-            if (presentcol === sourceIndex) {
-              updatedCol = targetIndex;
-            } else if (presentcol > sourceIndex && presentcol < targetIndex) {
-              updatedCol -= 1;
-            } else if (presentcol < sourceIndex && presentcol >= targetIndex) {
-              updatedCol += 1;
-            }
-            newDataVerification[`${colRow[0]}_${updatedCol}`] = itemData;
-          });
-          _sheet.dataVerification = newDataVerification;
-        }
+            const newDataVerification: any = {};
+            Object.keys(_sheet.dataVerification).forEach((item) => {
+              const itemData = _sheet.dataVerification?.[item];
+              const colRow = item.split("_");
+              if (colRow.length !== 2) return;
+              const presentcol = parseInt(colRow[1], 10);
+              let updatedCol = presentcol;
+              if (presentcol === sourceIndex) {
+                updatedCol = targetIndex;
+              } else if (presentcol > sourceIndex && presentcol < targetIndex) {
+                updatedCol -= 1;
+              } else if (
+                presentcol < sourceIndex &&
+                presentcol >= targetIndex
+              ) {
+                updatedCol += 1;
+              }
+              newDataVerification[`${colRow[0]}_${updatedCol}`] = itemData;
+            });
+            _sheet.dataVerification = newDataVerification;
+          }
 
           // update calc chain
           _sheet.calcChain?.forEach((item) => {

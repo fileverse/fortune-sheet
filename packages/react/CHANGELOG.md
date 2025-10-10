@@ -1,5 +1,16 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.0
+
+### Minor Changes
+
+- Hide col/row
+
+### Patch Changes
+
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.0
+
 ## 1.1.99
 
 ### Patch Changes

@@ -73,13 +73,11 @@ const FormulaHint = (props: any) => {
 
   const bgColor = (BRAND_SECONDARY_COLOR: string) => {
     const bg = BRAND_SECONDARY_COLOR
-      ? `rgb(${hexToRgbString(
-        BRAND_SECONDARY_COLOR
-      )}, 0.4)`
-      : "#FFDF0A"
+      ? `rgb(${hexToRgbString(BRAND_SECONDARY_COLOR)}, 0.4)`
+      : "#FFDF0A";
 
-      return bg;
-  }
+    return bg;
+  };
 
   useEffect(() => {
     calcuatePopUpPlacement();
@@ -99,8 +97,9 @@ const FormulaHint = (props: any) => {
     <DraggableDiv
       initialTop={top}
       dragHasMoved={dragHasMoved}
-      className={`bg-secondary text-secondary-foreground p-4 rounded-lg flex items-center justify-center ${showDelayedHint ? "opacity-100" : "opacity-0"
-        }`}
+      className={`bg-secondary text-secondary-foreground p-4 rounded-lg flex items-center justify-center ${
+        showDelayedHint ? "opacity-100" : "opacity-0"
+      }`}
     >
       {showFormulaHint && (
         <div>
@@ -187,8 +186,9 @@ const FormulaHint = (props: any) => {
               className="flex !cursor-grab active:cursor-grabbing items-start justify-between"
               id="luckysheet-formula-help-title"
               style={{
-                backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
-                  }`,
+                backgroundColor: `${
+                  fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
+                }`,
                 padding: "10px",
                 borderRadius: "10px",
                 cursor: "grab",
@@ -296,8 +296,9 @@ const FormulaHint = (props: any) => {
                 className="luckysheet-formula-help-content"
                 id="function-details"
                 style={{
-                  backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
-                    }`,
+                  backgroundColor: `${
+                    fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
+                  }`,
                   maxHeight: "284px",
                   overflowY: "scroll",
                   cursor: "auto",
@@ -306,8 +307,9 @@ const FormulaHint = (props: any) => {
                 {fn.API_KEY && (
                   <div
                     style={{
-                      borderLeft: `4px solid ${isKeyAdded ? "#177E23" : "#fb923c"
-                        }`,
+                      borderLeft: `4px solid ${
+                        isKeyAdded ? "#177E23" : "#fb923c"
+                      }`,
                       backgroundColor: "white",
                       padding: "8px",
                       paddingBottom: "2px",
@@ -501,8 +503,9 @@ const FormulaHint = (props: any) => {
             {showFunctionBody && (
               <div
                 style={{
-                  backgroundColor: `${fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
-                    }`,
+                  backgroundColor: `${
+                    fn.BRAND_COLOR ? fn.BRAND_COLOR : "#F8F9FA"
+                  }`,
                   padding: "8px",
                   borderBottomLeftRadius: "10px",
                   borderBottomRightRadius: "10px",

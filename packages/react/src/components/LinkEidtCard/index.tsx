@@ -42,6 +42,10 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
   position,
 }) => {
   const { context, setContext, refs } = useContext(WorkbookContext);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const linkAddressRef = useRef<HTMLInputElement>(null);
+  const linkTextRef = useRef<HTMLInputElement>(null);
+  const [cardTop, setCardTop] = useState<number>(position.cellBottom);
   const [linkText, setLinkText] = useState<string>(originText);
   const [linkAddress, setLinkAddress] = useState<string>(originAddress);
   const [linkType, setLinkType] = useState<string>(originType);
@@ -50,15 +54,12 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
 
   const isButtonDisabled = useMemo(() => {
     if (!linkText.trim()) return true;
-
     if (linkType === "webpage") {
       return !linkAddress.trim() || !isLinkAddressValid.isValid;
     }
-
     if (linkType === "sheet") {
       return !linkAddress.trim();
     }
-
     return false;
   }, [linkText, linkAddress, linkType, isLinkAddressValid.isValid]);
 
@@ -110,49 +111,49 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
     setLinkType(originType);
   }, [rc, originAddress, originText, originType]);
 
-  const hintRef = useRef<HTMLDivElement | null>(null);
-  const [popupTopPx, setPopupTopPx] = useState<number>(
-    (position?.cellBottom ?? 0) + 4
-  );
-
-  const calculatePopupPlacement = useCallback(() => {
-    const firstSelection = context?.luckysheet_select_save?.[0];
-    if (
-      !firstSelection?.top?.toString?.() ||
-      !firstSelection?.height_move?.toString?.() ||
-      !hintRef.current
-    ) {
+  // Position card above or below drag handle depending on viewport
+  useEffect(() => {
+    const dragHandle = document.querySelector(
+      ".luckysheet-cs-draghandle-top.luckysheet-cs-draghandle"
+    ) as HTMLElement;
+    const card = cardRef.current;
+    if (!dragHandle || !card) {
+      setCardTop(position.cellBottom + 8);
       return;
     }
-
-    const selectionHeight = firstSelection?.height_move || 0;
-    const cellBottom = position?.cellBottom;
-    const cellTop = cellBottom - selectionHeight;
-
-    const inputBottom = cellTop + selectionHeight;
-    const availableBelow = window.innerHeight - inputBottom;
-    const divOffset = hintRef.current?.offsetHeight;
-    const hintAbove = divOffset > availableBelow;
-
-    // Final absolute top (document coordinates):
-    //  - place just below the selection or just above it with a small margin
-    const nextTop = hintAbove
-      ? Math.max(0, cellTop - (divOffset + 30))
-      : cellBottom + 4;
-
-    setPopupTopPx(nextTop);
-  }, [context?.luckysheet_select_save, position?.cellBottom]);
-
-  useLayoutEffect(() => {
-    calculatePopupPlacement();
-  }, [calculatePopupPlacement, isEditing, rc, position]);
-
+    const dragRect = dragHandle.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    // place below, but if not enough space, place it above
+    const spaceBelow = viewportHeight - dragRect.bottom;
+    const spaceAbove = dragRect.top;
+    let newTop;
+    if (
+      spaceBelow < cardRect.height + 16 &&
+      spaceAbove > cardRect.height + 16
+    ) {
+      // Place above
+      const cellTop = position.cellBottom - 30;
+      newTop = cellTop - cardRect.height - 8;
+    } else {
+      // Place below
+      newTop = position.cellBottom + 8;
+    }
+    setCardTop(newTop);
+  }, [position.cellBottom, isEditing]);
   useEffect(() => {
-    const onResize = () => calculatePopupPlacement();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [calculatePopupPlacement]);
-
+    // for some reasons input auto focus affects the the card position, so we use refs to handle auto focus
+    if (linkAddressRef.current && !linkAddress && isEditing) {
+      setTimeout(() => {
+        linkAddressRef.current?.focus();
+      }, 0);
+    }
+    if (linkTextRef.current && !linkText && isEditing) {
+      setTimeout(() => {
+        linkTextRef.current?.focus();
+      }, 0);
+    }
+  }, [linkAddressRef, isEditing, linkTextRef]);
   if (!isEditing) {
     return (
       <div
@@ -210,14 +211,13 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
       </div>
     );
   }
-
   return (
     <div
       className="fortune-link-card"
-      ref={hintRef}
+      ref={cardRef}
       style={{
         left: position.cellLeft + 20,
-        top: popupTopPx,
+        top: cardTop,
       }}
       {...containerEvent}
     >
@@ -254,11 +254,11 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
           <LucideIcon name="ALargeSmall" />
         </div>
         <TextField
+          ref={linkTextRef}
           placeholder="Display text"
           value={linkText}
           onChange={(e) => setLinkText(e.target.value)}
           className="fortune-link-input"
-          autoFocus={!linkText}
         />
       </div>
 
@@ -268,9 +268,9 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
             <SVGIcon name="link" width={16} height={16} />
           </div>
           <TextField
+            ref={linkAddressRef}
             placeholder="Paste URL"
             value={linkAddress}
-            autoFocus={!!linkText}
             onChange={(e) => setLinkAddress(e.target.value)}
             className={`fortune-link-input ${
               !linkAddress || isLinkAddressValid.isValid ? "" : "error-input"

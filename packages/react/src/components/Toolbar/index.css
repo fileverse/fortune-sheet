@@ -161,6 +161,10 @@
   padding-bottom: 6px;
   cursor: pointer;
   user-select: none;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  
 }
 
 .fortune-toolbar-select-option:hover {

@@ -195,7 +195,6 @@
   z-index: 15;
   border: 2.5px solid #efc703;
   margin: -1px 0 0 -1px;
-  background: rgba(239, 199, 5, 0.02);
   display: none;
   box-sizing: content-box;
 }

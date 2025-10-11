@@ -22,6 +22,8 @@
   z-index: 1005;
   border-radius: 4px;
   cursor: pointer;
+  align-items: center;
+  height: 32px;
 }
 
 .condition-format-item:hover {

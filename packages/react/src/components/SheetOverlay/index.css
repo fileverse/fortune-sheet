@@ -197,6 +197,7 @@
   margin: -1px 0 0 -1px;
   display: none;
   box-sizing: content-box;
+  background: rgba(239, 199, 5, 0.02);
 }
 
 .luckysheet-cs-inner-border {

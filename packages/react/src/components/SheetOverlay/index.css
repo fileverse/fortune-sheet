@@ -1013,16 +1013,42 @@
 }
 
 .hide-btn {
-  padding-top: 1px;
+  padding-left: 2px;
+  padding-top: 2px;
   position: absolute;
   right: 5;
   top: 5px;
   z-index: 200;
-  width: 9px;
 }
 
 .hide-btn:hover {
-  border: 1px solid #0188fb;
+  padding-left: 1px;
+  padding-top: 1px;
+  width: 28px;
+  border: 1px solid black;
+  background-color: rgba(255, 255, 255, 1);
+  border-radius: var(--border-radius-sm, 4px);
+}
+
+.hide-btn-right {
+  padding-right: 3px;
+  padding-top: 2px;
+  position: absolute;
+  right: 5;
+  top: 5px;
+  z-index: 200;
+  margin-right: 20px;
+}
+
+.hide-btn-right:hover {
+  padding-right: 2px;
+  padding-top: 1px;
+  z-index: 198;
+  justify-content: end;
+  width: 30px;
+  border: 1px solid black;
+  background-color: rgba(255, 255, 255, 1);
+  border-radius: var(--border-radius-sm, 4px);
 }
 
 .rotate-row-icon {
@@ -1031,6 +1057,13 @@
 
 .hide-btn-row {
   position: absolute;
-   left: 4px;
+  left: 4px;
   z-index: 200;
+  width: 15px;
+}
+
+.hide-btn-row:hover {
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 4px;
 }

@@ -315,6 +315,14 @@ const ColumnHeader: React.FC = () => {
     containerRef.current!.scrollLeft = context.scrollLeft;
   }, [context.scrollLeft]);
 
+  const [hovered, setHovered] = useState(0);
+  const onMouseMoveHideRight = useCallback(() => {
+    setHovered(-21);
+  }, []);
+  const onMouseLeaveHideRight = useCallback(() => {
+    setHovered(0);
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -366,10 +374,12 @@ const ColumnHeader: React.FC = () => {
       {hiddenPointers.map((item: any) => {
         return (
           <div
-            className="flex gap-4 cursor-pointer hide-btn align-center"
+            onMouseEnter={onMouseMoveHideRight}
+            onMouseLeave={onMouseLeaveHideRight}
+            className="flex gap-4 cursor-pointer hide-btn-right align-center"
             style={{
               height: context.columnHeaderHeight - 12,
-              left: `${item.left + 6}px`,
+              left: `${item.left + 8 + hovered}px`,
             }}
             onClick={(e) => showColumn(e, item)}
           >

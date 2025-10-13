@@ -1,5 +1,23 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.4
+
+### Patch Changes
+
+- Update design fixes
+
+## 1.2.3
+
+### Patch Changes
+
+- Update Design
+
+## 1.2.1
+
+### Patch Changes
+
+- Design fixes
+
 ## 1.2.0
 
 ### Minor Changes

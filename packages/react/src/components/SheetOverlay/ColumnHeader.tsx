@@ -315,14 +315,6 @@ const ColumnHeader: React.FC = () => {
     containerRef.current!.scrollLeft = context.scrollLeft;
   }, [context.scrollLeft]);
 
-  const [hovered, setHovered] = useState(0);
-  const onMouseMoveHideRight = useCallback(() => {
-    setHovered(-21);
-  }, []);
-  const onMouseLeaveHideRight = useCallback(() => {
-    setHovered(0);
-  }, []);
-
   return (
     <div
       ref={containerRef}
@@ -347,10 +339,10 @@ const ColumnHeader: React.FC = () => {
       {hiddenPointers.map((item: any) => {
         return (
           <div
-            className="flex gap-4 cursor-pointer hide-btn align-center"
+            className="flex gap-4 cursor-pointer hide-btn align-center jusify-between"
             style={{
               height: context.columnHeaderHeight - 12,
-              left: `${item.left - 12}px`,
+              left: `${item.left - 15}px`,
             }}
             onClick={(e) => showColumn(e, item)}
           >
@@ -368,21 +360,6 @@ const ColumnHeader: React.FC = () => {
                 />
               </svg>
             </div>
-          </div>
-        );
-      })}
-      {hiddenPointers.map((item: any) => {
-        return (
-          <div
-            onMouseEnter={onMouseMoveHideRight}
-            onMouseLeave={onMouseLeaveHideRight}
-            className="flex gap-4 cursor-pointer hide-btn-right align-center"
-            style={{
-              height: context.columnHeaderHeight - 12,
-              left: `${item.left + 8 + hovered}px`,
-            }}
-            onClick={(e) => showColumn(e, item)}
-          >
             <div className="">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

@@ -144,14 +144,10 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
   useEffect(() => {
     // for some reasons input auto focus affects the the card position, so we use refs to handle auto focus
     if (linkAddressRef.current && !linkAddress && isEditing) {
-      setTimeout(() => {
-        linkAddressRef.current?.focus();
-      }, 0);
+      linkAddressRef.current?.focus({ preventScroll: true });
     }
     if (linkTextRef.current && !linkText && isEditing) {
-      setTimeout(() => {
-        linkTextRef.current?.focus();
-      }, 0);
+      linkTextRef.current?.focus({ preventScroll: true });
     }
   }, [linkAddressRef, isEditing, linkTextRef]);
   if (!isEditing) {

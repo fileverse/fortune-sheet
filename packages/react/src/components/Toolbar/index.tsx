@@ -36,8 +36,8 @@ import {
   applyLocation,
   insertDuneChart,
   Cell,
+  api,
 } from "@fileverse-dev/fortune-core";
-import { api } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import {
   IconButton,
@@ -610,11 +610,11 @@ const Toolbar: React.FC<{
     isDesktop,
   ]);
 
-    useEffect(() => {
-      setContext((ctx) => {
-        ctx.dataVerification!.dataRegulation!.value1 = "value1";
-      });
-    }, []);
+  useEffect(() => {
+    setContext((ctx) => {
+      ctx.dataVerification!.dataRegulation!.value1 = "value1";
+    });
+  }, []);
 
   const [showDataValidation, setShowDataValidation] = useState(false);
 

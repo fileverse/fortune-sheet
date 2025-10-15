@@ -201,6 +201,15 @@
   min-width: 100px;
 }
 
+.color-picker-reset-btn {
+    height: 30px;
+    border-radius: 6px;
+}
+
+.color-picker-reset-btn:hover {
+    background: hsl(var(--color-bg-default-hover, #F2F4F5))!important;
+}
+
 .color-picker:hover {
   background: hsl(var(--color-bg-default-hover, #F2F4F5))!important;
 }
@@ -212,15 +221,20 @@
 }
 
 .color-picker-reset {
+  height: 30px !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
   min-width: 0px !important;
   padding-left: 0px !important;
   margin-left: 0px !important;
 }
 
-.color-picker-reset:hover {
-  background-color: white!important;
+.edit-dropdown {
+  height: 28px!important;
+  border-radius: 5px;
 }
 
-.color-picker-icon:hover {
-  background-color: white!important;
+.edit-dropdown:hover {
+  height: 28px!important;
+  background: hsl(var(--color-bg-default-hover, #F2F4F5))!important;
 }

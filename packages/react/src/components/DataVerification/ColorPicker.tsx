@@ -107,7 +107,7 @@ export const ColorSection = ({
               </div>
             ))}
             <div
-              className="w-full flex justify-center"
+              className="w-full flex justify-center color-picker-reset-btn"
               onClick={() => {
                 onPick("228, 232, 237");
                 setIsOpen(false);
@@ -115,7 +115,7 @@ export const ColorSection = ({
             >
               <IconButton
                 icon="DropletOff"
-                size="md"
+                size="sm"
                 variant="ghost"
                 className="color-picker-icon"
               />

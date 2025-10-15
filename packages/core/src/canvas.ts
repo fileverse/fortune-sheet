@@ -1737,10 +1737,10 @@ export class Canvas {
       const finalPillWidth = (columnWidth?.[c] || 70) - 5;
       const ps_w = finalPillWidth * this.sheetCtx.zoomRatio;
       const ps_h = 16 * this.sheetCtx.zoomRatio;
-      const radius = 5 * this.sheetCtx.zoomRatio;
+      const radius = 8 * this.sheetCtx.zoomRatio;
 
       const x = endX + offsetLeft - 4 - ps_w;
-      const y = startY + offsetTop + 2;
+      const y = startY + offsetTop + 2.7;
 
       // Draw rounded rectangle
       renderCtx.beginPath();
@@ -1751,7 +1751,7 @@ export class Canvas {
 
       const chevronWidth = 7 * this.sheetCtx.zoomRatio;
       const chevronHeight = 4 * this.sheetCtx.zoomRatio;
-      const chevronX = x + ps_w - chevronWidth - 2 * this.sheetCtx.zoomRatio;
+      const chevronX = x - 2 + ps_w - chevronWidth - 2 * this.sheetCtx.zoomRatio;
       const chevronY = y + (ps_h - chevronHeight) / 2;
 
       renderCtx.beginPath();
@@ -1969,10 +1969,10 @@ export class Canvas {
       // const finalPillHeight = (rowHeight?.[r] || 22) - 5;
       const ps_w = finalPillWidth * this.sheetCtx.zoomRatio;
       const ps_h = 16 * this.sheetCtx.zoomRatio;
-      const radius = 5 * this.sheetCtx.zoomRatio;
+      const radius = 8 * this.sheetCtx.zoomRatio;
 
       const baseX = endX + offsetLeft - 4 - ps_w;
-      const baseY = startY + offsetTop + 2;
+      const baseY = startY + offsetTop + 2.7;
 
       // Array of options to display
       const pillSpacing = 2 * this.sheetCtx.zoomRatio; // Space between pills
@@ -1991,7 +1991,7 @@ export class Canvas {
         });
         renderCtx.beginPath();
         renderCtx.fillStyle = bgColor || "rgba(232, 235, 236, 1)";
-        renderCtx.roundRect(x, y, ps_w - 8, ps_h, radius);
+        renderCtx.roundRect(x, y, ps_w, ps_h, radius);
         renderCtx.fill();
         renderCtx.closePath();
 
@@ -2000,7 +2000,7 @@ export class Canvas {
           const chevronWidth = 7 * this.sheetCtx.zoomRatio;
           const chevronHeight = 4 * this.sheetCtx.zoomRatio;
           const chevronX =
-            x + 3 + ps_w - chevronWidth - 2 * this.sheetCtx.zoomRatio;
+            x - 2 + ps_w - chevronWidth - 2 * this.sheetCtx.zoomRatio;
           const chevronY = y + (ps_h - chevronHeight) / 2;
 
           renderCtx.beginPath();

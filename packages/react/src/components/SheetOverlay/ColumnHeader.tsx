@@ -293,24 +293,38 @@ const ColumnHeader: React.FC = () => {
   ) => {
     if (sheetIndex == null) return;
 
-    const { col: startPoint } = item;
-    let startCol = startPoint;
-    let endCol = startPoint;
+    let startCol;
+    let endCol;
+    const startPoint = item.col;
+    startCol = item.col;
+    endCol = item.col;
+
     const colhiddenData = context.luckysheetfile[sheetIndex]?.config?.colhidden;
+    let cod = true;
+    let tempStartPoint = startPoint;
 
-    const findColBoundary = (start: any, direction: any) => {
-      let tempPoint = start;
-      while (true) {
-        const checkColIndex = tempPoint + direction;
-        // eslint-disable-next-line no-prototype-builtins
-        if (!colhiddenData?.hasOwnProperty(checkColIndex)) break;
-        tempPoint = checkColIndex;
+    while (cod) {
+      tempStartPoint -= 1;
+      // eslint-disable-next-line no-prototype-builtins
+      if (colhiddenData?.hasOwnProperty(tempStartPoint)) {
+        startCol = tempStartPoint;
+      } else {
+        cod = false;
       }
-      return tempPoint;
-    };
+    }
 
-    startCol = findColBoundary(startPoint, -1);
-    endCol = findColBoundary(startPoint, 1);
+    cod = true;
+    tempStartPoint = startPoint;
+
+    while (cod) {
+      tempStartPoint += 1;
+      // eslint-disable-next-line no-prototype-builtins
+      if (colhiddenData?.hasOwnProperty(tempStartPoint)) {
+        endCol = tempStartPoint;
+      } else {
+        cod = false;
+      }
+    }
 
     if (context.isFlvReadOnly) return;
     e.stopPropagation();

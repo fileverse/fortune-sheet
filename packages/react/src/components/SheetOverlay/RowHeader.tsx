@@ -293,7 +293,6 @@ const RowHeader: React.FC = () => {
     startRow = findRowBoundary(startPoint, -1);
     endRow = findRowBoundary(startPoint, 1);
 
-    console.log(startRow, endRow);
     if (context.isFlvReadOnly) return;
     e.stopPropagation();
     setContext((ctx) => {

@@ -215,20 +215,22 @@ const FormulaHint = (props: any) => {
                       name = `[${name}]`;
                     }
                     return (
-                      <code
-                        className="luckysheet-arguments-help-parameter font-family-mono mb-1 mt-2 color-text-default"
-                        dir="auto"
-                        key={name}
-                        style={{
-                          backgroundColor:
-                            commaCount === i
-                              ? bgColor(fn.BRAND_SECONDARY_COLOR)
-                              : "transparent",
-                        }}
-                      >
-                        {name}
+                      <>
+                        <code
+                          className="luckysheet-arguments-help-parameter font-family-mono mb-1 mt-2 color-text-default"
+                          dir="auto"
+                          key={name}
+                          style={{
+                            backgroundColor:
+                              commaCount === i
+                                ? bgColor(fn.BRAND_SECONDARY_COLOR)
+                                : "transparent",
+                          }}
+                        >
+                          {name}
+                        </code>
                         {i !== fn.p.length - 1 && ", "}
-                      </code>
+                      </>
                     );
                   })}
                 </code>

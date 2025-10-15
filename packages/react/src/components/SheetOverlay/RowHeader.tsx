@@ -272,6 +272,28 @@ const RowHeader: React.FC = () => {
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     item: any
   ) => {
+    if (sheetIndex == null) return;
+
+    const { row: startPoint } = item;
+    let startRow = startPoint;
+    let endRow = startPoint;
+    const rowhiddenData = context.luckysheetfile[sheetIndex]?.config?.rowhidden;
+
+    const findRowBoundary = (start: any, direction: any) => {
+      let tempPoint = start;
+      while (true) {
+        const checkRowIndex = tempPoint + direction;
+        // eslint-disable-next-line no-prototype-builtins
+        if (!rowhiddenData?.hasOwnProperty(checkRowIndex)) break;
+        tempPoint = checkRowIndex;
+      }
+      return tempPoint;
+    };
+
+    startRow = findRowBoundary(startPoint, -1);
+    endRow = findRowBoundary(startPoint, 1);
+
+    console.log(startRow, endRow);
     if (context.isFlvReadOnly) return;
     e.stopPropagation();
     setContext((ctx) => {
@@ -279,7 +301,7 @@ const RowHeader: React.FC = () => {
         ctx,
         [
           {
-            row: [Number(item.row) - 1, Number(item.row) + 1],
+            row: [Number(startRow) - 1, Number(endRow) + 1],
             column: [0, context.visibledatacolumn?.length],
           },
         ],
@@ -290,6 +312,21 @@ const RowHeader: React.FC = () => {
     });
     setContext((ctx) => {
       showSelected(ctx, "row");
+    });
+
+    setContext((ctx) => {
+      api.setSelection(
+        ctx,
+        [
+          {
+            row: [Number(startRow), Number(endRow)],
+            column: [0, context.visibledatacolumn?.length],
+          },
+        ],
+        {
+          id: context.currentSheetId,
+        }
+      );
     });
   };
 

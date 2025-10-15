@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.6
+
+### Patch Changes
+
+- Unhide all col row at once
+
 ## 1.2.5
 
 ### Patch Changes

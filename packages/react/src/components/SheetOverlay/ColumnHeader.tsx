@@ -271,6 +271,8 @@ const ColumnHeader: React.FC = () => {
     const tempPointers: any = [];
     const colhidden = context.luckysheetfile[sheetIndex]?.config?.colhidden;
 
+    console.log(colhidden);
+
     if (colhidden) {
       Object.keys(colhidden).forEach((key) => {
         const item = {
@@ -279,7 +281,6 @@ const ColumnHeader: React.FC = () => {
         };
         tempPointers.push(item);
       });
-      console.log(tempPointers);
       setHiddenPointers(tempPointers);
     } else {
       setHiddenPointers([]);
@@ -290,6 +291,27 @@ const ColumnHeader: React.FC = () => {
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     item: any
   ) => {
+    if (sheetIndex == null) return;
+
+    const { col: startPoint } = item;
+    let startCol = startPoint;
+    let endCol = startPoint;
+    const colhiddenData = context.luckysheetfile[sheetIndex]?.config?.colhidden;
+
+    const findColBoundary = (start: any, direction: any) => {
+      let tempPoint = start;
+      while (true) {
+        const checkColIndex = tempPoint + direction;
+        // eslint-disable-next-line no-prototype-builtins
+        if (!colhiddenData?.hasOwnProperty(checkColIndex)) break;
+        tempPoint = checkColIndex;
+      }
+      return tempPoint;
+    };
+
+    startCol = findColBoundary(startPoint, -1);
+    endCol = findColBoundary(startPoint, 1);
+
     if (context.isFlvReadOnly) return;
     e.stopPropagation();
     setContext((ctx) => {
@@ -298,7 +320,7 @@ const ColumnHeader: React.FC = () => {
         [
           {
             row: [0, context.visibledatarow?.length],
-            column: [Number(item.col) - 1, Number(item.col) + 1],
+            column: [Number(startCol) - 1, Number(endCol) + 1],
           },
         ],
         {
@@ -308,6 +330,21 @@ const ColumnHeader: React.FC = () => {
     });
     setContext((ctx) => {
       showSelected(ctx, "column");
+    });
+
+    setContext((ctx) => {
+      api.setSelection(
+        ctx,
+        [
+          {
+            row: [0, context.visibledatarow?.length],
+            column: [Number(startCol), Number(endCol)],
+          },
+        ],
+        {
+          id: context.currentSheetId,
+        }
+      );
     });
   };
 

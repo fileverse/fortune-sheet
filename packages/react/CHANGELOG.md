@@ -44,6 +44,7 @@
 
 ### Patch Changes
 
+- Update design fixes
 - QA feedback for data verification
 - Updated dependencies
   - @fileverse-dev/fortune-core@1.2.4
@@ -51,6 +52,10 @@
 ## 1.2.3
 
 ### Patch Changes
+
+- Update Design
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.3
 
 - minor css fix
 - Updated dependencies
@@ -68,6 +73,7 @@
 
 ### Patch Changes
 
+- Design fixes
 - :wq!
   An empty message aborts the editor.
 - Updated dependencies

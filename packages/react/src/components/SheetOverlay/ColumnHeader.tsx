@@ -486,14 +486,14 @@ const ColumnHeader: React.FC = () => {
       ) : null}
       {selectedLocation.map(({ col, col_pre, c1, c2 }, i) => (
         <div
-          className="fortune-col-header-selected"
+          className="fortune-col-header-selected color-bg-tertiary"
           key={i}
           style={_.assign(
             {
               left: col_pre,
               width: col - col_pre - 1,
               display: "block",
-              backgroundColor: "#EFC703",
+              // backgroundColor: "#EFC703",
               mixBlendMode: "multiply" as any,
             },
             fixColumnStyleOverflowInFreeze(

@@ -433,14 +433,13 @@ const RowHeader: React.FC = () => {
       ) : null}
       {selectedLocation.map(({ row, row_pre, r1, r2 }, i) => (
         <div
-          className="fortune-row-header-selected"
+          className="fortune-row-header-selected color-bg-tertiary"
           key={i}
           style={_.assign(
             {
               top: row_pre,
               height: row - row_pre - 1,
               display: "block",
-              backgroundColor: "#EFC703",
               mixBlendMode: "multiply" as any,
             },
             fixRowStyleOverflowInFreeze(

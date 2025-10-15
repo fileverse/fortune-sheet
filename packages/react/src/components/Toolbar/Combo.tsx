@@ -7,6 +7,7 @@ import {
   PopoverTrigger,
   cn,
   Button,
+  LucideIcon,
 } from "@fileverse/ui";
 import SVGIcon from "../SVGIcon";
 import { getLucideIcon } from ".";
@@ -97,6 +98,7 @@ const Combo: React.FC<Props> = ({
             {text !== undefined ? text : ""}
           </span>
         )}
+        <LucideIcon className="w-[16px] h-[16px]" name="ChevronDown" />
       </div>
     </Tooltip>
   ) : (

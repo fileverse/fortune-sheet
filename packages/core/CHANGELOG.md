@@ -34,12 +34,14 @@
 
 ### Patch Changes
 
+- Update design fixes
 - QA feedback for data verification
 
 ## 1.2.3
 
 ### Patch Changes
 
+- Update Design
 - minor css fix
 
 ## 1.2.2
@@ -52,6 +54,7 @@
 
 ### Patch Changes
 
+- Design fixes
 - :wq!
   An empty message aborts the editor.
 

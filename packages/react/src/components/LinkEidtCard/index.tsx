@@ -4,6 +4,8 @@ import React, {
   useMemo,
   useCallback,
   useLayoutEffect,
+  useRef,
+  useEffect,
 } from "react";
 import {
   locale,
@@ -40,6 +42,10 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
   position,
 }) => {
   const { context, setContext, refs } = useContext(WorkbookContext);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const linkAddressRef = useRef<HTMLInputElement>(null);
+  const linkTextRef = useRef<HTMLInputElement>(null);
+  const [cardTop, setCardTop] = useState<number>(position.cellBottom);
   const [linkText, setLinkText] = useState<string>(originText);
   const [linkAddress, setLinkAddress] = useState<string>(originAddress);
   const [linkType, setLinkType] = useState<string>(originType);
@@ -48,15 +54,12 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
 
   const isButtonDisabled = useMemo(() => {
     if (!linkText.trim()) return true;
-
     if (linkType === "webpage") {
       return !linkAddress.trim() || !isLinkAddressValid.isValid;
     }
-
     if (linkType === "sheet") {
       return !linkAddress.trim();
     }
-
     return false;
   }, [linkText, linkAddress, linkType, isLinkAddressValid.isValid]);
 
@@ -77,12 +80,20 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
         e.stopPropagation(),
       onMouseUp: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
         e.stopPropagation(),
-      onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) =>
-        e.stopPropagation(),
+      onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+        if (isButtonDisabled) return;
+        if (e.key === "Enter") {
+          _.set(refs.globalCache, "linkCard.mouseEnter", false);
+          setContext((draftCtx) =>
+            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress)
+          );
+        }
+      },
       onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
         e.stopPropagation(),
     }),
-    [refs.globalCache]
+    [refs.globalCache, isButtonDisabled]
   );
 
   const renderToolbarButton = useCallback(
@@ -100,6 +111,45 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
     setLinkType(originType);
   }, [rc, originAddress, originText, originType]);
 
+  // Position card above or below drag handle depending on viewport
+  useEffect(() => {
+    const dragHandle = document.querySelector(
+      ".luckysheet-cs-draghandle-top.luckysheet-cs-draghandle"
+    ) as HTMLElement;
+    const card = cardRef.current;
+    if (!dragHandle || !card) {
+      setCardTop(position.cellBottom + 8);
+      return;
+    }
+    const dragRect = dragHandle.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    // place below, but if not enough space, place it above
+    const spaceBelow = viewportHeight - dragRect.bottom;
+    const spaceAbove = dragRect.top;
+    let newTop;
+    if (
+      spaceBelow < cardRect.height + 16 &&
+      spaceAbove > cardRect.height + 16
+    ) {
+      // Place above
+      const cellTop = position.cellBottom - 30;
+      newTop = cellTop - cardRect.height - 8;
+    } else {
+      // Place below
+      newTop = position.cellBottom + 8;
+    }
+    setCardTop(newTop);
+  }, [position.cellBottom, isEditing]);
+  useEffect(() => {
+    // for some reasons input auto focus affects the the card position, so we use refs to handle auto focus
+    if (linkAddressRef.current && !linkAddress && isEditing) {
+      linkAddressRef.current?.focus({ preventScroll: true });
+    }
+    if (linkTextRef.current && !linkText && isEditing) {
+      linkTextRef.current?.focus({ preventScroll: true });
+    }
+  }, [linkAddressRef, isEditing, linkTextRef]);
   if (!isEditing) {
     return (
       <div
@@ -157,13 +207,13 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
       </div>
     );
   }
-
   return (
     <div
       className="fortune-link-card"
+      ref={cardRef}
       style={{
         left: position.cellLeft + 20,
-        top: position.cellBottom,
+        top: cardTop,
       }}
       {...containerEvent}
     >
@@ -200,6 +250,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
           <LucideIcon name="ALargeSmall" />
         </div>
         <TextField
+          ref={linkTextRef}
           placeholder="Display text"
           value={linkText}
           onChange={(e) => setLinkText(e.target.value)}
@@ -213,6 +264,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
             <SVGIcon name="link" width={16} height={16} />
           </div>
           <TextField
+            ref={linkAddressRef}
             placeholder="Paste URL"
             value={linkAddress}
             onChange={(e) => setLinkAddress(e.target.value)}

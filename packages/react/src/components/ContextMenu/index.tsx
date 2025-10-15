@@ -637,7 +637,7 @@ const ContextMenu: React.FC = () => {
       if (name === "hide-row") {
         return (
           selection?.row_select &&
-          ["hideSelected",].map((item) => (
+          ["hideSelected"].map((item) => (
             <Menu
               key={item}
               onClick={() => {

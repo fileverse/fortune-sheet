@@ -13,6 +13,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { Button, IconButton } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import SVGIcon from "../SVGIcon";
@@ -26,10 +27,19 @@ const DropDownList: React.FC = () => {
   const [isMul, setIsMul] = useState<boolean>(false);
   const [position, setPosition] = useState<{ left: number; top: number }>();
   const [selected, setSelected] = useState<any[]>([]);
+  const [rbgColor, setRbgColor] = useState<string[]>([]);
 
   const close = useCallback(() => {
     setContext((ctx) => {
-      ctx.dataVerificationDropDownList = false;
+      const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
+      const verification = context.luckysheetfile[index].dataVerification;
+      if (
+        !verification[
+          `${ctx.luckysheet_select_save?.[0].row_focus}_${ctx.luckysheet_select_save?.[0].column_focus}`
+        ]
+      ) {
+        ctx.dataVerificationDropDownList = false;
+      }
     });
   }, [setContext]);
 
@@ -54,7 +64,9 @@ const DropDownList: React.FC = () => {
     }
     const index = getSheetIndex(context, context.currentSheetId) as number;
     const { dataVerification } = context.luckysheetfile[index];
+    if (!dataVerification) return;
     const item = dataVerification[`${rowIndex}_${colIndex}`];
+    if (!item) return;
     const dropdownList = getDropdownList(context, item.value1);
     // 初始化多选的下拉列表
     const cellValue = getCellValue(rowIndex, colIndex, d);
@@ -62,6 +74,17 @@ const DropDownList: React.FC = () => {
     if (cellValue) {
       setSelected(cellValue.toString().split(","));
     }
+
+    const { color } = item;
+    // const color = context.dataVerification!.dataRegulation!.color.split(",")
+    const colorValues = color?.split(",").map((v: any) => v.trim());
+    // Group every 3 values into RGB arrays
+    const rbgColorArr = [];
+    for (let i = 0; i < colorValues.length; i += 3) {
+      rbgColorArr.push(colorValues.slice(i, i + 3).join(", "));
+    }
+    setRbgColor(rbgColorArr);
+
     setList(dropdownList);
     setPosition({
       left: col_pre,
@@ -69,7 +92,7 @@ const DropDownList: React.FC = () => {
     });
     setIsMul(item.type2 === "true");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [context.luckysheet_select_save]);
 
   // 设置下拉列表的值
   useEffect(() => {
@@ -81,7 +104,9 @@ const DropDownList: React.FC = () => {
     if (rowIndex == null || colIndex == null) return;
     const index = getSheetIndex(context, context.currentSheetId) as number;
     const { dataVerification } = context.luckysheetfile[index];
+    if (!dataVerification) return;
     const item = dataVerification[`${rowIndex}_${colIndex}`];
+    if (!item) return;
     if (item.type2 !== "true") return;
     const d = getFlowdata(context);
     if (!d) return;
@@ -105,36 +130,72 @@ const DropDownList: React.FC = () => {
       onMouseUp={(e) => e.stopPropagation()}
       tabIndex={0}
     >
-      {list.map((v, i) => (
-        <div
-          className="dropdown-List-item"
-          key={i}
-          onClick={() => {
-            setContext((ctx) => {
-              const arr = selected;
-              const index = arr.indexOf(v);
-              if (index < 0) {
-                arr.push(v);
-              } else {
-                arr.splice(index, 1);
-              }
-              setSelected(arr);
-              setDropdownValue(ctx, v, arr);
-            });
-          }}
-          tabIndex={0}
-        >
-          <SVGIcon
-            name="check"
-            width={12}
-            style={{
-              verticalAlign: "middle",
-              display: isMul && selected.indexOf(v) >= 0 ? "inline" : "none",
+      {list.map((v, i) => {
+        return (
+          <div
+            className="dropdown-List-item mb-1"
+            style={{ backgroundColor: `rgb(${rbgColor[i]})` || "red" }}
+            key={i}
+            onClick={() => {
+              setContext((ctx) => {
+                const arr = selected;
+                const index = arr.indexOf(v);
+                if (index < 0) {
+                  arr.push(v);
+                } else {
+                  arr.splice(index, 1);
+                }
+                setSelected(arr);
+                setDropdownValue(ctx, v, arr);
+              });
             }}
-          />
-          {v}
-        </div>
-      ))}
+            tabIndex={0}
+          >
+            <SVGIcon
+              name="check"
+              width={12}
+              style={{
+                verticalAlign: "middle",
+                display: isMul && selected.indexOf(v) >= 0 ? "inline" : "none",
+              }}
+            />
+            {v}
+          </div>
+        );
+      })}
+      <hr
+        style={{
+          border: "none",
+          height: "1px",
+          background: "hsl(var(--color-bg-default-hover, #F2F4F5))",
+          marginBottom: "4px",
+        }}
+      />
+
+      <div
+        className="w-full flex align-center edit-dropdown"
+        style={{ height: "28px" }}
+        onClick={() => {
+          // @ts-ignore
+          window?.dataVerificationClick?.();
+        }}
+      >
+        <IconButton
+          icon="Pencil"
+          size="sm"
+          variant="ghost"
+          className="color-picker-icon color-picker edit-dropdown"
+          style={{ paddingTop: "0px !important" }}
+        />
+        <Button
+          size="md"
+          variant="ghost"
+          className="color-picker-reset color-picker edit-dropdown"
+          // style={{paddingTop: "0px !important"}}
+        >
+          Edit
+        </Button>
+      </div>
     </div>
   );
 };

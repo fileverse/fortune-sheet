@@ -6,7 +6,7 @@ import "./index.css";
 import { DraggableDiv } from "./dragable-div";
 
 const FormulaHint = (props: any) => {
-  const { showFormulaHint, handleShowFormulaHint } = props;
+  const { showFormulaHint, handleShowFormulaHint, commaCount } = props;
   const dragHasMoved = useRef(false);
   const { context } = useContext(WorkbookContext);
   const firstSelection = context.luckysheet_select_save?.[0];
@@ -56,6 +56,27 @@ const FormulaHint = (props: any) => {
     setTop(
       hintAbove ? selectionHeight - (divOffset + 30) : selectionHeight + 4
     );
+  };
+
+  const hexToRgbString = (hex: string) => {
+    // Remove the '#' if present
+    hex = hex.replace("#", "");
+
+    // Extract RGB values
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    // Return the RGB as a string
+    return `${r}, ${g}, ${b}`;
+  };
+
+  const bgColor = (BRAND_SECONDARY_COLOR: string) => {
+    const bg = BRAND_SECONDARY_COLOR
+      ? `rgb(${hexToRgbString(BRAND_SECONDARY_COLOR)}, 0.4)`
+      : "#FFDF0A";
+
+    return bg;
   };
 
   useEffect(() => {
@@ -194,14 +215,22 @@ const FormulaHint = (props: any) => {
                       name = `[${name}]`;
                     }
                     return (
-                      <code
-                        className="luckysheet-arguments-help-parameter font-family-mono mb-1 mt-2 color-text-default"
-                        dir="auto"
-                        key={name}
-                      >
-                        {name}
+                      <>
+                        <code
+                          className="luckysheet-arguments-help-parameter font-family-mono mb-1 mt-2 color-text-default"
+                          dir="auto"
+                          key={name}
+                          style={{
+                            backgroundColor:
+                              commaCount === i
+                                ? bgColor(fn.BRAND_SECONDARY_COLOR)
+                                : "transparent",
+                          }}
+                        >
+                          {name}
+                        </code>
                         {i !== fn.p.length - 1 && ", "}
-                      </code>
+                      </>
                     );
                   })}
                 </code>
@@ -430,10 +459,18 @@ const FormulaHint = (props: any) => {
                     style={{ paddingTop: "16px" }}
                     className="luckysheet-formula-help-content-param"
                   >
-                    {fn.p.map((param: any) => (
+                    {fn.p.map((param: any, index: number) => (
                       <div className="" key={param.name}>
                         <div>
-                          <code className="font-family-mono mb-1 mt-2 color-text-default font-family-mono">
+                          <code
+                            className="font-family-mono mb-1 mt-2 color-text-default font-family-mono"
+                            style={{
+                              backgroundColor:
+                                commaCount === index
+                                  ? bgColor(fn.BRAND_SECONDARY_COLOR)
+                                  : "transparent",
+                            }}
+                          >
                             {param.name}
                             {param.repeat === "y" && (
                               <span

@@ -200,3 +200,41 @@
 .data-verification-checkbox-label {
   min-width: 100px;
 }
+
+.color-picker-reset-btn {
+    height: 30px;
+    border-radius: 6px;
+}
+
+.color-picker-reset-btn:hover {
+    background: hsl(var(--color-bg-default-hover, #F2F4F5))!important;
+}
+
+.color-picker:hover {
+  background: hsl(var(--color-bg-default-hover, #F2F4F5))!important;
+}
+
+.color-picker-container {
+  border: 1px solid hsl(var(--color-border-default, #E8EBEC)) !important;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.15);
+  width: 230px !important;
+}
+
+.color-picker-reset {
+  height: 30px !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  min-width: 0px !important;
+  padding-left: 0px !important;
+  margin-left: 0px !important;
+}
+
+.edit-dropdown {
+  height: 28px!important;
+  border-radius: 5px;
+}
+
+.edit-dropdown:hover {
+  height: 28px!important;
+  background: hsl(var(--color-bg-default-hover, #F2F4F5))!important;
+}

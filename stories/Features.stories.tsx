@@ -29,6 +29,10 @@ const Template: StoryFn<typeof Workbook> = ({
         ref={ref}
         {...args}
         data={data}
+        rowHeaderWidth={60}
+        columnHeaderHeight={24}
+        defaultColWidth={100}
+        defaultRowHeight={21}
         onChange={onChange}
         isAuthorized={false}
         customToolbarItems={[
@@ -89,7 +93,9 @@ const Template: StoryFn<typeof Workbook> = ({
           "clear",
           "|",
           "insert-row",
+          "insert-row-above",
           "insert-column",
+          "insert-column-right",
           "cell-delete-row",
           "cell-delete-column",
           // "delete-cell",
@@ -123,7 +129,9 @@ const Template: StoryFn<typeof Workbook> = ({
           "clear",
           "|",
           "insert-row",
+          "insert-row-above",
           "insert-column",
+          "insert-column-right",
           "delete-row",
           "delete-column",
           // "delete-cell",

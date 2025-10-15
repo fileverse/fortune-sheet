@@ -1,7 +1,7 @@
 import { locale } from "@fileverse-dev/fortune-core";
 import { Button, cn, IconButton, TextField } from "@fileverse/ui";
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import DataVerification from ".";
+// import DataVerification from ".";
 import WorkbookContext from "../../context";
 import { useDialog } from "../../hooks/useDialog";
 import ConditionRules from "../ConditionFormat/ConditionRules";
@@ -11,7 +11,11 @@ import { getDisplayedRangeTxt } from "./getDisplayedRangeTxt";
 const RangeDialog: React.FC = () => {
   const { context, setContext } = useContext(WorkbookContext);
   const { showDialog } = useDialog();
-  const { dataVerification, button, toolbar } = locale(context);
+  const {
+    dataVerification,
+    button,
+    // toolbar
+  } = locale(context);
   const [rangeTxt2, setRangeTxt2] = useState<string>(
     getDisplayedRangeTxt(context)
   );
@@ -21,6 +25,7 @@ const RangeDialog: React.FC = () => {
       ctx.rangeDialog!.show = false;
       ctx.rangeDialog!.singleSelect = false;
     });
+    document.getElementById("data-verification-button")?.click();
     if (!context.rangeDialog) return;
     const rangeDialogType = context.rangeDialog.type;
     if (rangeDialogType.indexOf("between") >= 0) {
@@ -41,9 +46,9 @@ const RangeDialog: React.FC = () => {
         undefined,
         (locale(context).conditionformat as any)[`conditionformat_${rulesType}`]
       );
-      return;
     }
-    showDialog(<DataVerification />, undefined, toolbar.dataVerification);
+    // document.getElementById("data-verification-button")?.click();
+    // showDialog(<DataVerification />, undefined, toolbar.dataVerification);
   }, [setContext, showDialog, context]);
 
   useEffect(() => {

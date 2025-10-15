@@ -18,16 +18,14 @@
 }
 
 .fortune-sheet-list-item-name {
-  margin-right: 15px;
+  /* margin-right: 15px; */
   position: relative;
 }
 
-.fortune-sheet-list-item-name .luckysheet-sheets-list-item-color {
-  width: 6%;
-  height: 100%;
-  position: absolute;
-  bottom: 0;
-  left: -6px;
+.luckysheet-sheets-list-item-color {
+  width: 9px;
+  height: 30%;
+  border-radius: 20px;
 }
 
 .fortune-sheet-list :hover {
@@ -36,10 +34,9 @@
 }
 
 .fortune-sheet-hidden-button {
-  margin-right: 15px;
   display: inline-flex;
-  position: absolute;
-  right: 0;
+  /* position: absolute;
+  right: 0; */
   justify-content: flex-end;
 }
 

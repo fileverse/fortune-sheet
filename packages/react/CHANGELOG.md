@@ -1,5 +1,297 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.9
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.9
+
+## 1.2.8
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.8
+
+## 1.2.7
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.7
+
+## 1.2.6
+
+### Patch Changes
+
+- Unhide all col row at once
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.6
+
+## 1.2.5
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.5
+
+## 1.2.4
+
+### Patch Changes
+
+- QA feedback for data verification
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.4
+
+## 1.2.3
+
+### Patch Changes
+
+- minor css fix
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.3
+
+## 1.2.2
+
+### Patch Changes
+
+- CSS changes for hide button
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.2
+
+## 1.2.1
+
+### Patch Changes
+
+- :wq!
+  An empty message aborts the editor.
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.1
+
+## 1.2.0
+
+### Minor Changes
+
+- Hide col/row
+
+### Patch Changes
+
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.0
+
+## 1.1.99
+
+### Patch Changes
+
+- Fix data verification input focus issue
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.99
+
+## 1.1.98
+
+### Patch Changes
+
+- Function parameter highlight
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.98
+
+## 1.1.97
+
+### Patch Changes
+
+- No changable data verification range after selection
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.97
+
+## 1.1.96
+
+### Patch Changes
+
+- data verification as portal
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.96
+
+## 1.1.95
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.95
+
+## 1.1.94
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.94
+
+## 1.1.93
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.93
+
+## 1.1.92
+
+### Patch Changes
+
+- expose data verification component
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.92
+
+## 1.1.91
+
+### Patch Changes
+
+- Data verification revamp
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.91
+
+## 1.1.90
+
+### Patch Changes
+
+- ghost position, insert for header
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.90
+
+## 1.1.89
+
+### Patch Changes
+
+- data block refresh
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.89
+
+## 1.1.88
+
+### Patch Changes
+
+- update formula and cell in between drag rage
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.88
+
+## 1.1.87
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.87
+
+## 1.1.86
+
+### Patch Changes
+
+- minor changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.86
+
+## 1.1.85
+
+### Patch Changes
+
+- minor css changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.85
+
+## 1.1.84
+
+### Patch Changes
+
+- support for drag row/col
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.84
+
+## 1.1.83
+
+### Patch Changes
+
+- Minor css fix in footer sub list
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.83
+
+## 1.1.82
+
+### Patch Changes
+
+- QA review fiex for footer, icon update context menu
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.82
+
+## 1.1.81
+
+### Patch Changes
+
+- Update fx icon in header
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.81
+
+## 1.1.80
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.80
+
+## 1.1.79
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.79
+
+## 1.1.78
+
+### Patch Changes
+
+- n/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.78
+
+## 1.1.77
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.77
+
+## 1.1.76
+
+### Patch Changes
+
+- minor changes for stats
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.76
+
+## 1.1.75
+
+### Patch Changes
+
+- footer UI changes
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.75
+
+## 1.1.74
+
+### Patch Changes
+
+- resoleve cell refernce with % if % formate
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.1.74
+
 ## 1.1.73
 
 ### Patch Changes

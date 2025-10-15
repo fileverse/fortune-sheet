@@ -11,8 +11,10 @@ import {
   MIN_ZOOM_RATIO,
   getSheetIndex,
 } from "@fileverse-dev/fortune-core";
+import { useMediaQuery } from "usehooks-ts";
+import { IconButton } from "@fileverse/ui";
 import WorkbookContext from "../../context";
-import SVGIcon from "../SVGIcon";
+// import SVGIcon from "../SVGIcon";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import "./index.css";
 
@@ -59,6 +61,7 @@ const ZoomControl: React.FC = () => {
   const { context, setContext } = useContext(WorkbookContext);
   const menuRef = useRef<HTMLDivElement>(null);
   const [radioMenuOpen, setRadioMenuOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 780px)", { defaultValue: true });
 
   useOutsideClick(
     menuRef,
@@ -107,21 +110,25 @@ const ZoomControl: React.FC = () => {
 
   return (
     <div className="fortune-zoom-container">
-      <div
-        className="fortune-zoom-button"
-        onClick={(e) => {
-          zoomTo(context.zoomRatio - 0.1);
-          e.stopPropagation();
-        }}
-        tabIndex={0}
-      >
-        <SVGIcon name="minus" width={16} height={16} />
-      </div>
+      {!isMobile && (
+        <IconButton
+          className="fortune-sheettab-button border-none shadow-none"
+          onClick={(e: React.MouseEvent) => {
+            zoomTo(context.zoomRatio - 0.1);
+            e.stopPropagation();
+          }}
+          elevation={1}
+          icon="Minus"
+          size="sm"
+          variant="secondary"
+        />
+      )}
       <div className="fortune-zoom-ratio">
         <div
           className="fortune-zoom-ratio-current fortune-zoom-button"
           onClick={() => setRadioMenuOpen(true)}
           tabIndex={0}
+          style={{ fontWeight: "500" }}
         >
           {(context.zoomRatio * 100).toFixed(0)}%
         </div>
@@ -143,16 +150,19 @@ const ZoomControl: React.FC = () => {
           </div>
         )}
       </div>
-      <div
-        className="fortune-zoom-button"
-        onClick={(e) => {
-          zoomTo(context.zoomRatio + 0.1);
-          e.stopPropagation();
-        }}
-        tabIndex={0}
-      >
-        <SVGIcon name="plus" width={16} height={16} />
-      </div>
+      {!isMobile && (
+        <IconButton
+          className="fortune-sheettab-button border-none shadow-none"
+          onClick={(e: React.MouseEvent) => {
+            zoomTo(context.zoomRatio + 0.1);
+            e.stopPropagation();
+          }}
+          elevation={1}
+          icon="Plus"
+          size="sm"
+          variant="secondary"
+        />
+      )}
     </div>
   );
 };

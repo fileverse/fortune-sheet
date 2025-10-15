@@ -27,7 +27,6 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const editable = useRef<HTMLSpanElement>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [svgColor, setSvgColor] = useState<string>("#c3c3c3");
   const { showAlert } = useAlert();
 
   useEffect(() => {
@@ -208,26 +207,41 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
         display: sheet.hide === 1 ? "none" : "",
       }}
     >
-      <span
-        className="luckysheet-sheets-item-name"
-        spellCheck="false"
-        suppressContentEditableWarning
-        contentEditable={isDropPlaceholder ? false : editing}
-        onDoubleClick={() => {
-          if (context.isFlvReadOnly) return;
-          setEditing(true);
-        }}
-        onBlur={onBlur}
-        onKeyDown={onKeyDown}
-        ref={editable}
-        style={dragOver ? { pointerEvents: "none" } : {}}
-      >
-        {sheet.name}
-      </span>
+      {editing === false && (
+        <p
+          className="luckysheet-sheets-item-name"
+          onDoubleClick={() => {
+            if (context.isFlvReadOnly) return;
+            setEditing(true);
+          }}
+        >
+          {sheet.name}
+        </p>
+      )}
+      {editing && (
+        <span
+          className="luckysheet-sheets-item-name"
+          spellCheck="false"
+          suppressContentEditableWarning
+          contentEditable={isDropPlaceholder ? false : editing}
+          onDoubleClick={() => {
+            if (context.isFlvReadOnly) return;
+            setEditing(true);
+          }}
+          onBlur={onBlur}
+          onKeyDown={onKeyDown}
+          ref={editable}
+          style={dragOver ? { pointerEvents: "none" } : {}}
+        >
+          {sheet.name}
+        </span>
+      )}
       <span
         className="luckysheet-sheets-item-function"
-        onMouseEnter={() => setSvgColor("#5c5c5c")}
-        onMouseLeave={() => setSvgColor("#c3c3c3")}
+        style={{
+          marginRight: "4px",
+          marginLeft: "4px",
+        }}
         onClick={(e) => {
           if (isDropPlaceholder || context.allowEdit === false) return;
           const rect = refs.workbookContainer.current!.getBoundingClientRect();
@@ -245,7 +259,7 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
         }}
         tabIndex={0}
       >
-        <SVGIcon name="downArrow" width={12} style={{ fill: svgColor }} />
+        <SVGIcon name="downArrow" width={12} style={{ fill: "#363B3F" }} />
       </span>
       {!!sheet.color && (
         <div

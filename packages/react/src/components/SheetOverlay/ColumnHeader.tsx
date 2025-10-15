@@ -12,6 +12,8 @@ import {
   handleColFreezeHandleMouseDown,
   getSheetIndex,
   fixPositionOnFrozenCells,
+  showSelected,
+  api,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, {
@@ -24,6 +26,7 @@ import React, {
 } from "react";
 import WorkbookContext from "../../context";
 import SVGIcon from "../SVGIcon";
+import { useColumnDragAndDrop } from "./drag_and_drop/column-helpers";
 
 const ColumnHeader: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
@@ -41,6 +44,7 @@ const ColumnHeader: React.FC = () => {
   const allowEditRef = useRef<boolean>(true);
   const sheetIndex = getSheetIndex(context, context.currentSheetId);
   const sheet = sheetIndex == null ? null : context.luckysheetfile[sheetIndex];
+
   const freezeHandleLeft = useMemo(() => {
     if (
       sheet?.frozen?.type === "column" ||
@@ -59,6 +63,14 @@ const ColumnHeader: React.FC = () => {
     }
     return context.scrollLeft;
   }, [context.visibledatacolumn, sheet?.frozen, context.scrollLeft]);
+
+  const selectedLocationRef = useRef(selectedLocation);
+  useEffect(() => {
+    selectedLocationRef.current = selectedLocation;
+  }, [selectedLocation]);
+
+  const { initiateDrag, getColIndexClicked, isColDoubleClicked } =
+    useColumnDragAndDrop(containerRef, selectedLocationRef);
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -100,19 +112,68 @@ const ColumnHeader: React.FC = () => {
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      const { nativeEvent } = e;
-      setContext((draftCtx) => {
-        handleColumnHeaderMouseDown(
-          draftCtx,
-          refs.globalCache,
-          nativeEvent,
-          containerRef.current!,
-          refs.cellInput.current!,
-          refs.fxInput.current!
-        );
-      });
+      // @ts-expect-error
+      if ((e.button === 0 && e.target.tagName === "use") || e.button === 2) {
+        const { nativeEvent } = e;
+        setContext((draft) => {
+          handleColumnHeaderMouseDown(
+            draft,
+            refs.globalCache,
+            nativeEvent,
+            containerRef.current!,
+            refs.cellInput.current!,
+            refs.fxInput.current!
+          );
+        });
+      }
+      if (e.button !== 0 || context.isFlvReadOnly) return; // left button only
+      const targetEl = e.target as HTMLElement;
+      if (
+        targetEl.closest(".fortune-cols-change-size") ||
+        targetEl.closest(".fortune-cols-freeze-handle") ||
+        targetEl.closest(".header-arrow")
+      )
+        return;
+
+      const headerEl = containerRef.current;
+      if (!headerEl) return;
+
+      const clickedColIndex = getColIndexClicked(e.pageX, headerEl);
+      if (clickedColIndex < 0) return;
+
+      if (isColDoubleClicked(clickedColIndex)) {
+        setContext((draft) => {
+          draft.luckysheet_scroll_status = true;
+        });
+      } else {
+        const { nativeEvent } = e;
+        setContext((draft) => {
+          handleColumnHeaderMouseDown(
+            draft,
+            refs.globalCache,
+            nativeEvent,
+            containerRef.current!,
+            refs.cellInput.current!,
+            refs.fxInput.current!
+          );
+        });
+        return;
+      }
+
+      // handle drag and drop
+      e.preventDefault();
+      e.stopPropagation();
+      initiateDrag(clickedColIndex, e.pageX);
     },
-    [refs.globalCache, refs.cellInput, refs.fxInput, setContext]
+    [
+      refs.globalCache,
+      refs.cellInput,
+      refs.fxInput,
+      setContext,
+      getColIndexClicked,
+      isColDoubleClicked,
+      initiateDrag,
+    ]
   );
 
   const onMouseLeave = useCallback(() => {
@@ -202,6 +263,103 @@ const ColumnHeader: React.FC = () => {
     setSelectedLocation(selects);
   }, [context.luckysheet_select_save, context.visibledatacolumn]);
 
+  const [hiddenPointers, setHiddenPointers] = useState([]);
+
+  useEffect(() => {
+    if (sheetIndex == null) return;
+
+    const tempPointers: any = [];
+    const colhidden = context.luckysheetfile[sheetIndex]?.config?.colhidden;
+
+    console.log(colhidden);
+
+    if (colhidden) {
+      Object.keys(colhidden).forEach((key) => {
+        const item = {
+          col: key,
+          left: context.visibledatacolumn[Number(key) - 1],
+        };
+        tempPointers.push(item);
+      });
+      setHiddenPointers(tempPointers);
+    } else {
+      setHiddenPointers([]);
+    }
+  }, [context.visibledatacolumn, sheetIndex]);
+
+  const showColumn = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    item: any
+  ) => {
+    if (sheetIndex == null) return;
+
+    let startCol = item.col;
+    let endCol = item.col;
+    const startPoint = item.col;
+
+    const colhiddenData = context.luckysheetfile[sheetIndex]?.config?.colhidden;
+    let cod = true;
+    let tempStartPoint = startPoint;
+
+    while (cod) {
+      tempStartPoint -= 1;
+      // eslint-disable-next-line no-prototype-builtins
+      if (colhiddenData?.hasOwnProperty(tempStartPoint)) {
+        startCol = tempStartPoint;
+      } else {
+        cod = false;
+      }
+    }
+
+    cod = true;
+    tempStartPoint = startPoint;
+
+    while (cod) {
+      tempStartPoint += 1;
+      // eslint-disable-next-line no-prototype-builtins
+      if (colhiddenData?.hasOwnProperty(tempStartPoint)) {
+        endCol = tempStartPoint;
+      } else {
+        cod = false;
+      }
+    }
+
+    if (context.isFlvReadOnly) return;
+    e.stopPropagation();
+    setContext((ctx) => {
+      api.setSelection(
+        ctx,
+        [
+          {
+            row: [0, context.visibledatarow?.length],
+            column: [Number(startCol) - 1, Number(endCol) + 1],
+          },
+        ],
+        {
+          id: context.currentSheetId,
+        }
+      );
+    });
+    setContext((ctx) => {
+      showSelected(ctx, "column");
+    });
+
+    setContext((ctx) => {
+      api.setSelection(
+        ctx,
+        [
+          {
+            row: [0, context.visibledatarow?.length],
+            column: [Number(startCol), Number(endCol)],
+          },
+        ],
+        {
+          id: context.currentSheetId,
+        }
+      );
+    });
+  };
+
   useEffect(() => {
     containerRef.current!.scrollLeft = context.scrollLeft;
   }, [context.scrollLeft]);
@@ -227,6 +385,47 @@ const ColumnHeader: React.FC = () => {
         });
       }}
     >
+      {hiddenPointers.map((item: any) => {
+        return (
+          <div
+            className="flex gap-4 cursor-pointer hide-btn align-center jusify-between"
+            style={{
+              height: context.columnHeaderHeight - 12,
+              left: `${item.left - 15}px`,
+            }}
+            onClick={(e) => showColumn(e, item)}
+          >
+            <div className="">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="5"
+                height="8"
+                viewBox="0 0 5 8"
+                fill="none"
+              >
+                <path
+                  d="M0.164574 4.20629L3.54376 7.58548C3.7275 7.76922 4.04167 7.63909 4.04167 7.37924L4.04167 0.620865C4.04167 0.361018 3.7275 0.230885 3.54376 0.414625L0.164575 3.79381C0.0506717 3.90772 0.0506715 4.09239 0.164574 4.20629Z"
+                  fill="#363B3F"
+                />
+              </svg>
+            </div>
+            <div className="">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="5"
+                height="8"
+                viewBox="0 0 5 8"
+                fill="none"
+              >
+                <path
+                  d="M4.68811 4.35359L1.81188 7.22982C1.4969 7.5448 0.958328 7.32172 0.958328 6.87627L0.958328 1.12381C0.958328 0.678362 1.4969 0.455279 1.81188 0.770261L4.68811 3.64649C4.88337 3.84175 4.88337 4.15833 4.68811 4.35359Z"
+                  fill="#363B3F"
+                />
+              </svg>
+            </div>
+          </div>
+        );
+      })}
       <div
         className="fortune-cols-freeze-handle"
         onMouseDown={onColFreezeHandleMouseDown}
@@ -264,7 +463,7 @@ const ColumnHeader: React.FC = () => {
         >
           {allowEditRef.current && (
             <span
-              className="header-arrow"
+              className="header-arrow mr-2"
               onClick={(e) => {
                 setContext((ctx) => {
                   ctx.contextMenu = {

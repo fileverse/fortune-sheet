@@ -4,6 +4,8 @@
   display: flex;
   align-items: center;
   user-select: none;
+  border-left: 1px solid hsl(var(--color-border-default));
+  border-right: 1px solid hsl(var(--color-border-default));
 }
 
 .fortune-zoom-button {
@@ -12,11 +14,14 @@
   align-items: center;
   justify-content: center;
   width: 24px;
-  height: 24px;
+  height: 28px;
+  border-radius: 3px;
+  color: var(--color-text-default);
+  font-size: 14px;
 }
 
 .fortune-zoom-button:hover {
-  background: #efefef;
+  background-color: hsl(var(--color-button-secondary-hover));
 }
 
 .fortune-zoom-ratio {

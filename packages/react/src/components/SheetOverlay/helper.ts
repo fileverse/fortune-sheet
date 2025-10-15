@@ -28,38 +28,6 @@ export function getCursorPosition(editableDiv: HTMLDivElement): number {
   return preRange.toString().length; // caret offset in characters
 }
 
-// ✅ Set cursor at a given position inside a contentEditable div
-// export function setCursorPosition(editableDiv: HTMLDivElement, pos: number) {
-//   editableDiv.focus();
-//   const selection = window.getSelection();
-//   if (!selection) return;
-
-//   const range = document.createRange();
-//   let charIndex = 0;
-//   const nodeStack: any[] = [editableDiv];
-//   let node: any;
-
-//   while ((node = nodeStack.pop())) {
-//     if (node.nodeType === Node.TEXT_NODE) {
-//       const textNode = node as Text;
-//       const nextCharIndex = charIndex + textNode.length;
-
-//       if (pos <= nextCharIndex) {
-//         range.setStart(textNode, pos - charIndex);
-//         range.collapse(true);
-//         break;
-//       }
-//       charIndex = nextCharIndex;
-//     } else {
-//       // push children in reverse order so leftmost child is processed first
-//       nodeStack.push(...Array.from(node.childNodes).reverse());
-//     }
-//   }
-
-//   selection.removeAllRanges();
-//   selection.addRange(range);
-// }
-
 export function isLetterNumberPattern(str: string): boolean {
   const regex = /^[a-zA-Z]+\d+$/;
   return regex.test(str);
@@ -145,4 +113,30 @@ export function decrementRow(cell: string): string {
 
   const newRowPart = Math.max(1, parsed.rowPart - 1); // Prevent going below row 1
   return parsed.colPart + newRowPart;
+}
+
+export function countCommasBeforeCursor(editableDiv: HTMLDivElement): number {
+  const selection = window.getSelection();
+  if (!selection?.rangeCount) return 0;
+
+  const range = selection.getRangeAt(0);
+  const preCaretRange = range.cloneRange();
+  preCaretRange.selectNodeContents(editableDiv);
+  preCaretRange.setEnd(range.endContainer, range.endOffset);
+
+  const textBeforeCursor = preCaretRange.toString();
+
+  let inQuotes = false;
+  let count = 0;
+
+  for (let i = 0; i < textBeforeCursor.length; i += 1) {
+    const char = textBeforeCursor[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      count += 1;
+    }
+  }
+
+  return count;
 }

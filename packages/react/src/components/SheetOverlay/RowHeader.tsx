@@ -9,7 +9,9 @@ import {
   fixRowStyleOverflowInFreeze,
   handleRowFreezeHandleMouseDown,
   getSheetIndex,
+  showSelected,
   fixPositionOnFrozenCells,
+  api,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, {
@@ -21,22 +23,27 @@ import React, {
   useMemo,
 } from "react";
 import WorkbookContext from "../../context";
+import { useRowDragAndDrop } from "./drag_and_drop/row-helpers";
+
+type HoverLoc = { row: number; row_pre: number; row_index: number };
+type SelectedLoc = { row: number; row_pre: number; r1: number; r2: number };
 
 const RowHeader: React.FC = () => {
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
   const rowChangeSizeRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hoverLocation, setHoverLocation] = useState({
+
+  const [hoverLocation, setHoverLocation] = useState<HoverLoc>({
     row: -1,
     row_pre: -1,
     row_index: -1,
   });
   const [hoverInFreeze, setHoverInFreeze] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<
-    { row: number; row_pre: number; r1: number; r2: number }[]
-  >([]);
+  const [selectedLocation, setSelectedLocation] = useState<SelectedLoc[]>([]);
+
   const sheetIndex = getSheetIndex(context, context.currentSheetId);
   const sheet = sheetIndex == null ? null : context.luckysheetfile[sheetIndex];
+
   const freezeHandleTop = useMemo(() => {
     if (
       sheet?.frozen?.type === "row" ||
@@ -54,16 +61,21 @@ const RowHeader: React.FC = () => {
     return context.scrollTop;
   }, [context.visibledatarow, sheet?.frozen, context.scrollTop]);
 
+  const selectedLocationRef = useRef(selectedLocation);
+  useEffect(() => {
+    selectedLocationRef.current = selectedLocation;
+  }, [selectedLocation]);
+
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (context.luckysheet_rows_change_size) {
-        return;
-      }
+      if (context.luckysheet_rows_change_size) return;
+
+      const container = containerRef.current;
+      if (!container) return;
+
       const mouseY =
-        e.pageY -
-        containerRef.current!.getBoundingClientRect().top -
-        window.scrollY;
-      const _y = mouseY + containerRef.current!.scrollTop;
+        e.pageY - container.getBoundingClientRect().top - window.scrollY;
+      const _y = mouseY + container.scrollTop;
       const freeze = refs.globalCache.freezen?.[context.currentSheetId];
       const { y, inHorizontalFreeze } = fixPositionOnFrozenCells(
         freeze,
@@ -72,8 +84,7 @@ const RowHeader: React.FC = () => {
         0,
         mouseY
       );
-      const row_location = rowLocation(y, context.visibledatarow);
-      const [row_pre, row, row_index] = row_location;
+      const [row_pre, row, row_index] = rowLocation(y, context.visibledatarow);
       if (row_pre !== hoverLocation.row_pre || row !== hoverLocation.row) {
         setHoverLocation({ row_pre, row, row_index });
         setHoverInFreeze(inHorizontalFreeze);
@@ -89,27 +100,73 @@ const RowHeader: React.FC = () => {
     ]
   );
 
+  const { initiateDrag, getRowIndexClicked, isRowDoubleClicked } =
+    useRowDragAndDrop(containerRef, selectedLocationRef);
+
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      const { nativeEvent } = e;
-      setContext((draftCtx) => {
-        handleRowHeaderMouseDown(
-          draftCtx,
-          refs.globalCache,
-          nativeEvent,
-          containerRef.current!,
-          refs.cellInput.current!,
-          refs.fxInput.current!
-        );
-      });
+      // @ts-expect-error
+      if ((e.button === 0 && e.target.tagName === "use") || e.button === 2) {
+        const { nativeEvent } = e;
+        setContext((draft) => {
+          handleRowHeaderMouseDown(
+            draft,
+            refs.globalCache,
+            nativeEvent,
+            containerRef.current!,
+            refs.cellInput.current!,
+            refs.fxInput.current!
+          );
+        });
+      }
+      if (e.button !== 0 || context.isFlvReadOnly) return; // left button only
+      const targetEl = e.target as HTMLElement;
+      if (
+        targetEl.closest(".fortune-rows-change-size") ||
+        targetEl.closest(".fortune-rows-freeze-handle")
+      )
+        return;
+
+      const headerEl = containerRef.current;
+      if (!headerEl) return;
+
+      const clickedRowIndex = getRowIndexClicked(e.pageY, headerEl);
+      if (clickedRowIndex < 0) return;
+
+      if (isRowDoubleClicked(clickedRowIndex)) {
+        setContext((draft) => {
+          draft.luckysheet_scroll_status = true;
+        });
+      } else {
+        const { nativeEvent } = e;
+        setContext((draft) => {
+          handleRowHeaderMouseDown(
+            draft,
+            refs.globalCache,
+            nativeEvent,
+            containerRef.current!,
+            refs.cellInput.current!,
+            refs.fxInput.current!
+          );
+        });
+        return;
+      }
+
+      // handle drag and drop
+      e.preventDefault();
+      e.stopPropagation();
+      initiateDrag(clickedRowIndex, e.pageY);
     },
-    [refs.globalCache, refs.cellInput, refs.fxInput, setContext]
+    [
+      refs.globalCache,
+      context.visibledatarow,
+      context.currentSheetId,
+      setContext,
+    ]
   );
 
   const onMouseLeave = useCallback(() => {
-    if (context.luckysheet_rows_change_size) {
-      return;
-    }
+    if (context.luckysheet_rows_change_size) return;
     setHoverLocation({ row: -1, row_pre: -1, row_index: -1 });
   }, [context.luckysheet_rows_change_size]);
 
@@ -171,15 +228,15 @@ const RowHeader: React.FC = () => {
     if (_.isNil(s)) return;
     setSelectedLocation([]);
     if (s[0]?.column_select) return;
-    let rowTitleMap: Record<number, number> = {};
+
+    let rowTitleMap = {};
     for (let i = 0; i < s.length; i += 1) {
       const r1 = s[i].row[0];
       const r2 = s[i].row[1];
       rowTitleMap = selectTitlesMap(rowTitleMap, r1, r2);
     }
     const rowTitleRange = selectTitlesRange(rowTitleMap);
-    const selects: { row: number; row_pre: number; r1: number; r2: number }[] =
-      [];
+    const selects = [];
     for (let i = 0; i < rowTitleRange.length; i += 1) {
       const r1 = rowTitleRange[i][0];
       const r2 = rowTitleRange[i][rowTitleRange[i].length - 1];
@@ -191,6 +248,98 @@ const RowHeader: React.FC = () => {
     }
     setSelectedLocation(selects);
   }, [context.luckysheet_select_save, context.visibledatarow]);
+
+  const [hiddenPointers, setHiddenPointers] = useState([]);
+
+  useEffect(() => {
+    if (sheetIndex == null) return;
+
+    const tempPointers: any = [];
+    const rowhidden = context.luckysheetfile[sheetIndex]?.config?.rowhidden;
+
+    if (rowhidden) {
+      Object.keys(rowhidden).forEach((key) => {
+        const item = { row: key, top: context.visibledatarow[Number(key) - 1] };
+        tempPointers.push(item);
+      });
+      setHiddenPointers(tempPointers);
+    } else {
+      setHiddenPointers([]);
+    }
+  }, [context.visibledatarow, sheetIndex]);
+
+  const showRow = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    item: any
+  ) => {
+    if (sheetIndex == null) return;
+
+    let startRow = item.row;
+    let endRow = item.row;
+    const startPoint = item.row;
+
+    const rowhiddenData = context.luckysheetfile[sheetIndex]?.config?.rowhidden;
+    let cod = true;
+    let tempStartPoint = startPoint;
+
+    while (cod) {
+      tempStartPoint -= 1;
+      // eslint-disable-next-line no-prototype-builtins
+      if (rowhiddenData?.hasOwnProperty(tempStartPoint)) {
+        startRow = tempStartPoint;
+      } else {
+        cod = false;
+      }
+    }
+
+    cod = true;
+    tempStartPoint = startPoint;
+
+    while (cod) {
+      tempStartPoint += 1;
+      // eslint-disable-next-line no-prototype-builtins
+      if (rowhiddenData?.hasOwnProperty(tempStartPoint)) {
+        endRow = tempStartPoint;
+      } else {
+        cod = false;
+      }
+    }
+
+    if (context.isFlvReadOnly) return;
+    e.stopPropagation();
+    setContext((ctx) => {
+      api.setSelection(
+        ctx,
+        [
+          {
+            row: [Number(startRow) - 1, Number(endRow) + 1],
+            column: [0, context.visibledatacolumn?.length],
+          },
+        ],
+        {
+          id: context.currentSheetId,
+        }
+      );
+    });
+    setContext((ctx) => {
+      showSelected(ctx, "row");
+    });
+
+    setContext((ctx) => {
+      api.setSelection(
+        ctx,
+        [
+          {
+            row: [Number(startRow), Number(endRow)],
+            column: [0, context.visibledatacolumn?.length],
+          },
+        ],
+        {
+          id: context.currentSheetId,
+        }
+      );
+    });
+  };
 
   useEffect(() => {
     containerRef.current!.scrollTop = context.scrollTop;
@@ -209,12 +358,51 @@ const RowHeader: React.FC = () => {
       onMouseLeave={onMouseLeave}
       onContextMenu={onContextMenu}
     >
+      {hiddenPointers.map((item: any) => {
+        return (
+          <div
+            className="flex flex-col gap-4 cursor-pointer align-center hide-btn-row"
+            style={{
+              top: `${item.top - 15}px`,
+              zIndex: 100,
+            }}
+            onClick={(e) => showRow(e, item)}
+          >
+            <div className="rotate-row-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="5"
+                height="8"
+                viewBox="0 0 5 8"
+                fill="none"
+              >
+                <path
+                  d="M0.164574 4.20629L3.54376 7.58548C3.7275 7.76922 4.04167 7.63909 4.04167 7.37924L4.04167 0.620865C4.04167 0.361018 3.7275 0.230885 3.54376 0.414625L0.164575 3.79381C0.0506717 3.90772 0.0506715 4.09239 0.164574 4.20629Z"
+                  fill="#363B3F"
+                />
+              </svg>
+            </div>
+            <div className="rotate-90">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="5"
+                height="8"
+                viewBox="0 0 5 8"
+                fill="none"
+              >
+                <path
+                  d="M0.164574 4.20629L3.54376 7.58548C3.7275 7.76922 4.04167 7.63909 4.04167 7.37924L4.04167 0.620865C4.04167 0.361018 3.7275 0.230885 3.54376 0.414625L0.164575 3.79381C0.0506717 3.90772 0.0506715 4.09239 0.164574 4.20629Z"
+                  fill="#363B3F"
+                />
+              </svg>
+            </div>
+          </div>
+        );
+      })}
       <div
         className="fortune-rows-freeze-handle"
         onMouseDown={onRowFreezeHandleMouseDown}
-        style={{
-          top: freezeHandleTop,
-        }}
+        style={{ top: freezeHandleTop }}
       />
       <div
         className="fortune-rows-change-size"

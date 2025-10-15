@@ -18,8 +18,8 @@ import {
   CellMatrix,
   insertRowCol,
   deleteRowCol,
-  locale,
-  calcSelectionInfo,
+  // locale,
+  // calcSelectionInfo,
   groupValuesRefresh,
   insertDuneChart,
   getFlowdata,
@@ -106,26 +106,26 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
     );
 
     const [context, setContext] = useState(defaultContext(refs));
-    const { formula } = locale(context);
+    // const { formula } = locale(context);
 
     const [moreToolbarItems, setMoreToolbarItems] =
       useState<React.ReactNode>(null);
 
-    const [calInfo, setCalInfo] = useState<{
-      numberC: number;
-      count: number;
-      sum: number;
-      max: number;
-      min: number;
-      average: string;
-    }>({
-      numberC: 0,
-      count: 0,
-      sum: 0,
-      max: 0,
-      min: 0,
-      average: "",
-    });
+    // const [calInfo, setCalInfo] = useState<{
+    //   numberC: number;
+    //   count: number;
+    //   sum: number;
+    //   max: number;
+    //   min: number;
+    //   average: string;
+    // }>({
+    //   numberC: 0,
+    //   count: 0,
+    //   sum: 0,
+    //   max: 0,
+    //   min: 0,
+    //   average: "",
+    // });
 
     const mergedSettings = useMemo(
       () => _.assign(_.cloneDeep(defaultSettings), props) as Required<Settings>,
@@ -135,15 +135,15 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
     );
 
     // 计算选区的信息
-    useEffect(() => {
-      const selection = context.luckysheet_select_save;
-      const { lang } = props;
-      if (selection) {
-        const re = calcSelectionInfo(context, lang);
-        setCalInfo(re);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [context.luckysheet_select_save]);
+    // useEffect(() => {
+    //   const selection = context.luckysheet_select_save;
+    //   const { lang } = props;
+    //   if (selection) {
+    //     const re = calcSelectionInfo(context, lang);
+    //     setCalInfo(re);
+    //   }
+    //   // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [context.luckysheet_select_save]);
 
     const initSheetData = useCallback(
       (
@@ -884,6 +884,11 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             }
           });
         }
+        setContextWithProduce((ctx: any) => {
+          if (ctx.luckysheet_selection_range) {
+            ctx.luckysheet_selection_range = [];
+          }
+        });
       },
       [context, setContextWithProduce]
     );
@@ -935,6 +940,16 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
 
     return (
       <WorkbookContext.Provider value={providerValue}>
+        {/* <div
+          id="placeholder-data-verification"
+          style={{
+            width: "500px",
+            height: "500px",
+            position: "fixed",
+            zIndex: "1000",
+            backgroundColor: "white",
+          }}
+        /> */}
         <ModalProvider>
           <div
             className="fortune-container"
@@ -979,7 +994,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             )}
             <div className="fortune-stat-area">
               <div className="luckysheet-sheet-selection-calInfo">
-                {!!calInfo.count && (
+                {/* {!!calInfo.count && (
                   <div style={{ width: "60px" }}>
                     {formula.count}: {calInfo.count}
                   </div>
@@ -1003,7 +1018,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
                   <div>
                     {formula.min}: {calInfo.min}
                   </div>
-                )}
+                )} */}
               </div>
             </div>
             {context.showDunePreview && (

@@ -1011,3 +1011,39 @@
   /* darker on hover */
   /* scrollbar */
 }
+
+.hide-btn {
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 2px;
+  position: absolute;
+  width: 32px;
+  top: 5px;
+  z-index: 200;
+}
+
+.hide-btn:hover {
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-top: 1px;
+  background-color: rgba(255, 255, 255, 1);
+  border-radius: var(--border-radius-sm, 4px);
+border: 1px solid #BDC4C8;
+}
+
+.rotate-row-icon {
+  transform: rotate(-90deg);
+}
+
+.hide-btn-row {
+  position: absolute;
+  left: 4px;
+  z-index: 200;
+  width: 12px;
+}
+
+.hide-btn-row:hover {
+    background-color: white;
+    border: 1px solid #BDC4C8;
+    border-radius: 4px;
+}

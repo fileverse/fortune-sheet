@@ -112,7 +112,6 @@ export function generateAPIs(
     },
 
     getCryptoPrice,
-
     getCellValue: (
       row: number,
       column: number,
@@ -486,6 +485,9 @@ export function generateAPIs(
     },
     getWorkbookContext: () => {
       return context;
+    },
+    getWorkbookSetContext: () => {
+      return setContext;
     },
     getSettings: () => {
       return settings;

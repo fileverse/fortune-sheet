@@ -250,6 +250,7 @@ export type RangeDialogProps = {
 };
 
 export type DataRegulationProps = {
+  color?: string;
   type: string;
   type2: string;
   rangeTxt: string;

@@ -142,6 +142,7 @@ export function setCellValue(
   d: CellMatrix | null | undefined,
   v: any
 ) {
+  if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
   if (_.isNil(d)) {
     d = getFlowdata(ctx);
   }
@@ -390,11 +391,11 @@ export function setCellValue(
         const format = getNumberFormat(strValue, commaPresent);
 
         cell.m = v.m ? v.m : update(format, cell.v);
-        cell.ht = 2;
+        cell.ht = v?.ht ? cell.ht : 2;
         cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
           cell.m = cell.v.toString();
-        } else if (cell.v != null) {
+        } else if (cell.v != null && !cell.m) {
           const mask = genarate(cell.v as string);
           if (mask) {
             if (v.m) {
@@ -409,6 +410,15 @@ export function setCellValue(
         if (mask) {
           cell.m = mask[0].toString();
           [, cell.ct, cell.v] = mask;
+          if (
+            v?.ct &&
+            v.ct.t === "n" &&
+            cell?.ct &&
+            cell.ct.t !== "n" &&
+            cell?.ht === 2
+          ) {
+            cell.ht = 1;
+          }
         }
       }
     }
@@ -437,6 +447,10 @@ export function setCellValue(
   // }
 
   d[r][c] = cell;
+  // after cell data update
+  if (ctx.luckysheet_selection_range) {
+    ctx.luckysheet_selection_range = [];
+  }
 }
 
 export function getRealCellValue(
@@ -744,6 +758,8 @@ export function updateCell(
   value?: any,
   canvas?: CanvasRenderingContext2D
 ) {
+  if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
+
   let inputText = $input?.innerText;
   const inputHtml = $input?.innerHTML;
   const flowdata = getFlowdata(ctx);

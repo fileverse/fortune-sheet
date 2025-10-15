@@ -747,10 +747,10 @@ export function cellFocus(
   if (!dataVerification) return;
   let row = ctx.visibledatarow[r];
   let row_pre = r === 0 ? 0 : ctx.visibledatarow[r - 1];
-  let row_pre2 = r === 0 ? 0 : ctx.visibledatarow[r-3];
+  const row_pre2 = r === 0 ? 0 : ctx.visibledatarow[r - 3];
   let col = ctx.visibledatacolumn[c];
   let col_pre = c === 0 ? 0 : ctx.visibledatacolumn[c - 1];
-  let col_pre2 = c === 0 ? 0 : ctx.visibledatacolumn[c];
+  const col_pre2 = c === 0 ? 0 : ctx.visibledatacolumn[c];
   const d = getFlowdata(ctx);
   if (!d) return;
   const margeSet = mergeBorder(ctx, d, r, c);

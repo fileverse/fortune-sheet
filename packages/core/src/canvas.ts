@@ -1751,7 +1751,8 @@ export class Canvas {
 
       const chevronWidth = 7 * this.sheetCtx.zoomRatio;
       const chevronHeight = 4 * this.sheetCtx.zoomRatio;
-      const chevronX = x - 2 + ps_w - chevronWidth - 2 * this.sheetCtx.zoomRatio;
+      const chevronX =
+        x - 2 + ps_w - chevronWidth - 2 * this.sheetCtx.zoomRatio;
       const chevronY = y + (ps_h - chevronHeight) / 2;
 
       renderCtx.beginPath();

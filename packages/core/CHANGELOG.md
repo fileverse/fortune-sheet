@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.4
+
+### Patch Changes
+
+- QA feedback for data verification
+
 ## 1.2.3
 
 ### Patch Changes

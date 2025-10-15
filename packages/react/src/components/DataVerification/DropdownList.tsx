@@ -163,7 +163,14 @@ const DropDownList: React.FC = () => {
           </div>
         );
       })}
-      <hr style={{ border: "none", height: "1px", background: "hsl(var(--color-bg-default-hover, #F2F4F5))", marginBottom: "4px" }} />
+      <hr
+        style={{
+          border: "none",
+          height: "1px",
+          background: "hsl(var(--color-bg-default-hover, #F2F4F5))",
+          marginBottom: "4px",
+        }}
+      />
 
       <div
         className="w-full flex align-center edit-dropdown"
@@ -178,7 +185,7 @@ const DropDownList: React.FC = () => {
           size="sm"
           variant="ghost"
           className="color-picker-icon color-picker edit-dropdown"
-          style={{paddingTop: "0px !important"}}
+          style={{ paddingTop: "0px !important" }}
         />
         <Button
           size="md"

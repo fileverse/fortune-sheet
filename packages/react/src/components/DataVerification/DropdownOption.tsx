@@ -34,12 +34,16 @@ const DynamicInputList = ({
   };
 
   useEffect(() => {
-    if(optionItems.length === 0) {
+    if (optionItems.length === 0) {
       const nextNum = 1;
       setOptionItems((prev) => [
         ...prev,
         { id: createId(), value: `Option ${nextNum}`, color: "228, 232, 237" },
-        { id: createId(), value: `Option ${nextNum + 1}`, color: "228, 232, 237" },
+        {
+          id: createId(),
+          value: `Option ${nextNum + 1}`,
+          color: "228, 232, 237",
+        },
       ]);
     }
   }, []);

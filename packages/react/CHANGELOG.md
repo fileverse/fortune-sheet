@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.4
+
+### Patch Changes
+
+- QA feedback for data verification
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.4
+
 ## 1.2.3
 
 ### Patch Changes

@@ -11,8 +11,8 @@ import {
   getSheetIndex,
   showSelected,
   fixPositionOnFrozenCells,
+  api,
 } from "@fileverse-dev/fortune-core";
-import { api } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, {
   useContext,
@@ -313,9 +313,9 @@ const RowHeader: React.FC = () => {
       {hiddenPointers.map((item: any) => {
         return (
           <div
-            className="flex flex-col gap-4 cursor-pointer align-center hide-btn-row hide-btn"
+            className="flex flex-col gap-4 cursor-pointer align-center hide-btn-row"
             style={{
-              top: `${item.top - 16}px`,
+              top: `${item.top - 15}px`,
               zIndex: 100,
             }}
             onClick={(e) => showRow(e, item)}

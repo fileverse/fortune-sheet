@@ -13,8 +13,8 @@ import {
   getSheetIndex,
   fixPositionOnFrozenCells,
   showSelected,
+  api,
 } from "@fileverse-dev/fortune-core";
-import { api } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, {
   useContext,
@@ -339,10 +339,10 @@ const ColumnHeader: React.FC = () => {
       {hiddenPointers.map((item: any) => {
         return (
           <div
-            className="flex gap-4 cursor-pointer hide-btn align-center"
+            className="flex gap-4 cursor-pointer hide-btn align-center jusify-between"
             style={{
               height: context.columnHeaderHeight - 12,
-              left: `${item.left - 12}px`,
+              left: `${item.left - 15}px`,
             }}
             onClick={(e) => showColumn(e, item)}
           >
@@ -360,19 +360,6 @@ const ColumnHeader: React.FC = () => {
                 />
               </svg>
             </div>
-          </div>
-        );
-      })}
-      {hiddenPointers.map((item: any) => {
-        return (
-          <div
-            className="flex gap-4 cursor-pointer hide-btn align-center"
-            style={{
-              height: context.columnHeaderHeight - 12,
-              left: `${item.left + 6}px`,
-            }}
-            onClick={(e) => showColumn(e, item)}
-          >
             <div className="">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

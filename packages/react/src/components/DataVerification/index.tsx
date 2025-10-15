@@ -282,6 +282,22 @@ const DataVerification: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const rangeOnClick = () => {
+    document.getElementById("data-verification-button")?.click();
+    hideDialog();
+    dataSelectRange(
+      "rangeTxt",
+      context.dataVerification!.dataRegulation!.value1
+    );
+  };
+
+  const rangeOnChange = (e: any) => {
+    const { value } = e.target;
+    setContext((ctx) => {
+      ctx.dataVerification!.dataRegulation!.rangeTxt = value;
+    });
+  };
+
   return (
     <div id="fortune-data-verification">
       <div
@@ -293,24 +309,20 @@ const DataVerification: React.FC = () => {
             {dataVerification.cellRange}
           </div>
           <TextField
-            rightIcon={<LucideIcon name="Grid2x2" size="sm" />}
+            rightIcon={
+              <LucideIcon
+                name="Grid2x2"
+                size="sm"
+                onClick={rangeOnClick}
+                onChange={rangeOnChange}
+                style={{ cursor: "pointer", color: "#363B3F" }}
+              />
+            }
             aria-hidden="true"
             readOnly
             value={context.dataVerification!.dataRegulation?.rangeTxt}
-            onChange={(e) => {
-              const { value } = e.target;
-              setContext((ctx) => {
-                ctx.dataVerification!.dataRegulation!.rangeTxt = value;
-              });
-            }}
-            onClick={() => {
-              document.getElementById("data-verification-button")?.click();
-              hideDialog();
-              dataSelectRange(
-                "rangeTxt",
-                context.dataVerification!.dataRegulation!.value1
-              );
-            }}
+            onChange={rangeOnChange}
+            onClick={rangeOnClick}
           />
         </div>
 
@@ -400,9 +412,17 @@ const DataVerification: React.FC = () => {
                   {dataVerification.selected}
                 </span>
                 <TextField
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    (e.target as HTMLInputElement).focus();
+                  }}
+                  onKeyDown={(e) => {
+                    e.stopPropagation();
+                  }}
                   value={context.dataVerification?.dataRegulation?.value1}
                   placeholder={dataVerification.placeholder2}
                   onChange={(e) => {
+                    e.stopPropagation();
                     const { value } = e.target;
                     setContext((ctx) => {
                       ctx.dataVerification!.dataRegulation!.value1 = value;

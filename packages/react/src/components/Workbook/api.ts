@@ -486,6 +486,9 @@ export function generateAPIs(
     getWorkbookContext: () => {
       return context;
     },
+    getWorkbookSetContext: () => {
+      return setContext;
+    },
     getSettings: () => {
       return settings;
     },

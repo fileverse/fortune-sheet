@@ -1,5 +1,29 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.8
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.8
+
+## 1.2.7
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.7
+
+## 1.2.6
+
+### Patch Changes
+
+- Unhide all col row at once
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.6
+
 ## 1.2.5
 
 ### Patch Changes

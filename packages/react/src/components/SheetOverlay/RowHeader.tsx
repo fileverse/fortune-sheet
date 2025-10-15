@@ -274,11 +274,9 @@ const RowHeader: React.FC = () => {
   ) => {
     if (sheetIndex == null) return;
 
-    let startRow;
-    let endRow;
+    let startRow = item.row;
+    let endRow = item.row;
     const startPoint = item.row;
-    startRow = item.row;
-    endRow = item.row;
 
     const rowhiddenData = context.luckysheetfile[sheetIndex]?.config?.rowhidden;
     let cod = true;

@@ -293,11 +293,9 @@ const ColumnHeader: React.FC = () => {
   ) => {
     if (sheetIndex == null) return;
 
-    let startCol;
-    let endCol;
+    let startCol = item.col;
+    let endCol = item.col;
     const startPoint = item.col;
-    startCol = item.col;
-    endCol = item.col;
 
     const colhiddenData = context.luckysheetfile[sheetIndex]?.config?.colhidden;
     let cod = true;

@@ -1,3 +1,4 @@
+import { cn } from "@fileverse/ui";
 import React, { useRef } from "react";
 
 type Props = React.PropsWithChildren<{
@@ -13,6 +14,7 @@ type Props = React.PropsWithChildren<{
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     container: HTMLDivElement
   ) => void;
+  isActive?: boolean;
 }>;
 
 const Menu: React.FC<Props> = ({
@@ -20,12 +22,16 @@ const Menu: React.FC<Props> = ({
   onMouseLeave,
   onMouseEnter,
   children,
+  isActive = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   return (
     <div
       ref={containerRef}
-      className="luckysheet-cols-menuitem luckysheet-mousedown-cancel"
+      className={cn(
+        "luckysheet-cols-menuitem luckysheet-mousedown-cancel",
+        isActive && "color-bg-default-hover"
+      )}
       onClick={(e) => onClick?.(e, containerRef.current!)}
       onMouseLeave={(e) => onMouseLeave?.(e, containerRef.current!)}
       onMouseEnter={(e) => onMouseEnter?.(e, containerRef.current!)}

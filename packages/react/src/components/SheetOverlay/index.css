@@ -45,12 +45,10 @@
 .fortune-row-header-selected {
   position: absolute;
   z-index: 10;
-  border-right: 1px solid #0188fb;
   right: 0;
   width: 100%;
   margin-top: 2px;
   display: none;
-  background-color: rgba(76, 76, 76, 0.1);
 }
 
 .fortune-col-header-wrap {
@@ -94,12 +92,10 @@
   cursor: default;
   position: absolute;
   z-index: 10;
-  border-bottom: 1px solid #0188fb;
   bottom: 0;
   height: 100%;
   margin-left: 0px;
   display: none;
-  background-color: rgba(76, 76, 76, 0.1);
 }
 
 .fortune-left-top {
@@ -137,7 +133,7 @@
   z-index: 14;
   /*border:1px solid #fff;*/
   margin: 0px 0 0 0px;
-  background: rgba(0, 80, 208, 0.15);
+  /* background: rgba(0, 80, 208, 0.15); */
   display: none;
 }
 
@@ -199,9 +195,9 @@
   z-index: 15;
   border: 2.5px solid #efc703;
   margin: -1px 0 0 -1px;
-  background: rgba(1, 136, 251, 0.15);
   display: none;
   box-sizing: content-box;
+  background: rgba(239, 199, 5, 0.02);
 }
 
 .luckysheet-cs-inner-border {
@@ -1013,16 +1009,22 @@
 }
 
 .hide-btn {
-  padding-top: 1px;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 2px;
   position: absolute;
-  right: 5;
+  width: 32px;
   top: 5px;
   z-index: 200;
-  width: 9px;
 }
 
 .hide-btn:hover {
-  border: 1px solid #0188fb;
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-top: 1px;
+  background-color: rgba(255, 255, 255, 1);
+  border-radius: var(--border-radius-sm, 4px);
+border: 1px solid #BDC4C8;
 }
 
 .rotate-row-icon {
@@ -1031,6 +1033,13 @@
 
 .hide-btn-row {
   position: absolute;
-   left: 4px;
+  left: 4px;
   z-index: 200;
+  width: 12px;
+}
+
+.hide-btn-row:hover {
+    background-color: white;
+    border: 1px solid #BDC4C8;
+    border-radius: 4px;
 }

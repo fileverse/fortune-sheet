@@ -11,8 +11,8 @@ import {
   getSheetIndex,
   showSelected,
   fixPositionOnFrozenCells,
+  api,
 } from "@fileverse-dev/fortune-core";
-import { api } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, {
   useContext,
@@ -272,6 +272,39 @@ const RowHeader: React.FC = () => {
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     item: any
   ) => {
+    if (sheetIndex == null) return;
+
+    let startRow = item.row;
+    let endRow = item.row;
+    const startPoint = item.row;
+
+    const rowhiddenData = context.luckysheetfile[sheetIndex]?.config?.rowhidden;
+    let cod = true;
+    let tempStartPoint = startPoint;
+
+    while (cod) {
+      tempStartPoint -= 1;
+      // eslint-disable-next-line no-prototype-builtins
+      if (rowhiddenData?.hasOwnProperty(tempStartPoint)) {
+        startRow = tempStartPoint;
+      } else {
+        cod = false;
+      }
+    }
+
+    cod = true;
+    tempStartPoint = startPoint;
+
+    while (cod) {
+      tempStartPoint += 1;
+      // eslint-disable-next-line no-prototype-builtins
+      if (rowhiddenData?.hasOwnProperty(tempStartPoint)) {
+        endRow = tempStartPoint;
+      } else {
+        cod = false;
+      }
+    }
+
     if (context.isFlvReadOnly) return;
     e.stopPropagation();
     setContext((ctx) => {
@@ -279,7 +312,7 @@ const RowHeader: React.FC = () => {
         ctx,
         [
           {
-            row: [Number(item.row) - 1, Number(item.row) + 1],
+            row: [Number(startRow) - 1, Number(endRow) + 1],
             column: [0, context.visibledatacolumn?.length],
           },
         ],
@@ -290,6 +323,21 @@ const RowHeader: React.FC = () => {
     });
     setContext((ctx) => {
       showSelected(ctx, "row");
+    });
+
+    setContext((ctx) => {
+      api.setSelection(
+        ctx,
+        [
+          {
+            row: [Number(startRow), Number(endRow)],
+            column: [0, context.visibledatacolumn?.length],
+          },
+        ],
+        {
+          id: context.currentSheetId,
+        }
+      );
     });
   };
 
@@ -313,9 +361,9 @@ const RowHeader: React.FC = () => {
       {hiddenPointers.map((item: any) => {
         return (
           <div
-            className="flex flex-col gap-4 cursor-pointer align-center hide-btn-row hide-btn"
+            className="flex flex-col gap-4 cursor-pointer align-center hide-btn-row"
             style={{
-              top: `${item.top - 16}px`,
+              top: `${item.top - 15}px`,
               zIndex: 100,
             }}
             onClick={(e) => showRow(e, item)}
@@ -385,14 +433,13 @@ const RowHeader: React.FC = () => {
       ) : null}
       {selectedLocation.map(({ row, row_pre, r1, r2 }, i) => (
         <div
-          className="fortune-row-header-selected"
+          className="fortune-row-header-selected color-bg-tertiary"
           key={i}
           style={_.assign(
             {
               top: row_pre,
               height: row - row_pre - 1,
               display: "block",
-              backgroundColor: "#EFC703",
               mixBlendMode: "multiply" as any,
             },
             fixRowStyleOverflowInFreeze(

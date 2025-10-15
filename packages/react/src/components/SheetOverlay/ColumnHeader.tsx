@@ -13,8 +13,8 @@ import {
   getSheetIndex,
   fixPositionOnFrozenCells,
   showSelected,
+  api,
 } from "@fileverse-dev/fortune-core";
-import { api } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import React, {
   useContext,
@@ -271,6 +271,8 @@ const ColumnHeader: React.FC = () => {
     const tempPointers: any = [];
     const colhidden = context.luckysheetfile[sheetIndex]?.config?.colhidden;
 
+    console.log(colhidden);
+
     if (colhidden) {
       Object.keys(colhidden).forEach((key) => {
         const item = {
@@ -279,7 +281,6 @@ const ColumnHeader: React.FC = () => {
         };
         tempPointers.push(item);
       });
-      console.log(tempPointers);
       setHiddenPointers(tempPointers);
     } else {
       setHiddenPointers([]);
@@ -290,6 +291,39 @@ const ColumnHeader: React.FC = () => {
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     item: any
   ) => {
+    if (sheetIndex == null) return;
+
+    let startCol = item.col;
+    let endCol = item.col;
+    const startPoint = item.col;
+
+    const colhiddenData = context.luckysheetfile[sheetIndex]?.config?.colhidden;
+    let cod = true;
+    let tempStartPoint = startPoint;
+
+    while (cod) {
+      tempStartPoint -= 1;
+      // eslint-disable-next-line no-prototype-builtins
+      if (colhiddenData?.hasOwnProperty(tempStartPoint)) {
+        startCol = tempStartPoint;
+      } else {
+        cod = false;
+      }
+    }
+
+    cod = true;
+    tempStartPoint = startPoint;
+
+    while (cod) {
+      tempStartPoint += 1;
+      // eslint-disable-next-line no-prototype-builtins
+      if (colhiddenData?.hasOwnProperty(tempStartPoint)) {
+        endCol = tempStartPoint;
+      } else {
+        cod = false;
+      }
+    }
+
     if (context.isFlvReadOnly) return;
     e.stopPropagation();
     setContext((ctx) => {
@@ -298,7 +332,7 @@ const ColumnHeader: React.FC = () => {
         [
           {
             row: [0, context.visibledatarow?.length],
-            column: [Number(item.col) - 1, Number(item.col) + 1],
+            column: [Number(startCol) - 1, Number(endCol) + 1],
           },
         ],
         {
@@ -308,6 +342,21 @@ const ColumnHeader: React.FC = () => {
     });
     setContext((ctx) => {
       showSelected(ctx, "column");
+    });
+
+    setContext((ctx) => {
+      api.setSelection(
+        ctx,
+        [
+          {
+            row: [0, context.visibledatarow?.length],
+            column: [Number(startCol), Number(endCol)],
+          },
+        ],
+        {
+          id: context.currentSheetId,
+        }
+      );
     });
   };
 
@@ -339,10 +388,10 @@ const ColumnHeader: React.FC = () => {
       {hiddenPointers.map((item: any) => {
         return (
           <div
-            className="flex gap-4 cursor-pointer hide-btn align-center"
+            className="flex gap-4 cursor-pointer hide-btn align-center jusify-between"
             style={{
               height: context.columnHeaderHeight - 12,
-              left: `${item.left - 12}px`,
+              left: `${item.left - 15}px`,
             }}
             onClick={(e) => showColumn(e, item)}
           >
@@ -360,19 +409,6 @@ const ColumnHeader: React.FC = () => {
                 />
               </svg>
             </div>
-          </div>
-        );
-      })}
-      {hiddenPointers.map((item: any) => {
-        return (
-          <div
-            className="flex gap-4 cursor-pointer hide-btn align-center"
-            style={{
-              height: context.columnHeaderHeight - 12,
-              left: `${item.left + 6}px`,
-            }}
-            onClick={(e) => showColumn(e, item)}
-          >
             <div className="">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -450,14 +486,14 @@ const ColumnHeader: React.FC = () => {
       ) : null}
       {selectedLocation.map(({ col, col_pre, c1, c2 }, i) => (
         <div
-          className="fortune-col-header-selected"
+          className="fortune-col-header-selected color-bg-tertiary"
           key={i}
           style={_.assign(
             {
               left: col_pre,
               width: col - col_pre - 1,
               display: "block",
-              backgroundColor: "#EFC703",
+              // backgroundColor: "#EFC703",
               mixBlendMode: "multiply" as any,
             },
             fixColumnStyleOverflowInFreeze(

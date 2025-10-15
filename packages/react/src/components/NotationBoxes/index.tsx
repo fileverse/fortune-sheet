@@ -39,7 +39,7 @@ const NotationBoxes: React.FC = () => {
         [context.editingCommentBox, context.hoveredCommentBox]
       ).map((commentBox, index) => {
         if (!commentBox) return null;
-        const { r, c, rc, left, top, width, height, size } = commentBox;
+        const { r, c, rc, left, top, size } = commentBox;
         const isEditing = context.editingCommentBox?.rc === rc;
         const commentId = `comment-box-${rc}`;
         return (
@@ -59,19 +59,12 @@ const NotationBoxes: React.FC = () => {
             />
             <div
               id={commentId}
-              className="luckysheet-postil-show-main"
               style={{
-                width,
-                height,
-                color: "#000",
-                padding: 5,
-                border: "1px solid #000",
-                backgroundColor: "rgb(255,255,225)",
                 position: "absolute",
                 left,
                 top,
-                boxSizing: "border-box",
                 zIndex: isEditing ? 200 : 100,
+                boxShadow: "0 1px 1px #0000002e,0 4px 8px #0000001a",
               }}
               onMouseDown={(e) => {
                 const { nativeEvent } = e;

@@ -25,6 +25,7 @@ const RangeDialog: React.FC = () => {
       ctx.rangeDialog!.show = false;
       ctx.rangeDialog!.singleSelect = false;
     });
+    document.getElementById("data-verification-button")?.click();
     if (!context.rangeDialog) return;
     const rangeDialogType = context.rangeDialog.type;
     if (rangeDialogType.indexOf("between") >= 0) {
@@ -46,6 +47,7 @@ const RangeDialog: React.FC = () => {
         (locale(context).conditionformat as any)[`conditionformat_${rulesType}`]
       );
     }
+    // document.getElementById("data-verification-button")?.click();
     // showDialog(<DataVerification />, undefined, toolbar.dataVerification);
   }, [setContext, showDialog, context]);
 

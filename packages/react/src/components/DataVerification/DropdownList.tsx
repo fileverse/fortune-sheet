@@ -163,20 +163,35 @@ const DropDownList: React.FC = () => {
           </div>
         );
       })}
-      <div className="w-full flex align-center" style={{ height: "28px" }} onClick={() => {
-            // @ts-ignore
-            window?.dataVerificationClick?.();
-          }}>
+      <hr
+        style={{
+          border: "none",
+          height: "1px",
+          background: "hsl(var(--color-bg-default-hover, #F2F4F5))",
+          marginBottom: "4px",
+        }}
+      />
+
+      <div
+        className="w-full flex align-center edit-dropdown"
+        style={{ height: "28px" }}
+        onClick={() => {
+          // @ts-ignore
+          window?.dataVerificationClick?.();
+        }}
+      >
         <IconButton
           icon="Pencil"
           size="sm"
           variant="ghost"
-          className="color-picker-icon pt-2 color-picker"
+          className="color-picker-icon color-picker edit-dropdown"
+          style={{ paddingTop: "0px !important" }}
         />
         <Button
           size="md"
           variant="ghost"
-          className="color-picker-reset color-picker"
+          className="color-picker-reset color-picker edit-dropdown"
+          // style={{paddingTop: "0px !important"}}
         >
           Edit
         </Button>

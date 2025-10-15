@@ -97,7 +97,6 @@ const RangeDialog: React.FC = () => {
           variant="default"
           style={{ minWidth: "80px" }}
           onClick={() => {
-            console.log("rangeTxt2", rangeTxt2);
             setContext((ctx) => {
               ctx.rangeDialog!.rangeTxt = rangeTxt2;
             });

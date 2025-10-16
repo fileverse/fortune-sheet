@@ -1,5 +1,21 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.17
+
+### Patch Changes
+
+- Update wallet metadata
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.17
+
+## 1.2.16
+
+### Patch Changes
+
+- Update wallet metadata
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.16
+
 ## 1.2.15
 
 ### Patch Changes

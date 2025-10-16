@@ -1,5 +1,23 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.76
+
+### Patch Changes
+
+- Fix issues with onchain functioins
+
+## 0.2.75
+
+### Patch Changes
+
+- Add yield formula
+
+## 0.2.74
+
+### Patch Changes
+
+- Add Price and wallet onchain function functions
+
 ## 0.2.73
 
 ### Patch Changes

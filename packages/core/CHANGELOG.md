@@ -1,5 +1,29 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.13
+
+### Patch Changes
+
+- Fix issues with onchain functioins
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.76
+
+## 1.2.12
+
+### Patch Changes
+
+- Add yield formula
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.75
+
+## 1.2.11
+
+### Patch Changes
+
+- Add Price and wallet onchain function functions
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.74
+
 ## 1.2.10
 
 ### Patch Changes

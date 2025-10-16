@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.15
+
+### Patch Changes
+
+- update flv UI pkg
+
 ## 1.2.14
 
 ### Patch Changes

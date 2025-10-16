@@ -435,6 +435,13 @@ const DataVerification: React.FC = () => {
                   {dataVerification.notSelected}
                 </span>
                 <TextField
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    (e.target as HTMLInputElement).focus();
+                  }}
+                  onKeyDown={(e) => {
+                    e.stopPropagation();
+                  }}
                   value={context.dataVerification?.dataRegulation?.value2}
                   placeholder={dataVerification.placeholder2}
                   onChange={(e) => {
@@ -587,7 +594,7 @@ const DataVerification: React.FC = () => {
               </Select>
 
               {context.dataVerification.dataRegulation.type2 === "between" ||
-              context.dataVerification.dataRegulation.type2 === "notBetween" ? (
+                context.dataVerification.dataRegulation.type2 === "notBetween" ? (
                 <div className="mt-4 flex gap-2 items-center">
                   <div className="datepicker-toggle">
                     <input

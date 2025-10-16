@@ -178,6 +178,9 @@ const DropDownList: React.FC = () => {
         onClick={() => {
           // @ts-ignore
           window?.dataVerificationClick?.();
+          setContext((ctx) => {
+            ctx.dataVerificationDropDownList = false;
+          });
         }}
       >
         <IconButton

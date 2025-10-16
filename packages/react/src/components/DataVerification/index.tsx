@@ -435,6 +435,13 @@ const DataVerification: React.FC = () => {
                   {dataVerification.notSelected}
                 </span>
                 <TextField
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    (e.target as HTMLInputElement).focus();
+                  }}
+                  onKeyDown={(e) => {
+                    e.stopPropagation();
+                  }}
                   value={context.dataVerification?.dataRegulation?.value2}
                   placeholder={dataVerification.placeholder2}
                   onChange={(e) => {

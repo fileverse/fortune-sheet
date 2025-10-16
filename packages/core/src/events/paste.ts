@@ -218,6 +218,10 @@ function postPasteCut(
 }
 
 function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
+  console.log("pasteHandler");
+  if (ctx.luckysheet_selection_range) {
+    ctx.luckysheet_selection_range = [];
+  }
   // if (
   //   !checkProtectionLockedRangeList(
   //     ctx.luckysheet_select_save,

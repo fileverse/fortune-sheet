@@ -13,6 +13,7 @@
 ### Patch Changes
 
 - hide col improvement and copy changes
+- Update wallet metadata
 - Updated dependencies
   - @fileverse-dev/fortune-core@1.2.19
 

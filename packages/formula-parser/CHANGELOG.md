@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.79
+
+### Patch Changes
+
+- Update wallet metadata
+
 ## 0.2.78
 
 ### Patch Changes

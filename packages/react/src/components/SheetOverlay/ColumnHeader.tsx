@@ -302,7 +302,7 @@ const ColumnHeader: React.FC = () => {
     let tempStartPoint = startPoint;
 
     while (cod) {
-      tempStartPoint = Number(tempStartPoint) -1;
+      tempStartPoint = Number(tempStartPoint) - 1;
       // eslint-disable-next-line no-prototype-builtins
       if (colhiddenData?.hasOwnProperty(tempStartPoint)) {
         startCol = tempStartPoint;
@@ -323,7 +323,6 @@ const ColumnHeader: React.FC = () => {
         cod = false;
       }
     }
-
 
     if (context.isFlvReadOnly) return;
     e.stopPropagation();

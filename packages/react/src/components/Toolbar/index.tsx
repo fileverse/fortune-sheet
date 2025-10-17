@@ -291,7 +291,7 @@ export const CurrencySelector = ({
                   <CommandInput
                     placeholder="Search by name or code"
                     value={searchTerm}
-                    onValueChange={(value)=>{
+                    onValueChange={(value) => {
                       setSearchTerm(value);
                       console.log(value, "djksfgnkjsedfngskjn");
                     }}

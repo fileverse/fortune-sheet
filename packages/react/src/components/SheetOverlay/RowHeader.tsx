@@ -283,7 +283,7 @@ const RowHeader: React.FC = () => {
     let tempStartPoint = startPoint;
 
     while (cod) {
-      tempStartPoint =Number(tempStartPoint) - 1;
+      tempStartPoint = Number(tempStartPoint) - 1;
       // eslint-disable-next-line no-prototype-builtins
       if (rowhiddenData?.hasOwnProperty(tempStartPoint)) {
         startRow = tempStartPoint;

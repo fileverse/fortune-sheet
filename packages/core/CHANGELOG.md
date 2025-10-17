@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.19
+
+### Patch Changes
+
+- Update wallet metadata
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.79
+
 ## 1.2.18
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.22
+
+### Patch Changes
+
+- currency uncomment
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.22
+
 ## 1.2.21
 
 ### Patch Changes

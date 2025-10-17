@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.22
+
+### Patch Changes
+
+- currency uncomment
+
 ## 1.2.21
 
 ### Patch Changes

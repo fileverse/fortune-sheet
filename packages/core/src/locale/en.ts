@@ -11032,7 +11032,7 @@ export default {
     splitColumn: "Split text",
     insertImage: "Insert image",
     insertLink: "Insert link",
-    dataVerification: "Data verification",
+    dataVerification: "Data validation",
     protection: "Protect the sheet",
 
     clearText: "Clear color",

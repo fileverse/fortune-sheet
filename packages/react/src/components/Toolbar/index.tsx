@@ -622,9 +622,9 @@ const Toolbar: React.FC<{
 
   const [showDataValidation, setShowDataValidation] = useState(false);
 
-  const dataVerificationClick = () => {
+  const dataVerificationClick = (selectedCells: any) => {
     const selection = api.getSelection(context);
-    if (!selection) {
+    if (!selection && !selectedCells) {
       setContext((ctx) => {
         api.setSelection(ctx, [{ row: [0, 0], column: [0, 0] }], {
           id: context.currentSheetId,

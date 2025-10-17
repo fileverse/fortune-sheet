@@ -243,7 +243,7 @@ const ContextMenu: React.FC = () => {
           >
             <div className="context-item">
               <LucideIcon name="ShieldCheck" />
-              <p>Data Verification</p>
+              <p>Data Validation</p>
             </div>
           </Menu>
         );

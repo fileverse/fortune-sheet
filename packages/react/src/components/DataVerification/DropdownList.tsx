@@ -5,6 +5,7 @@ import {
   getSheetIndex,
   mergeBorder,
   setDropdownValue,
+  api
 } from "@fileverse-dev/fortune-core";
 import React, {
   useCallback,
@@ -176,8 +177,9 @@ const DropDownList: React.FC = () => {
         className="w-full flex align-center edit-dropdown"
         style={{ height: "28px" }}
         onClick={() => {
+          const selectedCells = api.getSelection(context);
           // @ts-ignore
-          window?.dataVerificationClick?.();
+          window?.dataVerificationClick?.(selectedCells);
           setContext((ctx) => {
             ctx.dataVerificationDropDownList = false;
           });

@@ -35,7 +35,7 @@ const Dialog: React.FC<Props> = ({
       style={{
         ...containerStyle,
         ...([
-          "Data verification",
+          "Data validation",
           "Split text to columns",
           "Resize column",
         ].includes(title as string)

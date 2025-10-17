@@ -1,9 +1,24 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.21
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.80
+
+## 1.2.20
+
+### Patch Changes
+
+- N/A
+
 ## 1.2.19
 
 ### Patch Changes
 
+- hide col improvement and copy changes
 - Update wallet metadata
 - Updated dependencies
   - @fileverse-dev/formula-parser@0.2.79

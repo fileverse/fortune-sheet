@@ -291,7 +291,10 @@ export const CurrencySelector = ({
                   <CommandInput
                     placeholder="Search by name or code"
                     value={searchTerm}
-                    onValueChange={setSearchTerm}
+                    onValueChange={(value)=>{
+                      setSearchTerm(value);
+                      console.log(value, "djksfgnkjsedfngskjn");
+                    }}
                   />
                 </div>
                 {/* Decimal places UI */}
@@ -353,6 +356,7 @@ export const CurrencySelector = ({
                               key={opt.value}
                               value={`${opt.label} ${opt.value}`}
                               onSelect={async () => {
+                                console.log(opt, "kjbdnfgjbksndfjbkdnbksdfjkn");
                                 if (opt.type === "crypto") {
                                   await convertCellsToCrypto({
                                     context,
@@ -784,6 +788,7 @@ const Toolbar: React.FC<{
                     <Option
                       key={value}
                       onClick={() => {
+                        console.log("format", value);
                         setOpen(false);
                         setContext((ctx) => {
                           const d = getFlowdata(ctx);
@@ -1937,16 +1942,16 @@ const Toolbar: React.FC<{
           </Combo>
         );
       }
-      if (name === "currency") {
-        // Determine current format from cell
-        return (
-          <CurrencySelector
-            cell={cell}
-            defaultTextFormat={defaultFormat[0].text}
-            toolTipText={toolbar["currency-format"]}
-          />
-        );
-      }
+      // if (name === "currency") {
+      //   // Determine current format from cell
+      //   return (
+      //     <CurrencySelector
+      //       cell={cell}
+      //       defaultTextFormat={defaultFormat[0].text}
+      //       toolTipText={toolbar["currency-format"]}
+      //     />
+      //   );
+      // }
       return (
         <Tooltip text={tooltip} placement="bottom">
           <Button

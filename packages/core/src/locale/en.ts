@@ -11605,7 +11605,7 @@ export default {
   },
   sheetconfig: {
     delete: "Delete",
-    copy: "Copy",
+    copy: "Duplicate",
     rename: "Rename",
     changeColor: "Change color",
     hide: "Hide",
@@ -11620,7 +11620,7 @@ export default {
     tipNameRepeat: "The name of the tab page cannot be repeated! Please revise",
     noMoreSheet:
       "The workbook contains at least one visual worksheet. To delete the selected worksheet, please insert a new worksheet or show a hidden worksheet.",
-    confirmDelete: "Are you sure to delete?",
+    confirmDelete: "Are you sure you want to delete this sheet?",
     redoDelete: "Can be undo by Ctrl+Z",
     noHide: "Can't hide, at least keep one sheet tag",
     chartEditNoOpt: "This operation is not allowed in chart editing mode!",

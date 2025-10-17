@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.18
+
+### Patch Changes
+
+- content change for copy
+
 ## 1.2.17
 
 ### Patch Changes

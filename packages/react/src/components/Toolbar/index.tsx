@@ -1942,16 +1942,16 @@ const Toolbar: React.FC<{
           </Combo>
         );
       }
-      // if (name === "currency") {
-      //   // Determine current format from cell
-      //   return (
-      //     <CurrencySelector
-      //       cell={cell}
-      //       defaultTextFormat={defaultFormat[0].text}
-      //       toolTipText={toolbar["currency-format"]}
-      //     />
-      //   );
-      // }
+      if (name === "currency") {
+        // Determine current format from cell
+        return (
+          <CurrencySelector
+            cell={cell}
+            defaultTextFormat={defaultFormat[0].text}
+            toolTipText={toolbar["currency-format"]}
+          />
+        );
+      }
       return (
         <Tooltip text={tooltip} placement="bottom">
           <Button

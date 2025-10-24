@@ -32,9 +32,7 @@ import FormulaHint from "../../components/SheetOverlay/FormulaHint";
 import usePrevious from "../../hooks/usePrevious";
 import { LucideIcon } from "../../components/SheetOverlay/LucideIcon";
 
-import {
-  countCommasBeforeCursor,
-} from "../../components/SheetOverlay/helper";
+import { countCommasBeforeCursor } from "../../components/SheetOverlay/helper";
 
 const FxEditor: React.FC = () => {
   const hideFormulaHintLocal = localStorage.getItem("formulaMore") === "true";
@@ -105,7 +103,7 @@ const FxEditor: React.FC = () => {
       setContext((draftCtx) => {
         const last =
           draftCtx.luckysheet_select_save![
-          draftCtx.luckysheet_select_save!.length - 1
+            draftCtx.luckysheet_select_save!.length - 1
           ];
 
         const row_index = last.row_focus;
@@ -263,7 +261,7 @@ const FxEditor: React.FC = () => {
   };
 
   const onChange = useCallback(() => {
-    if(context.isFlvReadOnly) return;
+    if (context.isFlvReadOnly) return;
     const el = document.getElementsByClassName("cell-hint")?.[0];
     const fxHint = document.getElementsByClassName("fx-hint")?.[0];
     if (el) {
@@ -385,7 +383,7 @@ const FxEditor: React.FC = () => {
           tabIndex={0}
           allowEdit={allowEdit && !context.isFlvReadOnly}
         />
-        {(showSearchHint &&
+        {showSearchHint && (
           <FormulaSearch
             onMouseMove={(e) => {
               if (document.getElementById("luckysheet-formula-search-c")) {
@@ -402,15 +400,15 @@ const FxEditor: React.FC = () => {
               }
               e.preventDefault();
             }}
-          // onMouseDown={(e) => {
-          //   selectActiveFormulaOnClick(e);
-          // }}
+            // onMouseDown={(e) => {
+            //   selectActiveFormulaOnClick(e);
+            // }}
           />
         )}
 
         <div className="fx-hint">
-          {
-            context.functionHint && refs.fxInput?.current?.innerText.includes("(") && (
+          {context.functionHint &&
+            refs.fxInput?.current?.innerText.includes("(") && (
               <FormulaHint
                 handleShowFormulaHint={handleShowFormulaHint}
                 showFormulaHint={showFormulaHint}

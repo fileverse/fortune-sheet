@@ -66,11 +66,11 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     let topV = hintAbove
       ? selectionHeight - (divOffset + 80)
       : selectionHeight + 4;
-      const el = document.getElementsByClassName('fx-hint')?.[0];
-      // @ts-ignore
-       if(el && el?.style?.display !== 'none'){
-        topV = 25;
-      }
+    const el = document.getElementsByClassName("fx-hint")?.[0];
+    // @ts-ignore
+    if (el && el?.style?.display !== "none") {
+      topV = 25;
+    }
     setTop(topV);
   };
 

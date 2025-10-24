@@ -353,7 +353,7 @@ const InputBox: React.FC = () => {
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
         getCursorPosition(inputRef?.current!) ===
-        inputRef?.current!.innerText.length
+          inputRef?.current!.innerText.length
       ) {
         setTimeout(() => {
           moveCursorToEnd(inputRef?.current!);
@@ -380,7 +380,7 @@ const InputBox: React.FC = () => {
           e.key === "ArrowRight") &&
         !(
           getCursorPosition(inputRef?.current!) !==
-          inputRef?.current!.innerText.length && e.key === "ArrowRight"
+            inputRef?.current!.innerText.length && e.key === "ArrowRight"
         )
       ) {
         const parser = new DOMParser();
@@ -413,8 +413,9 @@ const InputBox: React.FC = () => {
           !/^[a-zA-Z]+$/.test(lastSpan?.innerText)
         ) {
           allowListNavigation = false;
-          inputRef.current!.innerHTML = `${inputRef.current!.innerHTML
-            }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
+          inputRef.current!.innerHTML = `${
+            inputRef.current!.innerHTML
+          }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
 
           setTimeout(() => {
             moveCursorToEnd(inputRef.current!);
@@ -545,11 +546,11 @@ const InputBox: React.FC = () => {
       const el = document.getElementsByClassName("fx-hint")?.[0];
       const elCell = document.getElementsByClassName("cell-hint")?.[0];
       if (el) {
-        //@ts-ignore
+        // @ts-ignore
         el.style.display = "none";
       }
       if (elCell) {
-        //@ts-ignore
+        // @ts-ignore
         elCell.style.display = "block";
       }
       if (
@@ -800,10 +801,10 @@ const InputBox: React.FC = () => {
         style={
           firstSelection
             ? {
-              minWidth: firstSelection.width,
-              minHeight: firstSelection.height,
-              ...inputBoxStyle,
-            }
+                minWidth: firstSelection.width,
+                minHeight: firstSelection.height,
+                ...inputBoxStyle,
+              }
             : {}
         }
       >
@@ -849,73 +850,73 @@ const InputBox: React.FC = () => {
       {(context.functionCandidates.length > 0 ||
         context.functionHint ||
         context.defaultCandidates.length > 0) && (
-          <>
-            {showSearchHint && (
-              <FormulaSearch
-                onMouseMove={(e) => {
-                  if (document.getElementById("luckysheet-formula-search-c")) {
-                    // apply hovered state on the function item
-                    const hoveredItem = (e.target as HTMLElement).closest(
-                      ".luckysheet-formula-search-item"
-                    ) as HTMLElement | null;
-                    if (!hoveredItem) return;
+        <>
+          {showSearchHint && (
+            <FormulaSearch
+              onMouseMove={(e) => {
+                if (document.getElementById("luckysheet-formula-search-c")) {
+                  // apply hovered state on the function item
+                  const hoveredItem = (e.target as HTMLElement).closest(
+                    ".luckysheet-formula-search-item"
+                  ) as HTMLElement | null;
+                  if (!hoveredItem) return;
 
-                    clearSearchItemActiveClass();
-                    hoveredItem.classList.add(
-                      "luckysheet-formula-search-item-active"
-                    );
-                  }
-                  e.preventDefault();
+                  clearSearchItemActiveClass();
+                  hoveredItem.classList.add(
+                    "luckysheet-formula-search-item-active"
+                  );
+                }
+                e.preventDefault();
+              }}
+              onMouseDown={(e) => {
+                selectActiveFormulaOnClick(e);
+              }}
+            />
+          )}
+          <div className="cell-hint">
+            {showFormulaHint &&
+              fn &&
+              inputRef?.current?.innerText.includes("(") && (
+                <FormulaHint
+                  handleShowFormulaHint={handleShowFormulaHint}
+                  showFormulaHint={showFormulaHint}
+                  commaCount={commaCount}
+                />
+              )}
+            {!showFormulaHint && fn && (
+              <Tooltip
+                text="Turn on formula suggestions (F10)"
+                placement="top"
+                defaultOpen
+                style={{
+                  position: "absolute",
+                  top: "-50px",
+                  left: "-130px",
+                  width: "210px",
                 }}
-                onMouseDown={(e) => {
-                  selectActiveFormulaOnClick(e);
-                }}
-              />
-            )}
-            <div className="cell-hint">
-              {showFormulaHint &&
-                fn &&
-                inputRef?.current?.innerText.includes("(") && (
-                  <FormulaHint
-                    handleShowFormulaHint={handleShowFormulaHint}
-                    showFormulaHint={showFormulaHint}
-                    commaCount={commaCount}
-                  />
-                )}
-              {!showFormulaHint && fn && (
-                <Tooltip
-                  text="Turn on formula suggestions (F10)"
-                  placement="top"
-                  defaultOpen
-                  style={{
-                    position: "absolute",
-                    top: "-50px",
-                    left: "-130px",
-                    width: "210px",
+              >
+                <div
+                  className="luckysheet-hin absolute show-more-btn"
+                  onClick={() => {
+                    handleShowFormulaHint();
                   }}
                 >
-                  <div
-                    className="luckysheet-hin absolute show-more-btn"
-                    onClick={() => {
-                      handleShowFormulaHint();
+                  <LucideIcon
+                    name="DSheetTextDisabled"
+                    fill="black"
+                    style={{
+                      width: "14px",
+                      height: "14px",
+                      margin: "auto",
+                      marginTop: "1px",
                     }}
-                  >
-                    <LucideIcon
-                      name="DSheetTextDisabled"
-                      fill="black"
-                      style={{
-                        width: "14px",
-                        height: "14px",
-                        margin: "auto",
-                        marginTop: "1px",
-                      }}
-                    />
-                  </div>
-                </Tooltip>
-              )}
-            </div>
-          </>
-        )}
+                  />
+                </div>
+              </Tooltip>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };

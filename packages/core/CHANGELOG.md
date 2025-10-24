@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.24
+
+### Patch Changes
+
+- N/A
+
+## 1.2.23
+
+### Patch Changes
+
+- Fx header formula suggestion
+
 ## 1.2.22
 
 ### Patch Changes

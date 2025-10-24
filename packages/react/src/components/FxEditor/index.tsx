@@ -27,10 +27,20 @@ import _ from "lodash";
 import WorkbookContext from "../../context";
 import ContentEditable from "../SheetOverlay/ContentEditable";
 import NameBox from "./NameBox";
+import FormulaSearch from "../../components/SheetOverlay/FormulaSearch";
+import FormulaHint from "../../components/SheetOverlay/FormulaHint";
 import usePrevious from "../../hooks/usePrevious";
 import { LucideIcon } from "../../components/SheetOverlay/LucideIcon";
 
+import {
+  countCommasBeforeCursor,
+} from "../../components/SheetOverlay/helper";
+
 const FxEditor: React.FC = () => {
+  const hideFormulaHintLocal = localStorage.getItem("formulaMore") === "true";
+  const [showSearchHint, setShowSearchHint] = useState(false);
+  const [showFormulaHint, setShowFormulaHint] = useState(!hideFormulaHintLocal);
+  const [commaCount, setCommaCount] = useState(0);
   const { context, setContext, refs } = useContext(WorkbookContext);
   const lastKeyDownEventRef = useRef<KeyboardEvent>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
@@ -39,6 +49,11 @@ const FxEditor: React.FC = () => {
   const prevFirstSelection = usePrevious(firstSelection);
   const prevSheetId = usePrevious(context.currentSheetId);
   const recentText = useRef("");
+
+  const handleShowFormulaHint = () => {
+    localStorage.setItem("formulaMore", String(showFormulaHint));
+    setShowFormulaHint(!showFormulaHint);
+  };
 
   useEffect(() => {
     // 当选中行列是处于隐藏状态的话则不允许编辑
@@ -90,7 +105,7 @@ const FxEditor: React.FC = () => {
       setContext((draftCtx) => {
         const last =
           draftCtx.luckysheet_select_save![
-            draftCtx.luckysheet_select_save!.length - 1
+          draftCtx.luckysheet_select_save!.length - 1
           ];
 
         const row_index = last.row_focus;
@@ -116,6 +131,8 @@ const FxEditor: React.FC = () => {
       if (context.allowEdit === false) {
         return;
       }
+      const currentCommaCount = countCommasBeforeCursor(refs.fxInput?.current!);
+      setCommaCount(currentCommaCount);
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
       const { key } = e;
       recentText.current = refs.fxInput.current!.innerText;
@@ -234,8 +251,40 @@ const FxEditor: React.FC = () => {
       setContext,
     ]
   );
+  const getLastInputSpanText = () => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(
+      `<div>${refs.fxInput?.current?.innerHTML}</div>`,
+      "text/html"
+    );
+    const spans = doc.querySelectorAll("span");
+    const lastSpan = spans[spans.length - 1];
+    return lastSpan?.innerText;
+  };
 
   const onChange = useCallback(() => {
+    if(context.isFlvReadOnly) return;
+    const el = document.getElementsByClassName("cell-hint")?.[0];
+    const fxHint = document.getElementsByClassName("fx-hint")?.[0];
+    if (el) {
+      // @ts-ignore
+      el.style.display = "none";
+    }
+    if (fxHint) {
+      // @ts-ignore
+      fxHint.style.display = "block";
+    }
+    if (
+      refs.fxInput?.current?.innerText.includes("=") &&
+      /^=?[A-Za-z]*$/.test(getLastInputSpanText())
+    ) {
+      setShowSearchHint(true);
+    } else {
+      setShowSearchHint(false);
+    }
+
+    const currentCommaCount = countCommasBeforeCursor(refs.fxInput?.current!);
+    setCommaCount(currentCommaCount);
     const e = lastKeyDownEventRef.current;
     if (!e) return;
     const kcode = e.keyCode;
@@ -307,6 +356,22 @@ const FxEditor: React.FC = () => {
       </div>
       <div ref={inputContainerRef} className="fortune-fx-input-container">
         <ContentEditable
+          onMouseUp={() => {
+            const el = document.getElementsByClassName("cell-hint")?.[0];
+            const fxHint = document.getElementsByClassName("fx-hint")?.[0];
+            if (el) {
+              // @ts-ignore
+              el.style.display = "none";
+            }
+            if (fxHint) {
+              // @ts-ignore
+              fxHint.style.display = "block";
+            }
+            const currentCommaCount = countCommasBeforeCursor(
+              refs.fxInput?.current!
+            );
+            setCommaCount(currentCommaCount);
+          }}
           innerRef={(e) => {
             refs.fxInput.current = e;
           }}
@@ -318,8 +383,61 @@ const FxEditor: React.FC = () => {
           onChange={onChange}
           // onBlur={() => setFocused(false)}
           tabIndex={0}
-          allowEdit={allowEdit}
+          allowEdit={allowEdit && !context.isFlvReadOnly}
         />
+        {(showSearchHint &&
+          <FormulaSearch
+            onMouseMove={(e) => {
+              if (document.getElementById("luckysheet-formula-search-c")) {
+                // apply hovered state on the function item
+                const hoveredItem = (e.target as HTMLElement).closest(
+                  ".luckysheet-formula-search-item"
+                ) as HTMLElement | null;
+                if (!hoveredItem) return;
+
+                // clearSearchItemActiveClass();
+                hoveredItem.classList.add(
+                  "luckysheet-formula-search-item-active"
+                );
+              }
+              e.preventDefault();
+            }}
+          // onMouseDown={(e) => {
+          //   selectActiveFormulaOnClick(e);
+          // }}
+          />
+        )}
+
+        <div className="fx-hint">
+          {
+            context.functionHint && refs.fxInput?.current?.innerText.includes("(") && (
+              <FormulaHint
+                handleShowFormulaHint={handleShowFormulaHint}
+                showFormulaHint={showFormulaHint}
+                commaCount={commaCount}
+              />
+            )}
+          {context.functionHint && !showFormulaHint && (
+            <div
+              className="luckysheet-hin absolute show-more-btn"
+              onClick={() => {
+                handleShowFormulaHint();
+              }}
+            >
+              <LucideIcon
+                name="DSheetTextDisabled"
+                fill="black"
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  margin: "auto",
+                  marginTop: "1px",
+                }}
+              />
+            </div>
+          )}
+        </div>
+
         {/* {focused && (
           <>
             <FormulaSearch

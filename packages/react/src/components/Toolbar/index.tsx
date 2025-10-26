@@ -1780,7 +1780,8 @@ const Toolbar: React.FC<{
                           refs.cellInput.current!,
                           d,
                           "tb",
-                          value
+                          value,
+                          refs.canvas.current!.getContext("2d")!
                         );
                       });
                       setOpen(false);

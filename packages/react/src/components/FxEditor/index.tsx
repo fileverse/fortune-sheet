@@ -260,18 +260,34 @@ const FxEditor: React.FC = () => {
     return lastSpan?.innerText;
   };
 
+  const handleHideShowHint = () => {
+    const el = document.getElementsByClassName("cell-hint")?.[0];
+            const fxHint = document.getElementsByClassName("fx-hint")?.[0];
+            const searchElFx = document.getElementsByClassName("fx-search")?.[0];
+            const searchElCell =
+              document.getElementsByClassName("cell-search")?.[0];
+            if (searchElFx) {
+              // @ts-ignore
+              searchElFx.style.display = "block";
+            }
+            if (searchElCell) {
+              // @ts-ignore
+              searchElCell.style.display = "none";
+            }
+            if (el) {
+              // @ts-ignore
+              el.style.display = "none";
+            }
+            if (fxHint) {
+              // @ts-ignore
+              fxHint.style.display = "block";
+            }
+  }
+
+
   const onChange = useCallback(() => {
     if (context.isFlvReadOnly) return;
-    const el = document.getElementsByClassName("cell-hint")?.[0];
-    const fxHint = document.getElementsByClassName("fx-hint")?.[0];
-    if (el) {
-      // @ts-ignore
-      el.style.display = "none";
-    }
-    if (fxHint) {
-      // @ts-ignore
-      fxHint.style.display = "block";
-    }
+    handleHideShowHint();
     if (
       refs.fxInput?.current?.innerText.includes("=") &&
       /^=?[A-Za-z]*$/.test(getLastInputSpanText())
@@ -355,16 +371,7 @@ const FxEditor: React.FC = () => {
       <div ref={inputContainerRef} className="fortune-fx-input-container">
         <ContentEditable
           onMouseUp={() => {
-            const el = document.getElementsByClassName("cell-hint")?.[0];
-            const fxHint = document.getElementsByClassName("fx-hint")?.[0];
-            if (el) {
-              // @ts-ignore
-              el.style.display = "none";
-            }
-            if (fxHint) {
-              // @ts-ignore
-              fxHint.style.display = "block";
-            }
+            handleHideShowHint();
             const currentCommaCount = countCommasBeforeCursor(
               refs.fxInput?.current!
             );
@@ -385,6 +392,8 @@ const FxEditor: React.FC = () => {
         />
         {showSearchHint && (
           <FormulaSearch
+          // @ts-ignore
+            from="fx"
             onMouseMove={(e) => {
               if (document.getElementById("luckysheet-formula-search-c")) {
                 // apply hovered state on the function item

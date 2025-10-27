@@ -30,6 +30,26 @@ const NotationBoxes: React.FC = () => {
       });
     }
   }, [flowdata, setContext]);
+
+  const handleMouseDownEvent =
+    (r: number, c: number, rc: string, commentId: string) =>
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      const { nativeEvent } = e;
+      // @ts-ignore
+      setContext((draftContext) => {
+        if (flowdata) {
+          setEditingComment(draftContext, flowdata, r, c);
+        }
+      });
+      onCommentBoxMoveStart(
+        context,
+        refs.globalCache,
+        nativeEvent,
+        { r, c, rc },
+        commentId
+      );
+      e.stopPropagation();
+    };
   return (
     <div id="luckysheet-postil-showBoxs">
       {_.concat(
@@ -67,20 +87,6 @@ const NotationBoxes: React.FC = () => {
                 boxShadow: "0 1px 1px #0000002e,0 4px 8px #0000001a",
               }}
               onMouseDown={(e) => {
-                const { nativeEvent } = e;
-                // @ts-ignore
-                setContext((draftContext) => {
-                  if (flowdata) {
-                    setEditingComment(draftContext, flowdata, r, c);
-                  }
-                });
-                onCommentBoxMoveStart(
-                  context,
-                  refs.globalCache,
-                  nativeEvent,
-                  { r, c, rc },
-                  commentId
-                );
                 e.stopPropagation();
               }}
             >
@@ -123,7 +129,11 @@ const NotationBoxes: React.FC = () => {
                   overflow: "hidden",
                 }}
               >
-                {settings.getCommentCellUI?.(r, c)}
+                {settings.getCommentCellUI?.(
+                  r,
+                  c,
+                  handleMouseDownEvent(r, c, rc, commentId)
+                )}
                 {/* <ContentEditable
                   id={`comment-editor-${rc}`}
                   autoFocus={autoFocus}

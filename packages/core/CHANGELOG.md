@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.25
+
+### Patch Changes
+
+- move cell disabled for flv
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.81
+
 ## 1.2.24
 
 ### Patch Changes

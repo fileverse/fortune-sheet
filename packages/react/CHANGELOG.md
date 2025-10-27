@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.25
+
+### Patch Changes
+
+- move cell disabled for flv
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.25
+
 ## 1.2.24
 
 ### Patch Changes

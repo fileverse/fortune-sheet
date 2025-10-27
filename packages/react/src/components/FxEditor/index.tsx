@@ -262,28 +262,26 @@ const FxEditor: React.FC = () => {
 
   const handleHideShowHint = () => {
     const el = document.getElementsByClassName("cell-hint")?.[0];
-            const fxHint = document.getElementsByClassName("fx-hint")?.[0];
-            const searchElFx = document.getElementsByClassName("fx-search")?.[0];
-            const searchElCell =
-              document.getElementsByClassName("cell-search")?.[0];
-            if (searchElFx) {
-              // @ts-ignore
-              searchElFx.style.display = "block";
-            }
-            if (searchElCell) {
-              // @ts-ignore
-              searchElCell.style.display = "none";
-            }
-            if (el) {
-              // @ts-ignore
-              el.style.display = "none";
-            }
-            if (fxHint) {
-              // @ts-ignore
-              fxHint.style.display = "block";
-            }
-  }
-
+    const fxHint = document.getElementsByClassName("fx-hint")?.[0];
+    const searchElFx = document.getElementsByClassName("fx-search")?.[0];
+    const searchElCell = document.getElementsByClassName("cell-search")?.[0];
+    if (searchElFx) {
+      // @ts-ignore
+      searchElFx.style.display = "block";
+    }
+    if (searchElCell) {
+      // @ts-ignore
+      searchElCell.style.display = "none";
+    }
+    if (el) {
+      // @ts-ignore
+      el.style.display = "none";
+    }
+    if (fxHint) {
+      // @ts-ignore
+      fxHint.style.display = "block";
+    }
+  };
 
   const onChange = useCallback(() => {
     if (context.isFlvReadOnly) return;
@@ -392,7 +390,7 @@ const FxEditor: React.FC = () => {
         />
         {showSearchHint && (
           <FormulaSearch
-          // @ts-ignore
+            // @ts-ignore
             from="fx"
             onMouseMove={(e) => {
               if (document.getElementById("luckysheet-formula-search-c")) {

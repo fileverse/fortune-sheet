@@ -541,37 +541,35 @@ const InputBox: React.FC = () => {
     ]
   );
 
-  const handleHideShowHint =() => {
+  const handleHideShowHint = () => {
     const searchElFx = document.getElementsByClassName("fx-search")?.[0];
-            const searchElCell =
-              document.getElementsByClassName("cell-search")?.[0];
-            if (searchElFx) {
-              // @ts-ignore
-              searchElFx.style.display = "none";
-            }
-            if (searchElCell) {
-              // @ts-ignore
-              searchElCell.style.display = "block";
-            }
+    const searchElCell = document.getElementsByClassName("cell-search")?.[0];
+    if (searchElFx) {
+      // @ts-ignore
+      searchElFx.style.display = "none";
+    }
+    if (searchElCell) {
+      // @ts-ignore
+      searchElCell.style.display = "block";
+    }
 
-
-      const el = document.getElementsByClassName("fx-hint")?.[0];
-      const elCell = document.getElementsByClassName("cell-hint")?.[0];
-      if (el) {
-        // @ts-ignore
-        el.style.display = "none";
-      }
-      if (elCell) {
-        // @ts-ignore
-        elCell.style.display = "block";
-      }
-  }
+    const el = document.getElementsByClassName("fx-hint")?.[0];
+    const elCell = document.getElementsByClassName("cell-hint")?.[0];
+    if (el) {
+      // @ts-ignore
+      el.style.display = "none";
+    }
+    if (elCell) {
+      // @ts-ignore
+      elCell.style.display = "block";
+    }
+  };
 
   const onChange = useCallback(
     (__: any, isBlur?: boolean) => {
-       if (context.isFlvReadOnly) return;
-handleHideShowHint();
-      
+      if (context.isFlvReadOnly) return;
+      handleHideShowHint();
+
       if (
         inputRef?.current?.innerText.includes("=") &&
         /^=?[A-Za-z]*$/.test(getLastInputSpanText())

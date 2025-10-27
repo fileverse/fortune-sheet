@@ -274,7 +274,9 @@ export function isAllowEdit(
       }
 
       return true;
-    }) && (_.isUndefined(ctx.allowEdit) ? true : ctx.allowEdit) && !ctx.isFlvReadOnly
+    }) &&
+    (_.isUndefined(ctx.allowEdit) ? true : ctx.allowEdit) &&
+    !ctx.isFlvReadOnly
   );
 }
 

@@ -206,6 +206,10 @@ const InputBox: React.FC = () => {
       if (/^=[a-zA-Z]+$/.test(inputRef.current!.innerText)) {
         const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
         inputRef.current!.innerHTML = ht;
+        const fxEditor = document.getElementById("luckysheet-functionbox-cell");
+        if (fxEditor) {
+          fxEditor.innerHTML = ht;
+        }
         moveCursorToEnd(inputRef.current!);
         setContext((draftCtx) => {
           draftCtx.functionCandidates = [];

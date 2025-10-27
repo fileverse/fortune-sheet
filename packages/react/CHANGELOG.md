@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.27
+
+### Patch Changes
+
+- Tab select fx editor
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.27
+
 ## 1.2.26
 
 ### Patch Changes

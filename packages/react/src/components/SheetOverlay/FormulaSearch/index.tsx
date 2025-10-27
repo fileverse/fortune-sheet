@@ -86,8 +86,8 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
 
   return (
     <div
-      // @ts-ignore
       className={`flex color-border-default border flex-col luckysheet-formula-search-c-p custom-scroll ${
+        // @ts-ignore
         props?.from === "fx" ? "fx-search" : "cell-search"
       }`}
       id="luckysheet-formula-search-c-p"

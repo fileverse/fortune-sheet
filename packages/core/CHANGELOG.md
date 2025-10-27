@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.27
+
+### Patch Changes
+
+- Tab select fx editor
+
 ## 1.2.26
 
 ### Patch Changes

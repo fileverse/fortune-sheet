@@ -1095,6 +1095,7 @@ const Toolbar: React.FC<{
       if (name === "splitColumn") {
         return (
           <Button
+            id="splitColumn"
             iconId={name}
             tooltip={tooltip}
             key={name}
@@ -1124,6 +1125,7 @@ const Toolbar: React.FC<{
           <>
             <DataVerificationPortal visible={showDataValidation} />
             <Button
+              id="dataVerification"
               iconId={name}
               tooltip={tooltip}
               key={name}

@@ -5,7 +5,6 @@ import {
   // delFunctionGroup,
   execfunction,
   // execFunctionGroup,
-  functionCopy,
 } from "../modules/formula";
 import { getdatabyselection } from "../modules/cell";
 import { genarate, update } from "../modules/format";
@@ -22,6 +21,54 @@ import {
   calculateRangeCellSize,
   updateSheetCellSizes,
 } from "../paste-helpers/calculate-range-cell-size";
+
+export function columnLabelIndex(label: string): number {
+  let index = 0;
+  const A = "A".charCodeAt(0);
+
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < label.length; i++) {
+    const charCode = label.charCodeAt(i) - A + 1;
+    index = index * 26 + charCode;
+  }
+
+  return index - 1;
+}
+
+export function indexToColumnLabel(index: number): string {
+  let label = "";
+  while (index >= 0) {
+    const remainder = index % 26;
+    label = String.fromCharCode(65 + remainder) + label;
+    index = Math.floor(index / 26) - 1;
+  }
+  return label;
+}
+
+export function adjustFormulaForPaste(
+  formula: string,
+  srcCol: number,
+  srcRow: number,
+  destCol: number,
+  destRow: number
+) {
+  const colOffset = destCol - srcCol;
+  const rowOffset = destRow - srcRow;
+
+  return formula.replace(
+    /(\$?)([A-Z]+)(\$?)(\d+)/g,
+    (__, absCol, colLetters, absRow, rowNum) => {
+      let colIndex = columnLabelIndex(colLetters);
+      let rowIndex = parseInt(rowNum, 10);
+
+      if (!absCol) colIndex += colOffset;
+      if (!absRow) rowIndex += rowOffset;
+
+      const newCol = indexToColumnLabel(colIndex);
+      return `${absCol ? "$" : ""}${newCol}${absRow ? "$" : ""}${rowIndex}`;
+    }
+  );
+}
 
 function postPasteCut(
   ctx: Context,
@@ -1257,8 +1304,6 @@ function pasteHandlerOfCopyPaste(
       maxcellCahe = minc + tc * copyc;
 
       // 行列位移值 用于单元格有函数
-      const offsetRow = mth - c_r1;
-      const offsetCol = mtc - c_c1;
 
       const offsetMC: any = {};
       for (let h = mth; h < maxrowCache; h += 1) {
@@ -1361,33 +1406,25 @@ function pasteHandlerOfCopyPaste(
           }
 
           if (!_.isNil(value) && !_.isNil(value.f)) {
-            let func = value.f;
-
-            if (offsetRow > 0) {
-              func = `=${functionCopy(ctx, func, "down", offsetRow)}`;
-            }
-
-            if (offsetRow < 0) {
-              func = `=${functionCopy(ctx, func, "up", Math.abs(offsetRow))}`;
-            }
-
-            if (offsetCol > 0) {
-              func = `=${functionCopy(ctx, func, "right", offsetCol)}`;
-            }
-
-            if (offsetCol < 0) {
-              func = `=${functionCopy(ctx, func, "left", Math.abs(offsetCol))}`;
-            }
+            const adjustedFormula = adjustFormulaForPaste(
+              value.f.startsWith("=") ? value.f : `=${value.f}`,
+              c_c1,
+              c_r1,
+              c,
+              h
+            );
 
             const funcV = execfunction(
               ctx,
-              func,
+              adjustedFormula,
               h,
               c,
               undefined,
               undefined,
               true
             );
+
+            value.f = adjustedFormula;
 
             const { afterUpdateCell } = ctx.hooks;
             if (afterUpdateCell) {

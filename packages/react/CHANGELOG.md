@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.28
+
+### Patch Changes
+
+- Fix floor formula
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.28
+
 ## 1.2.27
 
 ### Patch Changes

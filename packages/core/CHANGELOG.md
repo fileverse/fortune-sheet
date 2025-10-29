@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.28
+
+### Patch Changes
+
+- Fix floor formula
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.82
+
 ## 1.2.27
 
 ### Patch Changes

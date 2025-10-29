@@ -271,8 +271,6 @@ const ColumnHeader: React.FC = () => {
     const tempPointers: any = [];
     const colhidden = context.luckysheetfile[sheetIndex]?.config?.colhidden;
 
-    console.log(colhidden);
-
     if (colhidden) {
       Object.keys(colhidden).forEach((key) => {
         const item = {

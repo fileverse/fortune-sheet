@@ -40,7 +40,7 @@ import {
 } from "./validation";
 import { showLinkCard } from "./hyperlink";
 import { cfSplitRange } from "./conditionalFormat";
-import { getCellTextInfo } from "./text";
+import { clearMeasureTextCache, getCellTextInfo } from "./text";
 
 type ToolbarItemClickHandler = (
   ctx: Context,
@@ -222,6 +222,32 @@ export function updateFormatCell(
             ) {
               if (_.isUndefined(cfg.rowlen)) cfg.rowlen = {};
               _.set(cfg, `rowlen.${r}`, rowHeight);
+            }
+          }
+          if (attr === "tb" && canvas) {
+            clearMeasureTextCache();
+
+            const textInfo = getCellTextInfo(d[r][c]!, canvas, ctx, {
+              r,
+              c,
+              cellWidth: cellWidth || 104,
+            });
+            if (!textInfo) continue;
+            const newHeight = _.round(textInfo.textHeightAll);
+            const oldHeight =
+              cfg.rowlen?.[r] ||
+              ctx.luckysheetfile[sheetIndex].defaultRowHeight ||
+              19;
+            const shouldResize =
+              foucsStatus === "2" ? newHeight > oldHeight : true;
+            if (
+              shouldResize &&
+              (!cfg.customHeight || cfg.customHeight[r] !== 1)
+            ) {
+              const padding = 12;
+              const height = newHeight + padding;
+              if (_.isUndefined(cfg.rowlen)) cfg.rowlen = {};
+              _.set(cfg, `rowlen.${r}`, height);
             }
           }
         } else {

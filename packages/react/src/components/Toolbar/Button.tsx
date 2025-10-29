@@ -10,6 +10,7 @@ type Props = {
   selected?: boolean;
   children?: React.ReactNode;
   style?: React.CSSProperties;
+  id?:string;
 };
 
 const Button: React.FC<Props> = ({
@@ -20,11 +21,13 @@ const Button: React.FC<Props> = ({
   selected,
   children,
   style,
+  id
 }) => {
   // const style: CSSProperties = { userSelect: "none" };
   return (
     <Tooltip text={tooltip} placement="bottom">
       <div
+        id={id}
         className="fortune-toolbar-button fortune-toolbar-item"
         onClick={onClick}
         tabIndex={0}

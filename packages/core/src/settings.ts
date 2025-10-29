@@ -122,6 +122,9 @@ export type Hooks = {
   afterUpdateSheetName?: (id: string, oldName: string, newName: string) => void;
 };
 
+type CommentUIDragFn = (
+  e: React.MouseEvent<HTMLDivElement, MouseEvent>
+) => void;
 export type Settings = {
   column?: number;
   row?: number;
@@ -145,7 +148,13 @@ export type Settings = {
   headerContextMenu?: string[];
   sheetTabContextMenu?: string[];
   filterContextMenu?: string[];
-  getCommentCellUI?: ((row: number, column: number) => React.ReactNode) | null;
+  getCommentCellUI?:
+    | ((
+        row: number,
+        column: number,
+        dragHandler: CommentUIDragFn
+      ) => React.ReactNode)
+    | null;
   generateSheetId?: () => string;
   hooks?: Hooks;
   customToolbarItems?: {

@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.82
+
+### Patch Changes
+
+- Fix floor formula
+
 ## 0.2.81
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.30
+
+### Patch Changes
+
+- wrap height oggset
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.30
+
 ## 1.2.29
 
 ### Patch Changes

@@ -209,32 +209,40 @@ export function updateFormatCell(
               ctx.luckysheetfile[sheetIndex].defaultColWidth ||
               100;
             let lineCount = 1;
-            let fontString = '10px Arial';
+            let fontString = "10px Arial";
             if (value.fs) {
-              fontString = value.fs * 1.5 + "px Arial";
+              fontString = `${value.fs * 1.5}px Arial`;
             }
-            if(value?.bl){
-              lineCount = lineCount + 1
+            if (value?.bl) {
+              lineCount += 1;
             }
             if (value.m) {
-              lineCount = getLineCount(value.m as string, currentColWidth, fontString);
+              lineCount = getLineCount(
+                value.m as string,
+                currentColWidth,
+                fontString
+              );
               // hack to be removed with better height logic
-              const hOffset =  lineCount < 4 ? 2 : 1.8
-              lineCount = (lineCount * hOffset) + 1
+              const hOffset = lineCount < 4 ? 2 : 1.8;
+              lineCount = lineCount * hOffset + 1;
             } else if (value?.ct?.s?.[0]?.v) {
               // hack to adjust height for inline string
-              lineCount = lineCount - 1
+              lineCount -= 1;
               const line = value?.ct?.s?.[0]?.v.split("\n");
               line.forEach((item: string) => {
-                const subLineCount = getLineCount(item, currentColWidth, fontString);
-                lineCount = lineCount + subLineCount;
+                const subLineCount = getLineCount(
+                  item,
+                  currentColWidth,
+                  fontString
+                );
+                lineCount += subLineCount;
               });
               // hack to be removed with better height logic
-              const hOffset =  lineCount < 4 ? 2.2 : 1.9
-              lineCount = (lineCount * 1.9);
+              const hOffset = lineCount < 4 ? 2.2 : 1.9;
+              lineCount *= hOffset;
             }
             const fontSize = value?.fs || 10;
-            const rowHeight =  fontSize * lineCount;
+            const rowHeight = fontSize * lineCount;
             _.set(cfg, `rowlen.${r}`, rowHeight);
           }
           if (attr === "fs" && canvas) {
@@ -489,13 +497,14 @@ function activeFormulaInput(
   const col_pre = colLocationByIndex(columnh[0], ctx.visibledatacolumn)[0];
   const col = colLocationByIndex(columnh[1], ctx.visibledatacolumn)[1];
 
-  const formulaTxt = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-color">${formula.toUpperCase()}</span><span dir="auto" class="luckysheet-formula-text-color">(</span><span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:${colors[0]
-    };">${getRangetxt(
-      ctx,
-      ctx.currentSheetId,
-      { row: rowh, column: columnh },
-      ctx.currentSheetId
-    )}</span><span dir="auto" class="luckysheet-formula-text-color">)</span>`;
+  const formulaTxt = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-color">${formula.toUpperCase()}</span><span dir="auto" class="luckysheet-formula-text-color">(</span><span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:${
+    colors[0]
+  };">${getRangetxt(
+    ctx,
+    ctx.currentSheetId,
+    { row: rowh, column: columnh },
+    ctx.currentSheetId
+  )}</span><span dir="auto" class="luckysheet-formula-text-color">)</span>`;
   cellInput.innerHTML = formulaTxt;
 
   israngeseleciton(ctx);

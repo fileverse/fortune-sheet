@@ -223,7 +223,7 @@ export function updateFormatCell(
                 fontString
               );
               // hack to be removed with better height logic
-              const hOffset = lineCount < 4 ? 2 : 1.8;
+              const hOffset = lineCount < 4 ? 1.9 : 1.7;
               lineCount = lineCount * hOffset + 1;
             } else if (value?.ct?.s?.[0]?.v) {
               // hack to adjust height for inline string
@@ -238,7 +238,7 @@ export function updateFormatCell(
                 lineCount += subLineCount;
               });
               // hack to be removed with better height logic
-              const hOffset = lineCount < 4 ? 2.2 : 1.9;
+              const hOffset = lineCount < 4 ? 2.2 : 1.6;
               lineCount *= hOffset;
             }
             const fontSize = value?.fs || 10;

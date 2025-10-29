@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.29
+
+### Patch Changes
+
+- Fix text wrap
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.29
+
 ## 1.2.28
 
 ### Patch Changes

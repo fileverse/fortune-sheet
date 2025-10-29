@@ -37,6 +37,7 @@ import {
   insertDuneChart,
   Cell,
   api,
+  getSheetIndex,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import {
@@ -1785,7 +1786,14 @@ const Toolbar: React.FC<{
                           value,
                           refs.canvas.current!.getContext("2d")!
                         );
-                      });
+                        const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId) || 0;
+                        const config = ctx.luckysheetfile[sheetIndex].config!;
+                        const currentRowHeight = config?.rowlen?.[0] ||
+                                ctx.luckysheetfile[sheetIndex].defaultColWidth ||
+                                  22;
+                        api.setRowHeight(ctx, { 1: currentRowHeight+0.2 }, { id: ctx.currentSheetId });
+
+                      }); 
                       setOpen(false);
                     }}
                     tabIndex={0}

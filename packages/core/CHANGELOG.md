@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.29
+
+### Patch Changes
+
+- Fix text wrap
+
 ## 1.2.28
 
 ### Patch Changes

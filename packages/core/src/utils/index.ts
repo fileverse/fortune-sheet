@@ -505,3 +505,35 @@ export function checkIsCol(str: string) {
   // otherwise not a straight row/col selection
   return null;
 }
+
+export function getLineCount(
+  sentence: string,
+  maxWidthPx: number,
+  font = "12px Arial"
+) {
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  if (context) {
+    context.font = font;
+  }
+
+  const words = sentence.split(" ");
+  let currentLine = "";
+  let lineCount = 0;
+
+  words.forEach((word) => {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    const testWidth = context?.measureText(testLine).width;
+
+    if (testWidth && testWidth > maxWidthPx && currentLine) {
+      lineCount += 1;
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  });
+
+  if (currentLine) lineCount += 1;
+
+  return lineCount;
+}

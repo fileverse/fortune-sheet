@@ -10,7 +10,7 @@ type Props = {
   selected?: boolean;
   children?: React.ReactNode;
   style?: React.CSSProperties;
-  id?:string;
+  id?: string;
 };
 
 const Button: React.FC<Props> = ({
@@ -21,7 +21,7 @@ const Button: React.FC<Props> = ({
   selected,
   children,
   style,
-  id
+  id,
 }) => {
   // const style: CSSProperties = { userSelect: "none" };
   return (

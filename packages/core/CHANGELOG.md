@@ -1,5 +1,23 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.31
+
+### Patch Changes
+
+- N/A
+
+## 1.2.30
+
+### Patch Changes
+
+- wrap height oggset
+
+## 1.2.29
+
+### Patch Changes
+
+- Fix text wrap
+
 ## 1.2.28
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.32
+
+### Patch Changes
+
+- Fix cell ref adjustments and hyper link
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.32
+
 ## 1.2.31
 
 ### Patch Changes

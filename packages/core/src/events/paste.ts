@@ -5,7 +5,6 @@ import {
   // delFunctionGroup,
   execfunction,
   // execFunctionGroup,
-  functionCopy,
 } from "../modules/formula";
 import { getdatabyselection } from "../modules/cell";
 import { genarate, update } from "../modules/format";
@@ -16,12 +15,100 @@ import { hasPartMC, isRealNum } from "../modules/validation";
 import { getBorderInfoCompute } from "../modules/border";
 import { expandRowsAndColumns, storeSheetParamALL } from "../modules/sheet";
 import { jfrefreshgrid } from "../modules/refresh";
-import { CFSplitRange, sanitizeDuneUrl, saveHyperlink } from "../modules";
+import {
+  CFSplitRange,
+  sanitizeDuneUrl,
+  saveHyperlink,
+  spillSortResult,
+} from "../modules";
 import clipboard from "../modules/clipboard";
 import {
   calculateRangeCellSize,
   updateSheetCellSizes,
 } from "../paste-helpers/calculate-range-cell-size";
+
+export function columnLabelIndex(label: string): number {
+  let index = 0;
+  const A = "A".charCodeAt(0);
+
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < label.length; i++) {
+    const charCode = label.charCodeAt(i) - A + 1;
+    index = index * 26 + charCode;
+  }
+
+  return index - 1;
+}
+
+export function indexToColumnLabel(index: number): string {
+  let label = "";
+  while (index >= 0) {
+    const remainder = index % 26;
+    label = String.fromCharCode(65 + remainder) + label;
+    index = Math.floor(index / 26) - 1;
+  }
+  return label;
+}
+
+export class FormularCellRefError extends Error {
+  formula: string;
+
+  constructor(message: string, formula: string) {
+    super(message);
+    this.name = "FormularCellRefError";
+    this.formula = formula;
+  }
+}
+
+export function adjustFormulaForPaste(
+  formula: string,
+  srcCol: number,
+  srcRow: number,
+  destCol: number,
+  destRow: number
+) {
+  const colOffset = destCol - srcCol;
+  const rowOffset = destRow - srcRow;
+
+  // Track whether we created any invalid references
+  let hadInvalid = false;
+
+  const result = formula.replace(
+    /(\$?)([A-Z]+)(\$?)(\d+)/g,
+    (__, absCol, colLetters, absRow, rowNum) => {
+      let colIndex = columnLabelIndex(colLetters);
+      let rowIndex = parseInt(rowNum, 10);
+
+      if (!absCol) colIndex += colOffset;
+      if (!absRow) rowIndex += rowOffset;
+
+      // Build either a normal or visibly invalid reference
+      if (colIndex < 0 || rowIndex <= 0) {
+        hadInvalid = true;
+        const invalidCol =
+          colIndex < 0
+            ? `${absCol ? "$" : ""}${colLetters}${colIndex}`
+            : `${absCol ? "$" : ""}${indexToColumnLabel(colIndex)}`;
+        const invalidRow = rowIndex.toString();
+        return `${invalidCol}${invalidRow}`;
+      }
+
+      const newCol = indexToColumnLabel(colIndex);
+      return `${absCol ? "$" : ""}${newCol}${absRow ? "$" : ""}${rowIndex}`;
+    }
+  );
+
+  // if any invalid references were generated, throw error with full visible formula
+  if (hadInvalid) {
+    const brokenFormula = `=${result.replace(/^=/, "")}`;
+    throw new FormularCellRefError(
+      `Invalid cell reference generated while pasting formula: ${formula}`,
+      brokenFormula
+    );
+  }
+
+  return result;
+}
 
 function postPasteCut(
   ctx: Context,
@@ -1257,8 +1344,6 @@ function pasteHandlerOfCopyPaste(
       maxcellCahe = minc + tc * copyc;
 
       // 行列位移值 用于单元格有函数
-      const offsetRow = mth - c_r1;
-      const offsetCol = mtc - c_c1;
 
       const offsetMC: any = {};
       for (let h = mth; h < maxrowCache; h += 1) {
@@ -1361,41 +1446,86 @@ function pasteHandlerOfCopyPaste(
           }
 
           if (!_.isNil(value) && !_.isNil(value.f)) {
-            let func = value.f;
-
-            if (offsetRow > 0) {
-              func = `=${functionCopy(ctx, func, "down", offsetRow)}`;
+            let adjustedFormula = value.f;
+            let isError = false;
+            try {
+              adjustedFormula = adjustFormulaForPaste(
+                value.f,
+                c_c1,
+                c_r1,
+                c,
+                h
+              );
+            } catch (error: any) {
+              isError = true;
+              value.error = {
+                row_column: `${h}_${c}`,
+                title: "Error",
+                message: error?.message || "Failed to adjust cell reference",
+              };
+              // strip off all formatting from source
+              value.m = "#ERROR";
+              value.f = error?.formula;
+              delete value.ct;
+              delete value.v;
+              delete value.tb;
+              delete value.ht;
             }
 
-            if (offsetRow < 0) {
-              func = `=${functionCopy(ctx, func, "up", Math.abs(offsetRow))}`;
-            }
+            if (!isError) {
+              const funcV = execfunction(
+                ctx,
+                adjustedFormula,
+                h,
+                c,
+                undefined,
+                undefined,
+                true
+              );
 
-            if (offsetCol > 0) {
-              func = `=${functionCopy(ctx, func, "right", offsetCol)}`;
-            }
+              value.f = adjustedFormula;
 
-            if (offsetCol < 0) {
-              func = `=${functionCopy(ctx, func, "left", Math.abs(offsetCol))}`;
-            }
+              if (!(funcV[1] instanceof Promise) && !funcV[3]) {
+                if (Array.isArray(funcV[1])) {
+                  const formulaResultValue = funcV[1];
+                  value.m = String(formulaResultValue[0][0]);
+                  spillSortResult(
+                    ctx,
+                    h,
+                    c,
+                    {
+                      m: String(formulaResultValue[0][0]),
+                      f: value.f,
+                      v: formulaResultValue,
+                    },
+                    d
+                  );
+                } else {
+                  // eslint-disable-next-line prefer-destructuring
+                  value.m = String(funcV[1]);
+                  value.v = String(funcV[1]);
+                }
+              } else if (funcV[3]) {
+                // eslint-disable-next-line prefer-destructuring
+                value.error = funcV[3];
+                // strip off all formatting from source
+                value.m = "#ERROR";
+                value.f = adjustedFormula;
+                delete value.ct;
+                delete value.v;
+                delete value.tb;
+                delete value.ht;
+              }
 
-            const funcV = execfunction(
-              ctx,
-              func,
-              h,
-              c,
-              undefined,
-              undefined,
-              true
-            );
-
-            const { afterUpdateCell } = ctx.hooks;
-            if (afterUpdateCell) {
-              afterUpdateCell(h, c, null, {
-                ...value,
-                v: arr.length === 1 ? funcV[1] : value.v, // To check with mritunjay for the "arr.length === 1" cond
-                m: funcV[1] instanceof Promise ? "[object Promise]" : funcV[1],
-              });
+              const { afterUpdateCell } = ctx.hooks;
+              if (afterUpdateCell) {
+                afterUpdateCell(h, c, null, {
+                  ...value,
+                  v: arr.length === 1 ? funcV[1] : value.v, // To check with mritunjay for the "arr.length === 1" cond
+                  m:
+                    funcV[1] instanceof Promise ? "[object Promise]" : funcV[1],
+                });
+              }
             }
 
             if (!_.isNil(value.spl)) {

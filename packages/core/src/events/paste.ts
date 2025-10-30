@@ -15,7 +15,12 @@ import { hasPartMC, isRealNum } from "../modules/validation";
 import { getBorderInfoCompute } from "../modules/border";
 import { expandRowsAndColumns, storeSheetParamALL } from "../modules/sheet";
 import { jfrefreshgrid } from "../modules/refresh";
-import { CFSplitRange, sanitizeDuneUrl, saveHyperlink } from "../modules";
+import {
+  CFSplitRange,
+  sanitizeDuneUrl,
+  saveHyperlink,
+  spillSortResult,
+} from "../modules";
 import clipboard from "../modules/clipboard";
 import {
   calculateRangeCellSize,
@@ -1425,6 +1430,28 @@ function pasteHandlerOfCopyPaste(
             );
 
             value.f = adjustedFormula;
+
+            if (!(funcV[1] instanceof Promise)) {
+              if (Array.isArray(funcV[1])) {
+                const formulaResultValue = funcV[1];
+                value.m = String(formulaResultValue[0][0]);
+                spillSortResult(
+                  ctx,
+                  h,
+                  c,
+                  {
+                    m: String(formulaResultValue[0][0]),
+                    f: value.f,
+                    v: formulaResultValue,
+                  },
+                  d
+                );
+              } else {
+                // eslint-disable-next-line prefer-destructuring
+                value.m = String(funcV[1]);
+                value.v = String(funcV[1]);
+              }
+            }
 
             const { afterUpdateCell } = ctx.hooks;
             if (afterUpdateCell) {

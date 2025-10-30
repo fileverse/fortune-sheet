@@ -682,17 +682,22 @@ export async function handleGlobalKeyDown(
 
   const allowEdit = isAllowEdit(ctx);
 
+  // @ts-ignore // eslint-disable-next-line no-restricted-globals
+  const isFxInput = e?.target?.classList?.contains("fortune-fx-input");
+
+  const ignoredKeys = new Set(
+    isFxInput
+      ? ["Enter", "Tab", "ArrowLeft", "ArrowRight"]
+      : ["Enter", "Tab", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]
+  );
+  const restCod = !ignoredKeys.has(kstr);
+
   if (
     // $("#luckysheet-modal-dialog-mask").is(":visible") ||
     // $(event.target).hasClass("luckysheet-mousedown-cancel") ||
     // $(event.target).hasClass("sp-input") ||
     ctx.luckysheetCellUpdate.length > 0 &&
-    kstr !== "Enter" &&
-    kstr !== "Tab" &&
-    kstr !== "ArrowUp" &&
-    // kstr !== "ArrowDown" &&
-    kstr !== "ArrowLeft" &&
-    kstr !== "ArrowRight"
+    restCod
   ) {
     // const anchor = $(window.getSelection().anchorNode);
 

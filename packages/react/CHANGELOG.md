@@ -1,5 +1,29 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.35
+
+### Patch Changes
+
+- for formual checke use starts with
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.35
+
+## 1.2.34
+
+### Patch Changes
+
+- N/A
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.34
+
+## 1.2.33
+
+### Patch Changes
+
+- formual parsing support from gsheet to dhseet after paster
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.33
+
 ## 1.2.32
 
 ### Patch Changes

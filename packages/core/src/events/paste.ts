@@ -309,7 +309,7 @@ const handleFormulaOnPaste = (ctx: Context, d: any) => {
     const x = d[r];
     for (let c = 0; c < d[0].length; c += 1) {
       const value = isObject(d[r][c]) ? d[r][c]?.v : d[r][c];
-      if (value && String(value).includes("=")) {
+      if (value && String(value).startsWith("=")) {
         const cell: Cell = {};
         const [, v, f] = execfunction(
           ctx,

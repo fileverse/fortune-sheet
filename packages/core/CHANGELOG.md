@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.33
+
+### Patch Changes
+
+- formual parsing support from gsheet to dhseet after paster
+
 ## 1.2.32
 
 ### Patch Changes

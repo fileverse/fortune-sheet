@@ -1,4 +1,4 @@
-import _ from "lodash";
+import _, { isObject } from "lodash";
 import { handlePastedTable } from "../paste-table-helpers";
 import { Context, getFlowdata } from "../context";
 import {
@@ -304,8 +304,34 @@ function postPasteCut(
   // });
 }
 
+const handleFormulaOnPaste = (ctx: Context, d: any) => {
+  for (let r = 0; r < d.length; r += 1) {
+    const x = d[r];
+    for (let c = 0; c < d[0].length; c += 1) {
+      const value = isObject(d[r][c]) ? d[r][c]?.v : d[r][c];
+      if (value && String(value).includes("=")) {
+        const cell: Cell = {};
+        const [, v, f] = execfunction(
+          ctx,
+          String(value),
+          r,
+          c,
+          undefined,
+          undefined,
+          true
+        );
+
+        cell.v = v;
+        cell.f = f;
+        cell.m = v.toString();
+        x[c] = cell;
+      }
+      d[r] = x;
+    }
+  }
+};
+
 function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
-  console.log("pasteHandler");
   if (ctx.luckysheet_selection_range) {
     ctx.luckysheet_selection_range = [];
   }
@@ -486,6 +512,23 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
       // selectHightlightShow();
     }
     jfrefreshgrid(ctx, null, undefined);
+    handleFormulaOnPaste(ctx, d);
+    // for (let r = 0; r < d.length; r += 1) {
+    //   const x = d[r];
+    //   for (let c = 0; c < d[0].length; c += 1) {
+    //     let value = isObject(d[r][c]) ? d[r][c]?.v : d[r][c];
+    //     if (value && String(value).includes('=')) {
+    //       const cell: Cell = {};
+    //       const funcV = execfunction(ctx, String(value), r, c, undefined, undefined, true);
+    //       console.log(funcV)
+    //       cell.v = funcV[1];
+    //       cell.f = funcV[2];
+    //       cell.m = funcV[1].toString();
+    //       x[c] = cell;
+    //     }
+    //     d[r] = x;
+    //   }
+    // }
   } else {
     data = data.replace(/\r/g, "");
     const dataChe = [];
@@ -602,6 +645,23 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
     //   selectHightlightShow();
     // }
     jfrefreshgrid(ctx, null, undefined);
+    handleFormulaOnPaste(ctx, d);
+
+    // for (let r = 0; r < d.length; r += 1) {
+    //   const x = d[r];
+    //   for (let c = 0; c < d[0].length; c += 1) {
+    //     let value = isObject(d[r][c]) ? d[r][c]?.v : d[r][c];
+    //     if (value && String(value).includes('=')) {
+    //       const cell: Cell = {};
+    //       const funcV = execfunction(ctx, String(value), r, c, undefined, undefined, true);
+    //       cell.v = funcV[1];
+    //       cell.f = funcV[2];
+    //       cell.m = funcV[1].toString();
+    //       x[c] = cell;
+    //     }
+    //     d[r] = x;
+    //   }
+    // }
   }
 }
 

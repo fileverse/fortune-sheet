@@ -206,6 +206,10 @@ const InputBox: React.FC = () => {
       if (/^=[a-zA-Z]+$/.test(inputRef.current!.innerText)) {
         const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
         inputRef.current!.innerHTML = ht;
+        const fxEditor = document.getElementById("luckysheet-functionbox-cell");
+        if (fxEditor) {
+          fxEditor.innerHTML = ht;
+        }
         moveCursorToEnd(inputRef.current!);
         setContext((draftCtx) => {
           draftCtx.functionCandidates = [];
@@ -345,7 +349,6 @@ const InputBox: React.FC = () => {
       // }
 
       const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
-      console.log("currentCommaCount", currentCommaCount);
       setCommaCount(currentCommaCount);
 
       /* Arrow navigation for cell reference starts here */
@@ -542,8 +545,35 @@ const InputBox: React.FC = () => {
     ]
   );
 
+  const handleHideShowHint = () => {
+    const searchElFx = document.getElementsByClassName("fx-search")?.[0];
+    const searchElCell = document.getElementsByClassName("cell-search")?.[0];
+    if (searchElFx) {
+      // @ts-ignore
+      searchElFx.style.display = "none";
+    }
+    if (searchElCell) {
+      // @ts-ignore
+      searchElCell.style.display = "block";
+    }
+
+    const el = document.getElementsByClassName("fx-hint")?.[0];
+    const elCell = document.getElementsByClassName("cell-hint")?.[0];
+    if (el) {
+      // @ts-ignore
+      el.style.display = "none";
+    }
+    if (elCell) {
+      // @ts-ignore
+      elCell.style.display = "block";
+    }
+  };
+
   const onChange = useCallback(
     (__: any, isBlur?: boolean) => {
+      if (context.isFlvReadOnly) return;
+      handleHideShowHint();
+
       if (
         inputRef?.current?.innerText.includes("=") &&
         /^=?[A-Za-z]*$/.test(getLastInputSpanText())
@@ -801,6 +831,7 @@ const InputBox: React.FC = () => {
       >
         <ContentEditable
           onMouseUp={() => {
+            handleHideShowHint();
             const currentCommaCount = countCommasBeforeCursor(
               inputRef?.current!
             );
@@ -811,7 +842,7 @@ const InputBox: React.FC = () => {
             inputRef.current = e;
             refs.cellInput.current = e;
           }}
-          className="luckysheet-cell-input"
+          className="luckysheet-cell-input cell-input"
           id="luckysheet-rich-text-editor"
           style={{
             transform: `scale(${context.zoomRatio})`,
@@ -854,46 +885,48 @@ const InputBox: React.FC = () => {
               }}
             />
           )}
-          {showFormulaHint &&
-            fn &&
-            inputRef?.current?.innerText.includes("(") && (
-              <FormulaHint
-                handleShowFormulaHint={handleShowFormulaHint}
-                showFormulaHint={showFormulaHint}
-                commaCount={commaCount}
-              />
-            )}
-          {!showFormulaHint && fn && (
-            <Tooltip
-              text="Turn on formula suggestions (F10)"
-              placement="top"
-              defaultOpen
-              style={{
-                position: "absolute",
-                top: "-50px",
-                left: "-130px",
-                width: "210px",
-              }}
-            >
-              <div
-                className="luckysheet-hin absolute show-more-btn"
-                onClick={() => {
-                  handleShowFormulaHint();
+          <div className="cell-hint">
+            {showFormulaHint &&
+              fn &&
+              inputRef?.current?.innerText.includes("(") && (
+                <FormulaHint
+                  handleShowFormulaHint={handleShowFormulaHint}
+                  showFormulaHint={showFormulaHint}
+                  commaCount={commaCount}
+                />
+              )}
+            {!showFormulaHint && fn && (
+              <Tooltip
+                text="Turn on formula suggestions (F10)"
+                placement="top"
+                defaultOpen
+                style={{
+                  position: "absolute",
+                  top: "-50px",
+                  left: "-130px",
+                  width: "210px",
                 }}
               >
-                <LucideIcon
-                  name="DSheetTextDisabled"
-                  fill="black"
-                  style={{
-                    width: "14px",
-                    height: "14px",
-                    margin: "auto",
-                    marginTop: "1px",
+                <div
+                  className="luckysheet-hin absolute show-more-btn"
+                  onClick={() => {
+                    handleShowFormulaHint();
                   }}
-                />
-              </div>
-            </Tooltip>
-          )}
+                >
+                  <LucideIcon
+                    name="DSheetTextDisabled"
+                    fill="black"
+                    style={{
+                      width: "14px",
+                      height: "14px",
+                      margin: "auto",
+                      marginTop: "1px",
+                    }}
+                  />
+                </div>
+              </Tooltip>
+            )}
+          </div>
         </>
       )}
     </div>

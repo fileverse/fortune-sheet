@@ -37,6 +37,7 @@ import {
   insertDuneChart,
   Cell,
   api,
+  getSheetIndex,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import {
@@ -1095,6 +1096,7 @@ const Toolbar: React.FC<{
       if (name === "splitColumn") {
         return (
           <Button
+            id="splitColumn"
             iconId={name}
             tooltip={tooltip}
             key={name}
@@ -1124,6 +1126,7 @@ const Toolbar: React.FC<{
           <>
             <DataVerificationPortal visible={showDataValidation} />
             <Button
+              id="dataVerification"
               iconId={name}
               tooltip={tooltip}
               key={name}
@@ -1780,7 +1783,20 @@ const Toolbar: React.FC<{
                           refs.cellInput.current!,
                           d,
                           "tb",
-                          value
+                          value,
+                          refs.canvas.current!.getContext("2d")!
+                        );
+                        const sheetIndex =
+                          getSheetIndex(ctx, ctx.currentSheetId) || 0;
+                        const config = ctx.luckysheetfile[sheetIndex].config!;
+                        const currentRowHeight =
+                          config?.rowlen?.[0] ||
+                          ctx.luckysheetfile[sheetIndex].defaultColWidth ||
+                          22;
+                        api.setRowHeight(
+                          ctx,
+                          { 1: currentRowHeight + 0.2 },
+                          { id: ctx.currentSheetId }
                         );
                       });
                       setOpen(false);

@@ -63,9 +63,14 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     const hintAbove = hintHeight > availableBelow;
     const selectionHeight = firstSelection?.height_move || 0;
     const divOffset = hintRef.current?.offsetHeight || 0;
-    const topV = hintAbove
+    let topV = hintAbove
       ? selectionHeight - (divOffset + 80)
       : selectionHeight + 4;
+    const el = document.getElementsByClassName("fx-hint")?.[0];
+    // @ts-ignore
+    if (el && el?.style?.display !== "none") {
+      topV = 25;
+    }
     setTop(topV);
   };
 
@@ -81,7 +86,10 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
 
   return (
     <div
-      className="flex color-border-default border flex-col luckysheet-formula-search-c-p custom-scroll"
+      className={`flex color-border-default border flex-col luckysheet-formula-search-c-p custom-scroll ${
+        // @ts-ignore
+        props?.from === "fx" ? "fx-search" : "cell-search"
+      }`}
       id="luckysheet-formula-search-c-p"
       style={{
         top,

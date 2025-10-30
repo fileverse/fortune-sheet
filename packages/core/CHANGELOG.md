@@ -1,5 +1,63 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.31
+
+### Patch Changes
+
+- N/A
+
+## 1.2.30
+
+### Patch Changes
+
+- wrap height oggset
+
+## 1.2.29
+
+### Patch Changes
+
+- Fix text wrap
+
+## 1.2.28
+
+### Patch Changes
+
+- Fix floor formula
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.82
+
+## 1.2.27
+
+### Patch Changes
+
+- Tab select fx editor
+
+## 1.2.26
+
+### Patch Changes
+
+- N/A
+
+## 1.2.25
+
+### Patch Changes
+
+- move cell disabled for flv
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.81
+
+## 1.2.24
+
+### Patch Changes
+
+- N/A
+
+## 1.2.23
+
+### Patch Changes
+
+- Fx header formula suggestion
+
 ## 1.2.22
 
 ### Patch Changes

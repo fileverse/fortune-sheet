@@ -53,9 +53,15 @@ const FormulaHint = (props: any) => {
     const hintAbove = hintHeight > availableBelow;
     const selectionHeight = firstSelection?.height_move || 0;
     const divOffset = hintRef.current?.offsetHeight || 0;
-    setTop(
-      hintAbove ? selectionHeight - (divOffset + 30) : selectionHeight + 4
-    );
+    let topV = hintAbove
+      ? selectionHeight - (divOffset + 30)
+      : selectionHeight + 4;
+    const el = document.getElementsByClassName("fx-hint")?.[0];
+    // @ts-ignore
+    if (el && el?.style?.display !== "none") {
+      topV = 25;
+    }
+    setTop(topV);
   };
 
   const hexToRgbString = (hex: string) => {

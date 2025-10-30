@@ -3,7 +3,7 @@ import { mergeCells } from "./merge";
 import { Context, getFlowdata } from "../context";
 // import { locale } from "../locale";
 import { Cell, CellMatrix, GlobalCache } from "../types";
-import { getSheetIndex, isAllowEdit } from "../utils";
+import { getSheetIndex, isAllowEdit, getLineCount } from "../utils";
 import {
   getRangetxt,
   isAllSelectedCellsInStatus,
@@ -40,7 +40,7 @@ import {
 } from "./validation";
 import { showLinkCard } from "./hyperlink";
 import { cfSplitRange } from "./conditionalFormat";
-import { getCellTextInfo } from "./text";
+import { clearMeasureTextCache, getCellTextInfo } from "./text";
 
 type ToolbarItemClickHandler = (
   ctx: Context,
@@ -203,6 +203,48 @@ export function updateFormatCell(
           const cellWidth =
             cfg.columnlen?.[c] ||
             ctx.luckysheetfile[sheetIndex].defaultColWidth;
+          if (attr === "tb" && canvas && foucsStatus === "2") {
+            const currentColWidth =
+              cfg.columnlen?.[c] ||
+              ctx.luckysheetfile[sheetIndex].defaultColWidth ||
+              100;
+            let lineCount = 1;
+            let fontString = "10px Arial";
+            if (value.fs) {
+              fontString = `${value.fs * 1.5}px Arial`;
+            }
+            if (value?.bl) {
+              lineCount += 1;
+            }
+            if (value.m) {
+              lineCount = getLineCount(
+                value.m as string,
+                currentColWidth,
+                fontString
+              );
+              // hack to be removed with better height logic
+              const hOffset = lineCount < 4 ? 1.9 : 1.7;
+              lineCount = lineCount * hOffset + 1;
+            } else if (value?.ct?.s?.[0]?.v) {
+              // hack to adjust height for inline string
+              lineCount -= 1;
+              const line = value?.ct?.s?.[0]?.v.split("\n");
+              line.forEach((item: string) => {
+                const subLineCount = getLineCount(
+                  item,
+                  currentColWidth,
+                  fontString
+                );
+                lineCount += subLineCount;
+              });
+              // hack to be removed with better height logic
+              const hOffset = lineCount < 4 ? 2.2 : 1.6;
+              lineCount *= hOffset;
+            }
+            const fontSize = value?.fs || 10;
+            const rowHeight = fontSize * lineCount;
+            _.set(cfg, `rowlen.${r}`, rowHeight);
+          }
           if (attr === "fs" && canvas) {
             const textInfo = getCellTextInfo(d[r][c]!, canvas, ctx, {
               r,
@@ -222,6 +264,32 @@ export function updateFormatCell(
             ) {
               if (_.isUndefined(cfg.rowlen)) cfg.rowlen = {};
               _.set(cfg, `rowlen.${r}`, rowHeight);
+            }
+          }
+          if (attr === "tb" && canvas) {
+            clearMeasureTextCache();
+
+            const textInfo = getCellTextInfo(d[r][c]!, canvas, ctx, {
+              r,
+              c,
+              cellWidth: cellWidth || 104,
+            });
+            if (!textInfo) continue;
+            const newHeight = _.round(textInfo.textHeightAll);
+            const oldHeight =
+              cfg.rowlen?.[r] ||
+              ctx.luckysheetfile[sheetIndex].defaultRowHeight ||
+              19;
+            const shouldResize =
+              foucsStatus === "2" ? newHeight > oldHeight : true;
+            if (
+              shouldResize &&
+              (!cfg.customHeight || cfg.customHeight[r] !== 1)
+            ) {
+              const padding = 12;
+              const height = newHeight + padding;
+              if (_.isUndefined(cfg.rowlen)) cfg.rowlen = {};
+              _.set(cfg, `rowlen.${r}`, height);
             }
           }
         } else {

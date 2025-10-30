@@ -381,7 +381,7 @@ var parser = {
       case 26:
       case 27:
       case 28:
-        this.$ = yy.cellValue($$[$0]);
+        this.$ = yy.cellValue($$[$0]) || 0;
 
         break;
       case 29:

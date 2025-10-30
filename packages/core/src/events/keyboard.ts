@@ -690,7 +690,7 @@ export async function handleGlobalKeyDown(
     kstr !== "Enter" &&
     kstr !== "Tab" &&
     kstr !== "ArrowUp" &&
-    kstr !== "ArrowDown" &&
+    // kstr !== "ArrowDown" &&
     kstr !== "ArrowLeft" &&
     kstr !== "ArrowRight"
   ) {

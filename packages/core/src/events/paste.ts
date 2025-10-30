@@ -50,6 +50,16 @@ export function indexToColumnLabel(index: number): string {
   return label;
 }
 
+export class FormularCellRefError extends Error {
+  formula: string;
+
+  constructor(message: string, formula: string) {
+    super(message);
+    this.name = "FormularCellRefError";
+    this.formula = formula;
+  }
+}
+
 export function adjustFormulaForPaste(
   formula: string,
   srcCol: number,
@@ -60,7 +70,10 @@ export function adjustFormulaForPaste(
   const colOffset = destCol - srcCol;
   const rowOffset = destRow - srcRow;
 
-  return formula.replace(
+  // Track whether we created any invalid references
+  let hadInvalid = false;
+
+  const result = formula.replace(
     /(\$?)([A-Z]+)(\$?)(\d+)/g,
     (__, absCol, colLetters, absRow, rowNum) => {
       let colIndex = columnLabelIndex(colLetters);
@@ -69,10 +82,32 @@ export function adjustFormulaForPaste(
       if (!absCol) colIndex += colOffset;
       if (!absRow) rowIndex += rowOffset;
 
+      // Build either a normal or visibly invalid reference
+      if (colIndex < 0 || rowIndex <= 0) {
+        hadInvalid = true;
+        const invalidCol =
+          colIndex < 0
+            ? `${absCol ? "$" : ""}${colLetters}${colIndex}`
+            : `${absCol ? "$" : ""}${indexToColumnLabel(colIndex)}`;
+        const invalidRow = rowIndex.toString();
+        return `${invalidCol}${invalidRow}`;
+      }
+
       const newCol = indexToColumnLabel(colIndex);
       return `${absCol ? "$" : ""}${newCol}${absRow ? "$" : ""}${rowIndex}`;
     }
   );
+
+  // if any invalid references were generated, throw error with full visible formula
+  if (hadInvalid) {
+    const brokenFormula = `=${result.replace(/^=/, "")}`;
+    throw new FormularCellRefError(
+      `Invalid cell reference generated while pasting formula: ${formula}`,
+      brokenFormula
+    );
+  }
+
+  return result;
 }
 
 function postPasteCut(
@@ -1411,55 +1446,86 @@ function pasteHandlerOfCopyPaste(
           }
 
           if (!_.isNil(value) && !_.isNil(value.f)) {
-            const adjustedFormula = adjustFormulaForPaste(
-              value.f.startsWith("=") ? value.f : `=${value.f}`,
-              c_c1,
-              c_r1,
-              c,
-              h
-            );
-
-            const funcV = execfunction(
-              ctx,
-              adjustedFormula,
-              h,
-              c,
-              undefined,
-              undefined,
-              true
-            );
-
-            value.f = adjustedFormula;
-
-            if (!(funcV[1] instanceof Promise)) {
-              if (Array.isArray(funcV[1])) {
-                const formulaResultValue = funcV[1];
-                value.m = String(formulaResultValue[0][0]);
-                spillSortResult(
-                  ctx,
-                  h,
-                  c,
-                  {
-                    m: String(formulaResultValue[0][0]),
-                    f: value.f,
-                    v: formulaResultValue,
-                  },
-                  d
-                );
-              } else {
-                // eslint-disable-next-line prefer-destructuring
-                value.m = String(funcV[1]);
-                value.v = String(funcV[1]);
-              }
+            let adjustedFormula = value.f;
+            let isError = false;
+            try {
+              adjustedFormula = adjustFormulaForPaste(
+                value.f,
+                c_c1,
+                c_r1,
+                c,
+                h
+              );
+            } catch (error: any) {
+              isError = true;
+              value.error = {
+                row_column: `${h}_${c}`,
+                title: "Error",
+                message: error?.message || "Failed to adjust cell reference",
+              };
+              // strip off all formatting from source
+              value.m = "#ERROR";
+              value.f = error?.formula;
+              delete value.ct;
+              delete value.v;
+              delete value.tb;
+              delete value.ht;
             }
 
-            const { afterUpdateCell } = ctx.hooks;
-            if (afterUpdateCell) {
-              afterUpdateCell(h, c, null, {
-                ...value,
-                v: arr.length === 1 ? funcV[1] : value.v, // To check with mritunjay for the "arr.length === 1" cond
-                m: funcV[1] instanceof Promise ? "[object Promise]" : funcV[1],
-              });
+            if (!isError) {
+              const funcV = execfunction(
+                ctx,
+                adjustedFormula,
+                h,
+                c,
+                undefined,
+                undefined,
+                true
+              );
+
+              value.f = adjustedFormula;
+
+              if (!(funcV[1] instanceof Promise) && !funcV[3]) {
+                if (Array.isArray(funcV[1])) {
+                  const formulaResultValue = funcV[1];
+                  value.m = String(formulaResultValue[0][0]);
+                  spillSortResult(
+                    ctx,
+                    h,
+                    c,
+                    {
+                      m: String(formulaResultValue[0][0]),
+                      f: value.f,
+                      v: formulaResultValue,
+                    },
+                    d
+                  );
+                } else {
+                  // eslint-disable-next-line prefer-destructuring
+                  value.m = String(funcV[1]);
+                  value.v = String(funcV[1]);
+                }
+              } else if (funcV[3]) {
+                // eslint-disable-next-line prefer-destructuring
+                value.error = funcV[3];
+                // strip off all formatting from source
+                value.m = "#ERROR";
+                value.f = adjustedFormula;
+                delete value.ct;
+                delete value.v;
+                delete value.tb;
+                delete value.ht;
+              }
+
+              const { afterUpdateCell } = ctx.hooks;
+              if (afterUpdateCell) {
+                afterUpdateCell(h, c, null, {
+                  ...value,
+                  v: arr.length === 1 ? funcV[1] : value.v, // To check with mritunjay for the "arr.length === 1" cond
+                  m:
+                    funcV[1] instanceof Promise ? "[object Promise]" : funcV[1],
+                });
+              }
             }
 
             if (!_.isNil(value.spl)) {

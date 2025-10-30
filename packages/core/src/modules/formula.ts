@@ -1295,7 +1295,17 @@ export function execfunction(
   } else {
     clearCellError(ctx, r, c);
   }
-  return [true, !isError ? finalResult : "#ERROR", txt];
+  return [
+    true,
+    !isError ? finalResult : "#ERROR",
+    txt,
+    isError && {
+      row_column: `${r}_${c}`,
+      title: "Error",
+      message:
+        formulaError?.toString() || detectedErrorFromValue || "Unknown Error",
+    },
+  ];
 }
 
 function insertUpdateDynamicArray(ctx: Context, dynamicArrayItem: any) {

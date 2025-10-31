@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.40
+
+### Patch Changes
+
+- Row selection after drag
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.40
+
 ## 1.2.39
 
 ### Patch Changes

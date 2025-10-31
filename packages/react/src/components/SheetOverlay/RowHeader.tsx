@@ -11,6 +11,7 @@ import {
   getSheetIndex,
   showSelected,
   fixPositionOnFrozenCells,
+  getFlowdata,
   api,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
@@ -100,7 +101,7 @@ const RowHeader: React.FC = () => {
     ]
   );
 
-  const { initiateDrag, getRowIndexClicked, isRowDoubleClicked } =
+  const { initiateDrag, getRowIndexClicked, isRowDoubleClicked, mouseDown } =
     useRowDragAndDrop(containerRef, selectedLocationRef);
 
   const onMouseDown = useCallback(
@@ -133,11 +134,24 @@ const RowHeader: React.FC = () => {
       const clickedRowIndex = getRowIndexClicked(e.pageY, headerEl);
       if (clickedRowIndex < 0) return;
 
-      if (isRowDoubleClicked(clickedRowIndex)) {
+      const sel = api.getSelection(context);
+      const lastSelectedCol = sel?.[0].column?.[1];
+      let data = getFlowdata(context);
+      if (!data) data = [];
+      //eslint-disable-next-line no-unsafe-optional-chaining
+      const allRowSel = lastSelectedCol === data?.[0]?.length - 1;
+
+      if (allRowSel) {
         setContext((draft) => {
           draft.luckysheet_scroll_status = true;
         });
-      } else {
+      }
+      if (
+        !allRowSel ||
+        (allRowSel && sel && clickedRowIndex < sel?.[0].row[0]) ||
+        // @ts-ignore
+        clickedRowIndex > sel?.[0].row[1]
+      ) {
         const { nativeEvent } = e;
         setContext((draft) => {
           handleRowHeaderMouseDown(
@@ -162,6 +176,9 @@ const RowHeader: React.FC = () => {
       context.visibledatarow,
       context.currentSheetId,
       setContext,
+      getRowIndexClicked,
+      isRowDoubleClicked,
+      initiateDrag,
     ]
   );
 
@@ -345,6 +362,25 @@ const RowHeader: React.FC = () => {
     containerRef.current!.scrollTop = context.scrollTop;
   }, [context.scrollTop]);
 
+  const getCursor = (rowIndex: any) => {
+    if (mouseDown) return "grabbing";
+    const sel = api.getSelection(context);
+    const lastSelectedCol = sel?.[0].column?.[1];
+    let data = getFlowdata(context);
+    if (!data) data = [];
+    //eslint-disable-next-line no-unsafe-optional-chaining
+    const allColSel = lastSelectedCol === data?.[0]?.length - 1;
+    if (
+      allColSel &&
+      sel &&
+      rowIndex >= sel?.[0].row?.[0] &&
+      rowIndex <= sel?.[0].row?.[1]
+    ) {
+      return "grab";
+    }
+    return "default";
+  };
+
   return (
     <div
       ref={containerRef}
@@ -421,6 +457,7 @@ const RowHeader: React.FC = () => {
               top: hoverLocation.row_pre,
               height: hoverLocation.row - hoverLocation.row_pre - 1,
               display: "block",
+              cursor: getCursor(hoverLocation.row_index),
             },
             fixRowStyleOverflowInFreeze(
               context,

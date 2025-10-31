@@ -388,5 +388,10 @@ export const useRowDragAndDrop = (
     document.addEventListener("mouseup", handleRowDragEnd);
   };
 
-  return { initiateDrag, getRowIndexClicked, isRowDoubleClicked };
+  return {
+    initiateDrag,
+    getRowIndexClicked,
+    isRowDoubleClicked,
+    mouseDown: dragRef.current.mouseDown,
+  };
 };

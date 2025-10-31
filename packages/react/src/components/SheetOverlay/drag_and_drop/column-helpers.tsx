@@ -437,5 +437,10 @@ export const useColumnDragAndDrop = (
     document.addEventListener("mouseup", handleColumnDragEnd);
   };
 
-  return { initiateDrag, getColIndexClicked, isColDoubleClicked };
+  return {
+    initiateDrag,
+    getColIndexClicked,
+    isColDoubleClicked,
+    mouseDown: dragRef.current.mouseDown,
+  };
 };

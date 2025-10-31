@@ -138,7 +138,7 @@ const RowHeader: React.FC = () => {
       const lastSelectedCol = sel?.[0].column?.[1];
       let data = getFlowdata(context);
       if (!data) data = [];
-      //eslint-disable-next-line no-unsafe-optional-chaining
+      // eslint-disable-next-line no-unsafe-optional-chaining
       const allRowSel = lastSelectedCol === data?.[0]?.length - 1;
 
       if (allRowSel) {
@@ -368,7 +368,7 @@ const RowHeader: React.FC = () => {
     const lastSelectedCol = sel?.[0].column?.[1];
     let data = getFlowdata(context);
     if (!data) data = [];
-    //eslint-disable-next-line no-unsafe-optional-chaining
+    // eslint-disable-next-line no-unsafe-optional-chaining
     const allColSel = lastSelectedCol === data?.[0]?.length - 1;
     if (
       allColSel &&

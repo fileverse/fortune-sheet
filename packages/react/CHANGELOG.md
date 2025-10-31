@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.36
+
+### Patch Changes
+
+- drag col/row UX fix
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.36
+
 ## 1.2.35
 
 ### Patch Changes

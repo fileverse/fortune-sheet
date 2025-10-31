@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.36
+
+### Patch Changes
+
+- drag col/row UX fix
+
 ## 1.2.35
 
 ### Patch Changes

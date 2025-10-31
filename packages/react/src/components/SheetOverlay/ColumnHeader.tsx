@@ -145,7 +145,7 @@ const ColumnHeader: React.FC = () => {
       const lastSelectedRow = sel?.[0].row?.[1];
       let data = getFlowdata(context);
       if (!data) data = [];
-      //eslint-disable-next-line no-unsafe-optional-chaining
+      // eslint-disable-next-line no-unsafe-optional-chaining
       const allColSel = lastSelectedRow === data?.length - 1;
       if (allColSel) {
         setContext((draft) => {
@@ -155,7 +155,7 @@ const ColumnHeader: React.FC = () => {
       if (
         !allColSel ||
         (allColSel && sel && clickedColIndex < sel?.[0].column?.[0]) ||
-        //@ts-ignore
+        // @ts-ignore
         clickedColIndex > sel?.[0]?.column?.[1]
       ) {
         const { nativeEvent } = e;
@@ -380,7 +380,7 @@ const ColumnHeader: React.FC = () => {
     const lastSelectedRow = sel?.[0].row?.[1];
     let data = getFlowdata(context);
     if (!data) data = [];
-    //eslint-disable-next-line no-unsafe-optional-chaining
+    // eslint-disable-next-line no-unsafe-optional-chaining
     const allColSel = lastSelectedRow === data?.length - 1;
     if (
       allColSel &&

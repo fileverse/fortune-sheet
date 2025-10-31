@@ -48,10 +48,10 @@ export const useColumnDragAndDrop = (
     const { lineEl, ghostEl } = dragRef.current;
     try {
       if (lineEl?.parentElement) lineEl.parentElement.removeChild(lineEl);
-    } catch { }
+    } catch {}
     try {
       if (ghostEl?.parentElement) ghostEl.parentElement.removeChild(ghostEl);
-    } catch { }
+    } catch {}
     dragRef.current.lineEl = null;
     dragRef.current.ghostEl = null;
     dragRef.current.active = false;
@@ -239,7 +239,7 @@ export const useColumnDragAndDrop = (
       document.body.style.userSelect = dragRef.current.prevUserSelect || "";
       (document.body.style as any).webkitUserSelect =
         dragRef.current.prevWebkitUserSelect || "";
-    } catch { }
+    } catch {}
 
     if (dragRef.current.active) {
       const { insertionIndex: finalInsertionIndex } = computeInsertionFromPageX(
@@ -410,8 +410,8 @@ export const useColumnDragAndDrop = (
             context.currentSheetId
           );
 
-          let selData = api.getSelection(context) || [];
-          let sel = [...selData]
+          const selData = api.getSelection(context) || [];
+          const sel = [...selData];
           if (sel && sel[0]) {
             sel[0].column = [targetIndex, targetIndex];
           }
@@ -419,7 +419,7 @@ export const useColumnDragAndDrop = (
             api.setSelection(draftCtx, sel, {
               id: context.currentSheetId,
             });
-          })
+          });
         });
       }
     }

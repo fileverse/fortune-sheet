@@ -411,19 +411,19 @@ export const useColumnDragAndDrop = (
           );
         });
         // remove-then-insert adjustment
-          let targetIndex = finalInsertionIndex;
-          if (targetIndex > sourceIndex) targetIndex -= 1;
+        let targetIndex = finalInsertionIndex;
+        if (targetIndex > sourceIndex) targetIndex -= 1;
         const selData = api.getSelection(context) || [];
-          const sel = [...selData];
-          if (sel && sel[0]) {
-            sel[0].column = [targetIndex, targetIndex];
-          }
+        const sel = [...selData];
+        if (sel && sel[0]) {
+          sel[0].column = [targetIndex, targetIndex];
+        }
         setContext((draftCtx) => {
-            console.log("after update", sel);
-            api.setSelection(draftCtx, sel, {
-              id: context.currentSheetId,
-            });
+          console.log("after update", sel);
+          api.setSelection(draftCtx, sel, {
+            id: context.currentSheetId,
           });
+        });
       }
     }
 

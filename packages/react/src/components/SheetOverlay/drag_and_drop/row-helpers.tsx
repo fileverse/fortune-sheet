@@ -360,17 +360,22 @@ export const useRowDragAndDrop = (
             "row",
             context.currentSheetId
           );
+        }); 
 
-          const selData = api.getSelection(context) || [];
-          const sel = [...selData];
-          if (sel && sel[0]) {
-            sel[0].row = [targetIndex, targetIndex];
-          }
-          setContext((draftCtx) => {
-            api.setSelection(draftCtx, sel, {
-              id: context.currentSheetId,
-            });
-          });
+        // remove-then-insert adjustment
+        const d = getFlowdata(context);
+        const colLen = d?.[0]?.length || 0;
+        let targetIndex = finalInsertionIndex;
+        if (targetIndex > sourceIndex) targetIndex -= 1;
+        const selData = api.getSelection(context) || [];
+        const sel = [...selData];
+        if (sel && sel[0]) {
+          sel[0].column = [targetIndex, targetIndex];
+        }
+        setContext((draftCtx) => {
+          api.setSelection(draftCtx, [{ row: [targetIndex, targetIndex], column: [0, colLen] }], {
+                    id: context.currentSheetId,
+                  });
         });
       }
     }

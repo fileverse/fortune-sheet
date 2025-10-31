@@ -1,5 +1,19 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.38
+
+### Patch Changes
+
+- fresh build
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.83
+
+## 1.2.37
+
+### Patch Changes
+
+- change selection after drag end
+
 ## 1.2.36
 
 ### Patch Changes

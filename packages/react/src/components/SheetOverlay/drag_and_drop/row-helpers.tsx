@@ -360,7 +360,7 @@ export const useRowDragAndDrop = (
             "row",
             context.currentSheetId
           );
-        }); 
+        });
 
         // remove-then-insert adjustment
         const d = getFlowdata(context);
@@ -373,9 +373,13 @@ export const useRowDragAndDrop = (
           sel[0].column = [targetIndex, targetIndex];
         }
         setContext((draftCtx) => {
-          api.setSelection(draftCtx, [{ row: [targetIndex, targetIndex], column: [0, colLen] }], {
-                    id: context.currentSheetId,
-                  });
+          api.setSelection(
+            draftCtx,
+            [{ row: [targetIndex, targetIndex], column: [0, colLen] }],
+            {
+              id: context.currentSheetId,
+            }
+          );
         });
       }
     }

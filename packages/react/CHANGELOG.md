@@ -1,5 +1,37 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.39
+
+### Patch Changes
+
+- Fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.39
+
+## 1.2.38
+
+### Patch Changes
+
+- fresh build
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.38
+
+## 1.2.37
+
+### Patch Changes
+
+- change selection after drag end
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.37
+
+## 1.2.36
+
+### Patch Changes
+
+- drag col/row UX fix
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.36
+
 ## 1.2.35
 
 ### Patch Changes

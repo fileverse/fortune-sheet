@@ -6,6 +6,7 @@ import {
   getFlowdata,
   rowLocationByIndex,
   updateContextWithSheetData,
+  api,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../../context";
 
@@ -359,6 +360,17 @@ export const useRowDragAndDrop = (
             "row",
             context.currentSheetId
           );
+
+          const selData = api.getSelection(context) || [];
+          const sel = [...selData];
+          if (sel && sel[0]) {
+            sel[0].row = [targetIndex, targetIndex];
+          }
+          setContext((draftCtx) => {
+            api.setSelection(draftCtx, sel, {
+              id: context.currentSheetId,
+            });
+          });
         });
       }
     }
@@ -388,5 +400,10 @@ export const useRowDragAndDrop = (
     document.addEventListener("mouseup", handleRowDragEnd);
   };
 
-  return { initiateDrag, getRowIndexClicked, isRowDoubleClicked };
+  return {
+    initiateDrag,
+    getRowIndexClicked,
+    isRowDoubleClicked,
+    mouseDown: dragRef.current.mouseDown,
+  };
 };

@@ -69,7 +69,7 @@ const ColumnHeader: React.FC = () => {
     selectedLocationRef.current = selectedLocation;
   }, [selectedLocation]);
 
-  const { initiateDrag, getColIndexClicked, isColDoubleClicked } =
+  const { initiateDrag, getColIndexClicked, isColDoubleClicked, mouseDown } =
     useColumnDragAndDrop(containerRef, selectedLocationRef);
 
   const onMouseMove = useCallback(
@@ -141,11 +141,23 @@ const ColumnHeader: React.FC = () => {
       const clickedColIndex = getColIndexClicked(e.pageX, headerEl);
       if (clickedColIndex < 0) return;
 
-      if (isColDoubleClicked(clickedColIndex)) {
+      const sel = api.getSelection(context);
+      const lastSelectedRow = sel?.[0].row?.[1];
+      let data = getFlowdata(context);
+      if (!data) data = [];
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      const allColSel = lastSelectedRow === data?.length - 1;
+      if (allColSel) {
         setContext((draft) => {
           draft.luckysheet_scroll_status = true;
         });
-      } else {
+      }
+      if (
+        !allColSel ||
+        (allColSel && sel && clickedColIndex < sel?.[0].column?.[0]) ||
+        // @ts-ignore
+        clickedColIndex > sel?.[0]?.column?.[1]
+      ) {
         const { nativeEvent } = e;
         setContext((draft) => {
           handleColumnHeaderMouseDown(
@@ -362,6 +374,25 @@ const ColumnHeader: React.FC = () => {
     containerRef.current!.scrollLeft = context.scrollLeft;
   }, [context.scrollLeft]);
 
+  const getCursor = (colIndex: any) => {
+    if (mouseDown) return "grabbing";
+    const sel = api.getSelection(context);
+    const lastSelectedRow = sel?.[0].row?.[1];
+    let data = getFlowdata(context);
+    if (!data) data = [];
+    // eslint-disable-next-line no-unsafe-optional-chaining
+    const allColSel = lastSelectedRow === data?.length - 1;
+    if (
+      allColSel &&
+      sel &&
+      colIndex >= sel?.[0].column[0] &&
+      colIndex <= sel?.[0].column[1]
+    ) {
+      return "grab";
+    }
+    return "default";
+  };
+
   return (
     <div
       ref={containerRef}
@@ -450,6 +481,7 @@ const ColumnHeader: React.FC = () => {
               left: hoverLocation.col_pre,
               width: hoverLocation.col - hoverLocation.col_pre - 1,
               display: "block",
+              cursor: getCursor(hoverLocation.col_index),
             },
             fixColumnStyleOverflowInFreeze(
               context,

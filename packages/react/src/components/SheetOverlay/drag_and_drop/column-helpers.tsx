@@ -6,6 +6,7 @@ import {
   colLocation,
   colLocationByIndex,
   updateContextWithSheetData,
+  api,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../../context";
 
@@ -409,6 +410,20 @@ export const useColumnDragAndDrop = (
             context.currentSheetId
           );
         });
+        // remove-then-insert adjustment
+          let targetIndex = finalInsertionIndex;
+          if (targetIndex > sourceIndex) targetIndex -= 1;
+        const selData = api.getSelection(context) || [];
+          const sel = [...selData];
+          if (sel && sel[0]) {
+            sel[0].column = [targetIndex, targetIndex];
+          }
+        setContext((draftCtx) => {
+            console.log("after update", sel);
+            api.setSelection(draftCtx, sel, {
+              id: context.currentSheetId,
+            });
+          });
       }
     }
 
@@ -437,5 +452,10 @@ export const useColumnDragAndDrop = (
     document.addEventListener("mouseup", handleColumnDragEnd);
   };
 
-  return { initiateDrag, getColIndexClicked, isColDoubleClicked };
+  return {
+    initiateDrag,
+    getColIndexClicked,
+    isColDoubleClicked,
+    mouseDown: dragRef.current.mouseDown,
+  };
 };

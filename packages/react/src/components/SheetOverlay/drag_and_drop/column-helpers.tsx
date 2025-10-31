@@ -409,18 +409,21 @@ export const useColumnDragAndDrop = (
             "column",
             context.currentSheetId
           );
-
-          const selData = api.getSelection(context) || [];
+        });
+        // remove-then-insert adjustment
+          let targetIndex = finalInsertionIndex;
+          if (targetIndex > sourceIndex) targetIndex -= 1;
+        const selData = api.getSelection(context) || [];
           const sel = [...selData];
           if (sel && sel[0]) {
             sel[0].column = [targetIndex, targetIndex];
           }
-          setContext((draftCtx) => {
+        setContext((draftCtx) => {
+            console.log("after update", sel);
             api.setSelection(draftCtx, sel, {
               id: context.currentSheetId,
             });
           });
-        });
       }
     }
 

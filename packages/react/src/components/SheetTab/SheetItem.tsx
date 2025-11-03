@@ -95,7 +95,7 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
 
   const onDragStart = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
-      if (context.allowEdit === true)
+      if (context.allowEdit === true && !context.isFlvReadOnly)
         e.dataTransfer.setData("sheetId", `${sheet.id}`);
       e.stopPropagation();
     },

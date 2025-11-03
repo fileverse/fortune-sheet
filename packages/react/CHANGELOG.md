@@ -13,6 +13,7 @@
 ### Patch Changes
 
 - stop tab drag in readonly
+- Fix emoji for multiline text
 - Updated dependencies
   - @fileverse-dev/fortune-core@1.2.41
 

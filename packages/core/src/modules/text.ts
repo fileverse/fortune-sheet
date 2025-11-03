@@ -473,7 +473,12 @@ export function getCellTextInfo(
           });
           similarIndex += 1;
         } else {
-          const newValueArray = newValue.split("");
+          const newValueArray = Array.from(
+            // @ts-ignore
+            new Intl.Segmenter().segment(newValue),
+            // @ts-ignore
+            (s) => s.segment
+          );
           for (let n = 0; n < newValueArray.length; n += 1) {
             const nv = newValueArray[n];
 

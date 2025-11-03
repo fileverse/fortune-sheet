@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.41
+
+### Patch Changes
+
+- stop tab drag in readonly
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.41
+
 ## 1.2.40
 
 ### Patch Changes

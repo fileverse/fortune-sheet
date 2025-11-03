@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.41
+
+### Patch Changes
+
+- stop tab drag in readonly
+
 ## 1.2.40
 
 ### Patch Changes

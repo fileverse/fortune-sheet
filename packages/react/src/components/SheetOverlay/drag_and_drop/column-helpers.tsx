@@ -28,6 +28,9 @@ export const useColumnDragAndDrop = (
   const START_DRAG_THRESHOLD_PX = 6;
   const clickRef = useRef({ lastTime: 0, lastCol: -1 });
   const { context, setContext, refs } = useContext(WorkbookContext);
+  const selectedColWidth = useRef(0);
+  const selectedSourceColRef = useRef<number[]>([]);
+  const selectedTargetColRef = useRef<number[]>([]);
 
   const dragRef = useRef({
     mouseDown: false,
@@ -165,6 +168,7 @@ export const useColumnDragAndDrop = (
         60,
         selectedBlock.col - selectedBlock.col_pre - 1
       );
+      selectedColWidth.current = ghostWidthPx;
       const count = selectedBlock.c2 - selectedBlock.c1 + 1;
       ghostLabel =
         count > 1
@@ -177,6 +181,7 @@ export const useColumnDragAndDrop = (
       );
       const sourceColWidth = end - pre - 1;
       ghostWidthPx = Math.max(60, sourceColWidth);
+      selectedColWidth.current = ghostWidthPx;
     }
 
     el.style.width = `${ghostWidthPx}px`;
@@ -219,14 +224,18 @@ export const useColumnDragAndDrop = (
     if (!isDragActivated(host, dragOffset)) return;
 
     const { lineLeftPx } = computeInsertionFromPageX(ev.pageX);
-    const ghostPosOffset = dragRef.current.startX > ev.pageX ? 0 : 80;
+    const ghostPosOffset = 60;
+    const ghostFinalPos =
+      dragRef.current.startX > ev.pageX
+        ? lineLeftPx + ghostPosOffset
+        : lineLeftPx - (selectedColWidth.current - ghostPosOffset);
 
     if (dragRef.current.lineEl) {
       dragRef.current.lineEl.style.left = `${lineLeftPx}px`;
     }
 
     if (dragRef.current.ghostEl) {
-      dragRef.current.ghostEl.style.left = `${ev.pageX - ghostPosOffset}px`;
+      dragRef.current.ghostEl.style.left = `${ghostFinalPos}px`;
     }
   };
 
@@ -246,7 +255,7 @@ export const useColumnDragAndDrop = (
         ev.pageX
       );
 
-      const sourceIndex = dragRef.current.source;
+      const sourceIndex = context.luckysheet_select_save?.[0]?.column?.[0] || 0;
       const sheetIdx = getSheetIndex(context, context.currentSheetId);
 
       if (
@@ -268,16 +277,49 @@ export const useColumnDragAndDrop = (
           let targetIndex = finalInsertionIndex;
           if (targetIndex > sourceIndex) targetIndex -= 1;
 
-          // Move column data in each row
-          for (let i = 0; i < rows.length; i += 1) {
-            const row = rows[i];
-            if (!row || sourceIndex >= row.length) continue;
-
-            const [cellData] = row.splice(sourceIndex, 1);
-            if (targetIndex < 0) targetIndex = 0;
-            if (targetIndex > row.length) targetIndex = row.length;
-            row.splice(targetIndex, 0, cellData);
+          const selectedColRange =
+            context.luckysheet_select_save?.[0]?.column || [];
+          const selectedSourceCol = [];
+          for (
+            let i = selectedColRange?.[0];
+            i <= selectedColRange?.[1];
+            i += 1
+          ) {
+            selectedSourceCol.push(i);
           }
+
+          const tempSelectedTargetCol: number[] = [];
+          selectedSourceCol.forEach((_, index) => {
+            if (sourceIndex < targetIndex) {
+              tempSelectedTargetCol.push(targetIndex - index);
+            } else {
+              tempSelectedTargetCol.push(targetIndex + index);
+            }
+          });
+          const selectedTargetCol = [...tempSelectedTargetCol]?.sort(
+            (a, b) => a - b
+          );
+
+          selectedSourceColRef.current = selectedSourceCol;
+          selectedTargetColRef.current = selectedTargetCol;
+
+          // Move column data in each row
+          selectedSourceCol.forEach(() => {
+            let adjustedSourceIndex = sourceIndex;
+            if (targetIndex < sourceIndex) {
+              adjustedSourceIndex =
+                sourceIndex + (selectedSourceCol.length - 1);
+            }
+            for (let j = 0; j < rows.length; j += 1) {
+              const row = rows[j];
+              if (!row || adjustedSourceIndex >= row.length) continue;
+
+              const [cellData] = row.splice(adjustedSourceIndex, 1);
+              if (targetIndex < 0) targetIndex = 0;
+              if (targetIndex > row.length) targetIndex = row.length;
+              row.splice(targetIndex, 0, cellData);
+            }
+          });
 
           _sheet.data = rows;
           updateContextWithSheetData(draft, _sheet.data);
@@ -287,46 +329,41 @@ export const useColumnDragAndDrop = (
           d?.forEach((row) => {
             row.forEach((cell) => {
               if (cell) {
-                const sourceColName = numberToColumnName(sourceIndex);
-                const targetColName = numberToColumnName(targetIndex);
-                if (cell.f) {
-                  cell.f = cell.f.replace(
-                    new RegExp(`\\b${sourceColName}(\\d+)\\b`, "g"),
-                    (match, p1) => {
-                      if (/^\d+$/.test(p1)) {
-                        return `${targetColName}${p1}`;
-                      }
-                      return match;
-                    }
-                  );
-                }
                 const otherAffectedCols: any[] = [];
                 if (sourceIndex < targetIndex) {
-                  for (let c = sourceIndex + 1; c < targetIndex; c += 1) {
+                  const start =
+                    selectedSourceCol?.[selectedSourceCol.length - 1];
+                  const last =
+                    selectedTargetCol?.[selectedTargetCol.length - 1];
+                  for (let c = start + 1; c <= last; c += 1) {
                     otherAffectedCols.push({
                       source: numberToColumnName(c),
-                      target: numberToColumnName(c - 1),
+                      target: numberToColumnName(c - selectedSourceCol.length),
                     });
                   }
+                  // to visit back on this logix if need + methond or array is fine.
+                  selectedSourceCol.forEach((c: number, index: number) => {
+                    otherAffectedCols.push({
+                      source: numberToColumnName(c),
+                      target: numberToColumnName(selectedTargetCol[index]),
+                    });
+                  });
                 } else if (sourceIndex > targetIndex) {
-                  for (let c = targetIndex; c < sourceIndex; c += 1) {
+                  const start = selectedTargetCol?.[0];
+                  const last = selectedSourceCol?.[0];
+                  for (let c = start; c < last; c += 1) {
                     otherAffectedCols.push({
                       source: numberToColumnName(c),
-                      target: numberToColumnName(c + 1),
+                      target: numberToColumnName(c + selectedSourceCol.length),
                     });
                   }
+                  selectedSourceCol.forEach((c: number, index: number) => {
+                    otherAffectedCols.push({
+                      source: numberToColumnName(c),
+                      target: numberToColumnName(selectedTargetCol[index]),
+                    });
+                  });
                 }
-                // otherAffectedCols.forEach((col) => {
-                //   if (cell.f) {
-                //     cell.f = cell.f.replace(new RegExp(`\\b${col.source}(\\d+)\\b`, 'g'), (match, p1) => {
-                //       if (/^\d+$/.test(p1)) {
-                //         return `${col.target}${p1}`;
-                //       }
-                //       return match;
-                //     });
-                //     console.log("updated formula", cell.f, col.source, col.target);
-                //   }
-                // })
 
                 if (cell.f) {
                   let formula = cell.f;
@@ -375,15 +412,17 @@ export const useColumnDragAndDrop = (
               if (colRow.length !== 2) return;
               const presentcol = parseInt(colRow[1], 10);
               let updatedCol = presentcol;
-              if (presentcol === sourceIndex) {
-                updatedCol = targetIndex;
+              if (selectedSourceCol.includes(presentcol)) {
+                const index = selectedSourceCol.indexOf(presentcol);
+                const target = selectedTargetCol[index];
+                updatedCol = target;
               } else if (presentcol > sourceIndex && presentcol < targetIndex) {
-                updatedCol -= 1;
+                updatedCol -= selectedSourceCol.length;
               } else if (
                 presentcol < sourceIndex &&
                 presentcol >= targetIndex
               ) {
-                updatedCol += 1;
+                updatedCol += selectedSourceCol.length;
               }
               newDataVerification[`${colRow[0]}_${updatedCol}`] = itemData;
             });
@@ -392,37 +431,38 @@ export const useColumnDragAndDrop = (
 
           // update calc chain
           _sheet.calcChain?.forEach((item) => {
-            if (item.c === sourceIndex) {
-              item.c = targetIndex;
+            if (selectedSourceCol.includes(item.c)) {
+              const index = selectedSourceCol.indexOf(item.c);
+              item.c = selectedTargetCol[index];
             } else if (item.c > sourceIndex && item.c < targetIndex) {
-              item.c -= 1;
+              item.c -= selectedSourceCol.length;
             } else if (item.c < sourceIndex && item.c >= targetIndex) {
-              item.c += 1;
+              item.c += selectedSourceCol.length;
             }
           });
 
           // update data block
           // @ts-expect-error
           window?.updateDataBlockCalcFunctionAfterRowDrag?.(
-            sourceIndex,
-            targetIndex,
+            selectedSourceCol,
+            selectedTargetCol,
             "column",
-            context.currentSheetId
+            context.currentSheetId,
+            sourceIndex,
+            targetIndex
           );
         });
         // remove-then-insert adjustment
-        let targetIndex = finalInsertionIndex;
-        if (targetIndex > sourceIndex) targetIndex -= 1;
-        const selData = api.getSelection(context) || [];
-        const sel = [...selData];
-        if (sel && sel[0]) {
-          sel[0].column = [targetIndex, targetIndex];
-        }
+        const d = getFlowdata(context);
+        const rowLen = d?.length || 0;
         setContext((draftCtx) => {
-          console.log("after update", sel);
-          api.setSelection(draftCtx, sel, {
-            id: context.currentSheetId,
-          });
+          api.setSelection(
+            draftCtx,
+            [{ row: [0, rowLen], column: selectedTargetColRef.current }],
+            {
+              id: context.currentSheetId,
+            }
+          );
         });
       }
     }

@@ -18,6 +18,9 @@ export const useRowDragAndDrop = (
   const START_DRAG_THRESHOLD_PX = 6;
   const clickRef = useRef({ lastTime: 0, lastRow: -1 });
   const { context, setContext, refs } = useContext(WorkbookContext);
+  const selectedRowHeight = useRef(0);
+  const selectedSourceRowRef = useRef<number[]>([]);
+  const selectedTargetRowRef = useRef<number[]>([]);
 
   const dragRef = useRef({
     mouseDown: false,
@@ -38,10 +41,10 @@ export const useRowDragAndDrop = (
     const { lineEl, ghostEl } = dragRef.current;
     try {
       if (lineEl?.parentElement) lineEl.parentElement.removeChild(lineEl);
-    } catch {}
+    } catch { }
     try {
       if (ghostEl?.parentElement) ghostEl.parentElement.removeChild(ghostEl);
-    } catch {}
+    } catch { }
     dragRef.current.lineEl = null;
     dragRef.current.ghostEl = null;
     dragRef.current.active = false;
@@ -150,6 +153,7 @@ export const useRowDragAndDrop = (
         24,
         selectedBlock.row - selectedBlock.row_pre - 1
       );
+      selectedRowHeight.current = ghostHeightPx;
       const count = selectedBlock.r2 - selectedBlock.r1 + 1;
       ghostLabel = count > 1 ? `${count} rows` : `${selectedBlock.r1 + 1} row`;
     } else {
@@ -159,6 +163,7 @@ export const useRowDragAndDrop = (
       );
       const sourceRowHeight = end - pre - 1;
       ghostHeightPx = Math.max(24, sourceRowHeight);
+      selectedRowHeight.current = ghostHeightPx;
     }
 
     el.style.height = `${ghostHeightPx}px`;
@@ -200,14 +205,27 @@ export const useRowDragAndDrop = (
     if (!isDragActivated(host, dragOffset)) return;
 
     const { lineTopPx } = computeInsertionFromPageY(ev.pageY);
-    const ghostPosOffset = dragRef.current.startY > ev.pageY ? 0 : 25;
+    // const ghostPosOffset = dragRef.current.startY > ev.pageY ? 25 : 25;
+    const rows = context.luckysheet_select_save?.[0]?.row;
+    const selectedRowLength =
+      rows && rows[1] != null && rows[0] != null
+        ? rows[1] - rows[0] + 1
+        : 0;
+    const off = 3 - selectedRowLength;
+    const bottomOff = (off + 1) * 25;
+    const topRowOff = selectedRowLength - 4;
+    const topOff = topRowOff * 25;
+    const ghostFinalPos =
+      dragRef.current.startY > ev.pageY
+        ? lineTopPx - topOff
+        : lineTopPx + bottomOff;
 
     if (dragRef.current.lineEl) {
       dragRef.current.lineEl.style.top = `${lineTopPx}px`;
     }
 
     if (dragRef.current.ghostEl) {
-      dragRef.current.ghostEl.style.top = `${ev.pageY - ghostPosOffset}px`;
+      dragRef.current.ghostEl.style.top = `${ghostFinalPos}px`;
     }
   };
 
@@ -220,14 +238,14 @@ export const useRowDragAndDrop = (
       document.body.style.userSelect = dragRef.current.prevUserSelect || "";
       (document.body.style as any).webkitUserSelect =
         dragRef.current.prevWebkitUserSelect || "";
-    } catch {}
+    } catch { }
 
     if (dragRef.current.active) {
       const { insertionIndex: finalInsertionIndex } = computeInsertionFromPageY(
         ev.pageY
       );
 
-      const sourceIndex = dragRef.current.source;
+      const sourceIndex = context.luckysheet_select_save?.[0]?.row?.[0] || 0;
       const sheetIdx = getSheetIndex(context, context.currentSheetId);
 
       if (
@@ -246,10 +264,43 @@ export const useRowDragAndDrop = (
           let targetIndex = finalInsertionIndex;
           if (targetIndex > sourceIndex) targetIndex -= 1;
 
-          const [rowData] = rows.splice(sourceIndex, 1);
-          if (targetIndex < 0) targetIndex = 0;
-          if (targetIndex > rows.length) targetIndex = rows.length;
-          rows.splice(targetIndex, 0, rowData);
+          const selectedRowRange =
+            context.luckysheet_select_save?.[0]?.row || [];
+          const selectedSourceRow = [];
+          for (
+            let i = selectedRowRange?.[0];
+            i <= selectedRowRange?.[1];
+            i += 1
+          ) {
+            selectedSourceRow.push(i);
+          }
+
+          const tempSelectedTargetRow: number[] = [];
+          selectedSourceRow.forEach((_, index) => {
+            if (sourceIndex < targetIndex) {
+              tempSelectedTargetRow.push(targetIndex - index);
+            } else {
+              tempSelectedTargetRow.push(targetIndex + index);
+            }
+          });
+          const selectedTargetRow = [...tempSelectedTargetRow]?.sort(
+            (a, b) => a - b
+          );
+
+          selectedSourceRowRef.current = selectedSourceRow;
+          selectedTargetRowRef.current = selectedTargetRow;
+
+          selectedSourceRow.forEach(() => {
+            let adjustedSourceIndex = sourceIndex;
+            if (targetIndex < sourceIndex) {
+              adjustedSourceIndex =
+                sourceIndex + (selectedSourceRow.length - 1);
+            }
+            const [rowData] = rows.splice(adjustedSourceIndex, 1);
+            if (targetIndex < 0) targetIndex = 0;
+            if (targetIndex > rows.length) targetIndex = rows.length;
+            rows.splice(targetIndex, 0, rowData);
+          });
 
           _sheet.data = rows;
           updateContextWithSheetData(draft, _sheet.data);
@@ -258,26 +309,39 @@ export const useRowDragAndDrop = (
           d?.forEach((row) => {
             row.forEach((cell) => {
               if (cell) {
-                const startingIndex = sourceIndex + 1;
-                const targetingIndex = targetIndex + 1;
-                if (cell.f) {
-                  cell.f = cell.f.replace(
-                    new RegExp(`\\b([A-Z]+)${startingIndex}\\b`, "g"),
-                    (match, p1) => {
-                      return `${p1}${targetingIndex}`;
-                    }
-                  );
-                }
-
                 const otherAffectedRows: any[] = [];
                 if (sourceIndex < targetIndex) {
-                  for (let c = startingIndex + 1; c < targetingIndex; c += 1) {
-                    otherAffectedRows.push({ source: c, target: c - 1 });
+                  const start =
+                    selectedSourceRow?.[selectedSourceRow.length - 1];
+                  const last =
+                    selectedTargetRow?.[selectedTargetRow.length - 1];
+                  for (let c = start + 1; c < last; c += 1) {
+                    otherAffectedRows.push({
+                      source: c,
+                      target: c - selectedSourceRow.length,
+                    });
                   }
+                  selectedSourceRow.forEach((c: number, index: number) => {
+                    otherAffectedRows.push({
+                      source: c,
+                      target: selectedTargetRow[index],
+                    });
+                  });
                 } else {
-                  for (let c = targetingIndex; c < startingIndex; c += 1) {
-                    otherAffectedRows.push({ source: c, target: c + 1 });
+                  const start = selectedTargetRow?.[0];
+                  const last = selectedSourceRow?.[0];
+                  for (let c = start; c < last; c += 1) {
+                    otherAffectedRows.push({
+                      source: c,
+                      target: c + +selectedSourceRow.length,
+                    });
                   }
+                  selectedSourceRow.forEach((c: number, index: number) => {
+                    otherAffectedRows.push({
+                      source: c,
+                      target: selectedTargetRow[index],
+                    });
+                  });
                 }
                 // otherAffectedRows.forEach(({source, target}) => {
                 //   if (cell.f) cell.f = cell.f.replace(new RegExp(`\\b([A-Z]+)${source}\\b`, 'g'), (match, p1) => {
@@ -329,15 +393,17 @@ export const useRowDragAndDrop = (
               if (colRow.length !== 2) return;
               const presentRow = parseInt(colRow[0], 10);
               let updatedRow = presentRow;
-              if (presentRow === sourceIndex) {
-                updatedRow = targetIndex;
+              if (selectedSourceRow.includes(presentRow)) {
+                const index = selectedSourceRow.indexOf(presentRow);
+                const target = selectedTargetRow[index];
+                updatedRow = target;
               } else if (presentRow > sourceIndex && presentRow < targetIndex) {
-                updatedRow -= 1;
+                updatedRow -= selectedSourceRow.length;
               } else if (
                 presentRow < sourceIndex &&
                 presentRow >= targetIndex
               ) {
-                updatedRow += 1;
+                updatedRow += selectedSourceRow.length;
               }
               newDataVerification[`${updatedRow}_${colRow[1]}`] = itemData;
             });
@@ -345,12 +411,13 @@ export const useRowDragAndDrop = (
           }
 
           _sheet.calcChain?.forEach((item) => {
-            if (item.r === sourceIndex) {
-              item.r = targetIndex;
+            if (selectedSourceRow.includes(item.r)) {
+              const index = selectedSourceRow.indexOf(item.c);
+              item.r = selectedTargetRow[index];
             } else if (item.r > sourceIndex && item.r < targetIndex) {
-              item.r -= 1;
+              item.r -= selectedSourceRow.length;
             } else if (item.r < sourceIndex && item.r >= targetIndex) {
-              item.r += 1;
+              item.r += selectedSourceRow.length;
             }
           });
           // @ts-expect-error
@@ -360,7 +427,7 @@ export const useRowDragAndDrop = (
             "row",
             context.currentSheetId
           );
-        }); 
+        });
 
         // remove-then-insert adjustment
         const d = getFlowdata(context);
@@ -373,9 +440,13 @@ export const useRowDragAndDrop = (
           sel[0].column = [targetIndex, targetIndex];
         }
         setContext((draftCtx) => {
-          api.setSelection(draftCtx, [{ row: [targetIndex, targetIndex], column: [0, colLen] }], {
-                    id: context.currentSheetId,
-                  });
+          api.setSelection(
+            draftCtx,
+            [{ row: [targetIndex, targetIndex], column: [0, colLen] }],
+            {
+              id: context.currentSheetId,
+            }
+          );
         });
       }
     }

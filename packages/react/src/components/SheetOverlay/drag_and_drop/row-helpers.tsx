@@ -41,10 +41,10 @@ export const useRowDragAndDrop = (
     const { lineEl, ghostEl } = dragRef.current;
     try {
       if (lineEl?.parentElement) lineEl.parentElement.removeChild(lineEl);
-    } catch { }
+    } catch {}
     try {
       if (ghostEl?.parentElement) ghostEl.parentElement.removeChild(ghostEl);
-    } catch { }
+    } catch {}
     dragRef.current.lineEl = null;
     dragRef.current.ghostEl = null;
     dragRef.current.active = false;
@@ -208,9 +208,7 @@ export const useRowDragAndDrop = (
     // const ghostPosOffset = dragRef.current.startY > ev.pageY ? 25 : 25;
     const rows = context.luckysheet_select_save?.[0]?.row;
     const selectedRowLength =
-      rows && rows[1] != null && rows[0] != null
-        ? rows[1] - rows[0] + 1
-        : 0;
+      rows && rows[1] != null && rows[0] != null ? rows[1] - rows[0] + 1 : 0;
     const off = 3 - selectedRowLength;
     const bottomOff = (off + 1) * 25;
     const topRowOff = selectedRowLength - 4;
@@ -238,7 +236,7 @@ export const useRowDragAndDrop = (
       document.body.style.userSelect = dragRef.current.prevUserSelect || "";
       (document.body.style as any).webkitUserSelect =
         dragRef.current.prevWebkitUserSelect || "";
-    } catch { }
+    } catch {}
 
     if (dragRef.current.active) {
       const { insertionIndex: finalInsertionIndex } = computeInsertionFromPageY(

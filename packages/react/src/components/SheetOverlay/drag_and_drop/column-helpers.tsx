@@ -279,7 +279,7 @@ export const useColumnDragAndDrop = (
 
           const selectedColRange =
             context.luckysheet_select_save?.[0]?.column || [];
-          const selectedSourceCol = [];
+          const selectedSourceCol: number[] = [];
           for (
             let i = selectedColRange?.[0];
             i <= selectedColRange?.[1];

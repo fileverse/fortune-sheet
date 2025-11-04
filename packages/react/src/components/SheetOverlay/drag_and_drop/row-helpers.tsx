@@ -264,7 +264,7 @@ export const useRowDragAndDrop = (
 
           const selectedRowRange =
             context.luckysheet_select_save?.[0]?.row || [];
-          const selectedSourceRow = [];
+          const selectedSourceRow: number[] = [];
           for (
             let i = selectedRowRange?.[0];
             i <= selectedRowRange?.[1];

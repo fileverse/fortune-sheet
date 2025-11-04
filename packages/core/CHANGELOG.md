@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.43
+
+### Patch Changes
+
+- Fixed issue with merging cells
+
 ## 1.2.42
 
 ### Patch Changes

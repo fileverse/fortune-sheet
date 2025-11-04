@@ -163,6 +163,7 @@ export function mergeCells(
                 (isInlineStringCT(cell.ct) ||
                   !_.isEmpty(cell.v) ||
                   cell.f != null ||
+                  // @ts-ignore
                   cell.s != null ||
                   (cell.ct && cell.ct.s?.length)) &&
                 !isfirst
@@ -199,6 +200,7 @@ export function mergeCells(
                 (isInlineStringCT(cell.ct) ||
                   !_.isEmpty(cell.v) ||
                   cell.f != null ||
+                  // @ts-ignore
                   cell.s != null ||
                   (cell.ct && cell.ct.s?.length)) &&
                 !isfirst
@@ -235,6 +237,7 @@ export function mergeCells(
                 (isInlineStringCT(cell.ct) ||
                   !_.isEmpty(cell.v) ||
                   cell.f != null ||
+                  // @ts-ignore
                   cell.s != null ||
                   (cell.ct && cell.ct.s?.length)) &&
                 !isfirst

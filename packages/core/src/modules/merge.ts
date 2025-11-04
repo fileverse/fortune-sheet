@@ -162,10 +162,12 @@ export function mergeCells(
                 cell != null &&
                 (isInlineStringCT(cell.ct) ||
                   !_.isEmpty(cell.v) ||
-                  cell.f != null) &&
+                  cell.f != null ||
+                  cell.s != null ||
+                  (cell.ct && cell.ct.s?.length)) &&
                 !isfirst
               ) {
-                fv = _.cloneDeep(cell) || {};
+                fv = _.cloneDeep(cell);
                 isfirst = true;
               }
 
@@ -194,10 +196,14 @@ export function mergeCells(
 
               if (
                 cell != null &&
-                (!_.isEmpty(cell.v) || cell.f != null) &&
+                (isInlineStringCT(cell.ct) ||
+                  !_.isEmpty(cell.v) ||
+                  cell.f != null ||
+                  cell.s != null ||
+                  (cell.ct && cell.ct.s?.length)) &&
                 !isfirst
               ) {
-                fv = _.cloneDeep(cell) || {};
+                fv = _.cloneDeep(cell);
                 isfirst = true;
               }
 
@@ -226,10 +232,14 @@ export function mergeCells(
 
               if (
                 cell != null &&
-                (!_.isEmpty(cell.v) || cell.f != null) &&
+                (isInlineStringCT(cell.ct) ||
+                  !_.isEmpty(cell.v) ||
+                  cell.f != null ||
+                  cell.s != null ||
+                  (cell.ct && cell.ct.s?.length)) &&
                 !isfirst
               ) {
-                fv = _.cloneDeep(cell) || {};
+                fv = _.cloneDeep(cell);
                 isfirst = true;
               }
 

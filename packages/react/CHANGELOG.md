@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.43
+
+### Patch Changes
+
+- Fixed issue with merging cells
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.43
+
 ## 1.2.42
 
 ### Patch Changes

@@ -11,6 +11,7 @@
 ### Patch Changes
 
 - stop tab drag in readonly
+- Fix emoji for multiline text
 
 ## 1.2.40
 

@@ -1,5 +1,12 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.44
+
+### Patch Changes
+
+- 5e5feb5: Multi drag drop support
+- Multi drag and drop for col/row
+
 ## 1.2.43
 
 ### Patch Changes

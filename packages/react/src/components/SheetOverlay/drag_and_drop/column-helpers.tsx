@@ -302,6 +302,7 @@ export const useColumnDragAndDrop = (
 
           selectedSourceColRef.current = selectedSourceCol;
           selectedTargetColRef.current = selectedTargetCol;
+          console.log("selectedSourceCol", selectedTargetCol);
 
           // Move column data in each row
           selectedSourceCol.forEach(() => {
@@ -451,14 +452,18 @@ export const useColumnDragAndDrop = (
             sourceIndex,
             targetIndex
           );
-        });
-        // remove-then-insert adjustment
-        const d = getFlowdata(context);
-        const rowLen = d?.length || 0;
-        setContext((draftCtx) => {
+          const rowLen = d?.length || 0;
           api.setSelection(
-            draftCtx,
-            [{ row: [0, rowLen], column: selectedTargetColRef.current }],
+            draft,
+            [
+              {
+                row: [0, rowLen],
+                column: [
+                  selectedTargetCol?.[0],
+                  selectedTargetCol?.[selectedTargetCol.length - 1],
+                ],
+              },
+            ],
             {
               id: context.currentSheetId,
             }

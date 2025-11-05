@@ -425,22 +425,18 @@ export const useRowDragAndDrop = (
             "row",
             context.currentSheetId
           );
-        });
-
-        // remove-then-insert adjustment
-        const d = getFlowdata(context);
-        const colLen = d?.[0]?.length || 0;
-        let targetIndex = finalInsertionIndex;
-        if (targetIndex > sourceIndex) targetIndex -= 1;
-        const selData = api.getSelection(context) || [];
-        const sel = [...selData];
-        if (sel && sel[0]) {
-          sel[0].column = [targetIndex, targetIndex];
-        }
-        setContext((draftCtx) => {
+          const colLen = d?.[0]?.length || 0;
           api.setSelection(
-            draftCtx,
-            [{ row: [targetIndex, targetIndex], column: [0, colLen] }],
+            draft,
+            [
+              {
+                row: [
+                  selectedTargetRow[0],
+                  selectedTargetRow[selectedTargetRow.length - 1],
+                ],
+                column: [0, colLen],
+              },
+            ],
             {
               id: context.currentSheetId,
             }

@@ -917,7 +917,8 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           cellInput.current,
           scrollbarX.current,
           scrollbarY.current,
-          globalCache.current
+          globalCache.current,
+          refs
         ),
       [
         context,

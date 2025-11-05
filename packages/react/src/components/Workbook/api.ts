@@ -28,6 +28,8 @@ import { applyPatches } from "immer";
 import _ from "lodash";
 import { getCryptoPrice } from "../../utils/cryptoApi";
 import { SetContextOptions } from "../../context";
+import { useDialog } from "../../hooks/useDialog";
+import { SplitColumn } from "../../components/SplitColumn";
 
 export function generateAPIs(
   context: Context,
@@ -41,7 +43,8 @@ export function generateAPIs(
   cellInput: HTMLDivElement | null,
   scrollbarX: HTMLDivElement | null,
   scrollbarY: HTMLDivElement | null,
-  globalCache: GlobalCache | null
+  globalCache: GlobalCache | null,
+  refs: any
 ) {
   return {
     applyOp: (ops: Op[]) => {
@@ -491,6 +494,13 @@ export function generateAPIs(
     },
     getSettings: () => {
       return settings;
+    },
+    getRefs: () => refs,
+    getShowDialog: () => {
+      return useDialog;
+    },
+    getSplitColComponent: () => {
+      return SplitColumn;
     },
   };
 }

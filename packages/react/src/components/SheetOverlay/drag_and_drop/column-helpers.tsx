@@ -302,7 +302,6 @@ export const useColumnDragAndDrop = (
 
           selectedSourceColRef.current = selectedSourceCol;
           selectedTargetColRef.current = selectedTargetCol;
-          console.log("selectedSourceCol", selectedTargetCol);
 
           // Move column data in each row
           selectedSourceCol.forEach(() => {

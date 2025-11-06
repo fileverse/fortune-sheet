@@ -1,5 +1,23 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.47
+
+### Patch Changes
+
+- N/A
+
+## 1.2.46
+
+### Patch Changes
+
+- Minor change is API expose
+
+## 1.2.45
+
+### Patch Changes
+
+- N/A
+
 ## 1.2.44
 
 ### Patch Changes

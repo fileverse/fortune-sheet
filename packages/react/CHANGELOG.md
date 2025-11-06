@@ -1,5 +1,33 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.48
+
+### Patch Changes
+
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.47
+
+## 1.2.47
+
+### Patch Changes
+
+- Minor change is API expose
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.46
+
+## 1.2.46
+
+### Patch Changes
+
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.45
+
+## 1.2.45
+
+### Patch Changes
+
+- api expose for second level navigation
+
 ## 1.2.44
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.84
+
+### Patch Changes
+
+- feat: circles data block
+
 ## 0.2.83
 
 ### Patch Changes

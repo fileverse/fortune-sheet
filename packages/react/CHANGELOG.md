@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.50
+
+### Patch Changes
+
+- feat: circles data block
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.50
+
 ## 1.2.48
 
 ### Patch Changes

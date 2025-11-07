@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.50
+
+### Patch Changes
+
+- feat: circles data block
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.84
+
 ## 1.2.47
 
 ### Patch Changes

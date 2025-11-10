@@ -229,18 +229,13 @@ const ContextMenu: React.FC = () => {
           <Menu
             key={name}
             onClick={() => {
-              console.log("dataVerification clicked uoo");
+              console.log("dataVerification clicked uoow");
+              if (context.allowEdit === false) return;
+              setContext((draftCtx) => {
+                draftCtx.contextMenu = {};
+              });
               // @ts-ignore
               window.dataVerificationClick(context.luckysheet_select_save);
-              // if (context.allowEdit === false) return;
-              // setContext((draftCtx) => {
-              //   draftCtx.contextMenu = {};
-              // });
-              // showDialog(
-              //   <DataVerification />,
-              //   undefined,
-              //   toolbar.dataVerification
-              // );
             }}
           >
             <div className="context-item">

@@ -56,8 +56,7 @@ const ContextMenu: React.FC = () => {
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
   const { contextMenu } = context;
   const { showAlert } = useAlert();
-  const { rightclick, drag, generalDialog, info, splitText } =
-    locale(context);
+  const { rightclick, drag, generalDialog, info, splitText } = locale(context);
 
   const [activeMenu, setActiveMenu] = useState("");
 
@@ -230,6 +229,7 @@ const ContextMenu: React.FC = () => {
           <Menu
             key={name}
             onClick={() => {
+              console.log("dataVerification clicked uoo");
               // @ts-ignore
               window.dataVerificationClick(context.luckysheet_select_save);
               // if (context.allowEdit === false) return;

@@ -1124,7 +1124,6 @@ const Toolbar: React.FC<{
       if (name === "dataVerification") {
         return (
           <>
-            <DataVerificationPortal visible={showDataValidation} />
             <Button
               id="dataVerification"
               iconId={name}
@@ -2033,6 +2032,7 @@ const Toolbar: React.FC<{
       className="fortune-toolbar"
       aria-label={toolbar.toolbar}
     >
+      <DataVerificationPortal visible={showDataValidation} />
       <div className="fortune-toolbar-left">
         {settings.customToolbarItems
           .filter((n) => n.key === "import-export")

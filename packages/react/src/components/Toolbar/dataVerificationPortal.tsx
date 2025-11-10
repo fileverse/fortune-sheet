@@ -5,6 +5,7 @@ import DataVerification from "../DataVerification";
 
 const DataVerificationPortal = ({ visible }: { visible: boolean }) => {
   const container = document.getElementById("placeholder-data-verification");
+  console.log(container, !visible, !container);
 
   if (!visible || !container) return null;
 

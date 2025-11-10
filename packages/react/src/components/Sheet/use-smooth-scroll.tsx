@@ -6,7 +6,7 @@ export const useSmoothScroll = (
   scrollContainerRef: RefObject<HTMLDivElement | null>
 ) => {
   const { context, refs, setContext } = useContext(WorkbookContext);
-  
+
   function handleScroll(
     scrollContainer: HTMLElement,
     moveScrollBy: (deltaX: number, deltaY: number) => void,
@@ -106,8 +106,8 @@ export const useSmoothScroll = (
     let velocityX = 0;
     let velocityY = 0;
     let momentumAnimationId = 0;
-    let scrollDirection: 'horizontal' | 'vertical' | 'none' = 'none';
-    
+    let scrollDirection: "horizontal" | "vertical" | "none" = "none";
+
     const PAN_DISTANCE_THRESHOLD_PX = 8;
     const FRICTION = 0.95; // Deceleration factor (higher = longer momentum)
     const MIN_VELOCITY = 0.5; // Stop momentum below this threshold
@@ -124,23 +124,26 @@ export const useSmoothScroll = (
     }
 
     function applyMomentum() {
-      if (Math.abs(velocityX) < MIN_VELOCITY && Math.abs(velocityY) < MIN_VELOCITY) {
+      if (
+        Math.abs(velocityX) < MIN_VELOCITY &&
+        Math.abs(velocityY) < MIN_VELOCITY
+      ) {
         stopMomentum();
         return;
       }
 
       const scale = getPixelScale();
-      
+
       // Apply direction locking to momentum as well
       let momentumX = -velocityX * scale;
       let momentumY = -velocityY * scale;
-      
-      if (scrollDirection === 'vertical') {
+
+      if (scrollDirection === "vertical") {
         momentumX = 0;
-      } else if (scrollDirection === 'horizontal') {
+      } else if (scrollDirection === "horizontal") {
         momentumY = 0;
       }
-      
+
       scrollHandler(momentumX, momentumY);
 
       velocityX *= FRICTION;
@@ -155,11 +158,11 @@ export const useSmoothScroll = (
         pointerEvent.pointerType !== "pen"
       )
         return;
-      
+
       stopMomentum(); // Stop any ongoing momentum
-      
+
       isScrolling = false;
-      scrollDirection = 'none'; // Reset scroll direction
+      scrollDirection = "none"; // Reset scroll direction
       gestureStartClientX = pointerEvent.clientX;
       lastPointerClientX = pointerEvent.clientX;
       gestureStartClientY = pointerEvent.clientY;
@@ -167,7 +170,7 @@ export const useSmoothScroll = (
       lastMoveTime = performance.now();
       velocityX = 0;
       velocityY = 0;
-      
+
       containerEl.setPointerCapture(pointerEvent.pointerId);
     }
 
@@ -180,14 +183,14 @@ export const useSmoothScroll = (
 
       const currentTime = performance.now();
       const deltaTime = Math.max(1, currentTime - lastMoveTime);
-      
+
       const deltaXSinceLastMove = pointerEvent.clientX - lastPointerClientX;
       const deltaYSinceLastMove = pointerEvent.clientY - lastPointerClientY;
-      
+
       // Calculate velocity for momentum (pixels per millisecond)
       velocityX = (deltaXSinceLastMove / deltaTime) * 16; // Normalize to 60fps
       velocityY = (deltaYSinceLastMove / deltaTime) * 16;
-      
+
       lastPointerClientX = pointerEvent.clientX;
       lastPointerClientY = pointerEvent.clientY;
       lastMoveTime = currentTime;
@@ -202,36 +205,36 @@ export const useSmoothScroll = (
         ) {
           return; // still a tap – do nothing
         }
-        
+
         // Determine primary scroll direction based on initial movement
         const absX = Math.abs(totalXFromGestureStart);
         const absY = Math.abs(totalYFromGestureStart);
-        
+
         if (absX > absY * DIRECTION_LOCK_THRESHOLD) {
-          scrollDirection = 'horizontal';
+          scrollDirection = "horizontal";
         } else if (absY > absX * DIRECTION_LOCK_THRESHOLD) {
-          scrollDirection = 'vertical';
+          scrollDirection = "vertical";
         } else {
-          scrollDirection = 'none'; // Allow both if movement is diagonal
+          scrollDirection = "none"; // Allow both if movement is diagonal
         }
-        
+
         isScrolling = true;
       }
 
       // now we're panning: prevent page scroll, move sheet
       pointerEvent.preventDefault();
       const scale = getPixelScale();
-      
+
       // Apply direction locking
       let scrollX = -deltaXSinceLastMove * scale * VELOCITY_MULTIPLIER;
       let scrollY = -deltaYSinceLastMove * scale * VELOCITY_MULTIPLIER;
-      
-      if (scrollDirection === 'vertical') {
+
+      if (scrollDirection === "vertical") {
         scrollX = 0; // Lock horizontal movement
-      } else if (scrollDirection === 'horizontal') {
+      } else if (scrollDirection === "horizontal") {
         scrollY = 0; // Lock vertical movement
       }
-      
+
       scrollHandler(scrollX, scrollY);
     }
 
@@ -239,14 +242,17 @@ export const useSmoothScroll = (
       try {
         containerEl.releasePointerCapture(e.pointerId);
       } catch {}
-      
+
       if (isScrolling) {
         // Start momentum scroll based on final velocity
-        if (Math.abs(velocityX) > MIN_VELOCITY || Math.abs(velocityY) > MIN_VELOCITY) {
+        if (
+          Math.abs(velocityX) > MIN_VELOCITY ||
+          Math.abs(velocityY) > MIN_VELOCITY
+        ) {
           momentumAnimationId = requestAnimationFrame(applyMomentum);
         }
       }
-      
+
       isScrolling = false;
     }
 
@@ -324,7 +330,7 @@ export const useSmoothScroll = (
       unmountMobileScrollHandler();
     };
   }
-  
+
   useEffect(() => {
     const scrollContainerEl = scrollContainerRef.current;
     const horizontalScrollbarEl = refs.scrollbarX.current;

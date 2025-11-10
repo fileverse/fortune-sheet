@@ -1123,15 +1123,13 @@ const Toolbar: React.FC<{
       }
       if (name === "dataVerification") {
         return (
-          <>
-            <Button
-              id="dataVerification"
-              iconId={name}
-              tooltip={tooltip}
-              key={name}
-              onClick={dataVerificationClick}
-            />
-          </>
+          <Button
+            id="dataVerification"
+            iconId={name}
+            tooltip={tooltip}
+            key={name}
+            onClick={dataVerificationClick}
+          />
         );
       }
       if (name === "locationCondition") {
@@ -1357,33 +1355,7 @@ const Toolbar: React.FC<{
               if (context.allowEdit === false) return;
               showImgChooser();
             }}
-          >
-            <input
-              id="fortune-img-upload"
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                const file = e.currentTarget.files?.[0];
-                if (!file) return;
-
-                const render = new FileReader();
-                render.readAsDataURL(file);
-                render.onload = (event) => {
-                  if (event.target == null) return;
-                  const src = event.target?.result;
-                  const image = new Image();
-                  image.onload = () => {
-                    setContext((draftCtx) => {
-                      insertImage(draftCtx, image);
-                    });
-                  };
-                  image.src = src as string;
-                };
-                e.currentTarget.value = "";
-              }}
-            />
-          </Button>
+          />
         );
       }
       if (name === "comment") {
@@ -2033,6 +2005,32 @@ const Toolbar: React.FC<{
       aria-label={toolbar.toolbar}
     >
       <DataVerificationPortal visible={showDataValidation} />
+      <input
+        id="fortune-img-upload"
+        className="test-fortune-img-upload"
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const file = e.currentTarget.files?.[0];
+          if (!file) return;
+
+          const render = new FileReader();
+          render.readAsDataURL(file);
+          render.onload = (event) => {
+            if (event.target == null) return;
+            const src = event.target?.result;
+            const image = new Image();
+            image.onload = () => {
+              setContext((draftCtx) => {
+                insertImage(draftCtx, image);
+              });
+            };
+            image.src = src as string;
+          };
+          e.currentTarget.value = "";
+        }}
+      />
       <div className="fortune-toolbar-left">
         {settings.customToolbarItems
           .filter((n) => n.key === "import-export")

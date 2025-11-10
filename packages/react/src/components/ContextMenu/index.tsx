@@ -37,7 +37,7 @@ import Tippy from "@tippyjs/react";
 import { LucideIcon } from "@fileverse/ui";
 import { SplitColumn } from "../SplitColumn";
 import { ResetColumnWidth } from "../ResetColumnWidth";
-import DataVerification from "../DataVerification";
+// import DataVerification from "../DataVerification";
 import WorkbookContext, { SetContextOptions } from "../../context";
 import { useAlert } from "../../hooks/useAlert";
 import { useDialog } from "../../hooks/useDialog";
@@ -56,7 +56,7 @@ const ContextMenu: React.FC = () => {
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
   const { contextMenu } = context;
   const { showAlert } = useAlert();
-  const { rightclick, drag, generalDialog, info, toolbar, splitText } =
+  const { rightclick, drag, generalDialog, info, splitText } =
     locale(context);
 
   const [activeMenu, setActiveMenu] = useState("");
@@ -230,15 +230,17 @@ const ContextMenu: React.FC = () => {
           <Menu
             key={name}
             onClick={() => {
-              if (context.allowEdit === false) return;
-              setContext((draftCtx) => {
-                draftCtx.contextMenu = {};
-              });
-              showDialog(
-                <DataVerification />,
-                undefined,
-                toolbar.dataVerification
-              );
+              // @ts-ignore
+              window.dataVerificationClick(context.luckysheet_select_save);
+              // if (context.allowEdit === false) return;
+              // setContext((draftCtx) => {
+              //   draftCtx.contextMenu = {};
+              // });
+              // showDialog(
+              //   <DataVerification />,
+              //   undefined,
+              //   toolbar.dataVerification
+              // );
             }}
           >
             <div className="context-item">

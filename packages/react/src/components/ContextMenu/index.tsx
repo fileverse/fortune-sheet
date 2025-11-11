@@ -229,7 +229,6 @@ const ContextMenu: React.FC = () => {
           <Menu
             key={name}
             onClick={() => {
-              console.log("dataVerification clicked uoow");
               if (context.allowEdit === false) return;
               setContext((draftCtx) => {
                 draftCtx.contextMenu = {};

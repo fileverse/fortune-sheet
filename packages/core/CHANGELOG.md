@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.51
+
+### Patch Changes
+
+- Data validation on small screen fix
+
 ## 1.2.50
 
 ### Patch Changes

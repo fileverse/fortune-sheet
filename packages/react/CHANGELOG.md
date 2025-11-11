@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.51
+
+### Patch Changes
+
+- Data validation on small screen fix
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.51
+
 ## 1.2.50
 
 ### Patch Changes

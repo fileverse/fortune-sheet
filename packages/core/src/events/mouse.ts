@@ -17,7 +17,7 @@ import {
   onImageResize,
   onImageResizeEnd,
   removeEditingComment,
-  //overShowComment,
+  // overShowComment,
   removeOverShowComment,
   rangeDrag,
   onFormulaRangeDragEnd,
@@ -3439,7 +3439,7 @@ export function handleOverlayMouseMove(
   if (onImageResize(ctx, globalCache, e)) return;
   onCellsMove(ctx, globalCache, e, scrollX, scrollY, container);
 
-  //overShowComment(ctx, e, scrollX, scrollY, container); // 有批注显示
+  // overShowComment(ctx, e, scrollX, scrollY, container); // 有批注显示
   const containerMain = document.getElementsByClassName(
     "fortune-cell-area"
   )[0] as HTMLDivElement;

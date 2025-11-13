@@ -58,8 +58,12 @@ export const useSmoothScroll = (
         !!refs?.globalCache?.searchDialog?.mouseEnter;
       const hasFilterContextMenuOpen = context.filterContextMenu != null;
 
-      const functionDetailAvailable =  (event.target as Element).closest('.luckysheet-formula-help-content')
-      const formulaSearchAvailable = (event.target as Element).closest('.luckysheet-formula-search-c-p')
+      const functionDetailAvailable = (event.target as Element).closest(
+        ".luckysheet-formula-help-content"
+      );
+      const formulaSearchAvailable = (event.target as Element).closest(
+        ".luckysheet-formula-search-c-p"
+      );
 
       if (
         isPointerInSearchDialog ||
@@ -73,7 +77,6 @@ export const useSmoothScroll = (
       const scaleFactor = getPixelScale();
       scrollHandler(event.deltaX * scaleFactor, event.deltaY * scaleFactor);
     }
-    
 
     scrollContainer.addEventListener("wheel", handleWheelEvent, {
       passive: false,

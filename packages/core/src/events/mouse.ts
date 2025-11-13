@@ -3458,8 +3458,7 @@ export function handleOverlayMouseMove(
     return;
   }
   const freeze = globalCache.freezen?.[ctx.currentSheetId];
-  const { x, y, } =
-    fixPositionOnFrozenCells(freeze, _x, _y, mouseX, mouseY);
+  const { x, y } = fixPositionOnFrozenCells(freeze, _x, _y, mouseX, mouseY);
 
   const row_location = rowLocation(y, ctx.visibledatarow);
 

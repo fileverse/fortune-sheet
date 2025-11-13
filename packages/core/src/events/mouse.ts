@@ -17,7 +17,7 @@ import {
   onImageResize,
   onImageResizeEnd,
   removeEditingComment,
-  overShowComment,
+  // overShowComment,
   removeOverShowComment,
   rangeDrag,
   onFormulaRangeDragEnd,
@@ -300,6 +300,9 @@ export function handleCellAreaMouseDown(
 
   // //数据验证 单元格聚焦
   cellFocus(ctx, row_index, col_index, true);
+  // console.log("cellFocus", container, rect, "eeee", freeze, _x, _y, mouseX, mouseY, x, y, row_index, col_index);
+  // console.log("handleCellAreaMouseDown", row_index, col_index);
+  //
   editComment(ctx, globalCache, row_index, col_index);
 
   // 若点击单元格部分不在视图内
@@ -3439,7 +3442,36 @@ export function handleOverlayMouseMove(
   if (onImageResize(ctx, globalCache, e)) return;
   onCellsMove(ctx, globalCache, e, scrollX, scrollY, container);
 
-  overShowComment(ctx, e, scrollX, scrollY, container); // 有批注显示
+  const containerMain = document.getElementsByClassName(
+    "fortune-cell-area"
+  )[0] as HTMLDivElement;
+
+  let rect = containerMain?.getBoundingClientRect();
+  if (!rect) {
+    rect = container.getBoundingClientRect();
+  }
+  const mouseX = e.pageX - rect.left - window.scrollX;
+  const mouseY = e.pageY - rect.top - window.scrollY;
+  const _x = mouseX + ctx.scrollLeft;
+  const _y = mouseY + ctx.scrollTop;
+  if (_x >= rect.width + ctx.scrollLeft || _y >= rect.height + ctx.scrollTop) {
+    return;
+  }
+  const freeze = globalCache.freezen?.[ctx.currentSheetId];
+  const { x, y, } =
+    fixPositionOnFrozenCells(freeze, _x, _y, mouseX, mouseY);
+
+  const row_location = rowLocation(y, ctx.visibledatarow);
+
+  const row_index = row_location[2];
+
+  const col_location = colLocation(x, ctx.visibledatacolumn);
+
+  const col_index = col_location[2];
+  // console.log('mousemove row_index:', row_index, 'col_index:', col_index);
+
+  // overShowComment(ctx, e, scrollX, scrollY, container); // 有批注显示
+  editComment(ctx, globalCache, row_index, col_index);
   overShowError(ctx, e, scrollX, scrollY, container);
   onSearchDialogMove(globalCache, e);
   onRangeSelectionModalMove(globalCache, e);

@@ -58,6 +58,7 @@ const NotationBoxes: React.FC = () => {
         ),
         [context.editingCommentBox, context.hoveredCommentBox]
       ).map((commentBox, index) => {
+        console.log("Rendering NotationBox:", commentBox, index);
         if (!commentBox) return null;
         const { r, c, rc, left, top, size } = commentBox;
         const isEditing = context.editingCommentBox?.rc === rc;

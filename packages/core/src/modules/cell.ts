@@ -142,6 +142,7 @@ export function setCellValue(
   d: CellMatrix | null | undefined,
   v: any
 ) {
+  console.log("setCellValue", r, c, { ...v }, { ...v.ct });
   if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
   if (_.isNil(d)) {
     d = getFlowdata(ctx);

@@ -273,8 +273,8 @@ export function newComment(
   // if(!checkProtectionAuthorityNormal(Store.currentSheetId, "editObjects")){
   //     return;
   // }
-  const allowEdit = isAllowEdit(ctx);
-  if (!allowEdit) return;
+  // const allowEdit = isAllowEdit(ctx);
+  // if (!allowEdit) return;
   if (ctx.hooks.beforeInsertComment?.(r, c) === false) {
     return;
   }
@@ -318,11 +318,12 @@ export function editComment(
   // if(!checkProtectionAuthorityNormal(Store.currentSheetId, "editObjects")){
   //     return;
   // }
-  const allowEdit = isAllowEdit(ctx);
-  if (!allowEdit) return;
+  // const allowEdit = isAllowEdit(ctx);
+  // if (!allowEdit) return;
   const flowdata = getFlowdata(ctx);
-  removeEditingComment(ctx, globalCache);
-  const comment = flowdata?.[r][c]?.ps;
+  // removeEditingComment(ctx, globalCache);
+  const comment = flowdata?.[r]?.[c]?.ps;
+  if (!comment) return;
   const commentBoxes = _.concat(ctx.commentBoxes, ctx.editingCommentBox);
   if (_.findIndex(commentBoxes, (v) => v?.rc === `${r}_${c}`) !== -1) {
     const editCommentBox = document.getElementById(

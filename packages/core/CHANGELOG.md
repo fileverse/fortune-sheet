@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.52
+
+### Patch Changes
+
+- Scroll for mobile, comment edit box on hover, scroll enable for function container
+
 ## 1.2.51
 
 ### Patch Changes

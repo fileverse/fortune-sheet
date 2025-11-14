@@ -1,5 +1,29 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.55
+
+### Patch Changes
+
+- Minor fix for tab on fx editor
+
+## 1.2.54
+
+### Patch Changes
+
+- NA
+
+## 1.2.53
+
+### Patch Changes
+
+- enable tab for header formula select
+
+## 1.2.52
+
+### Patch Changes
+
+- Scroll for mobile, comment edit box on hover, scroll enable for function container
+
 ## 1.2.51
 
 ### Patch Changes

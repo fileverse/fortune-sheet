@@ -26,6 +26,7 @@ const Template: StoryFn<typeof Workbook> = ({
   return (
     <div style={{ width: "100%", height: "100vh" }}>
       <Workbook
+      isFlvReadOnly={false}
         ref={ref}
         {...args}
         data={data}
@@ -35,6 +36,25 @@ const Template: StoryFn<typeof Workbook> = ({
         defaultRowHeight={21}
         onChange={onChange}
         isAuthorized={false}
+        getCommentCellUI={(r,c,mouseDownHandler) => {
+          return (
+            <div
+              onMouseDown={mouseDownHandler}
+              style={{
+                position: "absolute",
+                left: c-40,
+                top: r,
+                width: 100,
+                height: 21,
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                border: "1px solid #ccc",
+                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              Comment
+            </div>
+          );
+        }}
         customToolbarItems={[
           // {
           //   key: "templates",

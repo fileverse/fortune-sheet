@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.56
+
+### Patch Changes
+
+- Tab select fx
+
 ## 1.2.55
 
 ### Patch Changes

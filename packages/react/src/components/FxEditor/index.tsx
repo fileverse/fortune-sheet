@@ -134,7 +134,6 @@ const FxEditor: React.FC = () => {
   );
   const insertSelectedFormula = useCallback(
     (formulaName: string) => {
-      if (/^=+$/.test(refs.fxInput.current!.innerText)) {
         const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
         refs.fxInput.current!.innerHTML = ht;
         const cellEditor = document.getElementById(
@@ -150,7 +149,6 @@ const FxEditor: React.FC = () => {
           draftCtx.defaultCandidates = [];
           draftCtx.functionHint = formulaName;
         });
-      }
     },
     [setContext]
   );

@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.55
+
+### Patch Changes
+
+- Minor fix for tab on fx editor
+
 ## 1.2.54
 
 ### Patch Changes

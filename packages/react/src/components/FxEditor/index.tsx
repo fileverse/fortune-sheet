@@ -202,7 +202,7 @@ const FxEditor: React.FC = () => {
         e.stopPropagation();
       }
 
-      if (e.key === "Enter" && context.luckysheetCellUpdate.length > 0) {
+      if ((e.key === "Enter" || e.key === "Tab") && context.luckysheetCellUpdate.length > 0) {
         if (e.altKey || e.metaKey) {
           // originally `enterKeyControll`
           document.execCommand("insertHTML", false, "\n "); // 换行符后面的空白符是为了强制让他换行，在下一步的delete中会删掉

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.53
+
+### Patch Changes
+
+- enable tab for header formula select
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.53
+
 ## 1.2.52
 
 ### Patch Changes

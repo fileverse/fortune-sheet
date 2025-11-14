@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.53
+
+### Patch Changes
+
+- enable tab for header formula select
+
 ## 1.2.52
 
 ### Patch Changes

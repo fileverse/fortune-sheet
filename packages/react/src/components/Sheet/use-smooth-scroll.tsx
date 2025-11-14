@@ -107,9 +107,9 @@ export const useSmoothScroll = (
     let scrollDirection: "horizontal" | "vertical" | "none" = "none";
 
     const PAN_DISTANCE_THRESHOLD_PX = 8;
-    const FRICTION = 0.95; // Deceleration factor (higher = longer momentum)
-    const MIN_VELOCITY = 0.5; // Stop momentum below this threshold
-    const VELOCITY_MULTIPLIER = 2.6; // Amplify touch movement for better feel (increased by 5%)
+    const FRICTION = 0.85; // Deceleration factor (higher = longer momentum)
+    const MIN_VELOCITY = 0.6; // Stop momentum below this threshold
+    const VELOCITY_MULTIPLIER = 2.5;
     const DIRECTION_LOCK_THRESHOLD = 1.5; // Ratio to determine primary scroll direction
 
     function stopMomentum() {

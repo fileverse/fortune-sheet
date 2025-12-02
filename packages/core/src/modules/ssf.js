@@ -1223,7 +1223,7 @@ const make_ssf = function make_ssf(SSF) {
           if (v < 0) return "";
           if (dt == null) {
             dt = parse_date_code(v, opts);
-            if (dt == null) return "#####";
+            if (dt == null) return v;
           }
           o = c;
           while (++i < fmt.length && fmt.charAt(i).toLowerCase() === c) o += c;
@@ -1687,10 +1687,10 @@ const make_ssf = function make_ssf(SSF) {
     const minMs = minSec * 1000;
     const maxMs = maxSec * 1000;
 
-    if (n >= 1000000000 && n <= 9999999999 && n >= minSec && n <= maxSec) {
+    if (n >= minSec && n <= maxSec) {
       return "seconds";
     }
-    if (n >= 1000000000000 && n <= 9999999999999 && n >= minMs && n <= maxMs) {
+    if (n >= minMs && n <= maxMs) {
       return "milliseconds";
     }
     return null;

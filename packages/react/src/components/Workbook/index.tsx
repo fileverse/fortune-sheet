@@ -823,7 +823,6 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
 
     const onPaste = useCallback(
       (e: ClipboardEvent) => {
-        console.log("onPaste");
         let startPaste = true;
         // deal with multi instance case, only the focused sheet handles the paste
         if (
@@ -831,54 +830,54 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           document.activeElement?.className === "fortune-sheet-overlay"
         ) {
           if (!startPaste) return;
-          // let { clipboardData } = e;
-          // if (!clipboardData) {
-          //   // @ts-ignore
-          //   // for IE
-          //   clipboardData = window.clipboardData;
-          // }
-          // const txtdata =
-          //   clipboardData!.getData("text/html") ||
-          //   clipboardData!.getData("text/plain");
-          // const ele = document.createElement("div");
-          // ele.innerHTML = txtdata;
+          let { clipboardData } = e;
+          if (!clipboardData) {
+            // @ts-ignore
+            // for IE
+            clipboardData = window.clipboardData;
+          }
+          const txtdata =
+            clipboardData!.getData("text/html") ||
+            clipboardData!.getData("text/plain");
+          const ele = document.createElement("div");
+          ele.innerHTML = txtdata;
 
-          // const trList = ele.querySelectorAll("table tr");
-          // const maxRow =
-          //   trList.length + context.luckysheet_select_save![0].row[0];
-          // const rowToBeAdded =
-          //   maxRow -
-          //   context.luckysheetfile[
-          //     getSheetIndex(
-          //       context,
-          //       context!.currentSheetId! as string
-          //     ) as number
-          //   ].data!.length;
-          // const range = context.luckysheet_select_save;
-          // if (rowToBeAdded > 0) {
-          //   const insertRowColOp: SetContextOptions["insertRowColOp"] = {
-          //     type: "row",
-          //     index:
-          //       context.luckysheetfile[
-          //         getSheetIndex(
-          //           context,
-          //           context!.currentSheetId! as string
-          //         ) as number
-          //       ].data!.length - 1,
-          //     count: rowToBeAdded,
-          //     direction: "rightbottom",
-          //     id: context.currentSheetId,
-          //   };
-          //   setContextWithProduce(
-          //     (draftCtx) => {
-          //       insertRowCol(draftCtx, insertRowColOp);
-          //       draftCtx.luckysheet_select_save = range;
-          //     },
-          //     {
-          //       insertRowColOp,
-          //     }
-          //   );
-          // }
+          const trList = ele.querySelectorAll("table tr");
+          const maxRow =
+            trList.length + context.luckysheet_select_save![0].row[0];
+          const rowToBeAdded =
+            maxRow -
+            context.luckysheetfile[
+              getSheetIndex(
+                context,
+                context!.currentSheetId! as string
+              ) as number
+            ].data!.length;
+          const range = context.luckysheet_select_save;
+          if (rowToBeAdded > 0) {
+            const insertRowColOp: SetContextOptions["insertRowColOp"] = {
+              type: "row",
+              index:
+                context.luckysheetfile[
+                  getSheetIndex(
+                    context,
+                    context!.currentSheetId! as string
+                  ) as number
+                ].data!.length - 1,
+              count: rowToBeAdded,
+              direction: "rightbottom",
+              id: context.currentSheetId,
+            };
+            setContextWithProduce(
+              (draftCtx) => {
+                insertRowCol(draftCtx, insertRowColOp);
+                draftCtx.luckysheet_select_save = range;
+              },
+              {
+                insertRowColOp,
+              }
+            );
+          }
           setContextWithProduce((draftCtx) => {
             try {
               if (startPaste) {
@@ -890,11 +889,11 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             }
           });
         }
-        // setContextWithProduce((ctx: any) => {
-        //   if (ctx.luckysheet_selection_range) {
-        //     ctx.luckysheet_selection_range = [];
-        //   }
-        // });
+        setContextWithProduce((ctx: any) => {
+          if (ctx.luckysheet_selection_range) {
+            ctx.luckysheet_selection_range = [];
+          }
+        });
       },
       [context, setContextWithProduce]
     );

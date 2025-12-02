@@ -293,7 +293,6 @@ export function handlePastedTable(
   html: string,
   pasteHandler: (context: Context, data: any, borderInfo?: any) => void
 ) {
-  console.log("handlePastedTable", html);
   if (!html.includes("table")) return;
 
   const containerDiv = document.createElement("div");
@@ -381,8 +380,6 @@ export function handlePastedTable(
         ctx
       );
 
-      console.log("cell", cell);
-
       const anchorCol = ctx.luckysheet_select_save![0].column[0];
       const absoluteRow = anchorRow + localRowIndex;
       const absoluteCol = anchorCol + localColIndex;
@@ -432,9 +429,6 @@ export function handlePastedTable(
   });
 
   ctx.luckysheet_selection_range = [];
-
-  console.log("pastedMatrix", pastedMatrix);
-  console.log("pasteBorderInfo", pasteBorderInfo);
 
   pasteHandler(ctx, pastedMatrix, pasteBorderInfo);
   containerDiv.remove();

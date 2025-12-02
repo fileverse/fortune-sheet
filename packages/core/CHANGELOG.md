@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.58
+
+### Patch Changes
+
+- feat: unix timestamp support
+
 ## 1.2.56
 
 ### Patch Changes

@@ -1677,7 +1677,7 @@ const make_ssf = function make_ssf(SSF) {
     return [l, ff];
   }
 
-  function numberIsUnixTimestamp(n) {
+  function checkUnixTimestampAndUnit(n) {
     if (typeof n !== "number" || !Number.isFinite(n)) return null;
     if (!Number.isInteger(n)) return null;
     if (n < 0) return null;
@@ -1717,7 +1717,7 @@ const make_ssf = function make_ssf(SSF) {
 
     //unix timestamp detection
     if (typeof v === "number" && fmt_is_date && fmt_is_date(sfmt)) {
-      var unit = numberIsUnixTimestamp(v);
+      var unit = checkUnixTimestampAndUnit(v);
       if (unit === "seconds") {
         v = new Date(v * 1000);
       } else if (unit === "milliseconds") {

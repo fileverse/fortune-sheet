@@ -78,7 +78,6 @@ export function normalizedAttr(
   attr: keyof Cell
 ): any {
   if (!data || !data[r]) {
-    console.warn("cell (%d, %d) is null", r, c);
     return null;
   }
   const cell = data[r][c];
@@ -121,7 +120,6 @@ export function getCellValue(
   let retv: any = d_value;
 
   if (_.isPlainObject(d_value)) {
-    // console.log("d_value:", d_value);
     const d = d_value as Cell;
     retv = d[attr];
 
@@ -135,9 +133,6 @@ export function getCellValue(
 
     if (d?.ct && isInlineStringCT(d.ct) && (attr === "v" || attr === "m")) {
       retv = newlinesToBr(d.ct.s[0]?.v);
-      // retv = d.ct.s[0]?.v;
-      // console.log("retv:", retv);
-      //       console.log("retv:vvvv",d.ct.s[0]?.v, d.ct.s[0]);
     }
   }
 

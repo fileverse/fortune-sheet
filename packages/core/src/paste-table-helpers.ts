@@ -169,7 +169,7 @@ const detectHyperlink = (td: HTMLTableCellElement) => {
   return null;
 };
 
-function brToNewline(str) {
+function brToNewline(str: string) {
   return str.replace(/<br\s*\/?>/gi, "\n");
 }
 

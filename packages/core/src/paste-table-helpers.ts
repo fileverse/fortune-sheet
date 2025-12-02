@@ -6,7 +6,7 @@ import { getQKBorder, saveHyperlink } from "./modules";
 import { genarate } from "./modules/format";
 import { Cell } from "./types";
 import { getSheetIndex } from "./utils";
-import { setRowHeight } from "../src/api";
+import { setRowHeight } from "./api";
 
 export const DEFAULT_FONT_SIZE = 12;
 

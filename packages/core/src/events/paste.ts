@@ -1822,6 +1822,10 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
   const allowEdit = isAllowEdit(ctx);
   if (!allowEdit || ctx.isFlvReadOnly) return;
 
+  if (!selectionCache.isPasteAction) {
+    return;
+  }
+
   if (selectionCache.isPasteAction) {
     ctx.luckysheetCellUpdate = [];
     // $("#luckysheet-rich-text-editor").blur();
@@ -1876,13 +1880,13 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
       }
 
       // 当前页面复制区内容
-      const copy_r1 = ctx.luckysheet_copy_save.copyRange[0].row[0];
-      const copy_r2 = ctx.luckysheet_copy_save.copyRange[0].row[1];
-      const copy_c1 = ctx.luckysheet_copy_save.copyRange[0].column[0];
-      const copy_c2 = ctx.luckysheet_copy_save.copyRange[0].column[1];
+      const copy_r1 = ctx.luckysheet_copy_save?.copyRange[0]?.row[0];
+      const copy_r2 = ctx.luckysheet_copy_save?.copyRange[0]?.row[1];
+      const copy_c1 = ctx.luckysheet_copy_save?.copyRange[0]?.column[0];
+      const copy_c2 = ctx.luckysheet_copy_save?.copyRange[0]?.column[1];
 
-      const copy_index = ctx.luckysheet_copy_save.dataSheetId;
-
+      const copy_index =
+        ctx.luckysheet_copy_save.dataSheetId || ctx.currentSheetId;
       let d;
       if (copy_index === ctx.currentSheetId) {
         d = getFlowdata(ctx);

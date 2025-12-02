@@ -6,6 +6,7 @@ import { getQKBorder, saveHyperlink } from "./modules";
 import { genarate } from "./modules/format";
 import { Cell } from "./types";
 import { getSheetIndex } from "./utils";
+import { setRowHeight } from "../src/api";
 
 export const DEFAULT_FONT_SIZE = 12;
 
@@ -168,17 +169,25 @@ const detectHyperlink = (td: HTMLTableCellElement) => {
   return null;
 };
 
+function brToNewline(str) {
+  return str.replace(/<br\s*\/?>/gi, "\n");
+}
+
 const buildCellFromTd = (
   td: HTMLTableCellElement,
   classStyles: Record<string, string>,
   ctx: Context
 ): BuiltCellResult => {
-  const cell: Cell = {};
+  let cell: Cell = {};
   const rawText = (td.innerText || td.innerHTML || "").trim();
+  const isLineBreak = rawText.includes("<br />");
 
   if (!rawText) {
     cell.v = undefined;
     cell.m = "";
+  } else if (isLineBreak) {
+    const value = brToNewline(rawText);
+    cell = { ...cell, ct: { ...cell.ct, t: "inlineStr", s: [{ v: value }] } };
   } else {
     const mask = genarate(rawText);
     [cell.m, cell.ct, cell.v] = mask || [];
@@ -260,7 +269,12 @@ const buildCellFromTd = (
     cell.vt = 2;
   }
 
-  cell.tb = "1";
+  // @ts-ignore
+  if (td?.style?.["overflow-wrap"] === "anywhere") {
+    cell.tb = "2";
+  } else {
+    cell.tb = "2";
+  }
 
   // Rotation
   if ("mso-rotate" in styles) cell.rt = parseFloat(styles["mso-rotate"]);
@@ -279,6 +293,7 @@ export function handlePastedTable(
   html: string,
   pasteHandler: (context: Context, data: any, borderInfo?: any) => void
 ) {
+  console.log("handlePastedTable", html);
   if (!html.includes("table")) return;
 
   const containerDiv = document.createElement("div");
@@ -343,6 +358,10 @@ export function handlePastedTable(
       if (currentRowHeight !== explicitRowHeight) {
         rowHeightsConfig[targetRowIndex] = explicitRowHeight;
       }
+
+      setRowHeight(ctx, {
+        [String(targetRowIndex)]: explicitRowHeight,
+      });
     }
 
     tr.querySelectorAll("td, th").forEach((node) => {
@@ -361,6 +380,8 @@ export function handlePastedTable(
         classStyleMap,
         ctx
       );
+
+      console.log("cell", cell);
 
       const anchorCol = ctx.luckysheet_select_save![0].column[0];
       const absoluteRow = anchorRow + localRowIndex;
@@ -411,6 +432,9 @@ export function handlePastedTable(
   });
 
   ctx.luckysheet_selection_range = [];
+
+  console.log("pastedMatrix", pastedMatrix);
+  console.log("pasteBorderInfo", pasteBorderInfo);
 
   pasteHandler(ctx, pastedMatrix, pasteBorderInfo);
   containerDiv.remove();

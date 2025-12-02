@@ -86,6 +86,11 @@ export function normalizedAttr(
   return normalizedCellAttr(cell, attr);
 }
 
+function newlinesToBr(text: string) {
+  if (!text) return "";
+  return text.replace(/\r\n|\r|\n/g, "<br />");
+}
+
 export function getCellValue(
   r: number,
   c: number,
@@ -116,6 +121,7 @@ export function getCellValue(
   let retv: any = d_value;
 
   if (_.isPlainObject(d_value)) {
+    // console.log("d_value:", d_value);
     const d = d_value as Cell;
     retv = d[attr];
 
@@ -125,6 +131,13 @@ export function getCellValue(
       retv = (d as Cell).v;
     } else if (d && d.ct && d.ct.t === "d") {
       retv = d.m;
+    }
+
+    if (d?.ct && isInlineStringCT(d.ct) && (attr === "v" || attr === "m")) {
+      retv = newlinesToBr(d.ct.s[0]?.v);
+      // retv = d.ct.s[0]?.v;
+      // console.log("retv:", retv);
+      //       console.log("retv:vvvv",d.ct.s[0]?.v, d.ct.s[0]);
     }
   }
 
@@ -1563,6 +1576,8 @@ export function getStyleByCell(
       } else {
         style.background = `${value}`;
       }
+    } else {
+      style.background = `${value}`;
     }
   }
   if ("ht" in cell) {
@@ -1571,7 +1586,19 @@ export function getStyleByCell(
       style.textAlign = "center";
     } else if (Number(value) === 2) {
       style.textAlign = "right";
+      style.overflowWrap = "anywhere";
     }
+  }
+
+  if ("tb" in cell) {
+    if (Number(cell.tb) === 2) {
+      style.overflowWrap = "anywhere";
+    }
+  }
+
+  if ("ff" in cell) {
+    const value = normalizedCellAttr(cell, "ff");
+    style.fontFamily = value;
   }
 
   if ("vt" in cell) {

@@ -16,7 +16,7 @@
     "tsc": "tsc"
   },
   "dependencies": {
-    "@fileverse-dev/fortune-core": "1.2.56-patch-1",
+    "@fileverse-dev/fortune-core": "1.2.56-patch-2",
     "@fileverse/ui": "^4.1.7-patch-40",
     "@tippyjs/react": "^4.2.6",
     "@types/regenerator-runtime": "^0.13.6",

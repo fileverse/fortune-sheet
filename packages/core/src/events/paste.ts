@@ -1966,7 +1966,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     } else {
       if (txtdata.indexOf("table") > -1) {
         handlePastedTable(ctx, txtdata, pasteHandler);
-        resizePastedCellsToContent(ctx);
+        //resizePastedCellsToContent(ctx);
       }
       // 复制的是图片
       else if (

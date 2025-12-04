@@ -217,6 +217,12 @@ export function generateAPIs(
       });
     },
 
+    clearCellError: (row: number, column: number) => {
+      setContext((draftCtx) => {
+        api.clearCellError(draftCtx, row, column);
+      });
+    },
+
     clearCell: (row: number, column: number, options: api.CommonOptions = {}) =>
       setContext((draftCtx) => api.clearCell(draftCtx, row, column, options)),
 

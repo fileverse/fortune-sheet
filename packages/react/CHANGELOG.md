@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.59
+
+### Patch Changes
+
+- export clearCellError
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.59
+
 ## 1.2.58
 
 ### Patch Changes

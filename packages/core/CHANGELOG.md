@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.59
+
+### Patch Changes
+
+- export clearCellError
+
 ## 1.2.58
 
 ### Patch Changes

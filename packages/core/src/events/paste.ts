@@ -76,46 +76,49 @@ export function adjustFormulaForPaste(
   const cellRefRegex = /\b(\$?)([A-Z]+)(\$?)(\d+)\b/g;
   const stringOrCellRef = /"(?:\\.|[^"])*"|(?<!\$)([A-Z]+\d+\b)/g;
 
-  const result = formula.replace(stringOrCellRef, (m: string, cellRef: string) => {
-    // m = whole matched token
-    // cellRef = only group 1 when it's a cell reference (undefined for quoted strings)
+  const result = formula.replace(
+    stringOrCellRef,
+    (m: string, cellRef: string) => {
+      // m = whole matched token
+      // cellRef = only group 1 when it's a cell reference (undefined for quoted strings)
 
-    if (!cellRef) return m; // Inside quotes → DO NOT modify
-    if (cellRef.startsWith("$")) return m; // Absolute column → DO NOT modify
-    console.log(m, "cellRef", cellRef);
+      if (!cellRef) return m; // Inside quotes → DO NOT modify
+      if (cellRef.startsWith("$")) return m; // Absolute column → DO NOT modify
+      console.log(m, "cellRef", cellRef);
 
+      // Now process your cell reference normally:
+      return cellRef.replace(
+        cellRefRegex,
+        (
+          __: string,
+          absCol: string,
+          colLetters: string,
+          absRow: string,
+          rowNum: string
+        ) => {
+          let colIndex = columnLabelIndex(colLetters);
+          let rowIndex = parseInt(rowNum, 10);
 
-    // Now process your cell reference normally:
-    return cellRef.replace(cellRefRegex,
-      (__: string, absCol: string, colLetters: string, absRow: string, rowNum: string) => {
-        let colIndex = columnLabelIndex(colLetters);
-        let rowIndex = parseInt(rowNum, 10);
+          if (!absCol) colIndex += colOffset;
+          if (!absRow) rowIndex += rowOffset;
 
-        if (!absCol) colIndex += colOffset;
-        if (!absRow) rowIndex += rowOffset;
+          // Build either a normal or visibly invalid reference
+          if (colIndex < 0 || rowIndex <= 0) {
+            hadInvalid = true;
+            const invalidCol =
+              colIndex < 0
+                ? `${absCol ? "$" : ""}${colLetters}${colIndex}`
+                : `${absCol ? "$" : ""}${indexToColumnLabel(colIndex)}`;
+            const invalidRow = rowIndex.toString();
+            return `${invalidCol}${invalidRow}`;
+          }
 
-        // Build either a normal or visibly invalid reference
-        if (colIndex < 0 || rowIndex <= 0) {
-          hadInvalid = true;
-          const invalidCol =
-            colIndex < 0
-              ? `${absCol ? "$" : ""}${colLetters}${colIndex}`
-              : `${absCol ? "$" : ""}${indexToColumnLabel(colIndex)}`;
-          const invalidRow = rowIndex.toString();
-          return `${invalidCol}${invalidRow}`;
+          const newCol = indexToColumnLabel(colIndex);
+          return `${absCol ? "$" : ""}${newCol}${absRow ? "$" : ""}${rowIndex}`;
         }
-
-        const newCol = indexToColumnLabel(colIndex);
-        return `${absCol ? "$" : ""}${newCol}${absRow ? "$" : ""}${rowIndex}`;
-      });
-  });
-
-
-
-
-
-
-
+      );
+    }
+  );
 
   // formula.replace(
   //   /\b(\$?)([A-Z]+)(\$?)(\d+)\b/g,
@@ -2038,7 +2041,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             // Get the cell position
             const last =
               ctx.luckysheet_select_save?.[
-              ctx.luckysheet_select_save.length - 1
+                ctx.luckysheet_select_save.length - 1
               ];
             if (last) {
               const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;

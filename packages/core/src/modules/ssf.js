@@ -1223,7 +1223,7 @@ const make_ssf = function make_ssf(SSF) {
           if (v < 0) return "";
           if (dt == null) {
             dt = parse_date_code(v, opts);
-            if (dt == null) return "#####";
+            if (dt == null) return v;
           }
           o = c;
           while (++i < fmt.length && fmt.charAt(i).toLowerCase() === c) o += c;
@@ -1677,6 +1677,25 @@ const make_ssf = function make_ssf(SSF) {
     return [l, ff];
   }
 
+  function checkUnixTimestampAndUnit(n) {
+    if (typeof n !== "number" || !Number.isFinite(n)) return null;
+    if (!Number.isInteger(n)) return null;
+    if (n < 0) return null;
+
+    const minSec = 0; // 1970-01-01
+    const maxSec = 4102444800; // ~2100-01-01
+    const minMs = minSec * 1000;
+    const maxMs = maxSec * 1000;
+
+    if (n >= minSec && n <= maxSec) {
+      return "seconds";
+    }
+    if (n >= minMs && n <= maxMs) {
+      return "milliseconds";
+    }
+    return null;
+  }
+
   function format(fmt, v, o) {
     if (o == null) o = {};
     var sfmt = "";
@@ -1694,6 +1713,16 @@ const make_ssf = function make_ssf(SSF) {
             table_fmt[default_map[fmt]];
         if (sfmt == null) sfmt = default_str[fmt] || "General";
         break;
+    }
+
+    //unix timestamp detection
+    if (typeof v === "number" && fmt_is_date && fmt_is_date(sfmt)) {
+      var unit = checkUnixTimestampAndUnit(v);
+      if (unit === "seconds") {
+        v = new Date(v * 1000);
+      } else if (unit === "milliseconds") {
+        v = new Date(v);
+      }
     }
 
     //new runze 增加万 亿 格式

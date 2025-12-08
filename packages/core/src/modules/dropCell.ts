@@ -2707,7 +2707,7 @@ export function updateDropCell(ctx: Context) {
 
             const { afterUpdateCell } = ctx.hooks;
             if (afterUpdateCell) {
-              afterUpdateCell(j, i, null, {
+              afterUpdateCell(i, j, null, {
                 ...cell,
                 v: v[1] instanceof Promise ? v[1] : cell.v,
                 m: v[1] instanceof Promise ? "[object Promise]" : v[1],

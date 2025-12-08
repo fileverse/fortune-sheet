@@ -67,37 +67,37 @@ function applyBordersAndMerges(
   const topBorder =
     td.style.borderTop && !td.style.borderTop.startsWith("0px")
       ? getQKBorder(
-        td.style.borderTopWidth,
-        td.style.borderTopStyle,
-        td.style.borderTopColor
-      )
+          td.style.borderTopWidth,
+          td.style.borderTopStyle,
+          td.style.borderTopColor
+        )
       : null;
 
   const bottomBorder =
     td.style.borderBottom && !td.style.borderBottom.startsWith("0px")
       ? getQKBorder(
-        td.style.borderBottomWidth,
-        td.style.borderBottomStyle,
-        td.style.borderBottomColor
-      )
+          td.style.borderBottomWidth,
+          td.style.borderBottomStyle,
+          td.style.borderBottomColor
+        )
       : null;
 
   const leftBorder =
     td.style.borderLeft && !td.style.borderLeft.startsWith("0px")
       ? getQKBorder(
-        td.style.borderLeftWidth,
-        td.style.borderLeftStyle,
-        td.style.borderLeftColor
-      )
+          td.style.borderLeftWidth,
+          td.style.borderLeftStyle,
+          td.style.borderLeftColor
+        )
       : null;
 
   const rightBorder =
     td.style.borderRight && !td.style.borderRight.startsWith("0px")
       ? getQKBorder(
-        td.style.borderRightWidth,
-        td.style.borderRightStyle,
-        td.style.borderRightColor
-      )
+          td.style.borderRightWidth,
+          td.style.borderRightStyle,
+          td.style.borderRightColor
+        )
       : null;
 
   for (let rowOffset = 0; rowOffset < rowSpanCount; rowOffset++) {
@@ -198,11 +198,11 @@ const buildCellFromTd = (
     }
   }
 
-  if (td.style?.['alignItems'] === "center") {
+  if (td.style?.alignItems === "center") {
     cell.vt = 0;
-  } else if (td.style?.['alignItems'] === "flex-end") {
+  } else if (td.style?.alignItems === "flex-end") {
     cell.vt = 2;
-  } else if (td.style?.['alignItems'] === "flex-start") {
+  } else if (td.style?.alignItems === "flex-start") {
     cell.vt = 1;
   }
 
@@ -226,13 +226,13 @@ const buildCellFromTd = (
     (fontWeight.toString() === "400" ||
       fontWeight === "normal" ||
       _.isEmpty(fontWeight)) &&
-      !_.includes(styles["font-style"], "bold") &&
-      (!styles["font-weight"] || styles["font-weight"] === "400")
+    !_.includes(styles["font-style"], "bold") &&
+    (!styles["font-weight"] || styles["font-weight"] === "400")
       ? 0
       : 1;
   cell.it =
     (td.style.fontStyle === "normal" || _.isEmpty(td.style.fontStyle)) &&
-      !_.includes(styles["font-style"], "italic")
+    !_.includes(styles["font-style"], "italic")
       ? 0
       : 1;
 
@@ -314,8 +314,7 @@ export function handlePastedTable(
     const anchorCol = ctx.luckysheet_select_save![0].column[0];
     const absoluteCol = anchorCol + index;
     setColumnWidth(ctx, { [absoluteCol]: intColWidth });
-  })
-
+  });
 
   const tableRows = containerDiv.querySelectorAll("table tr");
   if (tableRows.length === 0) {

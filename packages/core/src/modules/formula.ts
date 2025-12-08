@@ -4123,7 +4123,7 @@ export function functionCopy(
     }
 
     if (i === funcstack.length - 1) {
-      if (iscelldata(_.trim(str))) {
+      if (iscelldata(_.trim(str)) && !_.trim(str).includes("$")) {
         if (mode === "down") {
           function_str += downparam(_.trim(str), step);
         } else if (mode === "up") {

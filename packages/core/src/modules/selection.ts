@@ -1581,7 +1581,9 @@ export function rangeValueToHtml(
   for (let i = 0; i < rowIndexArr.length; i += 1) {
     const r = rowIndexArr[i];
 
-    cpdata += "<tr>";
+    const rowLen =
+      sheet.config?.rowlen?.[r.toString()] ?? sheet.defaultRowHeight;
+    cpdata += `<tr height=${rowLen}px >`;
 
     for (let j = 0; j < colIndexArr.length; j += 1) {
       const c = colIndexArr[j];
@@ -1609,15 +1611,15 @@ export function rangeValueToHtml(
         }
 
         if (c === colIndexArr[0]) {
-          if (
-            _.isNil(sheet.config) ||
-            _.isNil(sheet.config.rowlen) ||
-            _.isNil(sheet.config.rowlen[r.toString()])
-          ) {
+          const rowLenValue = sheet.config?.rowlen?.[r.toString()];
+          const colLen = sheet.config?.columnlen?.[c.toString()];
+          if (_.isNil(rowLenValue)) {
             style += "height:19px;";
           } else {
-            style += `height:${sheet.config.rowlen[r.toString()]}px;`;
+            style += `height:${rowLenValue}px;`;
           }
+          // Fallback to 72px if column width is not available
+          style += `width:${colLen ?? sheet.defaultColWidth}px;`;
         }
 
         const reg = /^(w|W)((0?)|(0\.0+))$/;
@@ -2041,11 +2043,15 @@ export function copy(ctx: Context) {
     HasMC,
   };
 
-  const cpdata = rangeValueToHtml(
+  let cpdata = rangeValueToHtml(
     ctx,
     ctx.currentSheetId,
     ctx.luckysheet_select_save
   );
+  cpdata =
+    cpdata === null
+      ? cpdata
+      : cpdata.replace('<td style="', '<td style="white-space: pre-line;"');
 
   if (cpdata) {
     ctx.iscopyself = true;

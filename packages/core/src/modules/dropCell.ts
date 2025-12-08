@@ -2356,6 +2356,15 @@ export function updateDropCell(ctx: Context) {
 
             [, cell.v, cell.f] = v;
 
+            const { afterUpdateCell } = ctx.hooks;
+            if (afterUpdateCell) {
+              afterUpdateCell(j, i, null, {
+                ...cell,
+                v: v[1] instanceof Promise ? v[1] : cell.v,
+                m: v[1] instanceof Promise ? "[object Promise]" : v[1],
+              });
+            }
+
             if (cell.spl != null) {
               cell.spl = v[3].data;
             } else if (cell.v != null) {
@@ -2468,6 +2477,15 @@ export function updateDropCell(ctx: Context) {
 
             [, cell.v, cell.f] = v;
 
+            const { afterUpdateCell } = ctx.hooks;
+            if (afterUpdateCell) {
+              afterUpdateCell(j, i, null, {
+                ...cell,
+                v: v[1] instanceof Promise ? v[1] : cell.v,
+                m: v[1] instanceof Promise ? "[object Promise]" : v[1],
+              });
+            }
+
             if (cell.spl != null) {
               cell.spl = v[3].data;
             } else if (cell.v != null) {
@@ -2577,6 +2595,17 @@ export function updateDropCell(ctx: Context) {
 
             [, cell.v, cell.f] = v;
 
+            console.log(j, i);
+
+            const { afterUpdateCell } = ctx.hooks;
+            if (afterUpdateCell) {
+              afterUpdateCell(i, j, null, {
+                ...cell,
+                v: v[1] instanceof Promise ? v[1] : cell.v,
+                m: v[1] instanceof Promise ? "[object Promise]" : v[1],
+              });
+            }
+
             if (cell.spl != null) {
               cell.spl = v[3].data;
             } else if (cell.v != null) {
@@ -2675,6 +2704,15 @@ export function updateDropCell(ctx: Context) {
             formula.execFunctionGroup(ctx, j, i, v[1], undefined, d);
 
             [, cell.v, cell.f] = v;
+
+            const { afterUpdateCell } = ctx.hooks;
+            if (afterUpdateCell) {
+              afterUpdateCell(i, j, null, {
+                ...cell,
+                v: v[1] instanceof Promise ? v[1] : cell.v,
+                m: v[1] instanceof Promise ? "[object Promise]" : v[1],
+              });
+            }
 
             if (cell.spl != null) {
               cell.spl = v[3].data;

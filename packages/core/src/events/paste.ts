@@ -73,30 +73,77 @@ export function adjustFormulaForPaste(
   // Track whether we created any invalid references
   let hadInvalid = false;
 
+  const cellRefRegex = /\b(\$?)([A-Z]+)(\$?)(\d+)\b/g;
+  const stringOrCellRef = /"(?:\\.|[^"])*"|(?<!\$)([A-Z]+\d+\b)/g;
+
   const result = formula.replace(
-    /(\$?)([A-Z]+)(\$?)(\d+)/g,
-    (__, absCol, colLetters, absRow, rowNum) => {
-      let colIndex = columnLabelIndex(colLetters);
-      let rowIndex = parseInt(rowNum, 10);
+    stringOrCellRef,
+    (m: string, cellRef: string) => {
+      // m = whole matched token
+      // cellRef = only group 1 when it's a cell reference (undefined for quoted strings)
 
-      if (!absCol) colIndex += colOffset;
-      if (!absRow) rowIndex += rowOffset;
+      if (!cellRef) return m; // Inside quotes → DO NOT modify
+      if (cellRef.startsWith("$")) return m; // Absolute column → DO NOT modify
+      console.log(m, "cellRef", cellRef);
 
-      // Build either a normal or visibly invalid reference
-      if (colIndex < 0 || rowIndex <= 0) {
-        hadInvalid = true;
-        const invalidCol =
-          colIndex < 0
-            ? `${absCol ? "$" : ""}${colLetters}${colIndex}`
-            : `${absCol ? "$" : ""}${indexToColumnLabel(colIndex)}`;
-        const invalidRow = rowIndex.toString();
-        return `${invalidCol}${invalidRow}`;
-      }
+      // Now process your cell reference normally:
+      return cellRef.replace(
+        cellRefRegex,
+        (
+          __: string,
+          absCol: string,
+          colLetters: string,
+          absRow: string,
+          rowNum: string
+        ) => {
+          let colIndex = columnLabelIndex(colLetters);
+          let rowIndex = parseInt(rowNum, 10);
 
-      const newCol = indexToColumnLabel(colIndex);
-      return `${absCol ? "$" : ""}${newCol}${absRow ? "$" : ""}${rowIndex}`;
+          if (!absCol) colIndex += colOffset;
+          if (!absRow) rowIndex += rowOffset;
+
+          // Build either a normal or visibly invalid reference
+          if (colIndex < 0 || rowIndex <= 0) {
+            hadInvalid = true;
+            const invalidCol =
+              colIndex < 0
+                ? `${absCol ? "$" : ""}${colLetters}${colIndex}`
+                : `${absCol ? "$" : ""}${indexToColumnLabel(colIndex)}`;
+            const invalidRow = rowIndex.toString();
+            return `${invalidCol}${invalidRow}`;
+          }
+
+          const newCol = indexToColumnLabel(colIndex);
+          return `${absCol ? "$" : ""}${newCol}${absRow ? "$" : ""}${rowIndex}`;
+        }
+      );
     }
   );
+
+  // formula.replace(
+  //   /\b(\$?)([A-Z]+)(\$?)(\d+)\b/g,
+  //   (__, absCol, colLetters, absRow, rowNum) => {
+  //     let colIndex = columnLabelIndex(colLetters);
+  //     let rowIndex = parseInt(rowNum, 10);
+
+  //     if (!absCol) colIndex += colOffset;
+  //     if (!absRow) rowIndex += rowOffset;
+
+  //     // Build either a normal or visibly invalid reference
+  //     if (colIndex < 0 || rowIndex <= 0) {
+  //       hadInvalid = true;
+  //       const invalidCol =
+  //         colIndex < 0
+  //           ? `${absCol ? "$" : ""}${colLetters}${colIndex}`
+  //           : `${absCol ? "$" : ""}${indexToColumnLabel(colIndex)}`;
+  //       const invalidRow = rowIndex.toString();
+  //       return `${invalidCol}${invalidRow}`;
+  //     }
+
+  //     const newCol = indexToColumnLabel(colIndex);
+  //     return `${absCol ? "$" : ""}${newCol}${absRow ? "$" : ""}${rowIndex}`;
+  //   }
+  // );
 
   // if any invalid references were generated, throw error with full visible formula
   if (hadInvalid) {
@@ -1516,6 +1563,8 @@ function pasteHandlerOfCopyPaste(
                 c,
                 h
               );
+
+              console.log("adjustedFormula", adjustedFormula);
             } catch (error: any) {
               isError = true;
               value.error = {
@@ -1822,6 +1871,10 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
   const allowEdit = isAllowEdit(ctx);
   if (!allowEdit || ctx.isFlvReadOnly) return;
 
+  if (!selectionCache.isPasteAction) {
+    return;
+  }
+
   if (selectionCache.isPasteAction) {
     ctx.luckysheetCellUpdate = [];
     // $("#luckysheet-rich-text-editor").blur();
@@ -1876,13 +1929,13 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
       }
 
       // 当前页面复制区内容
-      const copy_r1 = ctx.luckysheet_copy_save.copyRange[0].row[0];
-      const copy_r2 = ctx.luckysheet_copy_save.copyRange[0].row[1];
-      const copy_c1 = ctx.luckysheet_copy_save.copyRange[0].column[0];
-      const copy_c2 = ctx.luckysheet_copy_save.copyRange[0].column[1];
+      const copy_r1 = ctx.luckysheet_copy_save?.copyRange[0]?.row[0];
+      const copy_r2 = ctx.luckysheet_copy_save?.copyRange[0]?.row[1];
+      const copy_c1 = ctx.luckysheet_copy_save?.copyRange[0]?.column[0];
+      const copy_c2 = ctx.luckysheet_copy_save?.copyRange[0]?.column[1];
 
-      const copy_index = ctx.luckysheet_copy_save.dataSheetId;
-
+      const copy_index =
+        ctx.luckysheet_copy_save.dataSheetId || ctx.currentSheetId;
       let d;
       if (copy_index === ctx.currentSheetId) {
         d = getFlowdata(ctx);
@@ -1962,7 +2015,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     } else {
       if (txtdata.indexOf("table") > -1) {
         handlePastedTable(ctx, txtdata, pasteHandler);
-        resizePastedCellsToContent(ctx);
+        // resizePastedCellsToContent(ctx);
       }
       // 复制的是图片
       else if (

@@ -78,12 +78,16 @@ export function normalizedAttr(
   attr: keyof Cell
 ): any {
   if (!data || !data[r]) {
-    console.warn("cell (%d, %d) is null", r, c);
     return null;
   }
   const cell = data[r][c];
   if (!cell) return undefined;
   return normalizedCellAttr(cell, attr);
+}
+
+function newlinesToBr(text: string) {
+  if (!text) return "";
+  return text.replace(/\r\n|\r|\n/g, "<br />");
 }
 
 export function getCellValue(
@@ -125,6 +129,10 @@ export function getCellValue(
       retv = (d as Cell).v;
     } else if (d && d.ct && d.ct.t === "d") {
       retv = d.m;
+    }
+
+    if (d?.ct && isInlineStringCT(d.ct) && (attr === "v" || attr === "m")) {
+      retv = newlinesToBr(d.ct.s[0]?.v);
     }
   }
 
@@ -1563,6 +1571,8 @@ export function getStyleByCell(
       } else {
         style.background = `${value}`;
       }
+    } else {
+      style.background = `${value}`;
     }
   }
   if ("ht" in cell) {
@@ -1571,7 +1581,19 @@ export function getStyleByCell(
       style.textAlign = "center";
     } else if (Number(value) === 2) {
       style.textAlign = "right";
+      style.overflowWrap = "anywhere";
     }
+  }
+
+  if ("tb" in cell) {
+    if (Number(cell.tb) === 2) {
+      style.overflowWrap = "anywhere";
+    }
+  }
+
+  if ("ff" in cell) {
+    const value = normalizedCellAttr(cell, "ff");
+    style.fontFamily = value;
   }
 
   if ("vt" in cell) {

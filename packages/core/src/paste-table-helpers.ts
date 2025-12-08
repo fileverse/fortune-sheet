@@ -6,6 +6,7 @@ import { getQKBorder, saveHyperlink } from "./modules";
 import { genarate } from "./modules/format";
 import { Cell } from "./types";
 import { getSheetIndex } from "./utils";
+import { setRowHeight, setColumnWidth } from "./api";
 
 export const DEFAULT_FONT_SIZE = 12;
 
@@ -168,17 +169,25 @@ const detectHyperlink = (td: HTMLTableCellElement) => {
   return null;
 };
 
+function brToNewline(str: string) {
+  return str.replace(/<br\s*\/?>/gi, "\n");
+}
+
 const buildCellFromTd = (
   td: HTMLTableCellElement,
   classStyles: Record<string, string>,
   ctx: Context
 ): BuiltCellResult => {
-  const cell: Cell = {};
+  let cell: Cell = {};
   const rawText = (td.innerText || td.innerHTML || "").trim();
+  const isLineBreak = rawText.includes("<br />");
 
   if (!rawText) {
     cell.v = undefined;
     cell.m = "";
+  } else if (isLineBreak) {
+    const value = brToNewline(rawText);
+    cell = { ...cell, ct: { ...cell.ct, t: "inlineStr", s: [{ v: value }] } };
   } else {
     const mask = genarate(rawText);
     [cell.m, cell.ct, cell.v] = mask || [];
@@ -187,6 +196,14 @@ const buildCellFromTd = (
       cell.m = rawText;
       cell.v = rawText;
     }
+  }
+
+  if (td.style?.alignItems === "center") {
+    cell.vt = 0;
+  } else if (td.style?.alignItems === "flex-end") {
+    cell.vt = 2;
+  } else if (td.style?.alignItems === "flex-start") {
+    cell.vt = 1;
   }
 
   const styleBlock =
@@ -244,23 +261,28 @@ const buildCellFromTd = (
     cell.ht = 1;
   }
 
-  const regex = /vertical-align:\s*(.*?);/;
+  // const regex = /vertical-align:\s*(.*?);/;
 
-  // Vertical align
-  const vtStyle =
-    (typeof classStyles.td === "string" &&
-      (classStyles.td.match(regex)?.[1] ?? "")) ||
-    "top";
-  const vt = td.style.verticalAlign || styles["vertical-align"] || vtStyle;
-  if (vt === "middle") {
-    cell.vt = 0;
-  } else if (vt === "top" || vt === "text-top") {
-    cell.vt = 1;
+  // // Vertical align
+  // const vtStyle =
+  //   (typeof classStyles.td === "string" &&
+  //     (classStyles.td.match(regex)?.[1] ?? "")) ||
+  //   "top";
+  // const vt = td.style.verticalAlign || styles["vertical-align"] || vtStyle;
+  // if (vt === "middle") {
+  //   cell.vt = 0;
+  // } else if (vt === "top" || vt === "text-top") {
+  //   cell.vt = 1;
+  // } else {
+  //   cell.vt = 2;
+  // }
+
+  // @ts-ignore
+  if (td?.style?.["overflow-wrap"] === "anywhere") {
+    cell.tb = "2";
   } else {
-    cell.vt = 2;
+    cell.tb = "2";
   }
-
-  cell.tb = "1";
 
   // Rotation
   if ("mso-rotate" in styles) cell.rt = parseFloat(styles["mso-rotate"]);
@@ -283,6 +305,16 @@ export function handlePastedTable(
 
   const containerDiv = document.createElement("div");
   containerDiv.innerHTML = html;
+
+  const tableColGropup = containerDiv.querySelectorAll("colgroup");
+
+  tableColGropup.forEach((colGroup, index) => {
+    const colWidth = colGroup?.getAttribute("width");
+    const intColWidth = parseInt(colWidth || "0", 10);
+    const anchorCol = ctx.luckysheet_select_save![0].column[0];
+    const absoluteCol = anchorCol + index;
+    setColumnWidth(ctx, { [absoluteCol]: intColWidth });
+  });
 
   const tableRows = containerDiv.querySelectorAll("table tr");
   if (tableRows.length === 0) {
@@ -343,8 +375,11 @@ export function handlePastedTable(
       if (currentRowHeight !== explicitRowHeight) {
         rowHeightsConfig[targetRowIndex] = explicitRowHeight;
       }
-    }
 
+      setRowHeight(ctx, {
+        [String(targetRowIndex)]: explicitRowHeight,
+      });
+    }
     tr.querySelectorAll("td, th").forEach((node) => {
       const tdElement = node as HTMLTableCellElement;
 

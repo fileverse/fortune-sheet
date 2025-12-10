@@ -4242,7 +4242,7 @@ export default {
       ],
     },
     {
-      n: "NETWORKDAYS_INTL",
+      n: "NETWORKDAYS.INTL",
       t: 6,
       d: "Returns the number of net working days between two provided days excluding specified weekend days and holidays.",
       a: "Net working days between two dates (specifying weekends).",
@@ -4557,7 +4557,7 @@ export default {
       ],
     },
     {
-      n: "WORKDAY_INTL",
+      n: "WORKDAY.INTL",
       t: 6,
       d: "Calculates the date after a specified number of workdays excluding specified weekend days and holidays.",
       a: "Date after a number of workdays (specifying weekends).",

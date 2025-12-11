@@ -340,6 +340,11 @@ const InputBox: React.FC = () => {
     [getActiveFormula, insertSelectedFormula]
   );
 
+  const stopPropagation = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+    event.preventDefault();
+  };
+
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
@@ -353,16 +358,18 @@ const InputBox: React.FC = () => {
       // }
 
       if (e.metaKey) {
-        e.preventDefault();
-        e.stopPropagation();
         if (e.code === "KeyB") {
           handleBold(context, inputRef.current!);
+          stopPropagation(e);
         } else if (e.code === "KeyI") {
           handleItalic(context, inputRef.current!);
+          stopPropagation(e);
         } else if (e.code === "KeyU") {
           handleUnderline(context, inputRef.current!);
+          stopPropagation(e);
         } else if (e.code === "KeyS") {
           handleStrikeThrough(context, inputRef.current!);
+          stopPropagation(e);
         }
       }
 

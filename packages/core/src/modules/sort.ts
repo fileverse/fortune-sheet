@@ -272,7 +272,8 @@ export function spillSortResult(
     typeof formulaString !== "string" ||
     !(
       /= *SORT\s*\(/i.test(formulaString) ||
-      /= *XLOOKUP\s*\(/i.test(formulaString)
+      /= *XLOOKUP\s*\(/i.test(formulaString) ||
+      /= *SEQUENCE\s*\(/i.test(formulaString)
     )
   )
     return false;

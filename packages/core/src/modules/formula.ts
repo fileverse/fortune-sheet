@@ -1067,7 +1067,7 @@ function replaceDotsInFunctionName(str: string) {
   if (openParenIndex === -1) return str; // no "(" → leave unchanged
   const fnName = str.substring(1, openParenIndex);
   const fixedFnName = fnName.replace(/\./g, "_");
-  return "=" + fixedFnName + str.substring(openParenIndex);
+  return `=${fixedFnName}${str.substring(openParenIndex)}`;
 }
 
 export function execfunction(
@@ -1081,9 +1081,12 @@ export function execfunction(
   notInsertFunc?: boolean
 ) {
   const originalTxt = txt;
-  if(txt.toUpperCase().includes("NETWORKDAYS.INTL") || txt.toUpperCase().includes("WORKDAY.INTL")){
-        txt = replaceDotsInFunctionName(txt);
-      }
+  if (
+    txt.toUpperCase().includes("NETWORKDAYS.INTL") ||
+    txt.toUpperCase().includes("WORKDAY.INTL")
+  ) {
+    txt = replaceDotsInFunctionName(txt);
+  }
   if (txt.indexOf(error.r) > -1) {
     return [false, error.r, txt];
   }

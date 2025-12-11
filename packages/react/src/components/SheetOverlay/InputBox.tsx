@@ -17,6 +17,10 @@ import {
   isAllowEdit,
   getrangeseleciton,
   indexToColumnChar,
+  handleBold,
+  handleItalic,
+  handleUnderline,
+  handleStrikeThrough,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -347,6 +351,20 @@ const InputBox: React.FC = () => {
       // ) {
       //   return;
       // }
+
+      if (e.metaKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.code === "KeyB") {
+          handleBold(context, inputRef.current!);
+        } else if (e.code === "KeyI") {
+          handleItalic(context, inputRef.current!);
+        } else if (e.code === "KeyU") {
+          handleUnderline(context, inputRef.current!);
+        } else if (e.code === "KeyS") {
+          handleStrikeThrough(context, inputRef.current!);
+        }
+      }
 
       const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
       setCommaCount(currentCommaCount);

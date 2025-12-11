@@ -328,9 +328,7 @@ export function updateFormat(
       if (value.substring(0, 1) !== "=") {
         const cell =
           d[ctx.luckysheetCellUpdate[0]][ctx.luckysheetCellUpdate[1]];
-        if (cell) {
-          updateInlineStringFormat(ctx, cell, attr, foucsStatus, $input);
-        }
+        updateInlineStringFormat(ctx, attr, foucsStatus, $input);
         return;
       }
     }

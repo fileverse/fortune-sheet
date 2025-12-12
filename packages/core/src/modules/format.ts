@@ -73,7 +73,10 @@ export function genarate(value: string | number | boolean) {
     return null;
   }
 
-  if (/^-?[0-9]{1,}[,][0-9]{3}(.[0-9]{1,2})?$/.test(value as string) && !Array.isArray(value)) {
+  if (
+    /^-?[0-9]{1,}[,][0-9]{3}(.[0-9]{1,2})?$/.test(value as string) &&
+    !Array.isArray(value)
+  ) {
     value = value as string;
     // 表述金额的字符串，如：12,000.00 或者 -12,000.00
     m = value;

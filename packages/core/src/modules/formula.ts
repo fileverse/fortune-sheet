@@ -2831,9 +2831,9 @@ export function handleFormulaInput(
     } else if (!_.startsWith(value1txt, "=")) {
       if (!$copyTo) return;
       if ($copyTo.id === "luckysheet-rich-text-editor") {
-        //if (!_.startsWith($copyTo.innerHTML, "<span") || true) {
-          $copyTo.innerHTML = escapeHTMLTag(value);
-        //}
+        // if (!_.startsWith($copyTo.innerHTML, "<span") || true) {
+        $copyTo.innerHTML = escapeHTMLTag(value);
+        // }
       } else {
         $copyTo.innerHTML = escapeHTMLTag(value);
       }

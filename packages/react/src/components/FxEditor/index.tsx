@@ -483,8 +483,35 @@ const FxEditor: React.FC = () => {
     isHidenRC,
   ]);
 
+
+  const divRef = useRef<HTMLDivElement>(null);
+  const [isResizing, setIsResizing] = useState(false);
+
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+
+    const startY = e.clientY;
+    const startHeight = divRef.current!.offsetHeight;
+
+    const onMouseMove = (ev: MouseEvent) => {
+      const newHeight = startHeight + (ev.clientY - startY);
+      divRef.current!.style.height = Math.max(newHeight, 20) + "px"; // min height = 100
+    };
+
+    const onMouseUp = () => {
+      setIsResizing(false);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
+
   return (
-    <div className="fortune-fx-editor">
+    <div>
+    <div className="fortune-fx-editor" ref={divRef}>
       <NameBox />
       <div className="fortune-fx-icon">
         {/* <SVGIcon name="fx" width={18} height={18} /> */}
@@ -501,6 +528,7 @@ const FxEditor: React.FC = () => {
       </div>
       <div ref={inputContainerRef} className="fortune-fx-input-container">
         <ContentEditable
+
           onMouseUp={() => {
             handleHideShowHint();
             const currentCommaCount = countCommasBeforeCursor(
@@ -591,6 +619,12 @@ const FxEditor: React.FC = () => {
           </>
         )} */}
       </div>
+    </div>
+    <div
+        className="resize-handle"
+        onMouseDown={startResize}
+        style={{ cursor: isResizing ? "grabbing" : "ns-resize", height: "2px" }}>
+          </div>
     </div>
   );
 };

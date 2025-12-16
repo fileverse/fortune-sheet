@@ -770,6 +770,28 @@ export function updateCell(
 
   let inputText = $input?.innerText;
   const inputHtml = $input?.innerHTML;
+
+  // --- hyperlink-on-edit-paste support (START) ---
+  const trimmedInputText = (inputText ?? "").trim();
+
+  // treat as "single URL pasted" only if it's one token (no spaces/newlines)
+  const isSingleToken =
+    trimmedInputText.length > 0 && !/[\s\r\n]/.test(trimmedInputText);
+
+  const isUrlPastedInEditor =
+    isSingleToken && /^(https?:\/\/|www\.)\S+$/i.test(trimmedInputText);
+
+  let normalizedUrl: string | null = null;
+
+  if (isUrlPastedInEditor) {
+    if (trimmedInputText.startsWith("http")) {
+      normalizedUrl = trimmedInputText;
+    } else {
+      normalizedUrl = `https://${trimmedInputText}`;
+    }
+  }
+  // --- hyperlink-on-edit-paste support (END) ---
+
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
 
@@ -784,6 +806,19 @@ export function updateCell(
   // 数据验证 输入数据无效时禁止输入
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
   const { dataVerification } = ctx.luckysheetfile[index];
+
+  // --- hyperlink-on-edit-paste support (Luckysheet/FortuneSheet model) ---
+  const sheetFile = ctx.luckysheetfile[index] as any;
+
+  const getUrlFromText = (text?: string): string | null => {
+    const t = (text ?? "").trim();
+    // only treat a single token as a URL (no spaces/newlines)
+    if (!t || /[\s\r\n]/.test(t)) return null;
+    if (!/^(https?:\/\/|www\.)\S+$/i.test(t)) return null;
+    return t.startsWith("http") ? t : `https://${t}`;
+  };
+  // --- end ---s
+
   if (!_.isNil(dataVerification)) {
     const dvItem = dataVerification[`${r}_${c}`];
     if (
@@ -807,7 +842,8 @@ export function updateCell(
 
   const isPrevInline = isInlineStringCell(curv);
   let isCurInline =
-    inputText?.slice(0, 1) !== "=" && inputHtml?.substring(0, 5) === "<span";
+    inputText?.slice(0, 1) !== "=" &&
+    (inputHtml?.substring(0, 5) === "<span" || isUrlPastedInEditor);
 
   let isCopyVal = false;
   if (!isCurInline && inputText && inputText.length > 0) {
@@ -844,10 +880,28 @@ export function updateCell(
     }
 
     curv.ct.t = "inlineStr";
-    curv.ct.s = convertSpanToShareString(
-      $input!.querySelectorAll("span"),
-      curv
-    );
+
+    // If user pasted a URL while editing, browser paste is plain text (no spans).
+    // Force an inline rich-text entry with link metadata.
+    if (isUrlPastedInEditor && normalizedUrl) {
+      curv.ct.s = [
+        {
+          v: trimmedInputText,
+          fs: fontSize,
+          // Most Luckysheet/FortuneSheets forks render hyperlinks when a share-string item has `l`.
+          // If your fork uses a different key, adjust here.
+          l: {
+            target: normalizedUrl,
+          },
+        },
+      ];
+    } else {
+      curv.ct.s = convertSpanToShareString(
+        $input!.querySelectorAll("span"),
+        curv
+      );
+    }
+
     delete curv.fs;
     delete curv.f;
     delete curv.v;
@@ -1173,6 +1227,33 @@ export function updateCell(
   } catch (e) {
     console.log("[updateCell] spill failed; falling back", e);
   }
+
+  // --- hyperlink-on-edit-paste support (Luckysheet/FortuneSheet model) ---
+  // If user pasted a URL while editing (double click), persist hyperlink using sheet.hyperlink + cell.hl
+  const url = getUrlFromText($input?.innerText);
+  if (url && typeof value === "object" && value) {
+    (value as any).hl = 1;
+
+    if (!sheetFile.hyperlink) sheetFile.hyperlink = {};
+    sheetFile.hyperlink[`${r}_${c}`] = {
+      linkType: "webpage",
+      linkAddress: url,
+    };
+
+    if (typeof (value as any).v !== "string") {
+      (value as any).v = $input?.innerText ?? url;
+    }
+
+    if ((value as any).m == null) {
+      (value as any).m = (value as any).v;
+    }
+
+    // Persist hyperlink look (blue + underline)
+    if ((value as any).fc == null) (value as any).fc = "rgb(0, 0, 255)";
+    if ((value as any).un == null) (value as any).un = 1;
+  }
+
+  // --- end ---
 
   setCellValue(ctx, r, c, d, value);
 

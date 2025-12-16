@@ -1742,34 +1742,86 @@ function pasteHandlerOfCopyPaste(
     ctx.luckysheet_select_save?.length === 1 &&
     ctx.luckysheet_copy_save?.copyRange.length === 1
   ) {
-    _.forEach(ctx.luckysheet_copy_save?.copyRange, (range) => {
-      const srcIndex = getSheetIndex(
-        ctx,
-        ctx.luckysheet_copy_save?.dataSheetId as string
-      ) as number;
+    const srcIndex = getSheetIndex(
+      ctx,
+      ctx.luckysheet_copy_save?.dataSheetId as string
+    ) as number;
+    const targetSheetIndex = getSheetIndex(ctx, ctx.currentSheetId) as number;
 
-      for (let r = 0; r <= range.row[1] - range.row[0]; r += 1) {
-        for (let c = 0; c <= range.column[1] - range.column[0]; c += 1) {
-          const srcRow = r + range.row[0];
-          const srcCol = c + range.column[0];
+    // Cache property access to avoid repeated lookups
+    const srcHyperlinks = ctx.luckysheetfile[srcIndex].hyperlink;
+    const srcData = ctx.luckysheetfile[srcIndex].data;
 
-          const srcLink =
-            ctx.luckysheetfile[srcIndex].hyperlink?.[`${srcRow}_${srcCol}`];
-          if (!srcLink) continue;
+    // Initialize hyperlink registry for target sheet if needed
+    if (!ctx.luckysheetfile[targetSheetIndex].hyperlink) {
+      ctx.luckysheetfile[targetSheetIndex].hyperlink = {};
+    }
+    const targetHyperlinks = ctx.luckysheetfile[targetSheetIndex].hyperlink!;
 
-          const targetR = r + ctx.luckysheet_select_save![0].row[0];
-          const targetC = c + ctx.luckysheet_select_save![0].column[0];
+    // For single cell copy, cache source link and cell to avoid repeated lookups
+    const isSingleCell = copyh === 1 && copyc === 1;
+    const cachedSrcLinkKey = isSingleCell ? `${c_r1}_${c_c1}` : null;
+    const cachedSrcLink =
+      isSingleCell && srcHyperlinks ? srcHyperlinks[cachedSrcLinkKey!] : null;
+    const cachedSrcCell =
+      isSingleCell && srcData ? srcData[c_r1]?.[c_c1] : null;
 
-          setCellHyperlink(
-            ctx,
-            ctx.luckysheet_copy_save?.dataSheetId as string,
-            targetR,
-            targetC,
-            srcLink
-          );
+    // Loop through all target cells using the same repetition pattern as cell data
+    for (let th = 1; th <= timesH; th += 1) {
+      for (let tc = 1; tc <= timesC; tc += 1) {
+        const linkMth = minh + (th - 1) * copyh;
+        const linkMtc = minc + (tc - 1) * copyc;
+        const linkMaxRow = minh + th * copyh;
+        const linkMaxCol = minc + tc * copyc;
+
+        // Loop through target cells in this repetition block
+        for (let h = linkMth; h < linkMaxRow; h += 1) {
+          for (let c = linkMtc; c < linkMaxCol; c += 1) {
+            // Get source link (use cache for single cell, otherwise lookup)
+            let srcLink: any;
+            if (isSingleCell && cachedSrcLink) {
+              srcLink = cachedSrcLink;
+            } else {
+              const srcRow = c_r1 + (h - linkMth);
+              const srcCol = c_c1 + (c - linkMtc);
+              srcLink = srcHyperlinks?.[`${srcRow}_${srcCol}`];
+            }
+            if (!srcLink) continue;
+
+            // Set hyperlink in registry (cache key string)
+            const targetKey = `${h}_${c}`;
+            targetHyperlinks[targetKey] = srcLink;
+
+            // Update cell data to ensure hyperlink properties are set
+            const cell = d[h]?.[c];
+            if (cell) {
+              // Get source cell styling (use cache for single cell, otherwise lookup)
+              let srcCell: any;
+              if (isSingleCell && cachedSrcCell) {
+                srcCell = cachedSrcCell;
+              } else {
+                const srcRow = c_r1 + (h - linkMth);
+                const srcCol = c_c1 + (c - linkMtc);
+                srcCell = srcData?.[srcRow]?.[srcCol];
+              }
+
+              // Set hyperlink marker
+              cell.hl = { r: h, c, id: ctx.currentSheetId };
+
+              // Copy hyperlink styling from source if available
+              if (srcCell) {
+                if (srcCell.fc) cell.fc = srcCell.fc;
+                if (srcCell.un !== undefined) cell.un = srcCell.un;
+              } else {
+                // Default hyperlink styling
+                cell.fc = cell.fc || "rgb(0, 0, 255)";
+                cell.un = cell.un !== undefined ? cell.un : 1;
+              }
+            }
+          }
         }
       }
-    });
+    }
   }
 
   if (copyRowlChange || addr > 0 || addc > 0) {
@@ -1825,12 +1877,20 @@ function handleFormulaStringPaste(ctx: Context, formulaStr: string) {
 export function parseAsLinkIfUrl(txtdata: string, ctx: Context) {
   const urlRegex = /^(https?:\/\/[^\s]+)/;
   if (urlRegex.test(txtdata)) {
-    const last =
-      ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
-    if (last) {
-      const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
-      const colIndex = last.column_focus ?? last.column?.[0] ?? 0;
+    // In edit mode, use luckysheetCellUpdate to get the cell position
+    if (ctx.luckysheetCellUpdate.length === 2) {
+      const rowIndex = ctx.luckysheetCellUpdate[0];
+      const colIndex = ctx.luckysheetCellUpdate[1];
       saveHyperlink(ctx, rowIndex, colIndex, txtdata, "webpage", txtdata);
+    } else {
+      // Otherwise, use luckysheet_select_save
+      const last =
+        ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
+      if (last) {
+        const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
+        const colIndex = last.column_focus ?? last.column?.[0] ?? 0;
+        saveHyperlink(ctx, rowIndex, colIndex, txtdata, "webpage", txtdata);
+      }
     }
   }
 }

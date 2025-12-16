@@ -356,7 +356,6 @@ function extendCssText(origin: string, cover: string, isLimit = true) {
 
 export function updateInlineStringFormat(
   ctx: Context,
-  cell: Cell,
   attr: keyof Cell,
   value: any,
   cellInput: HTMLDivElement

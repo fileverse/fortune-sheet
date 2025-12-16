@@ -1061,6 +1061,15 @@ export function insertUpdateFunctionGroup(
   ctx.luckysheetfile = luckysheetfile;
 }
 
+function replaceDotsInFunctionName(str: string) {
+  if (!str.startsWith("=")) return str;
+  const openParenIndex = str.indexOf("(");
+  if (openParenIndex === -1) return str; // no "(" → leave unchanged
+  const fnName = str.substring(1, openParenIndex);
+  const fixedFnName = fnName.replace(/\./g, "_");
+  return `=${fixedFnName}${str.substring(openParenIndex)}`;
+}
+
 export function execfunction(
   ctx: Context,
   txt: string,
@@ -1071,6 +1080,13 @@ export function execfunction(
   isrefresh?: boolean,
   notInsertFunc?: boolean
 ) {
+  const originalTxt = txt;
+  if (
+    txt.toUpperCase().includes("NETWORKDAYS.INTL") ||
+    txt.toUpperCase().includes("WORKDAY.INTL")
+  ) {
+    txt = replaceDotsInFunctionName(txt);
+  }
   if (txt.indexOf(error.r) > -1) {
     return [false, error.r, txt];
   }
@@ -1298,7 +1314,7 @@ export function execfunction(
   return [
     true,
     !isError ? finalResult : "#ERROR",
-    txt,
+    originalTxt,
     isError && {
       row_column: `${r}_${c}`,
       title: "Error",
@@ -2815,9 +2831,9 @@ export function handleFormulaInput(
     } else if (!_.startsWith(value1txt, "=")) {
       if (!$copyTo) return;
       if ($copyTo.id === "luckysheet-rich-text-editor") {
-        if (!_.startsWith($copyTo.innerHTML, "<span")) {
-          $copyTo.innerHTML = escapeHTMLTag(value);
-        }
+        // if (!_.startsWith($copyTo.innerHTML, "<span") || true) {
+        $copyTo.innerHTML = escapeHTMLTag(value);
+        // }
       } else {
         $copyTo.innerHTML = escapeHTMLTag(value);
       }

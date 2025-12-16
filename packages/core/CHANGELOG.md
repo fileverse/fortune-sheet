@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.62
+
+### Patch Changes
+
+- N?A
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.85
+
 ## 1.2.61
 
 ### Patch Changes

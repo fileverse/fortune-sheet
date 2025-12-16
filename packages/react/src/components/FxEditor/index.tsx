@@ -483,100 +483,126 @@ const FxEditor: React.FC = () => {
     isHidenRC,
   ]);
 
-  return (
-    <div className="fortune-fx-editor">
-      <NameBox />
-      <div className="fortune-fx-icon">
-        {/* <SVGIcon name="fx" width={18} height={18} /> */}
-        <LucideIcon
-          name="DSheetOnlyText"
-          fill="black"
-          style={{
-            width: "14px",
-            height: "14px",
-            margin: "auto",
-            marginTop: "1px",
-          }}
-        />
-      </div>
-      <div ref={inputContainerRef} className="fortune-fx-input-container">
-        <ContentEditable
-          onMouseUp={() => {
-            handleHideShowHint();
-            const currentCommaCount = countCommasBeforeCursor(
-              refs.fxInput?.current!
-            );
-            setCommaCount(currentCommaCount);
-          }}
-          innerRef={(e) => {
-            refs.fxInput.current = e;
-          }}
-          className="fortune-fx-input"
-          id="luckysheet-functionbox-cell"
-          aria-autocomplete="list"
-          onFocus={onFocus}
-          onKeyDown={onKeyDown}
-          onChange={onChange}
-          // onBlur={() => setFocused(false)}
-          tabIndex={0}
-          allowEdit={allowEdit && !context.isFlvReadOnly}
-        />
-        {showSearchHint && (
-          <FormulaSearch
-            // @ts-ignore
-            from="fx"
-            onMouseMove={(e) => {
-              if (document.getElementById("luckysheet-formula-search-c")) {
-                // apply hovered state on the function item
-                const hoveredItem = (e.target as HTMLElement).closest(
-                  ".luckysheet-formula-search-item"
-                ) as HTMLElement | null;
-                if (!hoveredItem) return;
+  const divRef = useRef<HTMLDivElement>(null);
+  const [isResizing, setIsResizing] = useState(false);
 
-                clearSearchItemActiveClass();
-                hoveredItem.classList.add(
-                  "luckysheet-formula-search-item-active"
-                );
-              }
-              e.preventDefault();
-            }}
-            onMouseDown={(e) => {
-              selectActiveFormulaOnClick(e);
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+
+    const startY = e.clientY;
+    const startHeight = divRef.current!.offsetHeight;
+
+    const onMouseMove = (ev: MouseEvent) => {
+      const newHeight = startHeight + (ev.clientY - startY);
+      divRef.current!.style.height = `${Math.max(newHeight, 20)}px`; // min height = 100
+    };
+
+    const onMouseUp = () => {
+      setIsResizing(false);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
+
+  return (
+    <div>
+      <div className="fortune-fx-editor" ref={divRef}>
+        <NameBox />
+        <div className="fortune-fx-icon">
+          {/* <SVGIcon name="fx" width={18} height={18} /> */}
+          <LucideIcon
+            name="DSheetOnlyText"
+            fill="black"
+            style={{
+              width: "14px",
+              height: "14px",
+              margin: "auto",
+              marginTop: "1px",
             }}
           />
-        )}
-
-        <div className="fx-hint">
-          {context.functionHint &&
-            refs.fxInput?.current?.innerText.includes("(") && (
-              <FormulaHint
-                handleShowFormulaHint={handleShowFormulaHint}
-                showFormulaHint={showFormulaHint}
-                commaCount={commaCount}
-              />
-            )}
-          {context.functionHint && !showFormulaHint && (
-            <div
-              className="luckysheet-hin absolute show-more-btn"
-              onClick={() => {
-                handleShowFormulaHint();
-              }}
-            >
-              <LucideIcon
-                name="DSheetTextDisabled"
-                fill="black"
-                style={{
-                  width: "14px",
-                  height: "14px",
-                  margin: "auto",
-                  marginTop: "1px",
-                }}
-              />
-            </div>
-          )}
         </div>
+        <div ref={inputContainerRef} className="fortune-fx-input-container">
+          <ContentEditable
+            onMouseUp={() => {
+              handleHideShowHint();
+              const currentCommaCount = countCommasBeforeCursor(
+                refs.fxInput?.current!
+              );
+              setCommaCount(currentCommaCount);
+            }}
+            innerRef={(e) => {
+              refs.fxInput.current = e;
+            }}
+            className="fortune-fx-input"
+            id="luckysheet-functionbox-cell"
+            aria-autocomplete="list"
+            onFocus={onFocus}
+            onKeyDown={onKeyDown}
+            onChange={onChange}
+            // onBlur={() => setFocused(false)}
+            tabIndex={0}
+            allowEdit={allowEdit && !context.isFlvReadOnly}
+          />
+          {showSearchHint && (
+            <FormulaSearch
+              // @ts-ignore
+              from="fx"
+              onMouseMove={(e) => {
+                if (document.getElementById("luckysheet-formula-search-c")) {
+                  // apply hovered state on the function item
+                  const hoveredItem = (e.target as HTMLElement).closest(
+                    ".luckysheet-formula-search-item"
+                  ) as HTMLElement | null;
+                  if (!hoveredItem) return;
 
-        {/* {focused && (
+                  clearSearchItemActiveClass();
+                  hoveredItem.classList.add(
+                    "luckysheet-formula-search-item-active"
+                  );
+                }
+                e.preventDefault();
+              }}
+              onMouseDown={(e) => {
+                selectActiveFormulaOnClick(e);
+              }}
+            />
+          )}
+
+          <div className="fx-hint">
+            {context.functionHint &&
+              refs.fxInput?.current?.innerText.includes("(") && (
+                <FormulaHint
+                  handleShowFormulaHint={handleShowFormulaHint}
+                  showFormulaHint={showFormulaHint}
+                  commaCount={commaCount}
+                />
+              )}
+            {context.functionHint && !showFormulaHint && (
+              <div
+                className="luckysheet-hin absolute show-more-btn"
+                onClick={() => {
+                  handleShowFormulaHint();
+                }}
+              >
+                <LucideIcon
+                  name="DSheetTextDisabled"
+                  fill="black"
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    margin: "auto",
+                    marginTop: "1px",
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* {focused && (
           <>
             <FormulaSearch
               style={{
@@ -590,7 +616,13 @@ const FxEditor: React.FC = () => {
             />
           </>
         )} */}
+        </div>
       </div>
+      <div
+        className="resize-handle"
+        onMouseDown={startResize}
+        style={{ cursor: isResizing ? "grabbing" : "ns-resize", height: "2px" }}
+      />
     </div>
   );
 };

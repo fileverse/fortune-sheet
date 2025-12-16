@@ -17,6 +17,10 @@ import {
   isAllowEdit,
   getrangeseleciton,
   indexToColumnChar,
+  handleBold,
+  handleItalic,
+  handleUnderline,
+  handleStrikeThrough,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -336,6 +340,11 @@ const InputBox: React.FC = () => {
     [getActiveFormula, insertSelectedFormula]
   );
 
+  const stopPropagation = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+    event.preventDefault();
+  };
+
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
@@ -347,6 +356,22 @@ const InputBox: React.FC = () => {
       // ) {
       //   return;
       // }
+
+      if (e.metaKey) {
+        if (e.code === "KeyB") {
+          handleBold(context, inputRef.current!);
+          stopPropagation(e);
+        } else if (e.code === "KeyI") {
+          handleItalic(context, inputRef.current!);
+          stopPropagation(e);
+        } else if (e.code === "KeyU") {
+          handleUnderline(context, inputRef.current!);
+          stopPropagation(e);
+        } else if (e.code === "KeyS") {
+          handleStrikeThrough(context, inputRef.current!);
+          stopPropagation(e);
+        }
+      }
 
       const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
       setCommaCount(currentCommaCount);

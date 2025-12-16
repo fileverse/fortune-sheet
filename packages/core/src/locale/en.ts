@@ -3589,6 +3589,33 @@ export default {
         },
       ],
     },
+        {
+      n: "EPOCHTODATE",
+      t: 2,
+      d: "Converts a Unix epoch timestamp in seconds, milliseconds, or microseconds to a datetime in UTC.",
+      a: "Vertical lookup.",
+      m: [3, 4],
+      p: [
+        {
+          name: "timestamp",
+          detail:
+            "A Unix epoch timestamp in seconds, milliseconds, or microseconds.",
+          example: "1655906568893",
+          require: "m",
+          repeat: "n",
+          type: "rangeall",
+        },
+        {
+          name: "time_unit",
+          detail:
+            "The unit of time in which the timestamp is expressed. 1 (default) indicates the time unit is seconds. 2 indicates the time unit is milliseconds. 3 indicates the time unit is microseconds.",
+          example: "2",
+          require: "o",
+          repeat: "n",
+          type: "rangeall",
+        },
+      ],
+    },
     {
       n: "HLOOKUP",
       t: 2,

@@ -807,7 +807,7 @@ export function updateCell(
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
   const { dataVerification } = ctx.luckysheetfile[index];
 
-  // --- hyperlink-on-edit-paste support (Luckysheet/FortuneSheet model) ---
+  // --- hyperlink-on-edit-paste support ---
   const sheetFile = ctx.luckysheetfile[index] as any;
 
   const getUrlFromText = (text?: string): string | null => {
@@ -888,8 +888,6 @@ export function updateCell(
         {
           v: trimmedInputText,
           fs: fontSize,
-          // Most Luckysheet/FortuneSheets forks render hyperlinks when a share-string item has `l`.
-          // If your fork uses a different key, adjust here.
           l: {
             target: normalizedUrl,
           },
@@ -1228,7 +1226,7 @@ export function updateCell(
     console.log("[updateCell] spill failed; falling back", e);
   }
 
-  // --- hyperlink-on-edit-paste support (Luckysheet/FortuneSheet model) ---
+  // --- hyperlink-on-edit-paste support ---
   // If user pasted a URL while editing (double click), persist hyperlink using sheet.hyperlink + cell.hl
   const url = getUrlFromText($input?.innerText);
   if (url && typeof value === "object" && value) {

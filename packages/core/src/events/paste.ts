@@ -634,12 +634,27 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
     }
     if (!d) return;
 
+    // Helper function to detect and normalize URLs
+    const getUrlFromText = (text: string): string | null => {
+      const t = String(text).trim();
+      // only treat a single token as a URL (no spaces/newlines)
+      if (!t || /[\s\r\n]/.test(t)) return null;
+      if (!/^(https?:\/\/|www\.)\S+$/i.test(t)) return null;
+      return t.startsWith("http") ? t : `https://${t}`;
+    };
+
     for (let r = 0; r < rlen; r += 1) {
       const x = d[r + curR];
       for (let c = 0; c < clen; c += 1) {
         const originCell = x[c + curC];
         let value = dataChe[r][c];
-        if (isRealNum(value)) {
+        const originalValueStr = String(value);
+
+        // Check if the value is a URL first - if so, keep it as string and skip number conversion
+        const url = getUrlFromText(originalValueStr);
+        const isUrl = url !== null;
+
+        if (!isUrl && isRealNum(value)) {
           // 如果单元格设置了纯文本格式，那么就不要转成数值类型了，防止数值过大自动转成科学计数法
           if (originCell && originCell.ct && originCell.ct.fa === "@") {
             value = String(value);
@@ -647,30 +662,87 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
             value = parseFloat(value);
           }
         }
+
         if (originCell) {
-          originCell.v = value;
+          // If it's a URL, keep it as string
+          originCell.v = isUrl ? originalValueStr : value;
           if (originCell.ct != null && originCell.ct.fa != null) {
-            originCell.m = update(originCell.ct.fa, value);
+            originCell.m = update(originCell.ct.fa, originCell.v);
           } else {
-            originCell.m = value;
+            // Convert boolean to string if needed, since m only accepts string | number
+            originCell.m =
+              typeof originCell.v === "boolean"
+                ? String(originCell.v)
+                : originCell.v;
           }
 
           if (originCell.f != null && originCell.f.length > 0) {
             originCell.f = "";
             // delFunctionGroup(ctx, r + curR, c + curC, ctx.currentSheetId);
           }
+
+          // Create hyperlink if URL detected
+          if (isUrl && url) {
+            const targetRow = r + curR;
+            const targetCol = c + curC;
+            saveHyperlink(
+              ctx,
+              targetRow,
+              targetCol,
+              url,
+              "webpage",
+              originalValueStr
+            );
+            // Set hyperlink marker and styling
+            originCell.hl = {
+              r: targetRow,
+              c: targetCol,
+              id: ctx.currentSheetId,
+            };
+            originCell.fc = originCell.fc || "rgb(0, 0, 255)";
+            originCell.un = originCell.un !== undefined ? originCell.un : 1;
+          }
         } else {
           const cell: Cell = {};
-          const mask = genarate(value);
-          [cell.m, cell.ct, cell.v] = mask!;
-          // check if hex value to handle hex address
-          if (/^0x?[a-fA-F0-9]+$/.test(value)) {
-            cell.m = value;
+
+          // If it's a URL, keep it as string
+          if (isUrl) {
+            cell.v = originalValueStr;
+            cell.m = originalValueStr;
             cell.ct = {
               fa: "@",
               t: "s",
             };
-            cell.v = value;
+          } else {
+            const mask = genarate(value);
+            [cell.m, cell.ct, cell.v] = mask!;
+            // check if hex value to handle hex address
+            if (/^0x?[a-fA-F0-9]+$/.test(value)) {
+              cell.m = value;
+              cell.ct = {
+                fa: "@",
+                t: "s",
+              };
+              cell.v = value;
+            }
+          }
+
+          // Create hyperlink if URL detected
+          if (isUrl && url) {
+            const targetRow = r + curR;
+            const targetCol = c + curC;
+            saveHyperlink(
+              ctx,
+              targetRow,
+              targetCol,
+              url,
+              "webpage",
+              originalValueStr
+            );
+            // Set hyperlink marker and styling
+            cell.hl = { r: targetRow, c: targetCol, id: ctx.currentSheetId };
+            cell.fc = cell.fc || "rgb(0, 0, 255)";
+            cell.un = cell.un !== undefined ? cell.un : 1;
           }
 
           x[c + curC] = cell;

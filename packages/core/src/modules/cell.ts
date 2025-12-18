@@ -771,27 +771,6 @@ export function updateCell(
   let inputText = $input?.innerText;
   const inputHtml = $input?.innerHTML;
 
-  // --- hyperlink-on-edit-paste support (START) ---
-  const trimmedInputText = (inputText ?? "").trim();
-
-  // treat as "single URL pasted" only if it's one token (no spaces/newlines)
-  const isSingleToken =
-    trimmedInputText.length > 0 && !/[\s\r\n]/.test(trimmedInputText);
-
-  const isUrlPastedInEditor =
-    isSingleToken && /^(https?:\/\/|www\.)\S+$/i.test(trimmedInputText);
-
-  let normalizedUrl: string | null = null;
-
-  if (isUrlPastedInEditor) {
-    if (trimmedInputText.startsWith("http")) {
-      normalizedUrl = trimmedInputText;
-    } else {
-      normalizedUrl = `https://${trimmedInputText}`;
-    }
-  }
-  // --- hyperlink-on-edit-paste support (END) ---
-
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
 
@@ -842,8 +821,7 @@ export function updateCell(
 
   const isPrevInline = isInlineStringCell(curv);
   let isCurInline =
-    inputText?.slice(0, 1) !== "=" &&
-    (inputHtml?.substring(0, 5) === "<span" || isUrlPastedInEditor);
+    inputText?.slice(0, 1) !== "=" && inputHtml?.substring(0, 5) === "<span";
 
   let isCopyVal = false;
   if (!isCurInline && inputText && inputText.length > 0) {
@@ -881,24 +859,10 @@ export function updateCell(
 
     curv.ct.t = "inlineStr";
 
-    // If user pasted a URL while editing, browser paste is plain text (no spans).
-    // Force an inline rich-text entry with link metadata.
-    if (isUrlPastedInEditor && normalizedUrl) {
-      curv.ct.s = [
-        {
-          v: trimmedInputText,
-          fs: fontSize,
-          l: {
-            target: normalizedUrl,
-          },
-        },
-      ];
-    } else {
-      curv.ct.s = convertSpanToShareString(
-        $input!.querySelectorAll("span"),
-        curv
-      );
-    }
+    curv.ct.s = convertSpanToShareString(
+      $input!.querySelectorAll("span"),
+      curv
+    );
 
     delete curv.fs;
     delete curv.f;

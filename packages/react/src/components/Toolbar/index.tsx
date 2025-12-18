@@ -61,6 +61,7 @@ import Combo from "./Combo";
 import Select, { Option } from "./Select";
 import SVGIcon from "../SVGIcon";
 import { useDialog } from "../../hooks/useDialog";
+import { useAlert } from "../../hooks/useAlert";
 import { SplitColumn } from "../SplitColumn";
 import { LocationCondition } from "../LocationCondition";
 import ConditionalFormat from "../ConditionFormat";
@@ -455,6 +456,7 @@ const Toolbar: React.FC<{
   const [showDuneModal, setShowDuneModal] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1280);
   const { showDialog, hideDialog } = useDialog();
+  const { showAlert, hideAlert } = useAlert();
   const firstSelection = context.luckysheet_select_save?.[0];
   const flowdata = getFlowdata(context);
   contextRef.current = context;
@@ -480,6 +482,7 @@ const Toolbar: React.FC<{
     findAndReplace,
     comment,
     fontarray,
+    sheetconfig,
   } = locale(context);
   const toolbarFormat = locale(context).format;
   const sheetWidth = context.luckysheetTableContentHW[0];
@@ -1520,11 +1523,15 @@ const Toolbar: React.FC<{
             key={name}
             tooltip={tooltip}
             text="合并单元格"
-            onClick={() =>
-              setContext((ctx) => {
-                handleMerge(ctx, "merge-all");
-              })
-            }
+            onClick={() => {
+              const confirmMessage = sheetconfig.confirmMerge;
+              showAlert(confirmMessage, "yesno", () => {
+                setContext((ctx) => {
+                  handleMerge(ctx, "merge-all");
+                });
+                hideAlert();
+              });
+            }}
           >
             {(setOpen) => (
               <Select>
@@ -1532,10 +1539,24 @@ const Toolbar: React.FC<{
                   <Option
                     key={value}
                     onClick={() => {
-                      setContext((ctx) => {
-                        handleMerge(ctx, value);
-                      });
-                      setOpen(false);
+                      if (value === "merge-cancel") {
+                        // No confirmation for unmerge
+                        setContext((ctx) => {
+                          handleMerge(ctx, value);
+                        });
+                        setOpen(false);
+                      } else {
+                        // Close dropdown before showing alert
+                        setOpen(false);
+                        // Show confirmation for all merge actions
+                        const confirmMessage = sheetconfig.confirmMerge;
+                        showAlert(confirmMessage, "yesno", () => {
+                          setContext((ctx) => {
+                            handleMerge(ctx, value);
+                          });
+                          hideAlert();
+                        });
+                      }
                     }}
                   >
                     <div

@@ -3589,7 +3589,7 @@ export default {
         },
       ],
     },
-        {
+    {
       n: "EPOCHTODATE",
       t: 2,
       d: "Converts a Unix epoch timestamp in seconds, milliseconds, or microseconds to a datetime in UTC.",
@@ -11653,6 +11653,8 @@ export default {
     chartEditNoOpt: "This operation is not allowed in chart editing mode!",
     sheetNameSpecCharError: "The name cannot contain:[ ] :  ? * / ' \"",
     sheetNamecannotIsEmptyError: "Sheet name cannot be empty!",
+    confirmMerge:
+      "Merging cells will only preserve the top-leftmost value. Merge anyway?",
   },
   conditionformat: {
     conditionformat_greaterThan: "Conditional format - Greater than",

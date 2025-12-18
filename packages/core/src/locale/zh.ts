@@ -11710,6 +11710,7 @@ export default {
     sheetNameSpecCharError:
       "名称不能超过31个字符，首尾不能是' 且名称不能包含:\r\n[ ] : \\ ? * /",
     sheetNamecannotIsEmptyError: "名称不能为空!",
+    confirmMerge: "合并单元格将仅保留左上角单元格的值。是否继续？",
   },
   conditionformat: {
     conditionformat_greaterThan: "条件格式——大于",

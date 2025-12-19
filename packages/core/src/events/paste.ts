@@ -634,12 +634,27 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
     }
     if (!d) return;
 
+    // Helper function to detect and normalize URLs
+    const getUrlFromText = (text: string): string | null => {
+      const t = String(text).trim();
+      // only treat a single token as a URL (no spaces/newlines)
+      if (!t || /[\s\r\n]/.test(t)) return null;
+      if (!/^(https?:\/\/|www\.)\S+$/i.test(t)) return null;
+      return t.startsWith("http") ? t : `https://${t}`;
+    };
+
     for (let r = 0; r < rlen; r += 1) {
       const x = d[r + curR];
       for (let c = 0; c < clen; c += 1) {
         const originCell = x[c + curC];
         let value = dataChe[r][c];
-        if (isRealNum(value)) {
+        const originalValueStr = String(value);
+
+        // Check if the value is a URL first - if so, keep it as string and skip number conversion
+        const url = getUrlFromText(originalValueStr);
+        const isUrl = url !== null;
+
+        if (!isUrl && isRealNum(value)) {
           // 如果单元格设置了纯文本格式，那么就不要转成数值类型了，防止数值过大自动转成科学计数法
           if (originCell && originCell.ct && originCell.ct.fa === "@") {
             value = String(value);
@@ -647,30 +662,87 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
             value = parseFloat(value);
           }
         }
+
         if (originCell) {
-          originCell.v = value;
+          // If it's a URL, keep it as string
+          originCell.v = isUrl ? originalValueStr : value;
           if (originCell.ct != null && originCell.ct.fa != null) {
-            originCell.m = update(originCell.ct.fa, value);
+            originCell.m = update(originCell.ct.fa, originCell.v);
           } else {
-            originCell.m = value;
+            // Convert boolean to string if needed, since m only accepts string | number
+            originCell.m =
+              typeof originCell.v === "boolean"
+                ? String(originCell.v)
+                : originCell.v;
           }
 
           if (originCell.f != null && originCell.f.length > 0) {
             originCell.f = "";
             // delFunctionGroup(ctx, r + curR, c + curC, ctx.currentSheetId);
           }
+
+          // Create hyperlink if URL detected
+          if (isUrl && url) {
+            const targetRow = r + curR;
+            const targetCol = c + curC;
+            saveHyperlink(
+              ctx,
+              targetRow,
+              targetCol,
+              url,
+              "webpage",
+              originalValueStr
+            );
+            // Set hyperlink marker and styling
+            originCell.hl = {
+              r: targetRow,
+              c: targetCol,
+              id: ctx.currentSheetId,
+            };
+            originCell.fc = originCell.fc || "rgb(0, 0, 255)";
+            originCell.un = originCell.un !== undefined ? originCell.un : 1;
+          }
         } else {
           const cell: Cell = {};
-          const mask = genarate(value);
-          [cell.m, cell.ct, cell.v] = mask!;
-          // check if hex value to handle hex address
-          if (/^0x?[a-fA-F0-9]+$/.test(value)) {
-            cell.m = value;
+
+          // If it's a URL, keep it as string
+          if (isUrl) {
+            cell.v = originalValueStr;
+            cell.m = originalValueStr;
             cell.ct = {
               fa: "@",
               t: "s",
             };
-            cell.v = value;
+          } else {
+            const mask = genarate(value);
+            [cell.m, cell.ct, cell.v] = mask!;
+            // check if hex value to handle hex address
+            if (/^0x?[a-fA-F0-9]+$/.test(value)) {
+              cell.m = value;
+              cell.ct = {
+                fa: "@",
+                t: "s",
+              };
+              cell.v = value;
+            }
+          }
+
+          // Create hyperlink if URL detected
+          if (isUrl && url) {
+            const targetRow = r + curR;
+            const targetCol = c + curC;
+            saveHyperlink(
+              ctx,
+              targetRow,
+              targetCol,
+              url,
+              "webpage",
+              originalValueStr
+            );
+            // Set hyperlink marker and styling
+            cell.hl = { r: targetRow, c: targetCol, id: ctx.currentSheetId };
+            cell.fc = cell.fc || "rgb(0, 0, 255)";
+            cell.un = cell.un !== undefined ? cell.un : 1;
           }
 
           x[c + curC] = cell;
@@ -1742,34 +1814,86 @@ function pasteHandlerOfCopyPaste(
     ctx.luckysheet_select_save?.length === 1 &&
     ctx.luckysheet_copy_save?.copyRange.length === 1
   ) {
-    _.forEach(ctx.luckysheet_copy_save?.copyRange, (range) => {
-      const srcIndex = getSheetIndex(
-        ctx,
-        ctx.luckysheet_copy_save?.dataSheetId as string
-      ) as number;
+    const srcIndex = getSheetIndex(
+      ctx,
+      ctx.luckysheet_copy_save?.dataSheetId as string
+    ) as number;
+    const targetSheetIndex = getSheetIndex(ctx, ctx.currentSheetId) as number;
 
-      for (let r = 0; r <= range.row[1] - range.row[0]; r += 1) {
-        for (let c = 0; c <= range.column[1] - range.column[0]; c += 1) {
-          const srcRow = r + range.row[0];
-          const srcCol = c + range.column[0];
+    // Cache property access to avoid repeated lookups
+    const srcHyperlinks = ctx.luckysheetfile[srcIndex].hyperlink;
+    const srcData = ctx.luckysheetfile[srcIndex].data;
 
-          const srcLink =
-            ctx.luckysheetfile[srcIndex].hyperlink?.[`${srcRow}_${srcCol}`];
-          if (!srcLink) continue;
+    // Initialize hyperlink registry for target sheet if needed
+    if (!ctx.luckysheetfile[targetSheetIndex].hyperlink) {
+      ctx.luckysheetfile[targetSheetIndex].hyperlink = {};
+    }
+    const targetHyperlinks = ctx.luckysheetfile[targetSheetIndex].hyperlink!;
 
-          const targetR = r + ctx.luckysheet_select_save![0].row[0];
-          const targetC = c + ctx.luckysheet_select_save![0].column[0];
+    // For single cell copy, cache source link and cell to avoid repeated lookups
+    const isSingleCell = copyh === 1 && copyc === 1;
+    const cachedSrcLinkKey = isSingleCell ? `${c_r1}_${c_c1}` : null;
+    const cachedSrcLink =
+      isSingleCell && srcHyperlinks ? srcHyperlinks[cachedSrcLinkKey!] : null;
+    const cachedSrcCell =
+      isSingleCell && srcData ? srcData[c_r1]?.[c_c1] : null;
 
-          setCellHyperlink(
-            ctx,
-            ctx.luckysheet_copy_save?.dataSheetId as string,
-            targetR,
-            targetC,
-            srcLink
-          );
+    // Loop through all target cells using the same repetition pattern as cell data
+    for (let th = 1; th <= timesH; th += 1) {
+      for (let tc = 1; tc <= timesC; tc += 1) {
+        const linkMth = minh + (th - 1) * copyh;
+        const linkMtc = minc + (tc - 1) * copyc;
+        const linkMaxRow = minh + th * copyh;
+        const linkMaxCol = minc + tc * copyc;
+
+        // Loop through target cells in this repetition block
+        for (let h = linkMth; h < linkMaxRow; h += 1) {
+          for (let c = linkMtc; c < linkMaxCol; c += 1) {
+            // Get source link (use cache for single cell, otherwise lookup)
+            let srcLink: any;
+            if (isSingleCell && cachedSrcLink) {
+              srcLink = cachedSrcLink;
+            } else {
+              const srcRow = c_r1 + (h - linkMth);
+              const srcCol = c_c1 + (c - linkMtc);
+              srcLink = srcHyperlinks?.[`${srcRow}_${srcCol}`];
+            }
+            if (!srcLink) continue;
+
+            // Set hyperlink in registry (cache key string)
+            const targetKey = `${h}_${c}`;
+            targetHyperlinks[targetKey] = srcLink;
+
+            // Update cell data to ensure hyperlink properties are set
+            const cell = d[h]?.[c];
+            if (cell) {
+              // Get source cell styling (use cache for single cell, otherwise lookup)
+              let srcCell: any;
+              if (isSingleCell && cachedSrcCell) {
+                srcCell = cachedSrcCell;
+              } else {
+                const srcRow = c_r1 + (h - linkMth);
+                const srcCol = c_c1 + (c - linkMtc);
+                srcCell = srcData?.[srcRow]?.[srcCol];
+              }
+
+              // Set hyperlink marker
+              cell.hl = { r: h, c, id: ctx.currentSheetId };
+
+              // Copy hyperlink styling from source if available
+              if (srcCell) {
+                if (srcCell.fc) cell.fc = srcCell.fc;
+                if (srcCell.un !== undefined) cell.un = srcCell.un;
+              } else {
+                // Default hyperlink styling
+                cell.fc = cell.fc || "rgb(0, 0, 255)";
+                cell.un = cell.un !== undefined ? cell.un : 1;
+              }
+            }
+          }
         }
       }
-    });
+    }
   }
 
   if (copyRowlChange || addr > 0 || addc > 0) {
@@ -1825,12 +1949,20 @@ function handleFormulaStringPaste(ctx: Context, formulaStr: string) {
 export function parseAsLinkIfUrl(txtdata: string, ctx: Context) {
   const urlRegex = /^(https?:\/\/[^\s]+)/;
   if (urlRegex.test(txtdata)) {
-    const last =
-      ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
-    if (last) {
-      const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
-      const colIndex = last.column_focus ?? last.column?.[0] ?? 0;
+    // In edit mode, use luckysheetCellUpdate to get the cell position
+    if (ctx.luckysheetCellUpdate.length === 2) {
+      const rowIndex = ctx.luckysheetCellUpdate[0];
+      const colIndex = ctx.luckysheetCellUpdate[1];
       saveHyperlink(ctx, rowIndex, colIndex, txtdata, "webpage", txtdata);
+    } else {
+      // Otherwise, use luckysheet_select_save
+      const last =
+        ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
+      if (last) {
+        const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
+        const colIndex = last.column_focus ?? last.column?.[0] ?? 0;
+        saveHyperlink(ctx, rowIndex, colIndex, txtdata, "webpage", txtdata);
+      }
     }
   }
 }

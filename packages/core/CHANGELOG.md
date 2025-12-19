@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.66
+
+### Patch Changes
+
+- fix: merge
+
 ## 1.2.65
 
 ### Patch Changes

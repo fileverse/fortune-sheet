@@ -414,6 +414,12 @@ export function handlePastedTable(
           "webpage",
           hyperlink.display
         );
+        // Force blue color and underline for all pasted links
+        cell.hl = { r: absoluteRow, c: absoluteCol, id: ctx.currentSheetId };
+        cell.fc = "rgb(0, 0, 255)";
+        cell.un = 1;
+        // Update the cell in the matrix with the styling
+        pastedMatrix[localRowIndex][localColIndex] = cell;
       }
 
       // Apply borders and merges

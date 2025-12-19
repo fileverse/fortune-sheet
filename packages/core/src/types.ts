@@ -136,6 +136,12 @@ export type ConditionRulesProps = {
   rulesValue: string;
   textColor: { check: boolean; color: string };
   cellColor: { check: boolean; color: string };
+  font: {
+    bold: boolean;
+    italic: boolean;
+    underline: boolean;
+    strikethrough: boolean;
+  };
   betweenValue: { value1: string; value2: string };
   dateValue: string;
   repeatValue: string;

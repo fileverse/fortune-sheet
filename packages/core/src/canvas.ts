@@ -1875,7 +1875,7 @@ export class Canvas {
     if (!flowdata) {
       return;
     }
-    const cell = flowdata[r][c];
+    let cell = flowdata[r][c];
     const cellWidth = endX - startX - 2;
     const cellHeight = endY - startY - 2;
     const space_width = 2;
@@ -1934,6 +1934,8 @@ export class Canvas {
     ) {
       return;
     }
+
+    console.log("cellsize", fillStyle);
 
     renderCtx.fillRect(cellsize[0], cellsize[1], cellsize[2], cellsize[3]);
 
@@ -2353,6 +2355,19 @@ export class Canvas {
       renderCtx.clip();
       renderCtx.scale(this.sheetCtx.zoomRatio, this.sheetCtx.zoomRatio);
 
+      if (checksCF?.strikethrough) {
+        cell = { ...cell, cl: 1 };
+      }
+      if (checksCF?.italic) {
+        cell = { ...cell, it: 1 };
+      }
+      if (checksCF?.underline) {
+        cell = { ...cell, un: 1 };
+      }
+      if (checksCF?.bold) {
+        cell = { ...cell, bl: 1 };
+      }
+
       const textInfo = cell
         ? getCellTextInfo(
             cell,
@@ -2436,6 +2451,7 @@ export class Canvas {
         }
         renderCtx.restore();
       } else if (!isDataVlidationAvailable) {
+        console.log("checksCF", checksCF);
         this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
       }
 

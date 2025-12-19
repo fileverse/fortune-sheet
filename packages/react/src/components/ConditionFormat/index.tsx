@@ -1,6 +1,9 @@
 import React, { useCallback, useContext, useEffect, useRef } from "react";
 import "./index.css";
-import { locale, updateItem } from "@fileverse-dev/fortune-core";
+import {
+  locale,
+  // updateItem
+} from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import WorkbookContext from "../../context";
 import Select, { Option } from "../Toolbar/Select";
@@ -254,9 +257,9 @@ const ConditionalFormat: React.FC<{
                     key={v}
                     style={{ padding: "6px 10px" }}
                     onClick={() => {
-                      setContext((ctx) => {
-                        updateItem(ctx, "delSheet");
-                      });
+                      // setContext((ctx) => {
+                      //   // updateItem(ctx, "delSheet");
+                      // });
                     }}
                     tabIndex={0}
                   >

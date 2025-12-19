@@ -354,6 +354,10 @@ export function setConditionRules(
     format: {
       textColor,
       cellColor,
+      bold: rules.font.bold,
+      italic: rules.font.italic,
+      underline: rules.font.underline,
+      strikethrough: rules.font.strikethrough,
     },
     conditionName,
     conditionRange,
@@ -808,7 +812,8 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
         const { conditionName } = ruleArr[i];
         const conditionValue0 = ruleArr[i].conditionValue[0];
         const conditionValue1 = ruleArr[i].conditionValue[1];
-        const { textColor, cellColor } = format;
+        const { textColor, cellColor, bold, italic, underline, strikethrough } =
+          format;
         for (let s = 0; s < cellrange.length; s += 1) {
           // 条件类型判断
           if (
@@ -846,8 +851,19 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
                     computeMap[`${r}_${c}`].cellColor = cellColor;
+                    computeMap[`${r}_${c}`].bold = bold;
+                    computeMap[`${r}_${c}`].italic = italic;
+                    computeMap[`${r}_${c}`].underline = underline;
+                    computeMap[`${r}_${c}`].strikethrough = strikethrough;
                   } else {
-                    computeMap[`${r}_${c}`] = { textColor, cellColor };
+                    computeMap[`${r}_${c}`] = {
+                      textColor,
+                      cellColor,
+                      bold,
+                      italic,
+                      underline,
+                      strikethrough,
+                    };
                   }
                 } else if (
                   conditionName === "greaterThanOrEqual" &&
@@ -856,8 +872,12 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
                     computeMap[`${r}_${c}`].cellColor = cellColor;
+                    computeMap[`${r}_${c}`].bold = bold;
+                    computeMap[`${r}_${c}`].italic = italic;
+                    computeMap[`${r}_${c}`].underline = underline;
+                    computeMap[`${r}_${c}`].strikethrough = strikethrough;
                   } else {
-                    computeMap[`${r}_${c}`] = { textColor, cellColor };
+                    computeMap[`${r}_${c}`] = { textColor, cellColor, bold };
                   }
                 } else if (
                   conditionName === "lessThan" &&
@@ -866,10 +886,18 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
                     computeMap[`${r}_${c}`].cellColor = cellColor;
+                    computeMap[`${r}_${c}`].bold = bold;
+                    computeMap[`${r}_${c}`].italic = italic;
+                    computeMap[`${r}_${c}`].underline = underline;
+                    computeMap[`${r}_${c}`].strikethrough = strikethrough;
                   } else {
                     computeMap[`${r}_${c}`] = {
                       textColor,
                       cellColor,
+                      bold,
+                      italic,
+                      underline,
+                      strikethrough,
                     };
                   }
                 } else if (
@@ -879,10 +907,18 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
                     computeMap[`${r}_${c}`].cellColor = cellColor;
+                    computeMap[`${r}_${c}`].bold = bold;
+                    computeMap[`${r}_${c}`].italic = italic;
+                    computeMap[`${r}_${c}`].underline = underline;
+                    computeMap[`${r}_${c}`].strikethrough = strikethrough;
                   } else {
                     computeMap[`${r}_${c}`] = {
                       textColor,
                       cellColor,
+                      bold,
+                      italic,
+                      underline,
+                      strikethrough,
                     };
                   }
                 } else if (
@@ -892,10 +928,18 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
                     computeMap[`${r}_${c}`].cellColor = cellColor;
+                    computeMap[`${r}_${c}`].bold = bold;
+                    computeMap[`${r}_${c}`].italic = italic;
+                    computeMap[`${r}_${c}`].underline = underline;
+                    computeMap[`${r}_${c}`].strikethrough = strikethrough;
                   } else {
                     computeMap[`${r}_${c}`] = {
                       textColor,
                       cellColor,
+                      bold,
+                      italic,
+                      underline,
+                      strikethrough,
                     };
                   }
                 } else if (
@@ -905,10 +949,18 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
                     computeMap[`${r}_${c}`].cellColor = cellColor;
+                    computeMap[`${r}_${c}`].bold = bold;
+                    computeMap[`${r}_${c}`].italic = italic;
+                    computeMap[`${r}_${c}`].underline = underline;
+                    computeMap[`${r}_${c}`].strikethrough = strikethrough;
                   } else {
                     computeMap[`${r}_${c}`] = {
                       textColor,
                       cellColor,
+                      bold,
+                      italic,
+                      underline,
+                      strikethrough,
                     };
                   }
                 }
@@ -940,10 +992,18 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;
                     computeMap[`${r}_${c}`].cellColor = cellColor;
+                    computeMap[`${r}_${c}`].bold = bold;
+                    computeMap[`${r}_${c}`].italic = italic;
+                    computeMap[`${r}_${c}`].underline = underline;
+                    computeMap[`${r}_${c}`].strikethrough = strikethrough;
                   } else {
                     computeMap[`${r}_${c}`] = {
                       textColor,
                       cellColor,
+                      bold,
+                      italic,
+                      underline,
+                      strikethrough,
                     };
                   }
                 }
@@ -987,10 +1047,18 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                     if (`${r}_${c}` in computeMap) {
                       computeMap[`${r}_${c}`].textColor = textColor;
                       computeMap[`${r}_${c}`].cellColor = cellColor;
+                      computeMap[`${r}_${c}`].bold = bold;
+                      computeMap[`${r}_${c}`].italic = italic;
+                      computeMap[`${r}_${c}`].underline = underline;
+                      computeMap[`${r}_${c}`].strikethrough = strikethrough;
                     } else {
                       computeMap[`${r}_${c}`] = {
                         textColor,
                         cellColor,
+                        bold,
+                        italic,
+                        underline,
+                        strikethrough,
                       };
                     }
                   }
@@ -1015,6 +1083,7 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   dmap[item] = [];
                 }
                 dmap[item].push({ r, c });
+                computeMap[`${r}_${c}`] = { ...computeMap[`${r}_${c}`], bold };
               }
             }
             // 循环应用范围计算
@@ -1026,10 +1095,19 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                     if (`${x[j].r}_${x[j].c}` in computeMap) {
                       computeMap[`${x[j].r}_${x[j].c}`].textColor = textColor;
                       computeMap[`${x[j].r}_${x[j].c}`].cellColor = cellColor;
+                      computeMap[`${x[j].r}_${x[j].c}`].bold = bold;
+                      computeMap[`${x[j].r}_${x[j].c}`].italic = italic;
+                      computeMap[`${x[j].r}_${x[j].c}`].underline = underline;
+                      computeMap[`${x[j].r}_${x[j].c}`].strikethrough =
+                        strikethrough;
                     } else {
                       computeMap[`${x[j].r}_${x[j].c}`] = {
                         textColor,
                         cellColor,
+                        bold,
+                        italic,
+                        underline,
+                        strikethrough,
                       };
                     }
                   }
@@ -1042,10 +1120,19 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                   if (`${x[0].r}_${x[0].c}` in computeMap) {
                     computeMap[`${x[0].r}_${x[0].c}`].textColor = textColor;
                     computeMap[`${x[0].r}_${x[0].c}`].cellColor = cellColor;
+                    computeMap[`${x[0].r}_${x[0].c}`].bold = bold;
+                    computeMap[`${x[0].r}_${x[0].c}`].italic = italic;
+                    computeMap[`${x[0].r}_${x[0].c}`].underline = underline;
+                    computeMap[`${x[0].r}_${x[0].c}`].strikethrough =
+                      strikethrough;
                   } else {
                     computeMap[`${x[0].r}_${x[0].c}`] = {
                       textColor,
                       cellColor,
+                      bold,
+                      italic,
+                      underline,
+                      strikethrough,
                     };
                   }
                 }
@@ -1143,10 +1230,18 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                     if (`${r}_${c}` in computeMap) {
                       computeMap[`${r}_${c}`].textColor = textColor;
                       computeMap[`${r}_${c}`].cellColor = cellColor;
+                      computeMap[`${r}_${c}`].bold = bold;
+                      computeMap[`${r}_${c}`].italic = italic;
+                      computeMap[`${r}_${c}`].underline = underline;
+                      computeMap[`${r}_${c}`].strikethrough = strikethrough;
                     } else {
                       computeMap[`${r}_${c}`] = {
                         textColor,
                         cellColor,
+                        bold,
+                        italic,
+                        underline,
+                        strikethrough,
                       };
                     }
                   }
@@ -1186,10 +1281,18 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                       if (`${r}_${c}` in computeMap) {
                         computeMap[`${r}_${c}`].textColor = textColor;
                         computeMap[`${r}_${c}`].cellColor = cellColor;
+                        computeMap[`${r}_${c}`].bold = bold;
+                        computeMap[`${r}_${c}`].italic = italic;
+                        computeMap[`${r}_${c}`].underline = underline;
+                        computeMap[`${r}_${c}`].strikethrough = strikethrough;
                       } else {
                         computeMap[`${r}_${c}`] = {
                           textColor,
                           cellColor,
+                          bold,
+                          italic,
+                          underline,
+                          strikethrough,
                         };
                       }
                     }
@@ -1218,10 +1321,18 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                       if (`${r}_${c}` in computeMap) {
                         computeMap[`${r}_${c}`].textColor = textColor;
                         computeMap[`${r}_${c}`].cellColor = cellColor;
+                        computeMap[`${r}_${c}`].bold = bold;
+                        computeMap[`${r}_${c}`].italic = italic;
+                        computeMap[`${r}_${c}`].underline = underline;
+                        computeMap[`${r}_${c}`].strikethrough = strikethrough;
                       } else {
                         computeMap[`${r}_${c}`] = {
                           textColor,
                           cellColor,
+                          bold,
+                          italic,
+                          underline,
+                          strikethrough,
                         };
                       }
                     }
@@ -1267,10 +1378,18 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                 if (`${r}_${c}` in computeMap) {
                   computeMap[`${r}_${c}`].textColor = textColor;
                   computeMap[`${r}_${c}`].cellColor = cellColor;
+                  computeMap[`${r}_${c}`].bold = bold;
+                  computeMap[`${r}_${c}`].italic = italic;
+                  computeMap[`${r}_${c}`].underline = underline;
+                  computeMap[`${r}_${c}`].strikethrough = strikethrough;
                 } else {
                   computeMap[`${r}_${c}`] = {
                     textColor,
                     cellColor,
+                    bold,
+                    italic,
+                    underline,
+                    strikethrough,
                   };
                 }
               }

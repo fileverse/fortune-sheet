@@ -403,6 +403,12 @@ export function defaultContext(refs: RefValues): Context {
       rulesValue: "",
       textColor: { check: true, color: "#000000" },
       cellColor: { check: true, color: "#000000" },
+      font: {
+        bold: false,
+        italic: false,
+        underline: false,
+        strikethrough: false,
+      },
       betweenValue: { value1: "", value2: "" },
       dateValue: "",
       repeatValue: "0",

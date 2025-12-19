@@ -56,6 +56,7 @@ import { ModalProvider } from "../../context/modal";
 import FilterMenu from "../ContextMenu/FilterMenu";
 import SheetList from "../SheetList";
 import DunePreview from "../DunePreview/DunePreview";
+// import ConditionRules from "../ConditionFormat/ConditionRules";
 
 enablePatches();
 
@@ -946,16 +947,22 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
 
     return (
       <WorkbookContext.Provider value={providerValue}>
+        {/* <button onClick={()=>{
+          setShow(!show)
+        }}>Click</button> */}
         {/* <div
-          id="placeholder-data-verification"
+          id="placeholder-conditional-format"
           style={{
             width: "500px",
             height: "500px",
             position: "fixed",
             zIndex: "1000",
             backgroundColor: "white",
+            padding: "12px",
+            top: "100px"
           }}
-        /> */}
+        >
+          </div> */}
         <ModalProvider>
           <div
             className="fortune-container"

@@ -67,7 +67,7 @@ function columnToNumber(colPart: string) {
   return colNumber;
 }
 
-function numberToColumn(colNumber: number) {
+export function numberToColumn(colNumber: number) {
   let colPart = "";
   while (colNumber > 0) {
     colNumber -= 1;

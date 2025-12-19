@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.67
+
+### Patch Changes
+
+- fix: pasting link table
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.67
+
 ## 1.2.66
 
 ### Patch Changes

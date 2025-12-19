@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.65
+
+### Patch Changes
+
+- fix: link copy paste
+
 ## 1.2.62
 
 ### Patch Changes

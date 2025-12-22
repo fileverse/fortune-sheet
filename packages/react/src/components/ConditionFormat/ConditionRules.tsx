@@ -652,6 +652,9 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                   style={{
                     width: 30,
                     height: 30,
+                    backgroundColor: italic
+                      ? "hsl(var(--color-bg-default-selected))"
+                      : "",
                   }}
                 >
                   <LucideIcon
@@ -669,6 +672,9 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                   style={{
                     width: 30,
                     height: 30,
+                    backgroundColor: underline
+                      ? "hsl(var(--color-bg-default-selected))"
+                      : "",
                   }}
                 >
                   <LucideIcon

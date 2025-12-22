@@ -359,7 +359,6 @@ export const CurrencySelector = ({
                               key={opt.value}
                               value={`${opt.label} ${opt.value}`}
                               onSelect={async () => {
-                                console.log(opt, "kjbdnfgjbksndfjbkdnbksdfjkn");
                                 if (opt.type === "crypto") {
                                   await convertCellsToCrypto({
                                     context,
@@ -812,7 +811,6 @@ const Toolbar: React.FC<{
                     <Option
                       key={value}
                       onClick={() => {
-                        console.log("format", value);
                         setOpen(false);
                         setContext((ctx) => {
                           const d = getFlowdata(ctx);
@@ -1347,13 +1345,15 @@ const Toolbar: React.FC<{
       }
       if (name === "conditionFormat") {
         return (
-          <Button
-            id="conditionFormat"
-            iconId={name}
-            tooltip={tooltip}
-            key={name}
-            onClick={conditionalFormatClick}
-          />
+          <Tooltip text="Conditional Format" placement="bottom">
+            <Button
+              id="conditionFormat"
+              iconId={name}
+              tooltip={tooltip}
+              key={name}
+              onClick={conditionalFormatClick}
+            />
+          </Tooltip>
         );
       }
       if (name === "image") {
@@ -2027,9 +2027,6 @@ const Toolbar: React.FC<{
     ]
   );
 
-  useEffect(() => {
-    console.log("context", context);
-  }, [context]);
   return (
     <div
       ref={containerRef}

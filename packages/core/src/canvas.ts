@@ -1935,8 +1935,6 @@ export class Canvas {
       return;
     }
 
-    console.log("cellsize", fillStyle);
-
     renderCtx.fillRect(cellsize[0], cellsize[1], cellsize[2], cellsize[3]);
 
     // const { dataVerification } = dataVerificationCtrl;
@@ -2451,7 +2449,6 @@ export class Canvas {
         }
         renderCtx.restore();
       } else if (!isDataVlidationAvailable) {
-        console.log("checksCF", checksCF);
         this.cellTextRender(textInfo, renderCtx, { pos_x, pos_y });
       }
 

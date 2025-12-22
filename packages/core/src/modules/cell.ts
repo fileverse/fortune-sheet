@@ -769,6 +769,9 @@ export function updateCell(
   if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
 
   let inputText = $input?.innerText;
+  if(inputText?.startsWith("=")) {
+      inputText = inputText?.replace(/[\r\n]/g, "");
+  }
   const inputHtml = $input?.innerHTML;
 
   const flowdata = getFlowdata(ctx);
@@ -880,7 +883,7 @@ export function updateCell(
   }
 
   // API, we get value from user
-  value = value || $input?.innerText;
+  value = value || inputText;
   const shouldClearError = oldValue?.f
     ? oldValue.f !== value
     : oldValue?.v !== value;

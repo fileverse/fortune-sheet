@@ -2151,7 +2151,8 @@ export function setCaretPosition(
   ctx: Context,
   textDom: HTMLElement,
   children: number,
-  pos: number
+  pos: number,
+  parentTextDom?: HTMLElement
 ) {
   try {
     const el = textDom;
@@ -2175,9 +2176,7 @@ export function setCaretPosition(
     el.focus();
   } catch (err) {
     console.error(err);
-    setTimeout(() => {
-      moveCursorToEnd(textDom as HTMLDivElement);
-    }, 10);
+      moveCursorToEnd(parentTextDom as HTMLDivElement);
   }
 }
 
@@ -2197,7 +2196,7 @@ function functionRange(
       currSelection.selectAllChildren(obj);
       currSelection.collapseToEnd();
     } else {
-      setCaretPosition(ctx, obj.querySelectorAll("span")[fri[0]], 0, fri[1]);
+      setCaretPosition(ctx, obj.querySelectorAll("span")[fri[0]], 0, fri[1], obj);
     }
     // @ts-ignore
   } else if (document.selection) {

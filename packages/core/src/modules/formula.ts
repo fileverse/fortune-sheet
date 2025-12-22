@@ -2176,7 +2176,7 @@ export function setCaretPosition(
     el.focus();
   } catch (err) {
     console.error(err);
-      moveCursorToEnd(parentTextDom as HTMLDivElement);
+    moveCursorToEnd(parentTextDom as HTMLDivElement);
   }
 }
 
@@ -2196,7 +2196,13 @@ function functionRange(
       currSelection.selectAllChildren(obj);
       currSelection.collapseToEnd();
     } else {
-      setCaretPosition(ctx, obj.querySelectorAll("span")[fri[0]], 0, fri[1], obj);
+      setCaretPosition(
+        ctx,
+        obj.querySelectorAll("span")[fri[0]],
+        0,
+        fri[1],
+        obj
+      );
     }
     // @ts-ignore
   } else if (document.selection) {

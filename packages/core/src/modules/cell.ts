@@ -769,8 +769,8 @@ export function updateCell(
   if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
 
   let inputText = $input?.innerText;
-  if(inputText?.startsWith("=")) {
-      inputText = inputText?.replace(/[\r\n]/g, "");
+  if (inputText?.startsWith("=")) {
+    inputText = inputText?.replace(/[\r\n]/g, "");
   }
   const inputHtml = $input?.innerHTML;
 

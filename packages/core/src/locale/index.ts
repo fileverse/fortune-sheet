@@ -9,7 +9,6 @@ import { Context } from "..";
 const localeObj: Record<string, typeof zh> = { en, zh, es, "zh-TW": zh_tw, hi };
 
 function locale(ctx: Context) {
-  console.log(ctx?.lang);
   const langsToTry = [ctx?.lang || "", ctx?.lang?.split("-")[0] || ""];
   for (let i = 0; i < langsToTry.length; i += 1) {
     if (langsToTry[i] in localeObj) {

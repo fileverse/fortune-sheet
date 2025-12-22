@@ -44,6 +44,8 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
   const [type, setType] = useState<string>("greaterThan");
   const [create, setCreate] = useState<boolean>(false);
   const buttonClickCreateRef = useRef<boolean>(false);
+  const textColorInputRef = useRef<HTMLInputElement | null>(null);
+  const cellColorInputRef = useRef<HTMLInputElement | null>(null);
   const [matchedConditionFormatKey, setMatchedConditionFormatKey] = useState<
     string[]
   >([]);
@@ -694,6 +696,9 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
 
                 <div>
                   <Button
+                    onClick={() => {
+                      textColorInputRef.current?.click();
+                    }}
                     variant="ghost"
                     className={cn(
                       "fortune-toolbar-combo-button !min-w-fit !px-0",
@@ -728,6 +733,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         <path d="M7 14h8" />
                       </svg>
                       <input
+                        ref={textColorInputRef}
                         style={{
                           marginBottom: "4px",
                         }}
@@ -750,7 +756,9 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                 <div>
                   <Button
                     variant="ghost"
-                    // onClick={() => setOpen(!open)}
+                    onClick={() => {
+                      cellColorInputRef.current?.click();
+                    }}
                     className={cn(
                       "fortune-toolbar-combo-button !min-w-fit !px-0",
                       {}
@@ -766,6 +774,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         style={{ width: "16px", height: "16px" }}
                       />
                       <input
+                        ref={cellColorInputRef}
                         type="color"
                         className="condition-rules-select-color"
                         value={colorRules.cellColor}

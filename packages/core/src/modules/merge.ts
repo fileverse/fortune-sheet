@@ -94,8 +94,9 @@ export function mergeCells(
       }
     }
 
+    // If selection contains merged cells, unmerge them first before merging
     if (isHasMc) {
-      // 选区有合并单元格（选区都执行 取消合并）
+      // 选区有合并单元格（先取消合并，然后继续合并）
       for (let i = 0; i < ranges.length; i += 1) {
         const range = ranges[i];
         const r1 = range.row[0];
@@ -138,129 +139,130 @@ export function mergeCells(
           }
         }
       }
-    } else {
-      for (let i = 0; i < ranges.length; i += 1) {
-        const range = ranges[i];
-        const r1 = range.row[0];
-        const r2 = range.row[1];
-        const c1 = range.column[0];
-        const c2 = range.column[1];
+    }
 
-        if (r1 === r2 && c1 === c2) {
-          continue;
+    // Always proceed with merge operation (whether or not there were merged cells)
+    for (let i = 0; i < ranges.length; i += 1) {
+      const range = ranges[i];
+      const r1 = range.row[0];
+      const r2 = range.row[1];
+      const c1 = range.column[0];
+      const c2 = range.column[1];
+
+      if (r1 === r2 && c1 === c2) {
+        continue;
+      }
+
+      if (type === "merge-all") {
+        let fv = {};
+        let isfirst = false;
+
+        for (let r = r1; r <= r2; r += 1) {
+          for (let c = c1; c <= c2; c += 1) {
+            const cell = d[r][c];
+
+            if (
+              cell != null &&
+              (isInlineStringCT(cell.ct) ||
+                !_.isEmpty(cell.v) ||
+                cell.f != null ||
+                // @ts-ignore
+                cell.s != null ||
+                (cell.ct && cell.ct.s?.length)) &&
+              !isfirst
+            ) {
+              fv = _.cloneDeep(cell);
+              isfirst = true;
+            }
+
+            d[r][c] = { mc: { r: r1, c: c1 } };
+          }
         }
 
-        if (type === "merge-all") {
+        d[r1][c1] = fv;
+        const a = d[r1][c1];
+        if (!a) return;
+        a.mc = { r: r1, c: c1, rs: r2 - r1 + 1, cs: c2 - c1 + 1 };
+
+        cfg.merge[`${r1}_${c1}`] = {
+          r: r1,
+          c: c1,
+          rs: r2 - r1 + 1,
+          cs: c2 - c1 + 1,
+        };
+      } else if (type === "merge-vertical") {
+        for (let c = c1; c <= c2; c += 1) {
           let fv = {};
           let isfirst = false;
 
           for (let r = r1; r <= r2; r += 1) {
-            for (let c = c1; c <= c2; c += 1) {
-              const cell = d[r][c];
+            const cell = d[r][c];
 
-              if (
-                cell != null &&
-                (isInlineStringCT(cell.ct) ||
-                  !_.isEmpty(cell.v) ||
-                  cell.f != null ||
-                  // @ts-ignore
-                  cell.s != null ||
-                  (cell.ct && cell.ct.s?.length)) &&
-                !isfirst
-              ) {
-                fv = _.cloneDeep(cell);
-                isfirst = true;
-              }
-
-              d[r][c] = { mc: { r: r1, c: c1 } };
+            if (
+              cell != null &&
+              (isInlineStringCT(cell.ct) ||
+                !_.isEmpty(cell.v) ||
+                cell.f != null ||
+                // @ts-ignore
+                cell.s != null ||
+                (cell.ct && cell.ct.s?.length)) &&
+              !isfirst
+            ) {
+              fv = _.cloneDeep(cell);
+              isfirst = true;
             }
+
+            d[r][c] = { mc: { r: r1, c } };
           }
 
-          d[r1][c1] = fv;
-          const a = d[r1][c1];
+          d[r1][c] = fv;
+          const a = d[r1][c];
           if (!a) return;
-          a.mc = { r: r1, c: c1, rs: r2 - r1 + 1, cs: c2 - c1 + 1 };
+          a.mc = { r: r1, c, rs: r2 - r1 + 1, cs: 1 };
 
-          cfg.merge[`${r1}_${c1}`] = {
+          cfg.merge[`${r1}_${c}`] = {
             r: r1,
-            c: c1,
+            c,
             rs: r2 - r1 + 1,
+            cs: 1,
+          };
+        }
+      } else if (type === "merge-horizontal") {
+        for (let r = r1; r <= r2; r += 1) {
+          let fv = {};
+          let isfirst = false;
+
+          for (let c = c1; c <= c2; c += 1) {
+            const cell = d[r][c];
+
+            if (
+              cell != null &&
+              (isInlineStringCT(cell.ct) ||
+                !_.isEmpty(cell.v) ||
+                cell.f != null ||
+                // @ts-ignore
+                cell.s != null ||
+                (cell.ct && cell.ct.s?.length)) &&
+              !isfirst
+            ) {
+              fv = _.cloneDeep(cell);
+              isfirst = true;
+            }
+
+            d[r][c] = { mc: { r, c: c1 } };
+          }
+
+          d[r][c1] = fv;
+          const a = d[r][c1];
+          if (!a) return;
+          a.mc = { r, c: c1, rs: 1, cs: c2 - c1 + 1 };
+
+          cfg.merge[`${r}_${c1}`] = {
+            r,
+            c: c1,
+            rs: 1,
             cs: c2 - c1 + 1,
           };
-        } else if (type === "merge-vertical") {
-          for (let c = c1; c <= c2; c += 1) {
-            let fv = {};
-            let isfirst = false;
-
-            for (let r = r1; r <= r2; r += 1) {
-              const cell = d[r][c];
-
-              if (
-                cell != null &&
-                (isInlineStringCT(cell.ct) ||
-                  !_.isEmpty(cell.v) ||
-                  cell.f != null ||
-                  // @ts-ignore
-                  cell.s != null ||
-                  (cell.ct && cell.ct.s?.length)) &&
-                !isfirst
-              ) {
-                fv = _.cloneDeep(cell);
-                isfirst = true;
-              }
-
-              d[r][c] = { mc: { r: r1, c } };
-            }
-
-            d[r1][c] = fv;
-            const a = d[r1][c];
-            if (!a) return;
-            a.mc = { r: r1, c, rs: r2 - r1 + 1, cs: 1 };
-
-            cfg.merge[`${r1}_${c}`] = {
-              r: r1,
-              c,
-              rs: r2 - r1 + 1,
-              cs: 1,
-            };
-          }
-        } else if (type === "merge-horizontal") {
-          for (let r = r1; r <= r2; r += 1) {
-            let fv = {};
-            let isfirst = false;
-
-            for (let c = c1; c <= c2; c += 1) {
-              const cell = d[r][c];
-
-              if (
-                cell != null &&
-                (isInlineStringCT(cell.ct) ||
-                  !_.isEmpty(cell.v) ||
-                  cell.f != null ||
-                  // @ts-ignore
-                  cell.s != null ||
-                  (cell.ct && cell.ct.s?.length)) &&
-                !isfirst
-              ) {
-                fv = _.cloneDeep(cell);
-                isfirst = true;
-              }
-
-              d[r][c] = { mc: { r, c: c1 } };
-            }
-
-            d[r][c1] = fv;
-            const a = d[r][c1];
-            if (!a) return;
-            a.mc = { r, c: c1, rs: 1, cs: c2 - c1 + 1 };
-
-            cfg.merge[`${r}_${c1}`] = {
-              r,
-              c: c1,
-              rs: 1,
-              cs: c2 - c1 + 1,
-            };
-          }
         }
       }
     }

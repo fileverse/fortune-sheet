@@ -769,7 +769,11 @@ export function updateCell(
   if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
 
   let inputText = $input?.innerText;
+  if (inputText?.startsWith("=")) {
+    inputText = inputText?.replace(/[\r\n]/g, "");
+  }
   const inputHtml = $input?.innerHTML;
+
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
 
@@ -784,6 +788,19 @@ export function updateCell(
   // 数据验证 输入数据无效时禁止输入
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
   const { dataVerification } = ctx.luckysheetfile[index];
+
+  // --- hyperlink-on-edit-paste support ---
+  const sheetFile = ctx.luckysheetfile[index] as any;
+
+  const getUrlFromText = (text?: string): string | null => {
+    const t = (text ?? "").trim();
+    // only treat a single token as a URL (no spaces/newlines)
+    if (!t || /[\s\r\n]/.test(t)) return null;
+    if (!/^(https?:\/\/|www\.)\S+$/i.test(t)) return null;
+    return t.startsWith("http") ? t : `https://${t}`;
+  };
+  // --- end ---s
+
   if (!_.isNil(dataVerification)) {
     const dvItem = dataVerification[`${r}_${c}`];
     if (
@@ -844,10 +861,12 @@ export function updateCell(
     }
 
     curv.ct.t = "inlineStr";
+
     curv.ct.s = convertSpanToShareString(
       $input!.querySelectorAll("span"),
       curv
     );
+
     delete curv.fs;
     delete curv.f;
     delete curv.v;
@@ -864,7 +883,7 @@ export function updateCell(
   }
 
   // API, we get value from user
-  value = value || $input?.innerText;
+  value = value || inputText;
   const shouldClearError = oldValue?.f
     ? oldValue.f !== value
     : oldValue?.v !== value;
@@ -1173,6 +1192,33 @@ export function updateCell(
   } catch (e) {
     console.log("[updateCell] spill failed; falling back", e);
   }
+
+  // --- hyperlink-on-edit-paste support ---
+  // If user pasted a URL while editing (double click), persist hyperlink using sheet.hyperlink + cell.hl
+  const url = getUrlFromText($input?.innerText);
+  if (url && typeof value === "object" && value) {
+    (value as any).hl = 1;
+
+    if (!sheetFile.hyperlink) sheetFile.hyperlink = {};
+    sheetFile.hyperlink[`${r}_${c}`] = {
+      linkType: "webpage",
+      linkAddress: url,
+    };
+
+    if (typeof (value as any).v !== "string") {
+      (value as any).v = $input?.innerText ?? url;
+    }
+
+    if ((value as any).m == null) {
+      (value as any).m = (value as any).v;
+    }
+
+    // Persist hyperlink look (blue + underline)
+    if ((value as any).fc == null) (value as any).fc = "rgb(0, 0, 255)";
+    if ((value as any).un == null) (value as any).un = 1;
+  }
+
+  // --- end ---
 
   setCellValue(ctx, r, c, d, value);
 

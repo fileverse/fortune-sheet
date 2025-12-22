@@ -1,5 +1,23 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.67
+
+### Patch Changes
+
+- fix: pasting link table
+
+## 1.2.66
+
+### Patch Changes
+
+- fix: merge
+
+## 1.2.65
+
+### Patch Changes
+
+- fix: link copy paste
+
 ## 1.2.62
 
 ### Patch Changes

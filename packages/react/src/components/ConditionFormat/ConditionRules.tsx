@@ -692,6 +692,9 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                   style={{
                     width: 30,
                     height: 30,
+                    backgroundColor: strikethrough
+                      ? "hsl(var(--color-bg-default-selected))"
+                      : "",
                   }}
                 >
                   <LucideIcon

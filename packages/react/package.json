@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-react",
-  "version": "1.2.70",
+  "version": "1.2.71",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "module": "es/index.js",

@@ -184,8 +184,11 @@ export function setConditionRules(
   protection: any,
   generalDialog: any,
   conditionformat: any,
-  rules: any
+  rules: any,
+  edit?: boolean,
+  editKey?: string
 ) {
+  console.log("rules formatttttte", rules);
   if (!checkProtectionFormatCells(ctx)) {
     return;
   }
@@ -366,7 +369,12 @@ export function setConditionRules(
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
   const ruleArr =
     ctx.luckysheetfile[index].luckysheet_conditionformat_save ?? [];
-  ruleArr?.push(rule);
+  console.log(rule, ruleArr, editKey, edit);
+  if (edit) {
+    ruleArr.splice(Number(editKey), 1, rule);
+  } else {
+    ruleArr.push(rule);
+  }
 
   // Update both the condition format rules and the condition rules
   ctx.luckysheetfile[index].luckysheet_conditionformat_save = ruleArr;

@@ -1031,7 +1031,6 @@ export function updateCell(
         const coin = oldValue?.m?.toString().split(" ")[1];
         if (typeof curv === "object" && curv?.baseValue) {
           curv.m = `${
-            // @ts-expect-error later
             // eslint-disable-next-line no-unsafe-optional-chaining
             (parseFloat(value as string) / oldValue?.baseCurrencyPrice).toFixed(
               decemialCount || 2

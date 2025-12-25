@@ -46,6 +46,14 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
   const buttonClickCreateRef = useRef<boolean>(false);
   const textColorInputRef = useRef<HTMLInputElement | null>(null);
   const cellColorInputRef = useRef<HTMLInputElement | null>(null);
+  const [editConditionFormatKey, setEditConditionFormatKey] = useState<
+    string | null
+  >(null);
+  const [editConditionRange, setEditConditionRange] = useState<string | null>(
+    ""
+  );
+  const [editConditionFormatValue, setEditConditionFormatValue] =
+    useState<any>(null);
   const [matchedConditionFormatKey, setMatchedConditionFormatKey] = useState<
     string[]
   >([]);
@@ -64,6 +72,8 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
   const [strikethrough, setStrikethrough] = useState<boolean>(false);
 
   useEffect(() => {
+    console.log("context", context);
+    // if(editConditionFormatKey) return;
     const index = getSheetIndex(context, context?.currentSheetId!) || 0;
     const allCondition =
       context.luckysheetfile[index].luckysheet_conditionformat_save;
@@ -147,9 +157,76 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
             ctx.conditionRules
           );
         });
-      } else {
+      } else if (closeType === "close") {
         buttonClickCreateRef.current = true;
         setCreate(false);
+      } else if (closeType === "edit") {
+        // setContext((ctx) => {
+        //   const index = getSheetIndex(ctx, ctx.currentSheetId);
+        //   if (index == null) return ctx;
+
+        //   const ruleArr =
+        //     ctx.luckysheetfile[index].luckysheet_conditionformat_save || [];
+
+        //   const ruleIndex = Number(editConditionFormatKey);
+        //   if (!ruleArr[ruleIndex]) return ctx;
+
+        //   const ruleRange = editConditionRange ? ruleArr[ruleIndex].cellrange : ctx.luckysheet_select_save;
+        //   const textColor = editConditionFormatKey ? ruleArr[ruleIndex].format.textColor : ctx.conditionRules.textColor;
+        //   const cellColor = editConditionFormatKey ? ruleArr[ruleIndex].format.cellColor : ctx.conditionRules.cellColor;
+
+        //   console.log("ruleRange", ctx.conditionRules.cellColor);
+
+        //   // 👇 new updated value for that rule
+        //   ruleArr[ruleIndex] = {
+        //     ...ruleArr[ruleIndex], // keep existing properties
+        //     conditionValue: ["6"],
+        //     cellrange: ruleRange,
+        //     conditionName: ctx.conditionRules.rulesType,
+        //     format: {
+        //       textColor: textColor,
+        //       cellColor: cellColor,
+        //       font: {
+        //         bold: ctx.conditionRules.font.bold,
+        //         italic: ctx.conditionRules.font.italic,
+        //         underline: ctx.conditionRules.font.underline,
+        //         strikethrough: ctx.conditionRules.font.strikethrough,
+        //       },
+        //     }
+        //   };
+
+        //   ctx.luckysheetfile[index].luckysheet_conditionformat_save = ruleArr;
+        //   return ctx;
+        // });
+        buttonClickCreateRef.current = false;
+        setCreate(false);
+        setContext((ctx) => {
+          console.log(type, "tttttttt", ctx.conditionRules.rulesType);
+          console.log(
+            editConditionFormatKey,
+            colorRules.textColor,
+            colorRules.cellColor
+          );
+          ctx.conditionRules.rulesType = type;
+          ctx.conditionRules.textColor.color = colorRules.textColor;
+          ctx.conditionRules.cellColor.color = colorRules.cellColor;
+          ctx.conditionRules.font = {
+            bold,
+            italic,
+            underline,
+            strikethrough,
+          };
+          setConditionRules(
+            ctx,
+            protection,
+            generalDialog,
+            conditionformat,
+            ctx.conditionRules,
+            true,
+            // @ts-ignore
+            editConditionFormatKey
+          );
+        });
       }
       setContext((ctx) => {
         ctx.conditionRules = {
@@ -275,44 +352,18 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
       {!create ? (
         <div>
           <div style={{ marginBottom: "16px" }}>
-            {matchedConditionFormatKey.map((key) => (
-              <div
-                className="group flex items-center border-b border-gray-200 condition-list-parent"
-                key={key}
-              >
+            {matchedConditionFormatKey.map((key) => {
+              console.log(
+                allConditionFormats[key],
+                allConditionFormats[key].format.cellColor
+              );
+              return (
                 <div
-                  className="condition-list-pill"
-                  style={{
-                    backgroundColor:
-                      allConditionFormats[key].format.cellColor || "",
-                  }}
-                >
-                  <span
-                    className="condition-list-text"
-                    style={{
-                      color: allConditionFormats[key].format.textColor || "",
-                    }}
-                  >
-                    123
-                  </span>
-                </div>
-                <div
-                  className="flex flex-col"
-                  style={{
-                    width: "200px",
-                    padding: "8px 0px",
-                  }}
-                >
-                  <h3 className="condition-list-type">
-                    {
-                      (conditionformat as any)[
-                      allConditionFormats[key].conditionName
-                      ]
-                    }{" "}
-                    {allConditionFormats[key].conditionValue?.[0]}
-                  </h3>
-                  <p className="condition-list-range">
-                    {allConditionFormats[key].cellrange
+                  onClick={() => {
+                    setEditConditionFormatKey(key);
+                    setType(allConditionFormats[key].conditionName);
+
+                    const rangeEdit = allConditionFormats[key].cellrange
                       ?.map((range: any) => {
                         const startCol = numberToColumn(range.column[0] + 1);
                         const endCol = numberToColumn(range.column[1] + 1);
@@ -320,53 +371,104 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         const endRow = range.row[1] + 1;
                         return `${startCol}${startRow}:${endCol}${endRow}`;
                       })
-                      .join(", ")}
-                  </p>
-                </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  <IconButton
-                    elevation={1}
-                    icon="Trash2"
-                    size="md"
-                    variant="secondary"
+                      .join(", ");
+                    setEditConditionRange(rangeEdit);
+                    setEditConditionFormatValue(
+                      allConditionFormats[key].conditionValue
+                    );
+                  }}
+                  className="group flex items-center border-b border-gray-200 condition-list-parent"
+                  key={key}
+                >
+                  <div
+                    className="condition-list-pill"
                     style={{
-                      border: "0px",
-                      boxShadow: "none",
-                      color: "hsl(var(--color-icon-secondary))",
+                      backgroundColor:
+                        allConditionFormats[key].format.cellColor || "",
+                    }}
+                  >
+                    <span
+                      className="condition-list-text"
+                      style={{
+                        color: allConditionFormats[key].format.textColor || "",
+                      }}
+                    >
+                      123
+                    </span>
+                  </div>
+                  <div
+                    className="flex flex-col"
+                    style={{
+                      width: "200px",
+                      padding: "8px 0px",
                     }}
                     onClick={() => {
-                      setContext((ctx) => {
-                        const index = getSheetIndex(
-                          ctx,
-                          ctx.currentSheetId
-                        ) as number;
-                        const ruleArr =
-                          ctx.luckysheetfile[index]
-                            .luckysheet_conditionformat_save || [];
-                        console.log(
-                          matchedConditionFormatKey,
-                          ruleArr,
-                          allConditionFormats
-                        );
-                        ruleArr.splice(Number(key), 1);
-                        ctx.luckysheetfile[
-                          index
-                        ].luckysheet_conditionformat_save = ruleArr;
-                        return ctx;
-                      });
+                      setCreate(true);
+                      buttonClickCreateRef.current = true;
                     }}
-                  />
+                  >
+                    <h3 className="condition-list-type">
+                      {
+                        (conditionformat as any)[
+                          allConditionFormats[key].conditionName
+                        ]
+                      }{" "}
+                      {allConditionFormats[key].conditionValue?.[0]}
+                    </h3>
+                    <p className="condition-list-range">
+                      {allConditionFormats[key].cellrange
+                        ?.map((range: any) => {
+                          const startCol = numberToColumn(range.column[0] + 1);
+                          const endCol = numberToColumn(range.column[1] + 1);
+                          const startRow = range.row[0] + 1;
+                          const endRow = range.row[1] + 1;
+                          return `${startCol}${startRow}:${endCol}${endRow}`;
+                        })
+                        .join(", ")}
+                    </p>
+                  </div>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <IconButton
+                      elevation={1}
+                      icon="Trash2"
+                      size="md"
+                      variant="secondary"
+                      style={{
+                        border: "0px",
+                        boxShadow: "none",
+                        color: "hsl(var(--color-icon-secondary))",
+                      }}
+                      onClick={() => {
+                        setContext((ctx) => {
+                          const index = getSheetIndex(
+                            ctx,
+                            ctx.currentSheetId
+                          ) as number;
+                          const ruleArr =
+                            ctx.luckysheetfile[index]
+                              .luckysheet_conditionformat_save || [];
+                          ruleArr.splice(Number(key), 1);
+                          ctx.luckysheetfile[
+                            index
+                          ].luckysheet_conditionformat_save = ruleArr;
+                          return ctx;
+                        });
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <Button
-            toggleLeftIcon={true}
+            toggleLeftIcon
             leftIcon="Plus"
             size="md"
             variant="secondary"
             onClick={() => {
+              setType("greaterThan");
               setCreate(true);
+              setEditConditionFormatKey(null);
               buttonClickCreateRef.current = true;
             }}
           >
@@ -392,8 +494,9 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
               aria-hidden="true"
               readOnly
               placeholder={conditionformat.selectRange}
-              value={getDisplayedRangeTxt(context)}
+              value={editConditionRange || getDisplayedRangeTxt(context)}
               onClick={() => {
+                setEditConditionRange(null);
                 dataSelectRange(`conditionRules${type}`);
               }}
             />
@@ -448,22 +551,26 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                 type === "lessThanOrEqual" ||
                 type === "equal" ||
                 type === "textContains") && (
-                  <div className="w-full">
-                    <TextField
-                      placeholder="Value"
-                      onKeyDown={(e) => {
-                        e.stopPropagation();
-                      }}
-                      value={context.conditionRules.rulesValue}
-                      onChange={(e) => {
-                        const { value } = e.target;
-                        setContext((ctx) => {
-                          ctx.conditionRules.rulesValue = value;
-                        });
-                      }}
-                    />
-                  </div>
-                )}
+                <div className="w-full">
+                  <TextField
+                    placeholder="Value"
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                    }}
+                    value={
+                      editConditionFormatValue ||
+                      context.conditionRules.rulesValue
+                    }
+                    onChange={(e) => {
+                      setEditConditionFormatValue(null);
+                      const { value } = e.target;
+                      setContext((ctx) => {
+                        ctx.conditionRules.rulesValue = value;
+                      });
+                    }}
+                  />
+                </div>
+              )}
 
               {type === "between" && (
                 <div className="w-full flex gap-2 items-center">
@@ -542,74 +649,74 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                 type === "top10_percent" ||
                 type === "last10" ||
                 type === "last10_percent") && (
-                  <div className="condition-rules-project-box">
-                    {type === "top10" || type === "top10_percent"
-                      ? conditionformat.top
-                      : conditionformat.last}
+                <div className="condition-rules-project-box">
+                  {type === "top10" || type === "top10_percent"
+                    ? conditionformat.top
+                    : conditionformat.last}
 
-                    <div className="flex items-center">
-                      <IconButton
-                        icon="Minus"
-                        variant="ghost"
-                        className="!bg-transparent"
-                        disabled={
-                          Number(context.conditionRules.projectValue) <= 1
-                        }
-                        onClick={() => {
-                          setContext((ctx) => {
-                            const current =
-                              Number(ctx.conditionRules.projectValue) || 0;
-                            ctx.conditionRules.projectValue = String(
-                              Math.max(current - 1, 1)
-                            ); // Prevent going below 1 if needed
-                          });
-                        }}
-                      />
-                      <TextField
-                        placeholder="Value"
-                        onKeyDown={(e) => {
-                          e.stopPropagation();
-                        }}
-                        className="condition-rules-project-input pr-0"
-                        type="number"
-                        min={1}
-                        max={type === "top10" || type === "last10" ? 10 : 100}
-                        value={context.conditionRules.projectValue}
-                        onChange={(e) => {
-                          const { value } = e.target;
-                          setContext((ctx) => {
-                            ctx.conditionRules.projectValue = value;
-                          });
-                        }}
-                        rightIcon={
-                          type === "top10" || type === "last10" ? (
-                            <span className="color-icon-secondary">
-                              {conditionformat.oneself}
-                            </span>
-                          ) : (
-                            <span className="color-icon-secondary">%</span>
-                          )
-                        }
-                      />
-                      <IconButton
-                        icon="Plus"
-                        variant="ghost"
-                        className="!bg-transparent"
-                        disabled={
-                          Number(context.conditionRules.projectValue) >=
-                          (type === "top10" || type === "last10" ? 10 : 100)
-                        }
-                        onClick={() => {
-                          setContext((ctx) => {
-                            const current =
-                              Number(ctx.conditionRules.projectValue) || 0;
-                            ctx.conditionRules.projectValue = String(current + 1);
-                          });
-                        }}
-                      />
-                    </div>
+                  <div className="flex items-center">
+                    <IconButton
+                      icon="Minus"
+                      variant="ghost"
+                      className="!bg-transparent"
+                      disabled={
+                        Number(context.conditionRules.projectValue) <= 1
+                      }
+                      onClick={() => {
+                        setContext((ctx) => {
+                          const current =
+                            Number(ctx.conditionRules.projectValue) || 0;
+                          ctx.conditionRules.projectValue = String(
+                            Math.max(current - 1, 1)
+                          ); // Prevent going below 1 if needed
+                        });
+                      }}
+                    />
+                    <TextField
+                      placeholder="Value"
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="condition-rules-project-input pr-0"
+                      type="number"
+                      min={1}
+                      max={type === "top10" || type === "last10" ? 10 : 100}
+                      value={context.conditionRules.projectValue}
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        setContext((ctx) => {
+                          ctx.conditionRules.projectValue = value;
+                        });
+                      }}
+                      rightIcon={
+                        type === "top10" || type === "last10" ? (
+                          <span className="color-icon-secondary">
+                            {conditionformat.oneself}
+                          </span>
+                        ) : (
+                          <span className="color-icon-secondary">%</span>
+                        )
+                      }
+                    />
+                    <IconButton
+                      icon="Plus"
+                      variant="ghost"
+                      className="!bg-transparent"
+                      disabled={
+                        Number(context.conditionRules.projectValue) >=
+                        (type === "top10" || type === "last10" ? 10 : 100)
+                      }
+                      onClick={() => {
+                        setContext((ctx) => {
+                          const current =
+                            Number(ctx.conditionRules.projectValue) || 0;
+                          ctx.conditionRules.projectValue = String(current + 1);
+                        });
+                      }}
+                    />
                   </div>
-                )}
+                </div>
+              )}
             </div>
           )}
 
@@ -818,18 +925,33 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
             >
               {button.cancel}
             </Button>
-            <Button
-              variant="default"
-              style={{
-                minWidth: "80px",
-              }}
-              onClick={() => {
-                close("confirm");
-              }}
-              tabIndex={0}
-            >
-              Create rule
-            </Button>
+            {editConditionFormatKey !== null ? (
+              <Button
+                variant="default"
+                style={{
+                  minWidth: "80px",
+                }}
+                onClick={() => {
+                  close("edit");
+                }}
+                tabIndex={0}
+              >
+                Edit rule
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                style={{
+                  minWidth: "80px",
+                }}
+                onClick={() => {
+                  close("confirm");
+                }}
+                tabIndex={0}
+              >
+                Create rule
+              </Button>
+            )}
           </div>
         </>
       )}

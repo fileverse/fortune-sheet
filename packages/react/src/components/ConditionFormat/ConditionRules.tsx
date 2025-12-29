@@ -238,7 +238,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
       setEditConditionFormatKey(null);
       setContext((ctx) => {
         const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
-        if (ctx.luckysheetfile[index].conditionRules) {
+        if (ctx.luckysheetfile[index].conditionRules && ctx.luckysheetfile[index].conditionRules.editKey !== null) {
           ctx.luckysheetfile[index].conditionRules.editKey = null;
         }
       });
@@ -362,7 +362,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         ctx,
                         ctx.currentSheetId
                       ) as number;
-                      if (ctx.luckysheetfile[index].conditionRules) {
+                      if (ctx.luckysheetfile[index].conditionRules && ctx.luckysheetfile[index].conditionRules.editKey === null) {
                         ctx.luckysheetfile[index].conditionRules.editKey = key;
                       }
                     });
@@ -477,7 +477,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
               setEditConditionFormatKey(null);
               setContext((ctx) => {
                 const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
-                if (ctx.luckysheetfile[index].conditionRules) {
+                if (ctx.luckysheetfile[index].conditionRules && ctx.luckysheetfile[index].conditionRules.editKey !== null) {
                   ctx.luckysheetfile[index].conditionRules.editKey = null;
                 }
               });

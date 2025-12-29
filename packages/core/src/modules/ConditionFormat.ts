@@ -1412,9 +1412,31 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
 
 export function getComputeMap(ctx: Context) {
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
-  const ruleArr = ctx.luckysheetfile[index].luckysheet_conditionformat_save;
+  const ruleArr = ctx.luckysheetfile[index].luckysheet_conditionformat_save
+    ? [...ctx.luckysheetfile[index].luckysheet_conditionformat_save]
+    : [];
   const { data } = ctx.luckysheetfile[index];
   if (_.isNil(data)) return null;
+  if (
+    ctx.luckysheet_select_save &&
+    ctx.luckysheetfile[index].conditionRules?.rulesValue !== ""
+  )
+    ruleArr.unshift({
+      type: "default",
+      cellrange: ctx.luckysheet_select_save,
+      format: {
+        textColor: ctx.luckysheetfile[index].conditionRules?.textColor.color,
+        cellColor: ctx.luckysheetfile[index].conditionRules?.cellColor.color,
+        bold: ctx.luckysheetfile[index].conditionRules?.font.bold,
+        italic: ctx.luckysheetfile[index].conditionRules?.font.italic,
+        underline: ctx.luckysheetfile[index].conditionRules?.font.underline,
+        strikethrough:
+          ctx.luckysheetfile[index].conditionRules?.font.strikethrough,
+      },
+      conditionName: ctx.luckysheetfile[index].conditionRules?.rulesType,
+      conditionRange: [],
+      conditionValue: [ctx.luckysheetfile[index].conditionRules?.rulesValue],
+    });
   const computeMap = compute(ctx, ruleArr, data);
   return computeMap;
 }

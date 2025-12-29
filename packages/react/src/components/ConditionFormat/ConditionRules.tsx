@@ -49,6 +49,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
   const [editConditionFormatKey, setEditConditionFormatKey] = useState<
     string | null
   >(null);
+  const editKeyRef = useRef<string | null>(null);
   const [editConditionRange, setEditConditionRange] = useState<string | null>(
     ""
   );
@@ -118,6 +119,32 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
     }
   }, [context]);
 
+    const updateCacheRules = () => {
+    setContext((ctx) => {
+      const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
+      ctx.luckysheetfile[index].conditionRules = {
+        // Ensure all required properties are present
+        rulesType: type || "",
+        rulesValue: ctx.conditionRules.rulesValue || "",
+        textColor: { check: true, color: colorRules.textColor },
+        cellColor: { check: true, color: colorRules.cellColor },
+        font: {
+          bold,
+          italic,
+          underline,
+          strikethrough,
+        },
+        betweenValue: ctx.conditionRules.betweenValue || {
+          value1: "",
+          value2: "",
+        },
+        dateValue: ctx.conditionRules.dateValue || "",
+        repeatValue: ctx.conditionRules.repeatValue || "0",
+        projectValue: ctx.conditionRules.projectValue || "10",
+      };
+    });
+  };
+
   // 开启鼠标选区
   const dataSelectRange = useCallback(
     (selectType: string) => {
@@ -131,9 +158,14 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
         ctx.rangeDialog!.rangeTxt = ctx.conditionRules.rulesValue;
         ctx.rangeDialog!.singleSelect = false;
       });
+      updateCacheRules();
     },
     [colorRules.cellColor, colorRules.textColor, hideDialog, setContext]
   );
+
+  useEffect(() => {
+    updateCacheRules();
+  }, [type, bold, italic, underline, strikethrough, colorRules]);
 
   const close = useCallback(
     (closeType: string) => {
@@ -161,52 +193,9 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
         buttonClickCreateRef.current = true;
         setCreate(false);
       } else if (closeType === "edit") {
-        // setContext((ctx) => {
-        //   const index = getSheetIndex(ctx, ctx.currentSheetId);
-        //   if (index == null) return ctx;
-
-        //   const ruleArr =
-        //     ctx.luckysheetfile[index].luckysheet_conditionformat_save || [];
-
-        //   const ruleIndex = Number(editConditionFormatKey);
-        //   if (!ruleArr[ruleIndex]) return ctx;
-
-        //   const ruleRange = editConditionRange ? ruleArr[ruleIndex].cellrange : ctx.luckysheet_select_save;
-        //   const textColor = editConditionFormatKey ? ruleArr[ruleIndex].format.textColor : ctx.conditionRules.textColor;
-        //   const cellColor = editConditionFormatKey ? ruleArr[ruleIndex].format.cellColor : ctx.conditionRules.cellColor;
-
-        //   console.log("ruleRange", ctx.conditionRules.cellColor);
-
-        //   // 👇 new updated value for that rule
-        //   ruleArr[ruleIndex] = {
-        //     ...ruleArr[ruleIndex], // keep existing properties
-        //     conditionValue: ["6"],
-        //     cellrange: ruleRange,
-        //     conditionName: ctx.conditionRules.rulesType,
-        //     format: {
-        //       textColor: textColor,
-        //       cellColor: cellColor,
-        //       font: {
-        //         bold: ctx.conditionRules.font.bold,
-        //         italic: ctx.conditionRules.font.italic,
-        //         underline: ctx.conditionRules.font.underline,
-        //         strikethrough: ctx.conditionRules.font.strikethrough,
-        //       },
-        //     }
-        //   };
-
-        //   ctx.luckysheetfile[index].luckysheet_conditionformat_save = ruleArr;
-        //   return ctx;
-        // });
         buttonClickCreateRef.current = false;
         setCreate(false);
         setContext((ctx) => {
-          console.log(type, "tttttttt", ctx.conditionRules.rulesType);
-          console.log(
-            editConditionFormatKey,
-            colorRules.textColor,
-            colorRules.cellColor
-          );
           ctx.conditionRules.rulesType = type;
           ctx.conditionRules.textColor.color = colorRules.textColor;
           ctx.conditionRules.cellColor.color = colorRules.cellColor;
@@ -246,6 +235,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
           projectValue: "10",
         };
       });
+      updateCacheRules();
       hideDialog();
     },
     [
@@ -259,6 +249,10 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
       italic,
       underline,
       strikethrough,
+      type,
+      editConditionFormatKey,
+      editConditionFormatValue,
+      editConditionRange,
     ]
   );
 
@@ -353,14 +347,11 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
         <div>
           <div style={{ marginBottom: "16px" }}>
             {matchedConditionFormatKey.map((key) => {
-              console.log(
-                allConditionFormats[key],
-                allConditionFormats[key].format.cellColor
-              );
               return (
                 <div
                   onClick={() => {
                     setEditConditionFormatKey(key);
+                    editKeyRef.current = key;
                     setType(allConditionFormats[key].conditionName);
 
                     const rangeEdit = allConditionFormats[key].cellrange
@@ -469,6 +460,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
               setType("greaterThan");
               setCreate(true);
               setEditConditionFormatKey(null);
+              editKeyRef.current = null;
               buttonClickCreateRef.current = true;
             }}
           >
@@ -567,6 +559,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                       setContext((ctx) => {
                         ctx.conditionRules.rulesValue = value;
                       });
+                      updateCacheRules();
                     }}
                   />
                 </div>

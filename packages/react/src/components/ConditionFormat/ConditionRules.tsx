@@ -238,10 +238,8 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
       setEditConditionFormatKey(null);
       setContext((ctx) => {
         const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
-        if (
-          ctx.luckysheetfile?.[index]?.conditionRules?.editKey !== undefined
-        ) {
-          ctx.luckysheetfile[index].conditionRules.editKey = null;
+        if (ctx.luckysheetfile[index]?.conditionRules?.editKey !== undefined) {
+          ctx.luckysheetfile[index]!.conditionRules!.editKey = null;
         }
       });
       hideDialog();
@@ -364,8 +362,12 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         ctx,
                         ctx.currentSheetId
                       ) as number;
-                      if (ctx.luckysheetfile[index]?.conditionRules?.editKey !== undefined) {
-                        ctx.luckysheetfile[index]!.conditionRules!.editKey = key;
+                      if (
+                        ctx.luckysheetfile[index]?.conditionRules?.editKey !==
+                        undefined
+                      ) {
+                        ctx.luckysheetfile[index]!.conditionRules!.editKey =
+                          key;
                       }
                     });
                     editKeyRef.current = key;
@@ -479,10 +481,12 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
               setEditConditionFormatKey(null);
               setContext((ctx) => {
                 const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
-                if (ctx.luckysheetfile[index]?.conditionRules?.editKey !== undefined) {
+                if (
+                  ctx.luckysheetfile[index]?.conditionRules?.editKey !==
+                  undefined
+                ) {
                   ctx.luckysheetfile[index]!.conditionRules!.editKey = null;
                 }
-
               });
               editKeyRef.current = null;
               buttonClickCreateRef.current = true;

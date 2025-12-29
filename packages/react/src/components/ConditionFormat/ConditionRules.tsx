@@ -119,7 +119,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
     }
   }, [context]);
 
-    const updateCacheRules = () => {
+  const updateCacheRules = () => {
     setContext((ctx) => {
       const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
       ctx.luckysheetfile[index].conditionRules = {

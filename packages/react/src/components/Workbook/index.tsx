@@ -950,7 +950,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
         {/* <button onClick={()=>{
           setShow(!show)
         }}>Click</button> */}
-        {/* <div
+        <div
           id="placeholder-conditional-format"
           style={{
             width: "500px",
@@ -961,7 +961,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             padding: "12px",
             top: "100px",
           }}
-        /> */}
+        />
         <ModalProvider>
           <div
             className="fortune-container"

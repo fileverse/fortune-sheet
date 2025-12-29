@@ -399,6 +399,7 @@ export function defaultContext(refs: RefValues): Context {
     dataVerificationDropDownList: false,
 
     conditionRules: {
+      editKey: null,
       rulesType: "",
       rulesValue: "",
       textColor: { check: true, color: "#000000" },

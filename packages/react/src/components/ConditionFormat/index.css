@@ -222,6 +222,7 @@ input[type="number"].condition-rules-project-input {
 }
 
 .condition-list-parent {
+  cursor: pointer;
   padding: 12px 8px;
   gap: 12px;
 }

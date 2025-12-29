@@ -188,7 +188,6 @@ export function setConditionRules(
   edit?: boolean,
   editKey?: string
 ) {
-  console.log("rules formatttttte", rules);
   if (!checkProtectionFormatCells(ctx)) {
     return;
   }
@@ -1413,15 +1412,19 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
 export function getComputeMap(ctx: Context) {
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
   const ruleArr = ctx.luckysheetfile[index]?.luckysheet_conditionformat_save
-    ? [...(ctx.luckysheetfile[index]?.luckysheet_conditionformat_save as any[])] 
+    ? [...(ctx.luckysheetfile[index]?.luckysheet_conditionformat_save as any[])]
     : [];
   const { data } = ctx.luckysheetfile[index];
   if (_.isNil(data)) return null;
   if (
     ctx.luckysheet_select_save &&
     ctx.luckysheetfile[index].conditionRules?.rulesValue !== ""
-  )
-    ruleArr.unshift({
+  ){
+    const editKey = ctx.luckysheetfile[index].conditionRules?.editKey;
+    if (editKey !== null) {
+      ruleArr.splice(Number(editKey), 1);
+    }
+    ruleArr.push({
       type: "default",
       cellrange: ctx.luckysheet_select_save,
       format: {
@@ -1437,6 +1440,7 @@ export function getComputeMap(ctx: Context) {
       conditionRange: [],
       conditionValue: [ctx.luckysheetfile[index].conditionRules?.rulesValue],
     });
+  }
   const computeMap = compute(ctx, ruleArr, data);
   return computeMap;
 }

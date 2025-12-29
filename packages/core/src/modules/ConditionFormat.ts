@@ -1412,8 +1412,8 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
 
 export function getComputeMap(ctx: Context) {
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
-  const ruleArr = ctx.luckysheetfile[index]?.luckysheet_conditionformat_save 
-    ? [...ctx.luckysheetfile[index].luckysheet_conditionformat_save] 
+  const ruleArr = ctx.luckysheetfile[index]?.luckysheet_conditionformat_save
+    ? [...(ctx.luckysheetfile[index]?.luckysheet_conditionformat_save as any[])] 
     : [];
   const { data } = ctx.luckysheetfile[index];
   if (_.isNil(data)) return null;

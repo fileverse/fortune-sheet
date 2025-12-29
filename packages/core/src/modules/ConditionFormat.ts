@@ -1419,7 +1419,7 @@ export function getComputeMap(ctx: Context) {
   if (
     ctx.luckysheet_select_save &&
     ctx.luckysheetfile[index].conditionRules?.rulesValue !== ""
-  ){
+  ) {
     const editKey = ctx.luckysheetfile[index].conditionRules?.editKey;
     if (editKey !== null) {
       ruleArr.splice(Number(editKey), 1);

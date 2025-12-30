@@ -30,6 +30,7 @@ import { getCryptoPrice } from "../../utils/cryptoApi";
 import { SetContextOptions } from "../../context";
 import { useDialog } from "../../hooks/useDialog";
 import { SplitColumn } from "../../components/SplitColumn";
+import ConditionRules from "../ConditionFormat/ConditionRules";
 
 export function generateAPIs(
   context: Context,
@@ -507,6 +508,9 @@ export function generateAPIs(
     },
     getSplitColComponent: () => {
       return SplitColumn;
+    },
+    getConditionalFormatComponent: () => {
+      return ConditionRules;
     },
   };
 }

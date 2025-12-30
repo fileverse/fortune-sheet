@@ -399,10 +399,17 @@ export function defaultContext(refs: RefValues): Context {
     dataVerificationDropDownList: false,
 
     conditionRules: {
+      editKey: null,
       rulesType: "",
       rulesValue: "",
       textColor: { check: true, color: "#000000" },
       cellColor: { check: true, color: "#000000" },
+      font: {
+        bold: false,
+        italic: false,
+        underline: false,
+        strikethrough: false,
+      },
       betweenValue: { value1: "", value2: "" },
       dateValue: "",
       repeatValue: "0",

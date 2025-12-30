@@ -4,7 +4,7 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 // import DataVerification from ".";
 import WorkbookContext from "../../context";
 import { useDialog } from "../../hooks/useDialog";
-import ConditionRules from "../ConditionFormat/ConditionRules";
+// import ConditionRules from "../ConditionFormat/ConditionRules";
 import "./index.css";
 import { getDisplayedRangeTxt } from "./getDisplayedRangeTxt";
 
@@ -26,28 +26,30 @@ const RangeDialog: React.FC = () => {
       ctx.rangeDialog!.singleSelect = false;
     });
     document.getElementById("data-verification-button")?.click();
+    // console.log("close", context,context.rangeDialog.type);
     if (!context.rangeDialog) return;
     const rangeDialogType = context.rangeDialog.type;
     if (rangeDialogType.indexOf("between") >= 0) {
-      showDialog(
-        <ConditionRules type="between" />,
-        undefined,
-        (locale(context).conditionformat as any).conditionformat_between
-      );
+      document.getElementById("conditional-format-button")?.click();
+      // showDialog(
+      //   <ConditionRules type="between" />,
+      //   undefined,
+      //   (locale(context).conditionformat as any).conditionformat_between
+      // );
       return;
     }
     if (rangeDialogType.indexOf("conditionRules") >= 0) {
-      const rulesType = rangeDialogType.substring(
-        "conditionRules".length,
-        rangeDialogType.length
-      );
-      showDialog(
-        <ConditionRules type={rulesType} />,
-        undefined,
-        (locale(context).conditionformat as any)[`conditionformat_${rulesType}`]
-      );
+      document.getElementById("conditional-format-button")?.click();
+      // const rulesType = rangeDialogType.substring(
+      //   "conditionRules".length,
+      //   rangeDialogType.length
+      // );
+      // showDialog(
+      //   <ConditionRules type={rulesType} />,
+      //   undefined,
+      //   (locale(context).conditionformat as any)[`conditionformat_${rulesType}`]
+      // );
     }
-    // document.getElementById("data-verification-button")?.click();
     // showDialog(<DataVerification />, undefined, toolbar.dataVerification);
   }, [setContext, showDialog, context]);
 

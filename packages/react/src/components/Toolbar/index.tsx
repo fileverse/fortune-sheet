@@ -52,6 +52,7 @@ import {
   CommandItem,
 } from "@fileverse/ui";
 import DataVerificationPortal from "./dataVerificationPortal";
+import ConditionalFormatPortal from "./conditionalFormatPortal";
 // import DataVerification from "../DataVerification";
 import WorkbookContext from "../../context";
 import "./index.css";
@@ -64,7 +65,7 @@ import { useDialog } from "../../hooks/useDialog";
 import { useAlert } from "../../hooks/useAlert";
 import { SplitColumn } from "../SplitColumn";
 import { LocationCondition } from "../LocationCondition";
-import ConditionalFormat from "../ConditionFormat";
+// import ConditionalFormat from "../ConditionFormat";
 import CustomButton from "./CustomButton";
 import { CustomColor } from "./CustomColor";
 import { FormatSearch } from "../FormatSearch";
@@ -358,7 +359,6 @@ export const CurrencySelector = ({
                               key={opt.value}
                               value={`${opt.label} ${opt.value}`}
                               onSelect={async () => {
-                                console.log(opt, "kjbdnfgjbksndfjbkdnbksdfjkn");
                                 if (opt.type === "crypto") {
                                   await convertCellsToCrypto({
                                     context,
@@ -625,6 +625,7 @@ const Toolbar: React.FC<{
   }, []);
 
   const [showDataValidation, setShowDataValidation] = useState(false);
+  const [showConditionalFormat, setShowConditionalFormat] = useState(false);
 
   const dataVerificationClick = (selectedCells: any) => {
     const selection = api.getSelection(context);
@@ -647,9 +648,27 @@ const Toolbar: React.FC<{
     }, 100);
   };
 
+  const conditionalFormatClick = (selectedCells: any) => {
+    const selection = api.getSelection(context);
+    if (!selection && !selectedCells) {
+      setContext((ctx) => {
+        api.setSelection(ctx, [{ row: [0, 0], column: [0, 0] }], {
+          id: context.currentSheetId,
+        });
+      });
+    }
+    document.getElementById("conditional-format-button")?.click();
+
+    setTimeout(() => {
+      setShowConditionalFormat(true);
+    }, 100);
+  };
+
   useEffect(() => {
     // @ts-ignore
     window.dataVerificationClick = dataVerificationClick;
+    // @ts-ignore
+    window.conditionalFormatClick = conditionalFormatClick;
   }, []);
 
   const getToolbarItem = useCallback(
@@ -792,7 +811,6 @@ const Toolbar: React.FC<{
                     <Option
                       key={value}
                       onClick={() => {
-                        console.log("format", value);
                         setOpen(false);
                         setContext((ctx) => {
                           const d = getFlowdata(ctx);
@@ -1326,26 +1344,16 @@ const Toolbar: React.FC<{
         );
       }
       if (name === "conditionFormat") {
-        const items = [
-          "highlightCellRules",
-          "itemSelectionRules",
-          // "dataBar",
-          // "colorGradation",
-          // "icons",
-          "-",
-          // "newFormatRule",
-          "deleteRule",
-          // "manageRules",
-        ];
         return (
-          <Combo
-            iconId="conditionFormat"
-            key={name}
-            tooltip={toolbar.conditionalFormat}
-            showArrow={false}
-          >
-            {(setOpen) => <ConditionalFormat items={items} setOpen={setOpen} />}
-          </Combo>
+          <Tooltip text="Conditional Format" placement="bottom">
+            <Button
+              id="conditionFormat"
+              iconId={name}
+              tooltip={tooltip}
+              key={name}
+              onClick={conditionalFormatClick}
+            />
+          </Tooltip>
         );
       }
       if (name === "image") {
@@ -2026,6 +2034,10 @@ const Toolbar: React.FC<{
       aria-label={toolbar.toolbar}
     >
       <DataVerificationPortal visible={showDataValidation} />
+      <ConditionalFormatPortal
+        visible={showConditionalFormat}
+        context={context}
+      />
       <input
         id="fortune-img-upload"
         className="test-fortune-img-upload"

@@ -46,7 +46,7 @@ import "./index.css";
 import Menu from "./Menu";
 // import CustomSort from "../CustomSort";
 import "tippy.js/dist/tippy.css";
-import ConditionalFormat from "../ConditionFormat";
+// import ConditionalFormat from "../ConditionFormat";
 import SVGIcon from "../SVGIcon";
 import { LucideIcon as LocalLucidIcon } from "../../components/SheetOverlay/LucideIcon";
 
@@ -1084,60 +1084,23 @@ const ContextMenu: React.FC = () => {
         );
       }
       if (name === "conditionFormat") {
-        // Helper to close context menu
-        const closeContextMenu = () =>
-          setContext((ctx) => {
-            ctx.contextMenu = {};
-          });
         return (
-          <Tippy
+          <Menu
             key={name}
-            placement="right-start"
-            interactive
-            interactiveBorder={50}
-            offset={[0, 0]}
-            arrow={false}
-            zIndex={3000}
-            appendTo={document.body}
-            onShow={() => {
-              setActiveMenu("conditionFormat");
+            onClick={() => {
+              if (context.allowEdit === false) return;
+              setContext((draftCtx) => {
+                draftCtx.contextMenu = {};
+              });
+              // @ts-ignore
+              window.conditionalFormatClick(context.luckysheet_select_save);
             }}
-            onHide={() => {
-              if (activeMenu === "conditionFormat") setActiveMenu("");
-            }}
-            content={
-              <div style={{ minWidth: 220 }}>
-                <ConditionalFormat
-                  items={[
-                    "highlightCellRules",
-                    "itemSelectionRules",
-                    "-",
-                    "deleteRule",
-                  ]}
-                  setOpen={closeContextMenu}
-                />
-              </div>
-            }
-            trigger="mouseenter focus"
-            hideOnClick={false}
           >
-            <div>
-              <Menu isActive={activeMenu === "conditionFormat"}>
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-2 context-item">
-                    <LucideIcon name="PaintbrushVertical" />
-                    <p>{rightclick.conditionFormat || "Conditional Format"}</p>
-                  </div>
-                  <LucideIcon
-                    name="ChevronRight"
-                    width={16}
-                    height={16}
-                    className="color-text-secondary w-4 h-4"
-                  />
-                </div>
-              </Menu>
+            <div className="context-item">
+              <LucideIcon name="PaintbrushVertical" />
+              <p>Conditional formatting</p>
             </div>
-          </Tippy>
+          </Menu>
         );
       }
       if (name === "clear-format") {

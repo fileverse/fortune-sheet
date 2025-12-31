@@ -1416,12 +1416,11 @@ export function getComputeMap(ctx: Context) {
     : [];
   const { data } = ctx.luckysheetfile[index];
   if (_.isNil(data)) return null;
+  const editKey = ctx.luckysheetfile[index].conditionRules?.editKey;
   if (
-    ctx.luckysheet_select_save &&
-    ctx.luckysheetfile[index].conditionRules?.rulesValue !== ""
+    ctx.luckysheet_select_save
   ) {
-    const editKey = ctx.luckysheetfile[index].conditionRules?.editKey;
-    if (editKey !== null) {
+    if (editKey !== null && editKey !== undefined) {
       ruleArr.splice(Number(editKey), 1);
     }
     ruleArr.push({

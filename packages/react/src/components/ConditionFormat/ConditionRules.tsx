@@ -123,6 +123,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
       const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
       ctx.luckysheetfile[index].conditionRules = {
         // Ensure all required properties are present
+        editKey: editConditionFormatKey,
         rulesType: type || "",
         rulesValue: ctx.conditionRules.rulesValue || "",
         textColor: { check: true, color: colorRules.textColor },
@@ -172,6 +173,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
         buttonClickCreateRef.current = false;
         setCreate(false);
         setContext((ctx) => {
+                  console.log("whole rule",ctx.conditionRules)
           ctx.conditionRules.textColor.color = colorRules.textColor;
           ctx.conditionRules.cellColor.color = colorRules.cellColor;
           ctx.conditionRules.font = {
@@ -279,7 +281,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
       } else if (rangeDialogType === "") {
         ctx.conditionRules = {
           rulesType: type,
-          rulesValue: "",
+          rulesValue: context.conditionRules.rulesValue || "",
           textColor: { check: true, color: "#000000" },
           cellColor: { check: true, color: "#000000" },
           font: {
@@ -362,10 +364,13 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         ctx,
                         ctx.currentSheetId
                       ) as number;
+                                              console.log("why set editkey", ctx.luckysheetfile[index]?.conditionRules?.editKey)
+
                       if (
-                        ctx.luckysheetfile[index]?.conditionRules?.editKey !==
+                        ctx.luckysheetfile[index]?.conditionRules?.editKey ===
                         undefined
                       ) {
+                        console.log("set editkey")
                         ctx.luckysheetfile[index]!.conditionRules!.editKey =
                           key;
                       }
@@ -763,7 +768,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                     width: 30,
                     height: 30,
                     backgroundColor: bold
-                      ? "hsl(var(--color-bg-default-selected))"
+                      ? "hsl(var(--color-bg-default-active))"
                       : "",
                   }}
                 >
@@ -783,7 +788,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                     width: 30,
                     height: 30,
                     backgroundColor: italic
-                      ? "hsl(var(--color-bg-default-selected))"
+                      ? "hsl(var(--color-bg-default-active))"
                       : "",
                   }}
                 >
@@ -803,7 +808,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                     width: 30,
                     height: 30,
                     backgroundColor: underline
-                      ? "hsl(var(--color-bg-default-selected))"
+                      ? "hsl(var(--color-bg-default-active))"
                       : "",
                   }}
                 >
@@ -823,7 +828,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                     width: 30,
                     height: 30,
                     backgroundColor: strikethrough
-                      ? "hsl(var(--color-bg-default-selected))"
+                      ? "hsl(var(--color-bg-default-active))"
                       : "",
                   }}
                 >

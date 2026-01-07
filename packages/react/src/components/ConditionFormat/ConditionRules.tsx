@@ -50,6 +50,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
     string | null
   >(null);
   const editKeyRef = useRef<string | null>(null);
+  const firstRenderRef = useRef<boolean>(true);
   const [editConditionRange, setEditConditionRange] = useState<string | null>(
     ""
   );
@@ -73,7 +74,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
   const [strikethrough, setStrikethrough] = useState<boolean>(false);
 
   useEffect(() => {
-    // if(editConditionFormatKey) return;
+    if(create) return;
     const index = getSheetIndex(context, context?.currentSheetId!) || 0;
     const allCondition =
       context.luckysheetfile[index].luckysheet_conditionformat_save;
@@ -111,10 +112,13 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
 
     if (buttonClickCreateRef.current) return;
 
-    if (matchedCondition.length === 0) {
-      setCreate(true);
-    } else if (matchedCondition.length > 0) {
+    if (matchedCondition.length >= 0 ) {
       setCreate(false);
+    }
+
+    if (firstRenderRef.current && matchedCondition.length <= 0) {
+      setCreate(true);
+      firstRenderRef.current = false;
     }
   }, [context]);
 
@@ -173,7 +177,6 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
         buttonClickCreateRef.current = false;
         setCreate(false);
         setContext((ctx) => {
-                  console.log("whole rule",ctx.conditionRules)
           ctx.conditionRules.textColor.color = colorRules.textColor;
           ctx.conditionRules.cellColor.color = colorRules.cellColor;
           ctx.conditionRules.font = {
@@ -236,6 +239,11 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
           projectValue: "10",
         };
       });
+      setBold(false);
+      setItalic(false);
+      setUnderline(false);
+      setStrikethrough(false);
+      setColorRules({ textColor: "#177E23", cellColor: "#DDFBDF" });
       updateCacheRules();
       setEditConditionFormatKey(null);
       setContext((ctx) => {
@@ -364,13 +372,16 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         ctx,
                         ctx.currentSheetId
                       ) as number;
-                                              console.log("why set editkey", ctx.luckysheetfile[index]?.conditionRules?.editKey)
+                      console.log(
+                        "why set editkey",
+                        ctx.luckysheetfile[index]?.conditionRules?.editKey
+                      );
 
                       if (
                         ctx.luckysheetfile[index]?.conditionRules?.editKey ===
                         undefined
                       ) {
-                        console.log("set editkey")
+                        console.log("set editkey");
                         ctx.luckysheetfile[index]!.conditionRules!.editKey =
                           key;
                       }
@@ -425,7 +436,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                     <h3 className="condition-list-type">
                       {
                         (conditionformat as any)[
-                          allConditionFormats[key].conditionName
+                        allConditionFormats[key].conditionName
                         ]
                       }{" "}
                       {allConditionFormats[key].conditionValue?.[0]}
@@ -576,27 +587,27 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                 type === "lessThanOrEqual" ||
                 type === "equal" ||
                 type === "textContains") && (
-                <div className="w-full">
-                  <TextField
-                    placeholder="Value"
-                    onKeyDown={(e) => {
-                      e.stopPropagation();
-                    }}
-                    value={
-                      editConditionFormatValue ||
-                      context.conditionRules.rulesValue
-                    }
-                    onChange={(e) => {
-                      setEditConditionFormatValue(null);
-                      const { value } = e.target;
-                      setContext((ctx) => {
-                        ctx.conditionRules.rulesValue = value;
-                      });
-                      updateCacheRules();
-                    }}
-                  />
-                </div>
-              )}
+                  <div className="w-full">
+                    <TextField
+                      placeholder="Value is required"
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                      }}
+                      value={
+                        editConditionFormatValue ||
+                        context.conditionRules.rulesValue
+                      }
+                      onChange={(e) => {
+                        setEditConditionFormatValue(null);
+                        const { value } = e.target;
+                        setContext((ctx) => {
+                          ctx.conditionRules.rulesValue = value;
+                        });
+                        updateCacheRules();
+                      }}
+                    />
+                  </div>
+                )}
 
               {type === "between" && (
                 <div className="w-full flex gap-2 items-center">
@@ -675,74 +686,74 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                 type === "top10_percent" ||
                 type === "last10" ||
                 type === "last10_percent") && (
-                <div className="condition-rules-project-box">
-                  {type === "top10" || type === "top10_percent"
-                    ? conditionformat.top
-                    : conditionformat.last}
+                  <div className="condition-rules-project-box">
+                    {type === "top10" || type === "top10_percent"
+                      ? conditionformat.top
+                      : conditionformat.last}
 
-                  <div className="flex items-center">
-                    <IconButton
-                      icon="Minus"
-                      variant="ghost"
-                      className="!bg-transparent"
-                      disabled={
-                        Number(context.conditionRules.projectValue) <= 1
-                      }
-                      onClick={() => {
-                        setContext((ctx) => {
-                          const current =
-                            Number(ctx.conditionRules.projectValue) || 0;
-                          ctx.conditionRules.projectValue = String(
-                            Math.max(current - 1, 1)
-                          ); // Prevent going below 1 if needed
-                        });
-                      }}
-                    />
-                    <TextField
-                      placeholder="Value"
-                      onKeyDown={(e) => {
-                        e.stopPropagation();
-                      }}
-                      className="condition-rules-project-input pr-0"
-                      type="number"
-                      min={1}
-                      max={type === "top10" || type === "last10" ? 10 : 100}
-                      value={context.conditionRules.projectValue}
-                      onChange={(e) => {
-                        const { value } = e.target;
-                        setContext((ctx) => {
-                          ctx.conditionRules.projectValue = value;
-                        });
-                      }}
-                      rightIcon={
-                        type === "top10" || type === "last10" ? (
-                          <span className="color-icon-secondary">
-                            {conditionformat.oneself}
-                          </span>
-                        ) : (
-                          <span className="color-icon-secondary">%</span>
-                        )
-                      }
-                    />
-                    <IconButton
-                      icon="Plus"
-                      variant="ghost"
-                      className="!bg-transparent"
-                      disabled={
-                        Number(context.conditionRules.projectValue) >=
-                        (type === "top10" || type === "last10" ? 10 : 100)
-                      }
-                      onClick={() => {
-                        setContext((ctx) => {
-                          const current =
-                            Number(ctx.conditionRules.projectValue) || 0;
-                          ctx.conditionRules.projectValue = String(current + 1);
-                        });
-                      }}
-                    />
+                    <div className="flex items-center">
+                      <IconButton
+                        icon="Minus"
+                        variant="ghost"
+                        className="!bg-transparent"
+                        disabled={
+                          Number(context.conditionRules.projectValue) <= 1
+                        }
+                        onClick={() => {
+                          setContext((ctx) => {
+                            const current =
+                              Number(ctx.conditionRules.projectValue) || 0;
+                            ctx.conditionRules.projectValue = String(
+                              Math.max(current - 1, 1)
+                            ); // Prevent going below 1 if needed
+                          });
+                        }}
+                      />
+                      <TextField
+                        placeholder="Value"
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                        }}
+                        className="condition-rules-project-input pr-0"
+                        type="number"
+                        min={1}
+                        max={type === "top10" || type === "last10" ? 10 : 100}
+                        value={context.conditionRules.projectValue}
+                        onChange={(e) => {
+                          const { value } = e.target;
+                          setContext((ctx) => {
+                            ctx.conditionRules.projectValue = value;
+                          });
+                        }}
+                        rightIcon={
+                          type === "top10" || type === "last10" ? (
+                            <span className="color-icon-secondary">
+                              {conditionformat.oneself}
+                            </span>
+                          ) : (
+                            <span className="color-icon-secondary">%</span>
+                          )
+                        }
+                      />
+                      <IconButton
+                        icon="Plus"
+                        variant="ghost"
+                        className="!bg-transparent"
+                        disabled={
+                          Number(context.conditionRules.projectValue) >=
+                          (type === "top10" || type === "last10" ? 10 : 100)
+                        }
+                        onClick={() => {
+                          setContext((ctx) => {
+                            const current =
+                              Number(ctx.conditionRules.projectValue) || 0;
+                            ctx.conditionRules.projectValue = String(current + 1);
+                          });
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           )}
 
@@ -753,8 +764,24 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
             </div>
 
             <div className="toolbar-container">
-              <div className="toolbar-header" style={{backgroundColor: colorRules.cellColor, color: colorRules.textColor, textDecoration: underline ? "underline": "", textDecorationLine: strikethrough ? "line-through": "",}}>
-                <h2 className="toolbar-title" style={{fontWeight: bold ? "bold": "", fontStyle: italic ? "italic": ""}}>Formatting styles preview</h2>
+              <div
+                className="toolbar-header"
+                style={{
+                  backgroundColor: colorRules.cellColor,
+                  color: colorRules.textColor,
+                  textDecoration: underline ? "underline" : "",
+                  textDecorationLine: strikethrough ? "line-through" : "",
+                }}
+              >
+                <h2
+                  className="toolbar-title"
+                  style={{
+                    fontWeight: bold ? "bold" : "",
+                    fontStyle: italic ? "italic" : "",
+                  }}
+                >
+                  Formatting styles preview
+                </h2>
               </div>
               <div className="toolbar-content">
                 <Button

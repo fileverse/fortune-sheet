@@ -66,7 +66,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
   const [colorRules, setColorRules] = useState<{
     textColor: string;
     cellColor: string;
-  }>({ textColor: "#FFFFFF", cellColor: "#D82E2A" });
+  }>({ textColor: "#177E23", cellColor: "#DDFBDF" });
   const [bold, setBold] = useState<boolean>(false);
   const [italic, setItalic] = useState<boolean>(false);
   const [underline, setUnderline] = useState<boolean>(false);
@@ -753,8 +753,8 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
             </div>
 
             <div className="toolbar-container">
-              <div className="toolbar-header">
-                <h2 className="toolbar-title">Formatting styles preview</h2>
+              <div className="toolbar-header" style={{backgroundColor: colorRules.cellColor, color: colorRules.textColor, textDecoration: underline ? "underline": "", textDecorationLine: strikethrough ? "line-through": "",}}>
+                <h2 className="toolbar-title" style={{fontWeight: bold ? "bold": "", fontStyle: italic ? "italic": ""}}>Formatting styles preview</h2>
               </div>
               <div className="toolbar-content">
                 <Button
@@ -962,7 +962,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                 }}
                 tabIndex={0}
               >
-                Edit rule
+                Update rule
               </Button>
             ) : (
               <Button

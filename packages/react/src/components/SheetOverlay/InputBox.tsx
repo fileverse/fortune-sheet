@@ -823,8 +823,37 @@ const InputBox: React.FC = () => {
     return activeCell || cell;
   };
 
-  const fn =
-    context.formulaCache.functionlistMap[context.functionHint as string];
+  // Helper function to extract function name from input text
+  const getFunctionNameFromInput = useCallback(() => {
+    const inputText = inputRef?.current?.innerText || "";
+    if (!inputText.startsWith("=")) return null;
+
+    // Try to find function name pattern: =FUNCTIONNAME(
+    const functionMatch = inputText.match(/^=([A-Za-z_][A-Za-z0-9_]*)\s*\(/);
+    if (functionMatch) {
+      return functionMatch[1].toUpperCase();
+    }
+
+    // Also check if there's a function with class luckysheet-formula-text-func in the HTML
+    if (inputRef?.current) {
+      const funcSpan = inputRef.current.querySelector(
+        ".luckysheet-formula-text-func"
+      );
+      if (funcSpan) {
+        return funcSpan.textContent?.toUpperCase() || null;
+      }
+    }
+
+    return null;
+  }, []);
+
+  // Get function name from context.functionHint (current cursor position) or from input text
+  const functionName = context.functionHint || getFunctionNameFromInput();
+
+  // Get function object using the detected function name
+  const fn = functionName
+    ? context.formulaCache.functionlistMap[functionName]
+    : null;
 
   return (
     <div
@@ -886,7 +915,8 @@ const InputBox: React.FC = () => {
 
       {(context.functionCandidates.length > 0 ||
         context.functionHint ||
-        context.defaultCandidates.length > 0) && (
+        context.defaultCandidates.length > 0 ||
+        fn) && (
         <>
           {showSearchHint && (
             <FormulaSearch
@@ -911,15 +941,14 @@ const InputBox: React.FC = () => {
             />
           )}
           <div className="cell-hint">
-            {showFormulaHint &&
-              fn &&
-              inputRef?.current?.innerText.includes("(") && (
-                <FormulaHint
-                  handleShowFormulaHint={handleShowFormulaHint}
-                  showFormulaHint={showFormulaHint}
-                  commaCount={commaCount}
-                />
-              )}
+            {showFormulaHint && fn && (
+              <FormulaHint
+                handleShowFormulaHint={handleShowFormulaHint}
+                showFormulaHint={showFormulaHint}
+                commaCount={commaCount}
+                functionName={functionName}
+              />
+            )}
             {!showFormulaHint && fn && (
               <Tooltip
                 text="Turn on formula suggestions (F10)"

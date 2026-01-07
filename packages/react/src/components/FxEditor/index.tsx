@@ -107,7 +107,7 @@ const FxEditor: React.FC = () => {
       setContext((draftCtx) => {
         const last =
           draftCtx.luckysheet_select_save![
-          draftCtx.luckysheet_select_save!.length - 1
+            draftCtx.luckysheet_select_save!.length - 1
           ];
 
         const row_index = last.row_focus;
@@ -463,6 +463,38 @@ const FxEditor: React.FC = () => {
     }
   }, [refs.cellInput, refs.fxInput, setContext]);
 
+  // Helper function to extract function name from input text
+  const getFunctionNameFromInput = useCallback(() => {
+    const inputText = refs.fxInput?.current?.innerText || "";
+    if (!inputText.startsWith("=")) return null;
+
+    // Try to find function name pattern: =FUNCTIONNAME(
+    const functionMatch = inputText.match(/^=([A-Za-z_][A-Za-z0-9_]*)\s*\(/);
+    if (functionMatch) {
+      return functionMatch[1].toUpperCase();
+    }
+
+    // Also check if there's a function with class luckysheet-formula-text-func in the HTML
+    if (refs.fxInput?.current) {
+      const funcSpan = refs.fxInput.current.querySelector(
+        ".luckysheet-formula-text-func"
+      );
+      if (funcSpan) {
+        return funcSpan.textContent?.toUpperCase() || null;
+      }
+    }
+
+    return null;
+  }, []);
+
+  // Get function name from context.functionHint (current cursor position) or from input text
+  const functionName = context.functionHint || getFunctionNameFromInput();
+
+  // Get function object using the detected function name
+  const fn = functionName
+    ? context.formulaCache.functionlistMap[functionName]
+    : null;
+
   const allowEdit = useMemo(() => {
     if (context.allowEdit === false) {
       return false;
@@ -512,8 +544,9 @@ const FxEditor: React.FC = () => {
     <div>
       <div className="fortune-fx-editor" ref={divRef}>
         <NameBox />
-        <div className="fortune-fx-icon"
-          style={{ cursor: 'pointer' }}
+        <div
+          className="fortune-fx-icon"
+          style={{ cursor: "pointer" }}
           onClick={() => {
             document.getElementById("function-button")?.click();
           }}
@@ -578,15 +611,15 @@ const FxEditor: React.FC = () => {
           )}
 
           <div className="fx-hint">
-            {context.functionHint &&
-              refs.fxInput?.current?.innerText.includes("(") && (
-                <FormulaHint
-                  handleShowFormulaHint={handleShowFormulaHint}
-                  showFormulaHint={showFormulaHint}
-                  commaCount={commaCount}
-                />
-              )}
-            {context.functionHint && !showFormulaHint && (
+            {showFormulaHint && fn && (
+              <FormulaHint
+                handleShowFormulaHint={handleShowFormulaHint}
+                showFormulaHint={showFormulaHint}
+                commaCount={commaCount}
+                functionName={functionName}
+              />
+            )}
+            {!showFormulaHint && fn && (
               <div
                 className="luckysheet-hin absolute show-more-btn"
                 onClick={() => {

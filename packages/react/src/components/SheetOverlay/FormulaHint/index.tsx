@@ -6,14 +6,18 @@ import "./index.css";
 import { DraggableDiv } from "./dragable-div";
 
 const FormulaHint = (props: any) => {
-  const { showFormulaHint, handleShowFormulaHint, commaCount } = props;
+  const { showFormulaHint, handleShowFormulaHint, commaCount, functionName } =
+    props;
   const dragHasMoved = useRef(false);
   const { context } = useContext(WorkbookContext);
   const firstSelection = context.luckysheet_select_save?.[0];
   const { formulaMore } = locale(context);
   // if (!context.functionHint) return null;
   // @ts-ignore
-  const fn = context.formulaCache.functionlistMap[context.functionHint];
+  // Use functionName prop if provided, otherwise fall back to context.functionHint
+  const fn = functionName
+    ? context.formulaCache.functionlistMap[functionName]
+    : context.formulaCache.functionlistMap[context?.functionHint || ""];
   const [API_KEY, setAPI_KEY] = useState(localStorage.getItem(fn?.API_KEY));
   const [showAPInput, setShowAPInput] = useState(!API_KEY);
   const [isKeyAdded, setApiKeyAdded] = useState(

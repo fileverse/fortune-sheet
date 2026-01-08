@@ -1417,9 +1417,10 @@ export function getComputeMap(ctx: Context) {
   const { data } = ctx.luckysheetfile[index];
   if (_.isNil(data)) return null;
   const editKey = ctx.luckysheetfile[index].conditionRules?.editKey;
-  console.log("before",editKey, ruleArr);
+  console.log("before", editKey, ruleArr);
   if (
-    ctx.luckysheet_select_save && ctx.luckysheetfile[index].conditionRules?.rulesValue !== ""
+    ctx.luckysheet_select_save &&
+    ctx.luckysheetfile[index].conditionRules?.rulesValue !== ""
   ) {
     if (editKey !== null && editKey !== undefined) {
       ruleArr.splice(Number(editKey), 1);
@@ -1441,7 +1442,7 @@ export function getComputeMap(ctx: Context) {
       conditionValue: [ctx.luckysheetfile[index].conditionRules?.rulesValue],
     });
   }
-    console.log("after",editKey, ruleArr);
+  console.log("after", editKey, ruleArr);
 
   const computeMap = compute(ctx, ruleArr, data);
   return computeMap;

@@ -107,7 +107,7 @@ const FxEditor: React.FC = () => {
       setContext((draftCtx) => {
         const last =
           draftCtx.luckysheet_select_save![
-          draftCtx.luckysheet_select_save!.length - 1
+            draftCtx.luckysheet_select_save!.length - 1
           ];
 
         const row_index = last.row_focus;
@@ -512,8 +512,9 @@ const FxEditor: React.FC = () => {
     <div>
       <div className="fortune-fx-editor" ref={divRef}>
         <NameBox />
-        <div className="fortune-fx-icon"
-          style={{ cursor: 'pointer' }}
+        <div
+          className="fortune-fx-icon"
+          style={{ cursor: "pointer" }}
           onClick={() => {
             document.getElementById("function-button")?.click();
           }}

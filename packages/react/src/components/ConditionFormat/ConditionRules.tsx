@@ -173,7 +173,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
         buttonClickCreateRef.current = false;
         setCreate(false);
         setContext((ctx) => {
-                  console.log("whole rule",ctx.conditionRules)
+          console.log("whole rule", ctx.conditionRules);
           ctx.conditionRules.textColor.color = colorRules.textColor;
           ctx.conditionRules.cellColor.color = colorRules.cellColor;
           ctx.conditionRules.font = {
@@ -364,13 +364,16 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         ctx,
                         ctx.currentSheetId
                       ) as number;
-                                              console.log("why set editkey", ctx.luckysheetfile[index]?.conditionRules?.editKey)
+                      console.log(
+                        "why set editkey",
+                        ctx.luckysheetfile[index]?.conditionRules?.editKey
+                      );
 
                       if (
                         ctx.luckysheetfile[index]?.conditionRules?.editKey ===
                         undefined
                       ) {
-                        console.log("set editkey")
+                        console.log("set editkey");
                         ctx.luckysheetfile[index]!.conditionRules!.editKey =
                           key;
                       }

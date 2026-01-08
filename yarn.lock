@@ -2501,6 +2501,20 @@
     jwt-check-expiration "^1.0.5"
     zod "^3.25.71"
 
+"@fileverse-dev/formulajs@4.4.42":
+  version "4.4.42"
+  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.42.tgz#7220a4027d873da6aebefe1685e6ec30bbb34faa"
+  integrity sha512-7Pe7+9MTvCyqPQwUsgGrjxlorsc/FuRKcWXprSG0v7gjf3jCzddbL6NtF0OotrEdCJsjPiUumw0OYlT8gVE8Mg==
+  dependencies:
+    "@circles-sdk/data" "^0.29.1"
+    "@circles-sdk/sdk" "^0.29.1"
+    bessel "^1.0.2"
+    esbuild "^0.25.4"
+    js-sha3 "^0.9.3"
+    jstat "^1.9.6"
+    jwt-check-expiration "^1.0.5"
+    zod "^3.25.71"
+
 "@fileverse/ui@^4.1.7-patch-40":
   version "4.1.7-patch-40"
   resolved "https://registry.npmjs.org/@fileverse/ui/-/ui-4.1.7-patch-40.tgz"

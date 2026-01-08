@@ -231,7 +231,7 @@ export function setConditionRules(
       }
     } else if (rangeArr.length === 0) {
       if (_.isNaN(v) || v === "") {
-        if(v === ""){
+        if (v === "") {
           ctx.warnDialog = "Value is required";
           return;
         }

@@ -2487,10 +2487,24 @@
   resolved "https://registry.npmjs.org/@fal-works/esbuild-plugin-global-externals/-/esbuild-plugin-global-externals-2.1.2.tgz"
   integrity sha512-cEee/Z+I12mZcFJshKcCqC8tuX5hG3s+d+9nZ3LabqKF1vKdF41B92pJVCBggjAGORAeOzyyDDKrZwIkLffeOQ==
 
-"@fileverse-dev/formulajs@4.4.41":
-  version "4.4.41"
-  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.41.tgz#097a4534cc7ea89995f2e79b92d1b720fdfaa294"
-  integrity sha512-/ug4OoS8KqQQtk5BpUa/tM6+yOpAeakiLy7AsOBj9Cw1s9j9EIGK4769mV5Va1v1Adt9RIy2L/qloJSgSZ58QA==
+"@fileverse-dev/formulajs@4.4.41-example-4":
+  version "4.4.41-example-4"
+  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.41-example-4.tgz#f85597946f4da39391827f57826b7b1db84c2f91"
+  integrity sha512-a9Tv9j0QHorc9Os+dcvgrcJdPdJLgUDzRjfVcF6kXTQCAjj3CgJ0XlrT77ckB7UilCosLhFSj19xqnwAXuvTJA==
+  dependencies:
+    "@circles-sdk/data" "^0.29.1"
+    "@circles-sdk/sdk" "^0.29.1"
+    bessel "^1.0.2"
+    esbuild "^0.25.4"
+    js-sha3 "^0.9.3"
+    jstat "^1.9.6"
+    jwt-check-expiration "^1.0.5"
+    zod "^3.25.71"
+
+"@fileverse-dev/formulajs@4.4.42":
+  version "4.4.42"
+  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.42.tgz#7220a4027d873da6aebefe1685e6ec30bbb34faa"
+  integrity sha512-7Pe7+9MTvCyqPQwUsgGrjxlorsc/FuRKcWXprSG0v7gjf3jCzddbL6NtF0OotrEdCJsjPiUumw0OYlT8gVE8Mg==
   dependencies:
     "@circles-sdk/data" "^0.29.1"
     "@circles-sdk/sdk" "^0.29.1"

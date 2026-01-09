@@ -8,6 +8,7 @@
 }
 
 .toolbar-header {
+  height: 36px;
   padding: 4px 16px;
   border-radius: var(--border-radius-sm, 4px) var(--border-radius-sm, 4px) var(--border-radius-none, 0) var(--border-radius-none, 0);
   border-bottom: 1px solid hsl(var(--color-border-default, #E8EBEC));
@@ -25,7 +26,7 @@
 .toolbar-content {
   padding: 4px;
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
 }
 

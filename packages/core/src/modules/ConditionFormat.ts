@@ -372,7 +372,6 @@ export function setConditionRules(
   const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
   const ruleArr =
     ctx.luckysheetfile[index].luckysheet_conditionformat_save ?? [];
-  console.log(rule, ruleArr, editKey, edit);
   if (edit) {
     ruleArr.splice(Number(editKey), 1, rule);
   } else {
@@ -1421,7 +1420,6 @@ export function getComputeMap(ctx: Context) {
   const { data } = ctx.luckysheetfile[index];
   if (_.isNil(data)) return null;
   const editKey = ctx.luckysheetfile[index].conditionRules?.editKey;
-  console.log("before", editKey, ruleArr);
   if (
     ctx.luckysheet_select_save &&
     ctx.luckysheetfile[index].conditionRules?.rulesValue !== ""
@@ -1446,7 +1444,6 @@ export function getComputeMap(ctx: Context) {
       conditionValue: [ctx.luckysheetfile[index].conditionRules?.rulesValue],
     });
   }
-  console.log("after", editKey, ruleArr);
 
   const computeMap = compute(ctx, ruleArr, data);
   return computeMap;

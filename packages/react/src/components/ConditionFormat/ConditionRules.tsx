@@ -377,16 +377,11 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         ctx,
                         ctx.currentSheetId
                       ) as number;
-                      console.log(
-                        "why set editkey",
-                        ctx.luckysheetfile[index]?.conditionRules?.editKey
-                      );
 
                       if (
                         ctx.luckysheetfile[index]?.conditionRules?.editKey ===
                         undefined
                       ) {
-                        console.log("set editkey");
                         ctx.luckysheetfile[index]!.conditionRules!.editKey =
                           key;
                       }

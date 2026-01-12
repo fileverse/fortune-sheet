@@ -2117,6 +2117,12 @@ export function deleteSelectedCellText(ctx: Context): string {
 
       for (let r = r1; r <= r2; r += 1) {
         for (let c = c1; c <= c2; c += 1) {
+          const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
+
+          const { dataVerification } = ctx.luckysheetfile[index];
+          if (dataVerification && dataVerification?.[`${r}_${c}`]) {
+            delete dataVerification?.[`${r}_${c}`];
+          }
           // if (pivotTable.isPivotRange(r, c)) {
           //   continue;
           // }

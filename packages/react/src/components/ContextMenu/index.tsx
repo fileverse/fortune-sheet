@@ -799,6 +799,7 @@ const ContextMenu: React.FC = () => {
               setContext((draftCtx) => {
                 const allowEdit = isAllowEdit(draftCtx);
                 if (!allowEdit) return;
+
                 if (draftCtx.activeImg != null) {
                   removeActiveImage(draftCtx);
                 } else {

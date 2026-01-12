@@ -16,6 +16,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
   TextField,
 } from "@fileverse/ui";
 import {
@@ -50,6 +52,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
     string | null
   >(null);
   const editKeyRef = useRef<string | null>(null);
+  const firstRenderRef = useRef<boolean>(true);
   const [editConditionRange, setEditConditionRange] = useState<string | null>(
     ""
   );
@@ -66,14 +69,14 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
   const [colorRules, setColorRules] = useState<{
     textColor: string;
     cellColor: string;
-  }>({ textColor: "#FFFFFF", cellColor: "#D82E2A" });
+  }>({ textColor: "#177E23", cellColor: "#DDFBDF" });
   const [bold, setBold] = useState<boolean>(false);
   const [italic, setItalic] = useState<boolean>(false);
   const [underline, setUnderline] = useState<boolean>(false);
   const [strikethrough, setStrikethrough] = useState<boolean>(false);
 
   useEffect(() => {
-    // if(editConditionFormatKey) return;
+    if (create) return;
     const index = getSheetIndex(context, context?.currentSheetId!) || 0;
     const allCondition =
       context.luckysheetfile[index].luckysheet_conditionformat_save;
@@ -111,10 +114,13 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
 
     if (buttonClickCreateRef.current) return;
 
-    if (matchedCondition.length === 0) {
-      setCreate(true);
-    } else if (matchedCondition.length > 0) {
+    if (matchedCondition.length >= 0) {
       setCreate(false);
+    }
+
+    if (firstRenderRef.current && matchedCondition.length <= 0) {
+      setCreate(true);
+      firstRenderRef.current = false;
     }
   }, [context]);
 
@@ -173,7 +179,6 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
         buttonClickCreateRef.current = false;
         setCreate(false);
         setContext((ctx) => {
-          console.log("whole rule", ctx.conditionRules);
           ctx.conditionRules.textColor.color = colorRules.textColor;
           ctx.conditionRules.cellColor.color = colorRules.cellColor;
           ctx.conditionRules.font = {
@@ -236,6 +241,11 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
           projectValue: "10",
         };
       });
+      setBold(false);
+      setItalic(false);
+      setUnderline(false);
+      setStrikethrough(false);
+      setColorRules({ textColor: "#177E23", cellColor: "#DDFBDF" });
       updateCacheRules();
       setEditConditionFormatKey(null);
       setContext((ctx) => {
@@ -303,7 +313,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 
-  const conditionList = [
+  const cellHighlightConditionList = [
     { text: "greaterThan", value: ">", label: "Greater Than" },
     { text: "greaterThanOrEqual", value: ">=", label: "Greater Than or Equal" },
     { text: "lessThan", value: "<", label: "Less Than" },
@@ -317,6 +327,9 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
       label: "Occurrence Date",
     },
     { text: "duplicateValue", value: "##", label: "Duplicate Value" },
+  ];
+
+  const itemSelectionConditionList = [
     { text: "top10", value: conditionformat.top10 },
     {
       text: "top10_percent",
@@ -364,16 +377,11 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         ctx,
                         ctx.currentSheetId
                       ) as number;
-                      console.log(
-                        "why set editkey",
-                        ctx.luckysheetfile[index]?.conditionRules?.editKey
-                      );
 
                       if (
                         ctx.luckysheetfile[index]?.conditionRules?.editKey ===
                         undefined
                       ) {
-                        console.log("set editkey");
                         ctx.luckysheetfile[index]!.conditionRules!.editKey =
                           key;
                       }
@@ -555,14 +563,28 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                 className="z-[100]"
                 data-dropdown-content="true"
               >
-                {conditionList.map((option) => (
-                  <SelectItem key={option.value} value={option.text}>
-                    <div className="flex items-center gap-2">
-                      {/* <LucideIcon name={option.icon} size="sm" /> */}
-                      <span>{(conditionformat as any)[option.text]}</span>
-                    </div>
-                  </SelectItem>
-                ))}
+                <SelectGroup>
+                  <SelectLabel>Cell highlight rules</SelectLabel>
+                  {cellHighlightConditionList.map((option) => (
+                    <SelectItem key={option.value} value={option.text}>
+                      <div className="flex items-center gap-2">
+                        {/* <LucideIcon name={option.icon} size="sm" /> */}
+                        <span>{(conditionformat as any)[option.text]}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Item selections rules</SelectLabel>
+                  {itemSelectionConditionList.map((option) => (
+                    <SelectItem key={option.value} value={option.text}>
+                      <div className="flex items-center gap-2">
+                        {/* <LucideIcon name={option.icon} size="sm" /> */}
+                        <span>{(conditionformat as any)[option.text]}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
           </div>
@@ -581,7 +603,9 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                 type === "textContains") && (
                 <div className="w-full">
                   <TextField
-                    placeholder="Value"
+                    label="Value for condition"
+                    required
+                    placeholder="Value is required"
                     onKeyDown={(e) => {
                       e.stopPropagation();
                     }}
@@ -756,8 +780,24 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
             </div>
 
             <div className="toolbar-container">
-              <div className="toolbar-header">
-                <h2 className="toolbar-title">Formatting styles preview</h2>
+              <div
+                className="toolbar-header"
+                style={{
+                  backgroundColor: colorRules.cellColor,
+                  color: colorRules.textColor,
+                  textDecoration: underline ? "underline" : "",
+                  textDecorationLine: strikethrough ? "line-through" : "",
+                }}
+              >
+                <h2
+                  className="toolbar-title"
+                  style={{
+                    fontWeight: bold ? "bold" : "",
+                    fontStyle: italic ? "italic" : "",
+                  }}
+                >
+                  Formatting styles preview
+                </h2>
               </div>
               <div className="toolbar-content">
                 <Button
@@ -956,6 +996,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
             </Button>
             {editConditionFormatKey !== null ? (
               <Button
+                disabled={context.conditionRules.rulesValue === ""}
                 variant="default"
                 style={{
                   minWidth: "80px",
@@ -965,10 +1006,11 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                 }}
                 tabIndex={0}
               >
-                Edit rule
+                Update rule
               </Button>
             ) : (
               <Button
+                disabled={context.conditionRules.rulesValue === ""}
                 variant="default"
                 style={{
                   minWidth: "80px",

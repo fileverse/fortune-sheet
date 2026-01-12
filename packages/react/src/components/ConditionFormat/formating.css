@@ -8,26 +8,25 @@
 }
 
 .toolbar-header {
-  background-color: #dcfce7;
+  height: 36px;
   padding: 4px 16px;
   border-radius: var(--border-radius-sm, 4px) var(--border-radius-sm, 4px) var(--border-radius-none, 0) var(--border-radius-none, 0);
-border-bottom: 1px solid hsl(var(--color-border-default, #E8EBEC));
-background: hsl(var(--color-bg-success-light, #DDFBDF));
+  border-bottom: 1px solid hsl(var(--color-border-default, #E8EBEC));
+  background: hsl(var(--color-bg-success-light, #DDFBDF));
 }
 
 .toolbar-title {
-  color: hsl(var(--color-text-success, #177E23));
-font-family: "Helvetica Neue";
-font-size: 14px;
-font-style: normal;
-font-weight: 400;
-line-height: 20px;
+  font-family: "Helvetica Neue";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
 }
 
 .toolbar-content {
   padding: 4px;
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
 }
 

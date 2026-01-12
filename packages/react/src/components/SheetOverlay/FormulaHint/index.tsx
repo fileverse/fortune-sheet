@@ -207,15 +207,21 @@ const FormulaHint = (props: any) => {
             >
               <div className=" flex-grow  color-text-default">
                 <code
-                  style={{ fontWeight: 500 }}
+                  style={{ fontWeight: "bold" }}
                   className="luckysheet-arguments-help-function-name font-family-mono mb-1 mt-2 color-text-default font-family-mono"
                 >
                   {fn.n}
                 </code>
-                <code className="luckysheet-arguments-paren font-family-mono mb-1 mt-2 color-text-default">
+                <code
+                  className="luckysheet-arguments-paren font-family-mono mb-1 mt-2 color-text-default"
+                  style={{ fontWeight: "bold" }}
+                >
                   (
                 </code>
-                <code className="luckysheet-arguments-parameter-holder font-family-mono mb-1 mt-2 color-text-default">
+                <code
+                  className="luckysheet-arguments-parameter-holder font-family-mono mb-1 mt-2 color-text-default"
+                  style={{ fontWeight: "bold" }}
+                >
                   {fn.p.map((param: any, i: number) => {
                     let { name } = param;
                     if (param.repeat === "y") {
@@ -235,6 +241,7 @@ const FormulaHint = (props: any) => {
                               commaCount === i
                                 ? bgColor(fn.BRAND_SECONDARY_COLOR)
                                 : "transparent",
+                            fontWeight: "bold",
                           }}
                         >
                           {name}
@@ -421,11 +428,12 @@ const FormulaHint = (props: any) => {
                       <code
                         style={{
                           overflowWrap: "break-word",
+                          fontWeight: "bold",
                         }}
                         className="example-value-code"
                       >
                         <span className="luckysheet-arguments-help-function-name">
-                          {fn.n}
+                          ={fn.n}
                         </span>
                         <span className="luckysheet-arguments-paren">(</span>
                         <span className="luckysheet-arguments-parameter-holder">
@@ -434,9 +442,15 @@ const FormulaHint = (props: any) => {
                               key={param.name}
                               className="luckysheet-arguments-help-parameter"
                               dir="auto"
+                              style={{
+                                color:
+                                  param.type === "string" ? "#177E23" : "black",
+                              }}
                             >
                               {param.example}
-                              {i !== fn.p.length - 1 && ", "}
+                              <span style={{ color: "black" }}>
+                                {i !== fn.p.length - 1 && ", "}
+                              </span>
                             </span>
                           ))}
                         </span>
@@ -475,6 +489,7 @@ const FormulaHint = (props: any) => {
                           <code
                             className="font-family-mono mb-1 mt-2 color-text-default font-family-mono"
                             style={{
+                              fontWeight: 600,
                               backgroundColor:
                                 commaCount === index
                                   ? bgColor(fn.BRAND_SECONDARY_COLOR)
@@ -522,7 +537,7 @@ const FormulaHint = (props: any) => {
                   borderBottomLeftRadius: "10px",
                   borderBottomRightRadius: "10px",
                 }}
-                className="w-full"
+                className="w-full flex items-center gap-4"
               >
                 <div
                   onClick={() => {
@@ -532,6 +547,37 @@ const FormulaHint = (props: any) => {
                 >
                   Learn More
                 </div>
+                {(fn.n.includes("SMARTCONTRACT") ||
+                  fn.n.includes("smartcontract")) && (
+                  <div
+                    className="flex justify-center items-center gap-1 color-text-link cursor-pointer text-helper-text-sm ml-2"
+                    onClick={() => {
+                      document.getElementById("smartcontract-button")?.click();
+                    }}
+                  >
+                    <div className="">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="17"
+                        height="17"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="lucide lucide-circle-question-mark-icon lucide-circle-question-mark"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                        <path d="M12 17h.01" />
+                      </svg>
+                    </div>
+                    <span className="font-normal text-xs text-[#5c0aff]">
+                      How to use imported contract?
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>

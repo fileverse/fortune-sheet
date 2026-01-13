@@ -1080,6 +1080,7 @@ export function execfunction(
   isrefresh?: boolean,
   notInsertFunc?: boolean
 ) {
+  console.log("execfunction:", { txt, r, c, id });
   const originalTxt = txt;
   if (
     txt.toUpperCase().includes("NETWORKDAYS.INTL") ||
@@ -1405,6 +1406,7 @@ export function execFunctionGroup(
   data?: any,
   isForce = false
 ) {
+  console.log("execFunctionGroup", origin_r, origin_c, value, id, data);
   if (_.isNil(data)) {
     data = getFlowdata(ctx);
   }

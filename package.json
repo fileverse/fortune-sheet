@@ -79,7 +79,6 @@
   },
   "dependencies": {
     "@babel/helper-get-function-arity": "^7.16.7",
-    "@fileverse-dev/formulajs": "4.4.41-example-4",
     "react": ">= 18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^4.9.4",

@@ -24,7 +24,7 @@ const ErrorBoxes: React.FC = () => {
         zIndex: 100,
         borderRadius: "4px",
       }}
-      className="shadow-lg flex flex-col gap-2"
+      className="shadow-lg flex flex-col gap-2 break-all"
     >
       <h3 className="text-heading-xsm color-text-danger">{title}</h3>
       <div className="color-text-default text-body-sm">{message}</div>

@@ -19,7 +19,7 @@ function isCellReferenced(formulaString: string, cell: string): boolean {
   // Convert column letters to number (A -> 1, Z -> 26, AA -> 27)
   function colToNumber(col: string): number {
     let num = 0;
-    for (let i = 0; i < col.length; i = i + 1) {
+    for (let i = 0; i < col.length; i += 1) {
       num = num * 26 + (col.charCodeAt(i) - 64);
     }
     return num;

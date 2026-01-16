@@ -900,6 +900,7 @@ const InputBox: React.FC = () => {
             console.log("onCompositionStart");
           }}
           onCompositionUpdate={(e) => {
+            //@ts-ignore
             window.CompositData = e.currentTarget.innerText;
             isComposingRef.current = true;
             console.log("onCompositionUpdate", e.currentTarget.innerText);
@@ -915,6 +916,7 @@ const InputBox: React.FC = () => {
               colIndex,
               setCellValue
             );
+            //@ts-ignore
             window.CompositData = e.currentTarget.innerText;
             setContext((draftCtx) => {
               setCellValue(
@@ -922,9 +924,11 @@ const InputBox: React.FC = () => {
                 rowIndex,
                 colIndex,
                 null,
+                //@ts-ignore
                 window.CompositData
               );
               // preText.current = '';
+              //@ts-ignore
               window.CompositData = "";
             });
             isComposingRef.current = false;

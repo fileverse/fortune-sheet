@@ -39,11 +39,11 @@ import {
   moveCursorToEnd,
 } from "../../components/SheetOverlay/helper";
 
-declare global {
-  interface Window {
-    CompositData?: string;
-  }
-}
+// declare global {
+//   interface Window {
+//     CompositData?: string;
+//   }
+// }
 
 const FxEditor: React.FC = () => {
   const hideFormulaHintLocal = localStorage.getItem("formulaMore") === "true";
@@ -592,6 +592,7 @@ const FxEditor: React.FC = () => {
               console.log("onCompositionStart");
             }}
             onCompositionUpdate={(e) => {
+              //@ts-ignore
               window.CompositData = e.currentTarget.innerText;
               isComposingRef.current = true;
               console.log("onCompositionUpdate", e.currentTarget.innerText);
@@ -599,6 +600,7 @@ const FxEditor: React.FC = () => {
             onCompositionEnd={(e) => {
               const rowIndex = firstSelection?.row_focus || 0;
               const colIndex = firstSelection?.column_focus || 0;
+              //@ts-ignore
               window.CompositData = e.currentTarget.innerText;
               setContext((draftCtx) => {
                 setCellValue(
@@ -606,8 +608,10 @@ const FxEditor: React.FC = () => {
                   rowIndex,
                   colIndex,
                   null,
+                  //@ts-ignore
                   window.CompositData as string
                 );
+                //@ts-ignore
                 window.CompositData = "";
               });
               isComposingRef.current = false;

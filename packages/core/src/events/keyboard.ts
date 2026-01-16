@@ -697,7 +697,8 @@ export async function handleGlobalKeyDown(
     // $(event.target).hasClass("luckysheet-mousedown-cancel") ||
     // $(event.target).hasClass("sp-input") ||
     ctx.luckysheetCellUpdate.length > 0 &&
-    restCod
+    restCod &&
+    (window.CompositData === "" || window.CompositData === undefined)
   ) {
     // const anchor = $(window.getSelection().anchorNode);
 
@@ -767,7 +768,8 @@ export async function handleGlobalKeyDown(
 
   if (kstr === "Enter") {
     if (!allowEdit) return;
-    handleGlobalEnter(ctx, cellInput, e, canvas);
+    if (window.CompositData === "")
+      handleGlobalEnter(ctx, cellInput, e, canvas);
   } else if (kstr === "Tab") {
     if (ctx.luckysheetCellUpdate.length > 0) {
       updateCell(

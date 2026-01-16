@@ -21,6 +21,7 @@ import {
   handleItalic,
   handleUnderline,
   handleStrikeThrough,
+  setCellValue,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -74,6 +75,7 @@ const InputBox: React.FC = () => {
   const col_index = firstSelection?.column_focus!;
   const preText = useRef("");
   const placeRef = useRef("");
+  const isComposingRef = useRef(false);
 
   const handleShowFormulaHint = () => {
     localStorage.setItem("formulaMore", String(showFormulaHint));
@@ -157,7 +159,7 @@ const InputBox: React.FC = () => {
         }
       }
       refs.globalCache.overwriteCell = false;
-      if (!refs.globalCache.ignoreWriteCell)
+      if (!refs.globalCache.ignoreWriteCell && inputRef.current)
         inputRef.current!.innerHTML = escapeHTMLTag(escapeScriptTag(value));
       refs.globalCache.ignoreWriteCell = false;
       if (!refs.globalCache.doNotFocus) {
@@ -191,6 +193,7 @@ const InputBox: React.FC = () => {
 
   // Reset active state when selection changes or InputBox is hidden
   useEffect(() => {
+    if (isComposingRef.current) return;
     if (
       !firstSelection ||
       context.rangeDialog?.show ||
@@ -207,6 +210,7 @@ const InputBox: React.FC = () => {
 
   const insertSelectedFormula = useCallback(
     (formulaName: string) => {
+      if (isComposingRef.current) return;
       if (/^=[a-zA-Z]+$/.test(inputRef.current!.innerText)) {
         const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
         inputRef.current!.innerHTML = ht;
@@ -304,6 +308,7 @@ const InputBox: React.FC = () => {
 
   const selectActiveFormula = useCallback(
     (e: React.KeyboardEvent) => {
+      if (isComposingRef.current) return;
       const formulaName = getActiveFormula()?.querySelector(
         ".luckysheet-formula-search-func"
       )?.textContent;
@@ -322,6 +327,7 @@ const InputBox: React.FC = () => {
 
   const selectActiveFormulaOnClick = useCallback(
     (e: React.MouseEvent) => {
+      if (isComposingRef.current) return;
       // @ts-expect-error later
       if (e.target.className.includes("sign-fortune")) return;
       preText.current = inputRef.current!.innerText;
@@ -347,6 +353,7 @@ const InputBox: React.FC = () => {
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (isComposingRef.current) return;
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
       preText.current = inputRef.current!.innerText;
       // if (
@@ -596,6 +603,9 @@ const InputBox: React.FC = () => {
 
   const onChange = useCallback(
     (__: any, isBlur?: boolean) => {
+      if (isComposingRef.current) {
+        return;
+      }
       if (context.isFlvReadOnly) return;
       handleHideShowHint();
 
@@ -677,6 +687,7 @@ const InputBox: React.FC = () => {
 
   const onPaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
+      if (isComposingRef.current) return;
       if (_.isEmpty(context.luckysheetCellUpdate)) {
         e.preventDefault();
       }
@@ -884,7 +895,44 @@ const InputBox: React.FC = () => {
         }
       >
         <ContentEditable
+          onCompositionStart={() => {
+            isComposingRef.current = true;
+            console.log("onCompositionStart");
+          }}
+          onCompositionUpdate={(e) => {
+            window.CompositData = e.currentTarget.innerText;
+            isComposingRef.current = true;
+            console.log("onCompositionUpdate", e.currentTarget.innerText);
+          }}
+          onCompositionEnd={(e) => {
+            const rowIndex = firstSelection?.row_focus || 0;
+            const colIndex = firstSelection?.column_focus || 0;
+            console.log(
+              "onCompositionEnd",
+              e.currentTarget.innerText,
+              getCellAddress(),
+              rowIndex,
+              colIndex,
+              setCellValue
+            );
+            window.CompositData = e.currentTarget.innerText;
+            setContext((draftCtx) => {
+              setCellValue(
+                draftCtx,
+                rowIndex,
+                colIndex,
+                null,
+                window.CompositData
+              );
+              // preText.current = '';
+              window.CompositData = "";
+            });
+            isComposingRef.current = false;
+          }}
           onMouseUp={() => {
+            if (isComposingRef.current) {
+              return;
+            }
             handleHideShowHint();
             const currentCommaCount = countCommasBeforeCursor(
               inputRef?.current!
@@ -892,6 +940,12 @@ const InputBox: React.FC = () => {
             setCommaCount(currentCommaCount);
           }}
           innerRef={(e) => {
+            if (isComposingRef.current) {
+              inputRef.current = null;
+              refs.cellInput.current = null;
+              return;
+            }
+
             // @ts-ignore
             inputRef.current = e;
             refs.cellInput.current = e;

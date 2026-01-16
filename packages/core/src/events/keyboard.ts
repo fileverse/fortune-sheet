@@ -698,7 +698,7 @@ export async function handleGlobalKeyDown(
     // $(event.target).hasClass("sp-input") ||
     ctx.luckysheetCellUpdate.length > 0 &&
     restCod &&
-    //@ts-ignore
+    // @ts-ignore
     (window.CompositData === "" || window.CompositData === undefined)
   ) {
     // const anchor = $(window.getSelection().anchorNode);
@@ -769,7 +769,7 @@ export async function handleGlobalKeyDown(
 
   if (kstr === "Enter") {
     if (!allowEdit) return;
-    //@ts-ignore
+    // @ts-ignore
     if (window.CompositData === "" || window.CompositData === undefined)
       handleGlobalEnter(ctx, cellInput, e, canvas);
   } else if (kstr === "Tab") {

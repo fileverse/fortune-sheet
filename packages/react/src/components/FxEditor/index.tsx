@@ -13,7 +13,6 @@ import {
   isShowHidenCR,
   escapeHTMLTag,
   isAllowEdit,
-  setCellValue,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -39,12 +38,6 @@ import {
   moveCursorToEnd,
 } from "../../components/SheetOverlay/helper";
 
-// declare global {
-//   interface Window {
-//     CompositData?: string;
-//   }
-// }
-
 const FxEditor: React.FC = () => {
   const hideFormulaHintLocal = localStorage.getItem("formulaMore") === "true";
   const [showSearchHint, setShowSearchHint] = useState(false);
@@ -58,7 +51,6 @@ const FxEditor: React.FC = () => {
   const prevFirstSelection = usePrevious(firstSelection);
   const prevSheetId = usePrevious(context.currentSheetId);
   const recentText = useRef("");
-  const isComposingRef = useRef(false);
 
   const handleShowFormulaHint = () => {
     localStorage.setItem("formulaMore", String(showFormulaHint));
@@ -104,9 +96,6 @@ const FxEditor: React.FC = () => {
   ]);
 
   const onFocus = useCallback(() => {
-    if (isComposingRef.current) {
-      return;
-    }
     if (context.allowEdit === false) {
       return;
     }
@@ -201,9 +190,6 @@ const FxEditor: React.FC = () => {
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      // if(isComposingRef.current) {
-      //   return;
-      // }
       if (context.allowEdit === false) {
         return;
       }
@@ -298,9 +284,6 @@ const FxEditor: React.FC = () => {
         if (context.luckysheetCellUpdate.length > 0) {
           switch (key) {
             case "Enter": {
-              if (isComposingRef.current) {
-                break;
-              }
               // if (
               //   $("#luckysheet-formula-search-c").is(":visible") &&
               //   formula.searchFunctionCell != null
@@ -312,14 +295,12 @@ const FxEditor: React.FC = () => {
               //   );
               // } else {
               const lastCellUpdate = _.clone(draftCtx.luckysheetCellUpdate);
-              if (!isComposingRef.current) {
-                updateCell(
-                  draftCtx,
-                  draftCtx.luckysheetCellUpdate[0],
-                  draftCtx.luckysheetCellUpdate[1],
-                  refs.fxInput.current!
-                );
-              }
+              updateCell(
+                draftCtx,
+                draftCtx.luckysheetCellUpdate[0],
+                draftCtx.luckysheetCellUpdate[1],
+                refs.fxInput.current!
+              );
               draftCtx.luckysheet_select_save = [
                 {
                   row: [lastCellUpdate[0], lastCellUpdate[0]],
@@ -391,13 +372,11 @@ const FxEditor: React.FC = () => {
               }
               */
             case "ArrowLeft": {
-              if (!isComposingRef.current)
-                rangeHightlightselected(draftCtx, refs.fxInput.current!);
+              rangeHightlightselected(draftCtx, refs.fxInput.current!);
               break;
             }
             case "ArrowRight": {
-              if (!isComposingRef.current)
-                rangeHightlightselected(draftCtx, refs.fxInput.current!);
+              rangeHightlightselected(draftCtx, refs.fxInput.current!);
               break;
             }
             default:
@@ -438,7 +417,6 @@ const FxEditor: React.FC = () => {
   };
 
   const onChange = useCallback(() => {
-    if (isComposingRef.current) return;
     if (context.isFlvReadOnly) return;
     handleHideShowHint();
     if (
@@ -587,35 +565,6 @@ const FxEditor: React.FC = () => {
         </div>
         <div ref={inputContainerRef} className="fortune-fx-input-container">
           <ContentEditable
-            onCompositionStart={() => {
-              isComposingRef.current = true;
-              console.log("onCompositionStart");
-            }}
-            onCompositionUpdate={(e) => {
-              //@ts-ignore
-              window.CompositData = e.currentTarget.innerText;
-              isComposingRef.current = true;
-              console.log("onCompositionUpdate", e.currentTarget.innerText);
-            }}
-            onCompositionEnd={(e) => {
-              const rowIndex = firstSelection?.row_focus || 0;
-              const colIndex = firstSelection?.column_focus || 0;
-              //@ts-ignore
-              window.CompositData = e.currentTarget.innerText;
-              setContext((draftCtx) => {
-                setCellValue(
-                  draftCtx,
-                  rowIndex,
-                  colIndex,
-                  null,
-                  //@ts-ignore
-                  window.CompositData as string
-                );
-                //@ts-ignore
-                window.CompositData = "";
-              });
-              isComposingRef.current = false;
-            }}
             onMouseUp={() => {
               handleHideShowHint();
               const currentCommaCount = countCommasBeforeCursor(
@@ -624,10 +573,6 @@ const FxEditor: React.FC = () => {
               setCommaCount(currentCommaCount);
             }}
             innerRef={(e) => {
-              if (isComposingRef.current) {
-                refs.fxInput.current = null;
-                return;
-              }
               refs.fxInput.current = e;
             }}
             className="fortune-fx-input"

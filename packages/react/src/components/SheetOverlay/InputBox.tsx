@@ -327,7 +327,7 @@ const InputBox: React.FC = () => {
 
   const selectActiveFormulaOnClick = useCallback(
     (e: React.MouseEvent) => {
-      if (isComposingRef.current) return;
+      if (isComposingRef.current || !inputRef.current) return;
       // @ts-expect-error later
       if (e.target.className.includes("sign-fortune")) return;
       preText.current = inputRef.current!.innerText;
@@ -353,7 +353,7 @@ const InputBox: React.FC = () => {
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isComposingRef.current) return;
+      if (isComposingRef.current || !inputRef.current) return;
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
       preText.current = inputRef.current!.innerText;
       // if (
@@ -380,8 +380,10 @@ const InputBox: React.FC = () => {
         }
       }
 
-      const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
-      setCommaCount(currentCommaCount);
+      if (!isComposingRef.current) {
+        const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
+        setCommaCount(currentCommaCount);
+      }
 
       /* Arrow navigation for cell reference starts here */
       let allowListNavigation = true;
@@ -389,7 +391,7 @@ const InputBox: React.FC = () => {
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
         getCursorPosition(inputRef?.current!) ===
-          inputRef?.current!.innerText.length
+        inputRef?.current!.innerText.length
       ) {
         setTimeout(() => {
           moveCursorToEnd(inputRef?.current!);
@@ -416,7 +418,7 @@ const InputBox: React.FC = () => {
           e.key === "ArrowRight") &&
         !(
           getCursorPosition(inputRef?.current!) !==
-            inputRef?.current!.innerText.length && e.key === "ArrowRight"
+          inputRef?.current!.innerText.length && e.key === "ArrowRight"
         )
       ) {
         const parser = new DOMParser();
@@ -449,9 +451,8 @@ const InputBox: React.FC = () => {
           !/^[a-zA-Z]+$/.test(lastSpan?.innerText)
         ) {
           allowListNavigation = false;
-          inputRef.current!.innerHTML = `${
-            inputRef.current!.innerHTML
-          }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
+          inputRef.current!.innerHTML = `${inputRef.current!.innerHTML
+            }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
 
           setTimeout(() => {
             moveCursorToEnd(inputRef.current!);
@@ -617,8 +618,12 @@ const InputBox: React.FC = () => {
       } else {
         setShowSearchHint(false);
       }
-      const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
-      setCommaCount(currentCommaCount);
+
+      if (!isComposingRef.current) {
+        const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
+        setCommaCount(currentCommaCount);
+      }
+
       // setInputHTML(html);
       // console.log("onChange", __);
       const e = lastKeyDownEventRef.current;
@@ -887,10 +892,10 @@ const InputBox: React.FC = () => {
         style={
           firstSelection
             ? {
-                minWidth: firstSelection.width,
-                minHeight: firstSelection.height,
-                ...inputBoxStyle,
-              }
+              minWidth: firstSelection.width,
+              minHeight: firstSelection.height,
+              ...inputBoxStyle,
+            }
             : {}
         }
       >
@@ -900,7 +905,7 @@ const InputBox: React.FC = () => {
             console.log("onCompositionStart");
           }}
           onCompositionUpdate={(e) => {
-            //@ts-ignore
+            // @ts-ignore
             window.CompositData = e.currentTarget.innerText;
             isComposingRef.current = true;
             console.log("onCompositionUpdate", e.currentTarget.innerText);
@@ -916,7 +921,7 @@ const InputBox: React.FC = () => {
               colIndex,
               setCellValue
             );
-            //@ts-ignore
+            // @ts-ignore
             window.CompositData = e.currentTarget.innerText;
             setContext((draftCtx) => {
               setCellValue(
@@ -924,11 +929,11 @@ const InputBox: React.FC = () => {
                 rowIndex,
                 colIndex,
                 null,
-                //@ts-ignore
+                // @ts-ignore
                 window.CompositData
               );
               // preText.current = '';
-              //@ts-ignore
+              // @ts-ignore
               window.CompositData = "";
             });
             isComposingRef.current = false;
@@ -938,10 +943,10 @@ const InputBox: React.FC = () => {
               return;
             }
             handleHideShowHint();
-            const currentCommaCount = countCommasBeforeCursor(
-              inputRef?.current!
-            );
-            setCommaCount(currentCommaCount);
+            if (!isComposingRef.current) {
+              const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
+              setCommaCount(currentCommaCount);
+            }
           }}
           innerRef={(e) => {
             if (isComposingRef.current) {
@@ -975,72 +980,72 @@ const InputBox: React.FC = () => {
         context.functionHint ||
         context.defaultCandidates.length > 0 ||
         fn) && (
-        <>
-          {showSearchHint && (
-            <FormulaSearch
-              onMouseMove={(e) => {
-                if (document.getElementById("luckysheet-formula-search-c")) {
-                  // apply hovered state on the function item
-                  const hoveredItem = (e.target as HTMLElement).closest(
-                    ".luckysheet-formula-search-item"
-                  ) as HTMLElement | null;
-                  if (!hoveredItem) return;
+          <>
+            {showSearchHint && (
+              <FormulaSearch
+                onMouseMove={(e) => {
+                  if (document.getElementById("luckysheet-formula-search-c")) {
+                    // apply hovered state on the function item
+                    const hoveredItem = (e.target as HTMLElement).closest(
+                      ".luckysheet-formula-search-item"
+                    ) as HTMLElement | null;
+                    if (!hoveredItem) return;
 
-                  clearSearchItemActiveClass();
-                  hoveredItem.classList.add(
-                    "luckysheet-formula-search-item-active"
-                  );
-                }
-                e.preventDefault();
-              }}
-              onMouseDown={(e) => {
-                selectActiveFormulaOnClick(e);
-              }}
-            />
-          )}
-          <div className="cell-hint">
-            {showFormulaHint && fn && (
-              <FormulaHint
-                handleShowFormulaHint={handleShowFormulaHint}
-                showFormulaHint={showFormulaHint}
-                commaCount={commaCount}
-                functionName={functionName}
+                    clearSearchItemActiveClass();
+                    hoveredItem.classList.add(
+                      "luckysheet-formula-search-item-active"
+                    );
+                  }
+                  e.preventDefault();
+                }}
+                onMouseDown={(e) => {
+                  selectActiveFormulaOnClick(e);
+                }}
               />
             )}
-            {!showFormulaHint && fn && (
-              <Tooltip
-                text="Turn on formula suggestions (F10)"
-                placement="top"
-                defaultOpen
-                style={{
-                  position: "absolute",
-                  top: "-50px",
-                  left: "-130px",
-                  width: "210px",
-                }}
-              >
-                <div
-                  className="luckysheet-hin absolute show-more-btn"
-                  onClick={() => {
-                    handleShowFormulaHint();
+            <div className="cell-hint">
+              {showFormulaHint && fn && (
+                <FormulaHint
+                  handleShowFormulaHint={handleShowFormulaHint}
+                  showFormulaHint={showFormulaHint}
+                  commaCount={commaCount}
+                  functionName={functionName}
+                />
+              )}
+              {!showFormulaHint && fn && (
+                <Tooltip
+                  text="Turn on formula suggestions (F10)"
+                  placement="top"
+                  defaultOpen
+                  style={{
+                    position: "absolute",
+                    top: "-50px",
+                    left: "-130px",
+                    width: "210px",
                   }}
                 >
-                  <LucideIcon
-                    name="DSheetTextDisabled"
-                    fill="black"
-                    style={{
-                      width: "14px",
-                      height: "14px",
-                      margin: "auto",
-                      marginTop: "1px",
+                  <div
+                    className="luckysheet-hin absolute show-more-btn"
+                    onClick={() => {
+                      handleShowFormulaHint();
                     }}
-                  />
-                </div>
-              </Tooltip>
-            )}
-          </div>
-        </>
-      )}
+                  >
+                    <LucideIcon
+                      name="DSheetTextDisabled"
+                      fill="black"
+                      style={{
+                        width: "14px",
+                        height: "14px",
+                        margin: "auto",
+                        marginTop: "1px",
+                      }}
+                    />
+                  </div>
+                </Tooltip>
+              )}
+            </div>
+          </>
+        )}
     </div>
   );
 };

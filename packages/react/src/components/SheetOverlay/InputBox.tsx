@@ -75,7 +75,28 @@ const InputBox: React.FC = () => {
   const col_index = firstSelection?.column_focus!;
   const preText = useRef("");
   const placeRef = useRef("");
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const isComposingRef = useRef(false);
+
+    const placeCursorAtEnd = (el: HTMLElement) => {
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  };
+
+  const ensureNotEmpty = () => {
+    const el = rootRef.current;
+    if (!el) return;
+
+    // ZERO WIDTH SPACE keeps IME alive
+    if (el.textContent === "") {
+      el.innerHTML = "\u200B";
+      placeCursorAtEnd(el);
+    }
+  };
 
   const handleShowFormulaHint = () => {
     localStorage.setItem("formulaMore", String(showFormulaHint));
@@ -353,7 +374,10 @@ const InputBox: React.FC = () => {
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isComposingRef.current || !inputRef.current) return;
+      if (isComposingRef.current || !inputRef.current) {
+        ensureNotEmpty();
+        return;
+      }
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
       preText.current = inputRef.current!.innerText;
       // if (
@@ -912,6 +936,7 @@ const InputBox: React.FC = () => {
             console.log("onCompositionUpdate", e.currentTarget.innerText);
           }}
           onCompositionEnd={(e) => {
+            ensureNotEmpty();
             const rowIndex = firstSelection?.row_focus || 0;
             const colIndex = firstSelection?.column_focus || 0;
             console.log(
@@ -952,6 +977,7 @@ const InputBox: React.FC = () => {
             }
           }}
           innerRef={(e) => {
+            rootRef.current = e;
             if (isComposingRef.current) {
               inputRef.current = null;
               refs.cellInput.current = null;

@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-react",
-  "version": "1.2.86-pinyin-2",
+  "version": "1.2.86-pinyin-3",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "module": "es/index.js",

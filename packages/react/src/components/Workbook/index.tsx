@@ -330,10 +330,13 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
       [emitOp]
     );
 
-    const handleUndo = useCallback(() => {
+    const handleUndo = () => {
+      console.log("undo poo");
       const history = globalCache.current.undoList.pop();
       if (history) {
         setContext((ctx_) => {
+          const isBorderUndo = history.patches.some((onePatch) => onePatch.value?.borderInfo);
+
           if (history.options?.deleteSheetOp) {
             history.inversePatches[0].path[1] = ctx_.luckysheetfile.length;
             const order = history.options.deletedSheet?.value?.order as number;
@@ -376,22 +379,50 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             delete inversedOptions!.addSheet!.value!.data;
           }
           emitOp(newContext, history.inversePatches, inversedOptions, true);
-          return newContext;
+          let nw = { ...newContext }
+          if (isBorderUndo) {
+            const nwborderlist = nw?.config?.borderInfo?.slice(0, -1)
+            nw = {
+              ...nw,
+              config: {
+                ...nw.config,
+                borderInfo: nwborderlist
+              }
+            }
+          }
+          return isBorderUndo ? nw : newContext;
         });
       }
-    }, [emitOp]);
+    }
+    // , [emitOp]);
 
-    const handleRedo = useCallback(() => {
+    const handleRedo = () => {
       const history = globalCache.current.redoList.pop();
       if (history) {
         setContext((ctx_) => {
           const newContext = applyPatches(ctx_, history.patches);
+          const isBorderUndo = history.patches.some((onePatch) => onePatch.value?.borderInfo);
+
           globalCache.current.undoList.push(history);
           emitOp(newContext, history.patches, history.options);
-          return newContext;
+          let nw = { ...newContext }
+          if (isBorderUndo) {
+            const nwborderlist = (nw?.config?.borderInfo ?? []).concat(
+              history.patches[0].value?.borderInfo[0]
+            );
+            nw = {
+              ...nw,
+              config: {
+                ...nw.config,
+                borderInfo: nwborderlist
+              }
+            }
+          }
+          return isBorderUndo ? nw : newContext;
         });
       }
-    }, [emitOp]);
+    }
+    // , [emitOp]);
 
     useEffect(() => {
       mergedSettings.hooks?.afterActivateSheet?.(context.currentSheetId);

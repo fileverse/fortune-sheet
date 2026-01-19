@@ -2501,18 +2501,6 @@
     jwt-check-expiration "^1.0.5"
     zod "^3.25.71"
 
-"@fileverse-dev/fortune-core@1.2.86-pinyin-2":
-  version "1.2.86-pinyin-2"
-  resolved "https://registry.npmjs.org/@fileverse-dev/fortune-core/-/fortune-core-1.2.86-pinyin-2.tgz"
-  integrity sha512-gsbMZO9W96M97ros0Zj5C85fS657J9Gk5Vd3U9xX5ui0JCHw3lIqrUUxgcnlOOhmAbJ4zbzdvSnn1DlnJSW+GA==
-  dependencies:
-    "@fileverse-dev/formula-parser" "0.2.92"
-    dayjs "^1.11.0"
-    immer "^9.0.12"
-    lodash "^4.17.21"
-    numeral "^2.0.6"
-    uuid "^8.3.2"
-
 "@fileverse/ui@^4.1.7-patch-40":
   version "4.1.7-patch-40"
   resolved "https://registry.npmjs.org/@fileverse/ui/-/ui-4.1.7-patch-40.tgz"

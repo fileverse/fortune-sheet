@@ -78,7 +78,7 @@ const InputBox: React.FC = () => {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const isComposingRef = useRef(false);
 
-    const placeCursorAtEnd = (el: HTMLElement) => {
+  const placeCursorAtEnd = (el: HTMLElement) => {
     const range = document.createRange();
     const sel = window.getSelection();
     range.selectNodeContents(el);

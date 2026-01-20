@@ -13,6 +13,66 @@ import {
   spillSortResult,
 } from "..";
 
+function isCellReferenced(formulaString: string, cell: string): boolean {
+  type Cell = { col: number; row: number };
+
+  // Convert column letters to number (A -> 1, Z -> 26, AA -> 27)
+  function colToNumber(col: string): number {
+    let num = 0;
+    for (let i = 0; i < col.length; i += 1) {
+      num = num * 26 + (col.charCodeAt(i) - 64);
+    }
+    return num;
+  }
+
+  // Parse "A12" → { col, row }
+  function parseCell(cellRef: string): Cell | null {
+    const match = cellRef.match(/^([A-Z]+)(\d+)$/);
+    if (!match) return null;
+    return {
+      col: colToNumber(match[1]),
+      row: Number(match[2]),
+    };
+  }
+
+  const target = parseCell(cell.toUpperCase());
+  if (!target) return false;
+
+  const formula = formulaString.toUpperCase();
+
+  // 1️⃣ Check ranges (A1:B5)
+  const rangeRegex = /([A-Z]+\d+):([A-Z]+\d+)/g;
+  let match: RegExpExecArray | null;
+
+  // eslint-disable-next-line no-cond-assign
+  while ((match = rangeRegex.exec(formula)) !== null) {
+    const start = parseCell(match[1])!;
+    const end = parseCell(match[2])!;
+
+    if (
+      target.col >= Math.min(start.col, end.col) &&
+      target.col <= Math.max(start.col, end.col) &&
+      target.row >= Math.min(start.row, end.row) &&
+      target.row <= Math.max(start.row, end.row)
+    ) {
+      return true;
+    }
+  }
+
+  // 2️⃣ Check individual cells (A1, B2, etc.)
+  const cleanedFormula = formula.replace(rangeRegex, "");
+  const cellRegex = /([A-Z]+\d+)/g;
+
+  // eslint-disable-next-line no-cond-assign
+  while ((match = cellRegex.exec(cleanedFormula)) !== null) {
+    if (match[1] === cell.toUpperCase()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function getAllSheets(ctx: Context) {
   return ctx.luckysheetfile;
 }
@@ -150,6 +210,55 @@ export function calculateSheetFromula(ctx: Context, id: string) {
   for (let r = 0; r < ctx.luckysheetfile[index].data!.length; r += 1) {
     for (let c = 0; c < ctx.luckysheetfile[index].data![r].length; c += 1) {
       if (
+        !ctx.luckysheetfile[index].data![r][c]?.f ||
+        ctx.luckysheetfile[index].data![r][c]?.isDataBlockFormula
+      ) {
+        continue;
+      }
+      const result = execfunction(
+        ctx,
+        ctx.luckysheetfile[index].data![r][c]?.f!,
+        r,
+        c,
+        id
+      );
+      const isValueArray = Array.isArray(result[1]);
+      if (isValueArray) {
+        const value = { f: result[2], v: result[1] };
+        spillSortResult(ctx, r, c, value, getFlowdata(ctx)!);
+      } else {
+        api.setCellValue(ctx, r, c, result[1], null);
+      }
+      insertUpdateFunctionGroup(ctx, r, c, id);
+    }
+  }
+}
+
+export function calculateReferencedCellSheetFromula(
+  ctx: Context,
+  id: string,
+  refCell?: string[]
+) {
+  const index = getSheetIndex(ctx, id) as number;
+  if (!ctx.luckysheetfile[index].data) return;
+  for (let r = 0; r < ctx.luckysheetfile[index].data!.length; r += 1) {
+    for (let c = 0; c < ctx.luckysheetfile[index].data![r].length; c += 1) {
+      console.log(refCell, ctx.luckysheetfile[index].data![r][c]?.f);
+      let isRef = false;
+      if (
+        refCell &&
+        ctx.luckysheetfile[index].data![r][c]?.f &&
+        !ctx.luckysheetfile[index].data![r][c]?.isDataBlockFormula
+      ) {
+        isRef = refCell.some((cell) => {
+          return isCellReferenced(
+            ctx.luckysheetfile[index].data![r][c]?.f!,
+            cell
+          );
+        });
+      }
+      if (
+        !isRef ||
         !ctx.luckysheetfile[index].data![r][c]?.f ||
         ctx.luckysheetfile[index].data![r][c]?.isDataBlockFormula
       ) {

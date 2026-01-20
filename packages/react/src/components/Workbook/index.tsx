@@ -379,7 +379,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           return newContext;
         });
       }
-    }, [emitOp]);
+    }, [emitOp, globalCache]);
 
     const handleRedo = useCallback(() => {
       const history = globalCache.current.redoList.pop();

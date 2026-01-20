@@ -1083,8 +1083,8 @@ export function execfunction(
   console.log("execfunction:", { txt, r, c, id });
   const originalTxt = txt;
   if (
-    txt.toUpperCase().includes("NETWORKDAYS.INTL") ||
-    txt.toUpperCase().includes("WORKDAY.INTL")
+    txt?.toUpperCase().includes("NETWORKDAYS.INTL") ||
+    txt?.toUpperCase().includes("WORKDAY.INTL")
   ) {
     txt = replaceDotsInFunctionName(txt);
   }

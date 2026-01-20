@@ -330,8 +330,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
       [emitOp]
     );
 
-    const handleUndo = () => {
-      console.log("undo poo");
+    const handleUndo = useCallback(() => {
       const history = globalCache.current.undoList.pop();
       if (history) {
         setContext((ctx_) => {
@@ -393,10 +392,9 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           return isBorderUndo ? nw : newContext;
         });
       }
-    }
-    // , [emitOp]);
+    }, [emitOp, globalCache]);
 
-    const handleRedo = () => {
+    const handleRedo = useCallback(() => {
       const history = globalCache.current.redoList.pop();
       if (history) {
         setContext((ctx_) => {
@@ -421,8 +419,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           return isBorderUndo ? nw : newContext;
         });
       }
-    }
-    // , [emitOp]);
+    }, [emitOp, globalCache]);
 
     useEffect(() => {
       mergedSettings.hooks?.afterActivateSheet?.(context.currentSheetId);

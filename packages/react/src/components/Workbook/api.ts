@@ -426,6 +426,20 @@ export function generateAPIs(
       });
     },
 
+    calculateCellReferencedSubSheetFormula: (
+      id: string,
+      refCell?: string[]
+    ) => {
+      console.log("calculateCellReferencedSubSheetFormula", id, refCell);
+      setContext((draftCtx) => {
+        api.calculateReferencedCellSheetFromula(
+          draftCtx,
+          id as string,
+          refCell
+        );
+      });
+    },
+
     dataToCelldata: (data: CellMatrix | undefined) => {
       return api.dataToCelldata(data);
     },

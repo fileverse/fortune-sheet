@@ -2760,6 +2760,7 @@ export function handleFormulaInput(
   preText?: string,
   refreshRangeSelect = true
 ) {
+  if (!$editor) return;
   try {
     // if (isEditMode()) {
     //   // 此模式下禁用公式栏

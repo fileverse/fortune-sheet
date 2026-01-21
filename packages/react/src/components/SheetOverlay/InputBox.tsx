@@ -133,7 +133,6 @@ const InputBox: React.FC = () => {
   ]);
 
   useLayoutEffect(() => {
-    console.log("useLayoutEffect");
     if (!context.allowEdit) {
       setContext((ctx) => {
         const flowdata = getFlowdata(ctx);
@@ -217,7 +216,6 @@ const InputBox: React.FC = () => {
 
   // Reset active state when selection changes or InputBox is hidden
   useEffect(() => {
-    // if (isComposingRef.current) return;
     if (
       !firstSelection ||
       context.rangeDialog?.show ||
@@ -234,7 +232,6 @@ const InputBox: React.FC = () => {
 
   const insertSelectedFormula = useCallback(
     (formulaName: string) => {
-      // if (isComposingRef.current) return;
       if (/^=[a-zA-Z]+$/.test(inputRef.current!.innerText)) {
         const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
         inputRef.current!.innerHTML = ht;
@@ -332,7 +329,6 @@ const InputBox: React.FC = () => {
 
   const selectActiveFormula = useCallback(
     (e: React.KeyboardEvent) => {
-      // if (isComposingRef.current) return;
       const formulaName = getActiveFormula()?.querySelector(
         ".luckysheet-formula-search-func"
       )?.textContent;
@@ -634,9 +630,6 @@ const InputBox: React.FC = () => {
 
   const onChange = useCallback(
     (__: any, isBlur?: boolean) => {
-      // if (isComposingRef.current) {
-      //   return;
-      // }
       if (context.isFlvReadOnly) return;
       handleHideShowHint();
 
@@ -722,7 +715,6 @@ const InputBox: React.FC = () => {
 
   const onPaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
-      // if (isComposingRef.current) return;
       if (_.isEmpty(context.luckysheetCellUpdate)) {
         e.preventDefault();
       }

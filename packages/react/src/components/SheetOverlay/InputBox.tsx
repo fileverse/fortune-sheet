@@ -21,7 +21,6 @@ import {
   handleItalic,
   handleUnderline,
   handleStrikeThrough,
-  setCellValue,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -75,26 +74,20 @@ const InputBox: React.FC = () => {
   const col_index = firstSelection?.column_focus!;
   const preText = useRef("");
   const placeRef = useRef("");
-  const rootRef = useRef<HTMLDivElement | null>(null);
   const isComposingRef = useRef(false);
 
-  const placeCursorAtEnd = (el: HTMLElement) => {
-    const range = document.createRange();
-    const sel = window.getSelection();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    sel?.removeAllRanges();
-    sel?.addRange(range);
-  };
+  const ZWSP = "\u200B";
 
   const ensureNotEmpty = () => {
-    const el = rootRef.current;
+    const el = inputRef.current;
     if (!el) return;
 
-    // ZERO WIDTH SPACE keeps IME alive
-    if (el.textContent === "") {
-      el.innerHTML = "\u200B";
-      placeCursorAtEnd(el);
+    const text = el.textContent;
+
+    // Treat empty OR only-ZWSP as empty
+    if (!text || text === ZWSP) {
+      el.innerHTML = ZWSP;
+      moveCursorToEnd(el);
     }
   };
 
@@ -180,8 +173,17 @@ const InputBox: React.FC = () => {
         }
       }
       refs.globalCache.overwriteCell = false;
-      if (!refs.globalCache.ignoreWriteCell && inputRef.current)
+      if (!refs.globalCache.ignoreWriteCell && inputRef.current && value) {
         inputRef.current!.innerHTML = escapeHTMLTag(escapeScriptTag(value));
+      } else if (
+        !refs.globalCache.ignoreWriteCell &&
+        inputRef.current &&
+        !value
+      ) {
+        // @ts-ignore
+        const valueD = getCellValue(row_index, col_index, flowdata, "f");
+        inputRef.current.innerText = valueD;
+      }
       refs.globalCache.ignoreWriteCell = false;
       if (!refs.globalCache.doNotFocus) {
         setTimeout(() => {
@@ -214,7 +216,6 @@ const InputBox: React.FC = () => {
 
   // Reset active state when selection changes or InputBox is hidden
   useEffect(() => {
-    if (isComposingRef.current) return;
     if (
       !firstSelection ||
       context.rangeDialog?.show ||
@@ -231,7 +232,6 @@ const InputBox: React.FC = () => {
 
   const insertSelectedFormula = useCallback(
     (formulaName: string) => {
-      if (isComposingRef.current) return;
       if (/^=[a-zA-Z]+$/.test(inputRef.current!.innerText)) {
         const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
         inputRef.current!.innerHTML = ht;
@@ -329,7 +329,6 @@ const InputBox: React.FC = () => {
 
   const selectActiveFormula = useCallback(
     (e: React.KeyboardEvent) => {
-      if (isComposingRef.current) return;
       const formulaName = getActiveFormula()?.querySelector(
         ".luckysheet-formula-search-func"
       )?.textContent;
@@ -412,14 +411,16 @@ const InputBox: React.FC = () => {
       /* Arrow navigation for cell reference starts here */
       let allowListNavigation = true;
 
-      if (
-        (e.key === "Delete" || e.key === "Backspace") &&
-        getCursorPosition(inputRef?.current!) ===
+      if (e.key === "Delete" || e.key === "Backspace") {
+        requestAnimationFrame(ensureNotEmpty);
+        if (
+          getCursorPosition(inputRef?.current!) ===
           inputRef?.current!.innerText.length
-      ) {
-        setTimeout(() => {
-          moveCursorToEnd(inputRef?.current!);
-        }, 5);
+        ) {
+          setTimeout(() => {
+            moveCursorToEnd(inputRef?.current!);
+          }, 5);
+        }
       }
 
       let refCell = placeRef.current;
@@ -629,9 +630,6 @@ const InputBox: React.FC = () => {
 
   const onChange = useCallback(
     (__: any, isBlur?: boolean) => {
-      if (isComposingRef.current) {
-        return;
-      }
       if (context.isFlvReadOnly) return;
       handleHideShowHint();
 
@@ -717,7 +715,6 @@ const InputBox: React.FC = () => {
 
   const onPaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
-      if (isComposingRef.current) return;
       if (_.isEmpty(context.luckysheetCellUpdate)) {
         e.preventDefault();
       }
@@ -927,47 +924,15 @@ const InputBox: React.FC = () => {
         <ContentEditable
           onCompositionStart={() => {
             isComposingRef.current = true;
-            console.log("onCompositionStart");
           }}
-          onCompositionUpdate={(e) => {
-            // @ts-ignore
-            window.CompositData = e.currentTarget.innerText;
+          onCompositionUpdate={() => {
             isComposingRef.current = true;
-            console.log("onCompositionUpdate", e.currentTarget.innerText);
           }}
-          onCompositionEnd={(e) => {
+          onCompositionEnd={() => {
             ensureNotEmpty();
-            const rowIndex = firstSelection?.row_focus || 0;
-            const colIndex = firstSelection?.column_focus || 0;
-            console.log(
-              "onCompositionEnd",
-              e.currentTarget.innerText,
-              getCellAddress(),
-              rowIndex,
-              colIndex,
-              setCellValue
-            );
-            // @ts-ignore
-            window.CompositData = e.currentTarget.innerText;
-            setContext((draftCtx) => {
-              setCellValue(
-                draftCtx,
-                rowIndex,
-                colIndex,
-                null,
-                // @ts-ignore
-                window.CompositData
-              );
-              // preText.current = '';
-              // @ts-ignore
-              window.CompositData = "";
-            });
             isComposingRef.current = false;
           }}
           onMouseUp={() => {
-            if (isComposingRef.current) {
-              return;
-            }
             handleHideShowHint();
             if (!isComposingRef.current) {
               const currentCommaCount = countCommasBeforeCursor(
@@ -977,14 +942,6 @@ const InputBox: React.FC = () => {
             }
           }}
           innerRef={(e) => {
-            rootRef.current = e;
-            if (isComposingRef.current) {
-              inputRef.current = null;
-              refs.cellInput.current = null;
-              return;
-            }
-
-            // @ts-ignore
             inputRef.current = e;
             refs.cellInput.current = e;
           }}

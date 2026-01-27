@@ -329,10 +329,19 @@ export function generateAPIs(
     setCellValuesByRange: (
       data: any[][],
       range: SingleRange,
-      options: api.CommonOptions = {}
+      // eslint-disable-next-line default-param-last
+      options: api.CommonOptions = {},
+      cellAfter?: boolean
     ) =>
       setContext((draftCtx) =>
-        api.setCellValuesByRange(draftCtx, data, range, cellInput, options)
+        api.setCellValuesByRange(
+          draftCtx,
+          data,
+          range,
+          cellInput,
+          options,
+          cellAfter
+        )
       ),
 
     setCellFormatByRange: (

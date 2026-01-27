@@ -64,8 +64,11 @@ export function setCellValue(
   column: number,
   value: any,
   cellInput: HTMLDivElement | null,
-  options: CommonOptions = {}
+  // eslint-disable-next-line default-param-last
+  options: CommonOptions = {},
+  callAfterUpdate?: boolean
 ) {
+  // const afterUpdateCellCalledInInternal = false;
   if (!_.isNumber(row) || !_.isNumber(column)) {
     throw new Error("row or column cannot be null or undefined");
   }
@@ -163,6 +166,10 @@ export function setCellValue(
       delFunctionGroup(ctx, row, column);
       setCellValueInternal(ctx, row, column, data, value);
     }
+  }
+
+  if (callAfterUpdate && ctx.hooks.afterUpdateCell) {
+    ctx.hooks.afterUpdateCell?.(row, column, null, value);
   }
 }
 

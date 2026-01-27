@@ -135,9 +135,9 @@ export function addSheet(
   }
 
   if (ctx.hooks.afterAddSheet) {
-    setTimeout(() => {
-      ctx.hooks.afterAddSheet?.(sheetconfig);
-    });
+    // setTimeout(() => {
+    ctx.hooks.afterAddSheet?.(sheetconfig);
+    // });
   }
 }
 
@@ -183,9 +183,9 @@ export function deleteSheet(ctx: Context, id: string) {
   }
 
   if (ctx.hooks.afterDeleteSheet) {
-    setTimeout(() => {
-      ctx.hooks.afterDeleteSheet?.(id);
-    });
+    // setTimeout(() => {
+    ctx.hooks.afterDeleteSheet?.(id);
+    // });
   }
 }
 

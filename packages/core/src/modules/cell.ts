@@ -150,6 +150,7 @@ export function setCellValue(
   d: CellMatrix | null | undefined,
   v: any
 ) {
+  console.log("setCellValue", r, c, v);
   if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
   if (_.isNil(d)) {
     d = getFlowdata(ctx);
@@ -459,6 +460,12 @@ export function setCellValue(
   if (ctx.luckysheet_selection_range) {
     ctx.luckysheet_selection_range = [];
   }
+
+  // if (ctx.hooks.afterUpdateCell) {
+  //   const newCell = _.isPlainObject(cell) ? { ...cell } : cell;
+  //   console.log("newCell ======== newCell", newCell, _.isPlainObject(cell));
+  //   ctx.hooks.afterUpdateCell?.(r, c, null, newCell);
+  // }
 }
 
 export function getRealCellValue(

@@ -839,7 +839,6 @@ export async function handleGlobalKeyDown(
 
       // selectHightlightShow();
     } else if (kstr === "Delete" || kstr === "Backspace") {
-      console.log("Delete");
       if (!allowEdit) return;
       if (ctx.activeImg != null) {
         removeActiveImage(ctx);

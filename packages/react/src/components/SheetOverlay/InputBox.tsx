@@ -373,10 +373,6 @@ const InputBox: React.FC = () => {
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isComposingRef.current || !inputRef.current) {
-        ensureNotEmpty();
-        return;
-      }
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
       preText.current = inputRef.current!.innerText;
       // if (
@@ -387,7 +383,7 @@ const InputBox: React.FC = () => {
       //   return;
       // }
 
-      if (e.metaKey) {
+      if (e.metaKey && context.luckysheetCellUpdate.length > 0) {
         if (e.code === "KeyB") {
           handleBold(context, inputRef.current!);
           stopPropagation(e);
@@ -412,7 +408,7 @@ const InputBox: React.FC = () => {
       let allowListNavigation = true;
 
       if (e.key === "Delete" || e.key === "Backspace") {
-        requestAnimationFrame(ensureNotEmpty);
+        if (isComposingRef.current) requestAnimationFrame(ensureNotEmpty);
         if (
           getCursorPosition(inputRef?.current!) ===
           inputRef?.current!.innerText.length
@@ -928,7 +924,11 @@ const InputBox: React.FC = () => {
           onCompositionUpdate={() => {
             isComposingRef.current = true;
           }}
-          onCompositionEnd={() => {
+          onCompositionEnd={(e: React.CompositionEvent<HTMLInputElement>) => {
+            if (e.data === "" && e.currentTarget.value === "") {
+              isComposingRef.current = true;
+              return;
+            }
             ensureNotEmpty();
             isComposingRef.current = false;
           }}

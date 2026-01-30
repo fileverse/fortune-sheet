@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.92
+
+### Patch Changes
+
+- updated fileverse/ui toast design
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.92
+
 ## 1.2.91
 
 ### Patch Changes

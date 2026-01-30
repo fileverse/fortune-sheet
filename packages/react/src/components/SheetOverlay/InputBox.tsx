@@ -85,7 +85,6 @@ const InputBox: React.FC = () => {
     const text = el.textContent;
 
     // Treat empty OR only-ZWSP as empty
-    console.log(text, "yoooo");
     if (!text || text === ZWSP) {
       el.innerHTML = ZWSP;
       moveCursorToEnd(el);

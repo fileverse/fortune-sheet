@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.91
+
+### Patch Changes
+
+- fix: bold, italics, underline shortcut
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.91
+
 ## 1.2.67
 
 ### Patch Changes

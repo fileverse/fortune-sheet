@@ -1,5 +1,11 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.91
+
+### Patch Changes
+
+- fix: bold, italics, underline shortcut
+
 ## 1.2.67
 
 ### Patch Changes

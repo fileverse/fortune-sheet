@@ -74,9 +74,9 @@ export function changeSheet(
   //   luckysheetFreezen.initialFreezen(index);
   //   _this.restoreselect();
   if (ctx.hooks.afterActivateSheet) {
-    setTimeout(() => {
-      ctx.hooks.afterActivateSheet?.(id);
-    });
+    // setTimeout(() => {
+    ctx.hooks.afterActivateSheet?.(id);
+    // });
   }
 }
 
@@ -130,13 +130,13 @@ export function addSheet(
 
   //   server.saveParam("sha", null, $.extend(true, {}, sheetconfig));
 
-  if (!newSheetID) {
-    changeSheet(ctx, id, isPivotTable, true);
-  }
+  // if (!newSheetID) {
+  //   changeSheet(ctx, id, isPivotTable, true);
+  // }
 
   if (ctx.hooks.afterAddSheet) {
     // setTimeout(() => {
-    ctx.hooks.afterAddSheet?.(sheetconfig);
+    ctx.hooks.afterAddSheet?.({ ...sheetconfig });
     // });
   }
 }

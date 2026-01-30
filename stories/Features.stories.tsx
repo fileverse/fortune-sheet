@@ -36,6 +36,11 @@ const Template: StoryFn<typeof Workbook> = ({
         defaultRowHeight={21}
         onChange={onChange}
         isAuthorized={false}
+        hooks={{
+          afterAddSheet:(sheet)=>{
+            console.log(sheet)
+          }
+        }}
         getCommentCellUI={(r,c,mouseDownHandler) => {
           return (
             <div

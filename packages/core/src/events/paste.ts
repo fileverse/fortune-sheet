@@ -352,6 +352,7 @@ function postPasteCut(
 }
 
 const handleFormulaOnPaste = (ctx: Context, d: any) => {
+  const changes: any = [];
   for (let r = 0; r < d.length; r += 1) {
     const x = d[r];
     for (let c = 0; c < d[0].length; c += 1) {
@@ -374,7 +375,21 @@ const handleFormulaOnPaste = (ctx: Context, d: any) => {
         x[c] = cell;
       }
       d[r] = x;
+      changes.push({
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: {
+          r,
+          c,
+          v: d[r][c],
+        },
+        key: `${r}_${c}`,
+        type: "update",
+      });
     }
+  }
+  if (ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks?.updateCellYdoc(changes);
   }
 };
 
@@ -465,6 +480,7 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
 
     const RowlChange = false;
     const offsetMC: any = {};
+    const changes: any = [];
     for (let h = minh; h <= maxh; h += 1) {
       const x = d[h];
 
@@ -533,12 +549,27 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
         //   currentRowLen = oneLineTextHeight;
         //   RowlChange = true;
         // }
+
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: {
+            r: h,
+            c,
+            v: d[h][c],
+          },
+          key: `${h}_${c}`,
+          type: "update",
+        });
       }
       d[h] = x;
 
       if (currentRowLen !== ctx.defaultrowlen) {
         cfg.rowlen[h] = currentRowLen;
       }
+    }
+    if (ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks?.updateCellYdoc(changes);
     }
 
     ctx.luckysheet_select_save = [{ row: [minh, maxh], column: [minc, maxc] }];
@@ -643,6 +674,7 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
       return t.startsWith("http") ? t : `https://${t}`;
     };
 
+    const changes: any = [];
     for (let r = 0; r < rlen; r += 1) {
       const x = d[r + curR];
       for (let c = 0; c < clen; c += 1) {
@@ -747,8 +779,25 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
 
           x[c + curC] = cell;
         }
+        changes.push(
+          changes.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: {
+              r,
+              c,
+              v: d[r][c],
+            },
+            key: `${r}_${c}`,
+            type: "update",
+          })
+        );
       }
       d[r + curR] = x;
+    }
+
+    if (ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks?.updateCellYdoc(changes);
     }
 
     last.row = [curR, curR + rlen - 1];

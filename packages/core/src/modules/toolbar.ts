@@ -61,10 +61,12 @@ export function updateFormatCell(
   col_ed: number,
   canvas?: CanvasRenderingContext2D
 ) {
+  console.log("updateFormatCell", row_st, row_ed, col_st, col_ed);
   if (_.isNil(d) || _.isNil(attr)) {
     return;
   }
   if (attr === "ct") {
+    const changes: any = [];
     for (let r = row_st; r <= row_ed; r += 1) {
       if (!_.isNil(ctx.config.rowhidden) && !_.isNil(ctx.config.rowhidden[r])) {
         continue;
@@ -135,6 +137,20 @@ export function updateFormatCell(
             m: mask,
           };
         }
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: {
+            r,
+            c,
+            v: d[r][c],
+          },
+          key: `${r}_${c}`,
+          type: "update",
+        });
+      }
+      if (ctx?.hooks?.updateCellYdoc) {
+        ctx.hooks?.updateCellYdoc(changes);
       }
     }
   } else {
@@ -182,6 +198,7 @@ export function updateFormatCell(
     if (sheetIndex == null) {
       return;
     }
+    const changes: any = [];
     for (let r = row_st; r <= row_ed; r += 1) {
       if (!_.isNil(ctx.config.rowhidden) && !_.isNil(ctx.config.rowhidden[r])) {
         continue;
@@ -302,7 +319,21 @@ export function updateFormatCell(
         // if(attr === "tr" && !_.isNil(d[r][c].tb)){
         //     d[r][c].tb = "0";
         // }
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: {
+            r,
+            c,
+            v: d[r][c],
+          },
+          key: `${r}_${c}`,
+          type: "update",
+        });
       }
+    }
+    if (ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks?.updateCellYdoc(changes);
     }
   }
 }

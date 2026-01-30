@@ -307,9 +307,9 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
         onClick={() => {
           if (isButtonDisabled) return;
           _.set(refs.globalCache, "linkCard.mouseEnter", false);
-          setContext((draftCtx) =>
-            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress)
-          );
+          setContext((draftCtx) => {
+            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress);
+          });
         }}
       >
         Insert link

@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.93
+
+### Patch Changes
+
+- removed lens, farcaster, neynar datablock
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.93
+
 ## 1.2.92
 
 ### Patch Changes

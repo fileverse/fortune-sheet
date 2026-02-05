@@ -661,7 +661,7 @@ export async function handleGlobalKeyDown(
   if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === "Semicolon") {
     fillTime(ctx);
   }
-  if ((e.metaKey || e.ctrlKey) && e.code === "KeyR") {
+  if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.code === "KeyR") {
     fillRightData(ctx);
   }
   if ((e.metaKey || e.ctrlKey) && e.code === "KeyD") {

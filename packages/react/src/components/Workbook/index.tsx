@@ -526,6 +526,60 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
     }, [currentSheet?.calcChain]);
 
     useEffect(() => {
+      if (context?.hooks?.afterImagesChange) {
+        context.hooks.afterImagesChange();
+      }
+    }, [currentSheet?.images]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterIframesChange) {
+        context.hooks.afterIframesChange();
+      }
+    }, [currentSheet?.iframes]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterFrozenChange) {
+        context.hooks.afterFrozenChange();
+      }
+    }, [currentSheet?.frozen]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterOrderChanges) {
+        context.hooks.afterOrderChanges();
+      }
+    }, [currentSheet?.order]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterConfigChanges) {
+        context.hooks.afterConfigChanges();
+      }
+    }, [currentSheet?.config]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterColRowChanges) {
+        context.hooks.afterColRowChanges();
+      }
+    }, [currentSheet?.row, currentSheet?.column]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterShowGridLinesChange) {
+        context.hooks.afterShowGridLinesChange();
+      }
+    }, [currentSheet?.showGridLines]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterNameChanges) {
+        context.hooks.afterNameChanges();
+      }
+    }, [currentSheet?.name]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterStatusChanges) {
+        context.hooks.afterStatusChanges();
+      }
+    }, [currentSheet?.status]);
+
+    useEffect(() => {
       if (context?.hooks?.dataVerificationChange) {
         context.hooks.dataVerificationChange();
       }

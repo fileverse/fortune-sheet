@@ -202,10 +202,20 @@ export function generateAPIs(
       row: number,
       column: number,
       value: any,
-      options: api.CommonOptions & { type?: keyof Cell } = {}
+      // eslint-disable-next-line default-param-last
+      options: api.CommonOptions & { type?: keyof Cell } = {},
+      callAfterUpdate?: boolean
     ) =>
       setContext((draftCtx) =>
-        api.setCellValue(draftCtx, row, column, value, cellInput, options)
+        api.setCellValue(
+          draftCtx,
+          row,
+          column,
+          value,
+          cellInput,
+          options,
+          callAfterUpdate
+        )
       ),
 
     setCellError: (

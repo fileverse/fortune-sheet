@@ -138,6 +138,15 @@ export type Hooks = {
     newName: string
   ) => boolean;
   afterUpdateSheetName?: (id: string, oldName: string, newName: string) => void;
+  afterImagesChange?: () => void;
+  afterIframesChange?: () => void;
+  afterFrozenChange?: () => void;
+  afterOrderChanges?: () => void;
+  afterConfigChanges?: () => void;
+  afterColRowChanges?: () => void;
+  afterShowGridLinesChange?: () => void;
+  afterNameChanges?: () => void;
+  afterStatusChanges?: () => void;
 };
 
 type CommentUIDragFn = (

@@ -332,9 +332,9 @@ export function updateFormatCell(
         });
       }
     }
-    // if (ctx?.hooks?.updateCellYdoc) {
-    //   ctx.hooks?.updateCellYdoc(changes);
-    // }
+    if (ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks?.updateCellYdoc(changes);
+    }
   }
 }
 

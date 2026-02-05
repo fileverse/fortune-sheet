@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.96
+
+### Patch Changes
+
+- fix: ens resolution, update ethers version
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.96
+
 ## 1.2.95
 
 ### Patch Changes

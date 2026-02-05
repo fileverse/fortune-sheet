@@ -2487,10 +2487,10 @@
   resolved "https://registry.npmjs.org/@fal-works/esbuild-plugin-global-externals/-/esbuild-plugin-global-externals-2.1.2.tgz"
   integrity sha512-cEee/Z+I12mZcFJshKcCqC8tuX5hG3s+d+9nZ3LabqKF1vKdF41B92pJVCBggjAGORAeOzyyDDKrZwIkLffeOQ==
 
-"@fileverse-dev/formulajs@4.4.47":
-  version "4.4.47"
-  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.47.tgz#dee555791318285a0c057e977378b7437b092645"
-  integrity sha512-c2ZR8gGQStKSoZejWKJ6Bmuc5eZwDhKB8YdQuTRuPugXO7UWfcH58r4R7NWo7csj6HGfFBD7UvE56jbrUJphPw==
+"@fileverse-dev/formulajs@4.4.48":
+  version "4.4.48"
+  resolved "https://registry.yarnpkg.com/@fileverse-dev/formulajs/-/formulajs-4.4.48.tgz#669a1f835f71cf9bf5b4ffc4eb99c83707583e78"
+  integrity sha512-Ec1yciyAkm/1GVwqayTh8ryTsqKZgHw3jzHoaWw/D+N2um5fPKt3tCwcG0m6zKjx/Xhf7LX9XW0vAnmiqjrKGQ==
   dependencies:
     "@circles-sdk/data" "^0.29.1"
     "@circles-sdk/sdk" "^0.29.1"

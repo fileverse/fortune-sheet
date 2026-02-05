@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.95
+
+### Patch Changes
+
+- fix: comment indicator and data validation on cell expand
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.95
+
 ## 1.2.93
 
 ### Patch Changes

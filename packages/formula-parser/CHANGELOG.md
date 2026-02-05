@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.93
+
+### Patch Changes
+
+- removed lens, farcaster, neynar datablock
+
 ## 0.2.85
 
 ### Patch Changes

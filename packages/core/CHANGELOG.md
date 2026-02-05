@@ -1,5 +1,31 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.95
+
+### Patch Changes
+
+- fix: comment indicator and data validation on cell expand
+
+## 1.2.93
+
+### Patch Changes
+
+- removed lens, farcaster, neynar datablock
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.93
+
+## 1.2.92
+
+### Patch Changes
+
+- updated fileverse/ui toast design
+
+## 1.2.91
+
+### Patch Changes
+
+- fix: bold, italics, underline shortcut
+
 ## 1.2.67
 
 ### Patch Changes

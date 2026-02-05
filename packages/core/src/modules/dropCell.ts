@@ -523,6 +523,10 @@ function fillCopy(data: (Cell | null | undefined)[], len: number) {
     const index = (i - 1) % data.length;
     const d = _.cloneDeep(data[index]);
     if (!_.isUndefined(d)) {
+      // Do not copy comment indicator when filling
+      if (d) {
+        delete d.ps;
+      }
       applyData.push(d);
     }
   }
@@ -1744,6 +1748,10 @@ function getDataByType(
     }
   }
 
+  // Do not copy comment indicator when filling (any fill type)
+  applyData.forEach((c) => {
+    if (c != null) delete c.ps;
+  });
   return applyData;
 }
 
@@ -2823,6 +2831,9 @@ export function updateDropCell(ctx: Context) {
       }
     }
   }
+
+  // Persist copied data validation to the sheet
+  file.dataVerification = dataVerification;
 
   // 刷新一次表格
   // const allParam = {

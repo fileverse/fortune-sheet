@@ -1,5 +1,37 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.95
+
+### Patch Changes
+
+- fix: comment indicator and data validation on cell expand
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.95
+
+## 1.2.93
+
+### Patch Changes
+
+- removed lens, farcaster, neynar datablock
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.93
+
+## 1.2.92
+
+### Patch Changes
+
+- updated fileverse/ui toast design
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.92
+
+## 1.2.91
+
+### Patch Changes
+
+- fix: bold, italics, underline shortcut
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.91
+
 ## 1.2.67
 
 ### Patch Changes

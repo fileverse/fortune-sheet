@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.2.97
+
+### Patch Changes
+
+- fix: number, toolbar, multiply, comment box z-index
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.2.97
+
 ## 1.2.96
 
 ### Patch Changes

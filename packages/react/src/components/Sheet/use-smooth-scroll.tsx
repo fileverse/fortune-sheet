@@ -90,6 +90,143 @@ export const useSmoothScroll = (
     };
   }
 
+  // NEW: Add mouse drag scrolling handler with continuous auto-scroll (Y-axis only)
+  function handleMouseDragScroll(
+    containerEl: HTMLElement,
+    scrollHandler: (x: number, y: number) => void,
+    getPixelScale: () => number
+  ): any {
+    if (context.luckysheetCellUpdate.length > 0) {
+      // eslint-disable-next-line no-use-before-define
+      stopAutoScroll();
+      return;
+    }
+    let isDragging = false;
+    let startY = 0;
+    let lastY = 0;
+    let velocityY = 0;
+    let autoScrollAnimationId = 0;
+    let lastMoveTime = 0;
+
+    const VELOCITY_SMOOTHING = 0.3; // Smoothing factor for velocity changes
+    const MIN_DRAG_THRESHOLD = 5; // Minimum pixels to start dragging
+    const ACCELERATION_FACTOR = 1.02; // Multiply velocity by this each frame (1.02 = 2% increase per frame)
+    const MAX_VELOCITY = 50; // Maximum velocity cap to prevent it from getting too fast
+
+    function stopAutoScroll() {
+      if (autoScrollAnimationId) {
+        cancelAnimationFrame(autoScrollAnimationId);
+        autoScrollAnimationId = 0;
+      }
+      velocityY = 0;
+    }
+
+    function autoScroll() {
+      if (!isDragging) {
+        stopAutoScroll();
+        return;
+      }
+
+      // Accelerate velocity over time (Y-axis only)
+      if (Math.abs(velocityY) > 0.1) {
+        velocityY *= ACCELERATION_FACTOR;
+        // Cap at maximum velocity
+        velocityY = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, velocityY));
+      }
+
+      const scale = getPixelScale();
+      scrollHandler(0, velocityY * scale);
+
+      autoScrollAnimationId = requestAnimationFrame(autoScroll);
+    }
+
+    function onMouseDown(e: MouseEvent) {
+      // Only handle primary mouse button (left click)
+      if (e.button !== 0) return;
+
+      // Don't interfere with interactive elements
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "BUTTON" ||
+        target.tagName === "SELECT" ||
+        target.tagName === "TEXTAREA" ||
+        target.closest("button") ||
+        target.closest("input")
+      ) {
+        return;
+      }
+
+      isDragging = true;
+      startY = e.clientY;
+      lastY = e.clientY;
+      lastMoveTime = performance.now();
+      velocityY = 0;
+
+      containerEl.style.cursor = "grabbing";
+      e.preventDefault();
+    }
+
+    function onMouseMove(e: MouseEvent) {
+      if (!isDragging) return;
+
+      const currentTime = performance.now();
+      const deltaTime = Math.max(1, currentTime - lastMoveTime);
+
+      // Calculate delta - positive when dragging down, negative when dragging up
+      const deltaY = e.clientY - lastY;
+
+      // Check if we've moved enough to start auto-scrolling
+      const totalMovedY = Math.abs(e.clientY - startY);
+
+      if (totalMovedY > MIN_DRAG_THRESHOLD) {
+        // Only update velocity if mouse is actually moving
+        if (Math.abs(deltaY) > 0.1) {
+          // Calculate instantaneous velocity (pixels per frame at 60fps)
+          const instantVelocityY = (deltaY / deltaTime) * 16;
+
+          // Smooth velocity changes to avoid jitter
+          velocityY =
+            velocityY * (1 - VELOCITY_SMOOTHING) +
+            instantVelocityY * VELOCITY_SMOOTHING;
+        }
+        // If mouse stops moving, velocity stays at last value
+
+        // Start auto-scroll animation if not already running
+        if (!autoScrollAnimationId) {
+          autoScrollAnimationId = requestAnimationFrame(autoScroll);
+        }
+      }
+
+      lastY = e.clientY;
+      lastMoveTime = currentTime;
+
+      e.preventDefault();
+    }
+
+    function onMouseUp(e: MouseEvent) {
+      console.log("Mouse up, stopping drag scroll", e);
+      if (!isDragging) return;
+
+      isDragging = false;
+      stopAutoScroll();
+      containerEl.style.cursor = "";
+    }
+
+    // Attach event listeners
+    containerEl.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+
+    // eslint-disable-next-line consistent-return
+    return () => {
+      stopAutoScroll();
+      containerEl.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }
+
   function handleMobileScroll(
     containerEl: HTMLElement,
     scrollHandler: (x: number, y: number) => void,
@@ -323,9 +460,20 @@ export const useSmoothScroll = (
       () => (window.devicePixelRatio || 1) * context.zoomRatio
     );
 
+    let unmountMouseDragHandler: any;
+    // NEW: Add mouse drag scrolling
+    if (context.luckysheetCellUpdate.length === 0) {
+      unmountMouseDragHandler = handleMouseDragScroll(
+        scrollContainerEl,
+        scrollHandler,
+        () => (window.devicePixelRatio || 1) * context.zoomRatio
+      );
+    }
+
     return () => {
       unmountScrollHandler();
       unmountMobileScrollHandler();
+      unmountMouseDragHandler?.(); // Clean up mouse drag handler
     };
   }
 

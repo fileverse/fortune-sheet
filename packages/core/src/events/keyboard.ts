@@ -47,6 +47,7 @@ export function handleGlobalEnter(
     }
     e.preventDefault();
   } else if (ctx.luckysheetCellUpdate.length > 0) {
+    console.log("handleGlobalEnter", { ...ctx.luckysheetCellUpdate });
     // if (
     //   $("#luckysheet-formula-search-c").is(":visible") &&
     //   formula.searchFunctionCell != null

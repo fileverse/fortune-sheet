@@ -5314,7 +5314,7 @@ export function handleColSizeHandleMouseDown(
   cancelActiveImgItem(ctx, globalCache);
   // }
 
-  ctx.luckysheetCellUpdate = [];
+  // ctx.luckysheetCellUpdate = [];
 
   // let mouse = mouseposition(event.pageX, event.pageY);
   const { scrollLeft } = ctx;
@@ -5382,7 +5382,7 @@ export function handleRowSizeHandleMouseDown(
     israngeseleciton(ctx)
   )
     return;
-  ctx.luckysheetCellUpdate = [];
+  // ctx.luckysheetCellUpdate = [];
 
   // let mouse = mouseposition(event.pageX, event.pageY);
   const { scrollLeft } = ctx;
@@ -5435,7 +5435,7 @@ export function handleColFreezeHandleMouseDown(
   removeEditingComment(ctx, globalCache);
   cancelActiveImgItem(ctx, globalCache);
 
-  ctx.luckysheetCellUpdate = [];
+  // ctx.luckysheetCellUpdate = [];
 
   // let mouse = mouseposition(event.pageX, event.pageY);
   const { scrollLeft } = ctx;
@@ -5490,7 +5490,7 @@ export function handleRowFreezeHandleMouseDown(
   removeEditingComment(ctx, globalCache);
   cancelActiveImgItem(ctx, globalCache);
 
-  ctx.luckysheetCellUpdate = [];
+  // ctx.luckysheetCellUpdate = [];
 
   // let mouse = mouseposition(event.pageX, event.pageY);
   const { scrollLeft } = ctx;

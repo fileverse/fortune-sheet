@@ -360,6 +360,7 @@ export function updateInlineStringFormat(
   value: any,
   cellInput: HTMLDivElement
 ) {
+  console.log("updateInlineStringFormat", attr, value);
   // let s = ctx.inlineStringEditCache;
   const w = window.getSelection();
   if (!w) return;
@@ -556,4 +557,5 @@ export function updateInlineStringFormat(
       }
     }
   }
+  ctx.luckysheetCellUpdate = [];
 }

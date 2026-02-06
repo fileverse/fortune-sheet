@@ -200,7 +200,20 @@ const InputBox: React.FC = () => {
     firstSelection,
   ]);
 
+  const previousLuckyCellUpdate = usePrevious(context.luckysheetCellUpdate);
+
   useEffect(() => {
+    console.log(
+      "inputbox luckysheetCellUpdate changed",
+      previousLuckyCellUpdate,
+      context.luckysheetCellUpdate
+    );
+    // if(
+    //   !_.isEqual(previousLuckyCellUpdate, context.luckysheetCellUpdate)){
+    //   if (inputRef.current) {
+    //     inputRef.current.innerHTML = "";
+    //   }
+    // }
     if (_.isEmpty(context.luckysheetCellUpdate)) {
       if (inputRef.current) {
         inputRef.current.innerHTML = "";

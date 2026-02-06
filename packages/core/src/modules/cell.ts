@@ -766,202 +766,332 @@ export function updateCell(
   value?: any,
   canvas?: CanvasRenderingContext2D
 ) {
-  if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
+  try {
+    if (ctx.allowEdit === false || ctx.isFlvReadOnly) return;
 
-  let inputText = $input?.innerText;
-  if (inputText?.startsWith("=")) {
-    inputText = inputText?.replace(/[\r\n]/g, "");
-  }
-  const inputHtml = $input?.innerHTML;
-
-  const flowdata = getFlowdata(ctx);
-  if (!flowdata) return;
-
-  // if (!_.isNil(rangetosheet) && rangetosheet !== ctx.currentSheetId) {
-  //   sheetmanage.changeSheetExec(rangetosheet);
-  // }
-
-  // if (!checkProtectionLocked(r, c, ctx.currentSheetId)) {
-  //   return;
-  // }
-
-  // 数据验证 输入数据无效时禁止输入
-  const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
-  const { dataVerification } = ctx.luckysheetfile[index];
-
-  // --- hyperlink-on-edit-paste support ---
-  const sheetFile = ctx.luckysheetfile[index] as any;
-
-  const getUrlFromText = (text?: string): string | null => {
-    const t = (text ?? "").trim();
-    // only treat a single token as a URL (no spaces/newlines)
-    if (!t || /[\s\r\n]/.test(t)) return null;
-    if (!/^(https?:\/\/|www\.)\S+$/i.test(t)) return null;
-    return t.startsWith("http") ? t : `https://${t}`;
-  };
-  // --- end ---s
-
-  if (!_.isNil(dataVerification)) {
-    const dvItem = dataVerification[`${r}_${c}`];
-    if (
-      !_.isNil(dvItem) &&
-      dvItem.prohibitInput &&
-      !validateCellData(ctx, dvItem, inputText)
-    ) {
-      const failureText = getFailureText(ctx, dvItem);
-
-      cancelNormalSelected(ctx);
-      ctx.warnDialog = failureText;
-
-      return;
+    let inputText = $input?.innerText;
+    if (inputText?.startsWith("=")) {
+      inputText = inputText?.replace(/[\r\n]/g, "");
     }
-  }
+    const inputHtml = $input?.innerHTML;
 
-  let curv = flowdata[r][c];
+    const flowdata = getFlowdata(ctx);
+    if (!flowdata) return;
 
-  // ctx.old value for hook function
-  const oldValue = _.cloneDeep(curv);
+    // if (!_.isNil(rangetosheet) && rangetosheet !== ctx.currentSheetId) {
+    //   sheetmanage.changeSheetExec(rangetosheet);
+    // }
 
-  const isPrevInline = isInlineStringCell(curv);
-  let isCurInline =
-    inputText?.slice(0, 1) !== "=" && inputHtml?.substring(0, 5) === "<span";
+    // if (!checkProtectionLocked(r, c, ctx.currentSheetId)) {
+    //   return;
+    // }
 
-  let isCopyVal = false;
-  if (!isCurInline && inputText && inputText.length > 0) {
-    const splitArr = inputText
-      .replace(/\r\n/g, "_x000D_")
-      .replace(/&#13;&#10;/g, "_x000D_")
-      .replace(/\r/g, "_x000D_")
-      .replace(/\n/g, "_x000D_")
-      .split("_x000D_");
-    if (splitArr.length > 1 && inputHtml !== "<br>") {
-      isCopyVal = true;
-      isCurInline = true;
-      inputText = splitArr.join("\r\n");
+    // 数据验证 输入数据无效时禁止输入
+    const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
+    const { dataVerification } = ctx.luckysheetfile[index];
+
+    // --- hyperlink-on-edit-paste support ---
+    const sheetFile = ctx.luckysheetfile[index] as any;
+
+    const getUrlFromText = (text?: string): string | null => {
+      const t = (text ?? "").trim();
+      // only treat a single token as a URL (no spaces/newlines)
+      if (!t || /[\s\r\n]/.test(t)) return null;
+      if (!/^(https?:\/\/|www\.)\S+$/i.test(t)) return null;
+      return t.startsWith("http") ? t : `https://${t}`;
+    };
+    // --- end ---s
+
+    if (!_.isNil(dataVerification)) {
+      const dvItem = dataVerification[`${r}_${c}`];
+      if (
+        !_.isNil(dvItem) &&
+        dvItem.prohibitInput &&
+        !validateCellData(ctx, dvItem, inputText)
+      ) {
+        const failureText = getFailureText(ctx, dvItem);
+
+        cancelNormalSelected(ctx);
+        ctx.warnDialog = failureText;
+
+        return;
+      }
     }
-  }
 
-  if (curv?.ct && !value && !isCurInline && isPrevInline) {
-    delete curv.ct.s;
-    curv.ct.t = "g";
-    curv.ct.fa = "General";
-    curv.tb = "1";
-    value = "";
-  } else if (isCurInline) {
-    if (!_.isPlainObject(curv)) {
-      curv = {};
+    let curv = flowdata[r][c];
+
+    // ctx.old value for hook function
+    const oldValue = _.cloneDeep(curv);
+
+    const isPrevInline = isInlineStringCell(curv);
+    let isCurInline =
+      inputText?.slice(0, 1) !== "=" && inputHtml?.substring(0, 5) === "<span";
+
+    let isCopyVal = false;
+    if (!isCurInline && inputText && inputText.length > 0) {
+      const splitArr = inputText
+        .replace(/\r\n/g, "_x000D_")
+        .replace(/&#13;&#10;/g, "_x000D_")
+        .replace(/\r/g, "_x000D_")
+        .replace(/\n/g, "_x000D_")
+        .split("_x000D_");
+      if (splitArr.length > 1 && inputHtml !== "<br>") {
+        isCopyVal = true;
+        isCurInline = true;
+        inputText = splitArr.join("\r\n");
+      }
     }
-    curv ||= {};
-    const fontSize = curv.fs || 10;
 
-    if (!curv.ct) {
-      curv.ct = {};
+    if (curv?.ct && !value && !isCurInline && isPrevInline) {
+      delete curv.ct.s;
+      curv.ct.t = "g";
       curv.ct.fa = "General";
       curv.tb = "1";
-    }
-
-    curv.ct.t = "inlineStr";
-
-    curv.ct.s = convertSpanToShareString(
-      $input!.querySelectorAll("span"),
-      curv
-    );
-
-    delete curv.fs;
-    delete curv.f;
-    delete curv.v;
-    delete curv.m;
-    curv.fs = fontSize;
-    if (isCopyVal) {
-      curv.ct.s = [
-        {
-          v: inputText,
-          fs: fontSize,
-        },
-      ];
-    }
-  }
-
-  // API, we get value from user
-  value = value || inputText;
-  const shouldClearError = oldValue?.f
-    ? oldValue.f !== value
-    : oldValue?.v !== value;
-
-  if (shouldClearError) {
-    clearCellError(ctx, r, c);
-  }
-
-  // Hook function
-  if (ctx.hooks.beforeUpdateCell?.(r, c, value) === false) {
-    cancelNormalSelected(ctx);
-    return;
-  }
-
-  if (!isCurInline) {
-    if (isRealNull(value) && !isPrevInline) {
-      if (!curv || (isRealNull(curv.v) && !curv.spl && !curv.f)) {
-        cancelNormalSelected(ctx);
-        return;
+      value = "";
+    } else if (isCurInline) {
+      if (!_.isPlainObject(curv)) {
+        curv = {};
       }
-    } else if (curv && curv.qp !== 1) {
-      if (
-        _.isPlainObject(curv) &&
-        (value === curv.f || value === curv.v || value === curv.m)
-      ) {
-        cancelNormalSelected(ctx);
-        return;
+      curv ||= {};
+      const fontSize = curv.fs || 10;
+
+      if (!curv.ct) {
+        curv.ct = {};
+        curv.ct.fa = "General";
+        curv.tb = "1";
       }
-      if (value === curv) {
-        cancelNormalSelected(ctx);
-        return;
+
+      curv.ct.t = "inlineStr";
+
+      curv.ct.s = convertSpanToShareString(
+        $input!.querySelectorAll("span"),
+        curv
+      );
+
+      delete curv.fs;
+      delete curv.f;
+      delete curv.v;
+      delete curv.m;
+      curv.fs = fontSize;
+      if (isCopyVal) {
+        curv.ct.s = [
+          {
+            v: inputText,
+            fs: fontSize,
+          },
+        ];
       }
     }
 
-    if (_.isString(value) && value.slice(0, 1) === "=" && value.length > 1) {
-    } else if (
-      _.isPlainObject(curv) &&
-      curv &&
-      curv.ct &&
-      curv.ct.fa &&
-      curv.ct.fa !== "@" &&
-      !isRealNull(value)
-    ) {
-      delete curv.m; // 更新时间m处理 ， 会实际删除单元格数据的参数（flowdata时已删除）
-      if (curv.f) {
-        // 如果原来是公式，而更新的数据不是公式，则把公式删除
-        delete curv.f;
-        delete curv.spl; // 删除单元格的sparklines的配置串
-      }
+    // API, we get value from user
+    value = value || inputText;
+    const shouldClearError = oldValue?.f
+      ? oldValue.f !== value
+      : oldValue?.v !== value;
+
+    if (shouldClearError) {
+      clearCellError(ctx, r, c);
     }
-  }
 
-  // TODO window.luckysheet_getcelldata_cache = null;
+    // Hook function
+    if (ctx.hooks.beforeUpdateCell?.(r, c, value) === false) {
+      cancelNormalSelected(ctx);
+      return;
+    }
 
-  let isRunExecFunction = true;
-
-  const d = flowdata; // TODO const d = editor.deepCopyFlowData(flowdata);
-  let dynamicArrayItem = null; // 动态数组
-
-  if (_.isPlainObject(curv)) {
     if (!isCurInline) {
+      if (isRealNull(value) && !isPrevInline) {
+        if (!curv || (isRealNull(curv.v) && !curv.spl && !curv.f)) {
+          cancelNormalSelected(ctx);
+          return;
+        }
+      } else if (curv && curv.qp !== 1) {
+        if (
+          _.isPlainObject(curv) &&
+          (value === curv.f || value === curv.v || value === curv.m)
+        ) {
+          cancelNormalSelected(ctx);
+          return;
+        }
+        if (value === curv) {
+          cancelNormalSelected(ctx);
+          return;
+        }
+      }
+
+      if (_.isString(value) && value.slice(0, 1) === "=" && value.length > 1) {
+      } else if (
+        _.isPlainObject(curv) &&
+        curv &&
+        curv.ct &&
+        curv.ct.fa &&
+        curv.ct.fa !== "@" &&
+        !isRealNull(value)
+      ) {
+        delete curv.m; // 更新时间m处理 ， 会实际删除单元格数据的参数（flowdata时已删除）
+        if (curv.f) {
+          // 如果原来是公式，而更新的数据不是公式，则把公式删除
+          delete curv.f;
+          delete curv.spl; // 删除单元格的sparklines的配置串
+        }
+      }
+    }
+
+    // TODO window.luckysheet_getcelldata_cache = null;
+
+    let isRunExecFunction = true;
+
+    const d = flowdata; // TODO const d = editor.deepCopyFlowData(flowdata);
+    let dynamicArrayItem = null; // 动态数组
+
+    if (_.isPlainObject(curv)) {
+      if (!isCurInline) {
+        if (
+          _.isString(value) &&
+          value.slice(0, 1) === "=" &&
+          value.length > 1
+        ) {
+          const v = execfunction(ctx, value, r, c, undefined, undefined, true);
+          isRunExecFunction = false;
+          curv = _.cloneDeep(d?.[r]?.[c] || {});
+          [, curv.v, curv.f] = v;
+
+          // 打进单元格的sparklines的配置串， 报错需要单独处理。
+          if (v.length === 4 && v[3].type === "sparklines") {
+            delete curv.m;
+            delete curv.v;
+
+            const curCalv = v[3].data;
+
+            if (_.isArray(curCalv) && !_.isPlainObject(curCalv[0])) {
+              [curv.v] = curCalv;
+            } else {
+              curv.spl = v[3].data;
+            }
+          } else if (v.length === 4 && v[3].type === "dynamicArrayItem") {
+            dynamicArrayItem = v[3].data;
+          }
+        }
+        // from API setCellValue,luckysheet.setCellValue(0, 0, {f: "=sum(D1)", bg:"#0188fb"}),value is an object, so get attribute f as value
+        else if (_.isPlainObject(value)) {
+          const valueFunction = value.f;
+
+          if (
+            _.isString(valueFunction) &&
+            valueFunction.slice(0, 1) === "=" &&
+            valueFunction.length > 1
+          ) {
+            const v = execfunction(
+              ctx,
+              valueFunction,
+              r,
+              c,
+              undefined,
+              undefined,
+              true
+            );
+            isRunExecFunction = false;
+            // get v/m/ct
+
+            curv = _.cloneDeep(d?.[r]?.[c] || {});
+            [, curv.v, curv.f] = v;
+
+            // 打进单元格的sparklines的配置串， 报错需要单独处理。
+            if (v.length === 4 && v[3].type === "sparklines") {
+              delete curv.m;
+              delete curv.v;
+
+              const curCalv = v[3].data;
+
+              if (_.isArray(curCalv) && !_.isPlainObject(curCalv[0])) {
+                [curv.v] = curCalv;
+              } else {
+                curv.spl = v[3].data;
+              }
+            } else if (v.length === 4 && v[3].type === "dynamicArrayItem") {
+              dynamicArrayItem = v[3].data;
+            }
+          }
+          // from API setCellValue,luckysheet.setCellValue(0, 0, {f: "=sum(D1)", bg:"#0188fb"}),value is an object, so get attribute f as value
+          else {
+            Object.keys(value).forEach((attr) => {
+              curv![attr as keyof Cell] = value[attr];
+            });
+            clearCellError(ctx, r, c);
+          }
+        } else {
+          clearCellError(ctx, r, c);
+          delFunctionGroup(ctx, r, c);
+
+          curv = _.cloneDeep(d?.[r]?.[c] || {});
+          curv.v = value;
+
+          delete curv.f;
+          delete curv.spl;
+
+          // FLV crypto denomination --START--
+          const decemialCount = oldValue?.m?.toString().includes(".")
+            ? oldValue?.m?.toString().split(" ")[0].split(".")[1]?.length
+            : 0;
+          const coin = oldValue?.m?.toString().split(" ")[1];
+          if (
+            typeof curv === "object" &&
+            curv?.baseValue &&
+            oldValue?.baseCurrencyPrice &&
+            !curv?.m
+          ) {
+            curv.m = `${(
+              (parseFloat(value as string) /
+                // @ts-expect-error later // eslint-disable-next-line no-unsafe-optional-chaining
+                oldValue.baseCurrencyPrice) as number
+            ).toFixed(decemialCount || 2)} ${coin}`;
+            curv.baseValue = value;
+          }
+          // FLV crypto denomination --END--
+          execFunctionGroup(ctx, r, c, curv);
+          isRunExecFunction = false;
+          if (curv.qp === 1 && `${value}`.substring(0, 1) !== "'") {
+            // if quotePrefix is 1, cell is force string, cell clear quotePrefix when it is updated
+            curv.qp = 0;
+            if (curv.ct) {
+              curv.ct.fa = "General";
+              curv.ct.t = "n";
+            }
+          }
+        }
+      }
+      value = curv;
+    } else {
       if (_.isString(value) && value.slice(0, 1) === "=" && value.length > 1) {
         const v = execfunction(ctx, value, r, c, undefined, undefined, true);
         isRunExecFunction = false;
-        curv = _.cloneDeep(d?.[r]?.[c] || {});
-        [, curv.v, curv.f] = v;
+        value = {
+          v: v[1],
+          f: v[2],
+        };
+
+        if (/^[\d.,]+$/.test(value.v)) {
+          const args = getContentInParentheses(value?.f)?.split(",");
+          const cellRefs = args?.map((arg) => arg.trim().toUpperCase());
+          const formatted = processArray(cellRefs, d, flowdata);
+          if (formatted) {
+            value.m = update(formatted, value.v);
+            value.ct = {
+              fa: formatted,
+              t: "n",
+            };
+          }
+          value.ht = 2;
+        }
 
         // 打进单元格的sparklines的配置串， 报错需要单独处理。
         if (v.length === 4 && v[3].type === "sparklines") {
-          delete curv.m;
-          delete curv.v;
-
           const curCalv = v[3].data;
 
           if (_.isArray(curCalv) && !_.isPlainObject(curCalv[0])) {
-            [curv.v] = curCalv;
+            [value.v] = curCalv;
           } else {
-            curv.spl = v[3].data;
+            value.spl = v[3].data;
           }
         } else if (v.length === 4 && v[3].type === "dynamicArrayItem") {
           dynamicArrayItem = v[3].data;
@@ -986,245 +1116,123 @@ export function updateCell(
             true
           );
           isRunExecFunction = false;
-          // get v/m/ct
+          // value = {
+          //     "v": v[1],
+          //     "f": v[2]
+          // };
 
-          curv = _.cloneDeep(d?.[r]?.[c] || {});
-          [, curv.v, curv.f] = v;
+          // update attribute v
+          [, value.v, value.f] = v;
 
           // 打进单元格的sparklines的配置串， 报错需要单独处理。
           if (v.length === 4 && v[3].type === "sparklines") {
-            delete curv.m;
-            delete curv.v;
-
             const curCalv = v[3].data;
 
             if (_.isArray(curCalv) && !_.isPlainObject(curCalv[0])) {
-              [curv.v] = curCalv;
+              [value.v] = curCalv;
             } else {
-              curv.spl = v[3].data;
+              value.spl = v[3].data;
             }
           } else if (v.length === 4 && v[3].type === "dynamicArrayItem") {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             dynamicArrayItem = v[3].data;
           }
-        }
-        // from API setCellValue,luckysheet.setCellValue(0, 0, {f: "=sum(D1)", bg:"#0188fb"}),value is an object, so get attribute f as value
-        else {
-          Object.keys(value).forEach((attr) => {
-            curv![attr as keyof Cell] = value[attr];
-          });
+        } else {
           clearCellError(ctx, r, c);
+          const v = curv;
+          if (_.isNil(value.v)) {
+            value.v = v;
+          }
         }
       } else {
         clearCellError(ctx, r, c);
         delFunctionGroup(ctx, r, c);
-
-        curv = _.cloneDeep(d?.[r]?.[c] || {});
-        curv.v = value;
-
-        delete curv.f;
-        delete curv.spl;
-
-        // FLV crypto denomination --START--
-        const decemialCount = oldValue?.m?.toString().includes(".")
-          ? oldValue?.m?.toString().split(" ")[0].split(".")[1]?.length
-          : 0;
-        const coin = oldValue?.m?.toString().split(" ")[1];
-        if (typeof curv === "object" && curv?.baseValue) {
-          curv.m = `${
-            // @ts-expect-error later
-            // eslint-disable-next-line no-unsafe-optional-chaining
-            (parseFloat(value as string) / oldValue?.baseCurrencyPrice).toFixed(
-              decemialCount || 2
-            )
-          } ${coin}`;
-          curv.baseValue = value;
-        }
-        // FLV crypto denomination --END--
-        execFunctionGroup(ctx, r, c, curv);
+        execFunctionGroup(ctx, r, c, value);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         isRunExecFunction = false;
-        if (curv.qp === 1 && `${value}`.substring(0, 1) !== "'") {
-          // if quotePrefix is 1, cell is force string, cell clear quotePrefix when it is updated
-          curv.qp = 0;
-          if (curv.ct) {
-            curv.ct.fa = "General";
-            curv.ct.t = "n";
-          }
-        }
       }
     }
-    value = curv;
-  } else {
-    if (_.isString(value) && value.slice(0, 1) === "=" && value.length > 1) {
-      const v = execfunction(ctx, value, r, c, undefined, undefined, true);
-      isRunExecFunction = false;
+
+    // value maybe an object
+    // FLV crypto denomination --START--
+    const decemialCount = oldValue?.m?.toString().includes(".")
+      ? oldValue?.m?.toString().split(" ")[0].split(".")[1]?.length
+      : 0;
+    const coin = oldValue?.m?.toString().split(" ")[1];
+    if (typeof value === "object" && value.baseValue && !value?.m) {
+      value.m = `${
+        // @ts-expect-error later
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice).toFixed(
+          decemialCount || 2
+        )
+      } ${coin}`;
+    }
+
+    // FLV crypto denomination --END--
+    if (typeof value === "string") {
       value = {
-        v: v[1],
-        f: v[2],
+        ct: {
+          fa: "General",
+          t: "g",
+        },
+        v: value,
+        tb: "1",
+      };
+    } else if (typeof value === "object" && !value.tb) {
+      value.tb = "1";
+    }
+
+    const isValueArray = Array.isArray((value as any)?.v?.[0]);
+
+    try {
+      if (isValueArray) {
+        if (spillSortResult(ctx, r, c, value, d)) {
+          cancelNormalSelected(ctx);
+          if (ctx.hooks.afterUpdateCell) {
+            const newValue = _.cloneDeep(d[r][c]);
+            setTimeout(() => ctx.hooks.afterUpdateCell?.(r, c, null, newValue));
+          }
+          ctx.formulaCache.execFunctionGlobalData = null;
+          return;
+        }
+      }
+    } catch (e) {
+      console.log("[updateCell] spill failed; falling back", e);
+    }
+
+    // --- hyperlink-on-edit-paste support ---
+    // If user pasted a URL while editing (double click), persist hyperlink using sheet.hyperlink + cell.hl
+    const url = getUrlFromText($input?.innerText);
+    if (url && typeof value === "object" && value) {
+      (value as any).hl = 1;
+
+      if (!sheetFile.hyperlink) sheetFile.hyperlink = {};
+      sheetFile.hyperlink[`${r}_${c}`] = {
+        linkType: "webpage",
+        linkAddress: url,
       };
 
-      if (/^[\d.,]+$/.test(value.v)) {
-        const args = getContentInParentheses(value?.f)?.split(",");
-        const cellRefs = args?.map((arg) => arg.trim().toUpperCase());
-        const formatted = processArray(cellRefs, d, flowdata);
-        if (formatted) {
-          value.m = update(formatted, value.v);
-          value.ct = {
-            fa: formatted,
-            t: "n",
-          };
-        }
-        value.ht = 2;
+      if (typeof (value as any).v !== "string") {
+        (value as any).v = $input?.innerText ?? url;
       }
 
-      // 打进单元格的sparklines的配置串， 报错需要单独处理。
-      if (v.length === 4 && v[3].type === "sparklines") {
-        const curCalv = v[3].data;
-
-        if (_.isArray(curCalv) && !_.isPlainObject(curCalv[0])) {
-          [value.v] = curCalv;
-        } else {
-          value.spl = v[3].data;
-        }
-      } else if (v.length === 4 && v[3].type === "dynamicArrayItem") {
-        dynamicArrayItem = v[3].data;
+      if ((value as any).m == null) {
+        (value as any).m = (value as any).v;
       }
-    }
-    // from API setCellValue,luckysheet.setCellValue(0, 0, {f: "=sum(D1)", bg:"#0188fb"}),value is an object, so get attribute f as value
-    else if (_.isPlainObject(value)) {
-      const valueFunction = value.f;
 
-      if (
-        _.isString(valueFunction) &&
-        valueFunction.slice(0, 1) === "=" &&
-        valueFunction.length > 1
-      ) {
-        const v = execfunction(
-          ctx,
-          valueFunction,
-          r,
-          c,
-          undefined,
-          undefined,
-          true
-        );
-        isRunExecFunction = false;
-        // value = {
-        //     "v": v[1],
-        //     "f": v[2]
-        // };
-
-        // update attribute v
-        [, value.v, value.f] = v;
-
-        // 打进单元格的sparklines的配置串， 报错需要单独处理。
-        if (v.length === 4 && v[3].type === "sparklines") {
-          const curCalv = v[3].data;
-
-          if (_.isArray(curCalv) && !_.isPlainObject(curCalv[0])) {
-            [value.v] = curCalv;
-          } else {
-            value.spl = v[3].data;
-          }
-        } else if (v.length === 4 && v[3].type === "dynamicArrayItem") {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          dynamicArrayItem = v[3].data;
-        }
-      } else {
-        clearCellError(ctx, r, c);
-        const v = curv;
-        if (_.isNil(value.v)) {
-          value.v = v;
-        }
-      }
-    } else {
-      clearCellError(ctx, r, c);
-      delFunctionGroup(ctx, r, c);
-      execFunctionGroup(ctx, r, c, value);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      isRunExecFunction = false;
-    }
-  }
-
-  // value maybe an object
-  // FLV crypto denomination --START--
-  const decemialCount = oldValue?.m?.toString().includes(".")
-    ? oldValue?.m?.toString().split(" ")[0].split(".")[1]?.length
-    : 0;
-  const coin = oldValue?.m?.toString().split(" ")[1];
-  if (typeof value === "object" && value.baseValue && !value?.m) {
-    value.m = `${
-      // @ts-expect-error later
-      // eslint-disable-next-line no-unsafe-optional-chaining
-      (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice).toFixed(
-        decemialCount || 2
-      )
-    } ${coin}`;
-  }
-
-  // FLV crypto denomination --END--
-  if (typeof value === "string") {
-    value = {
-      ct: {
-        fa: "General",
-        t: "g",
-      },
-      v: value,
-      tb: "1",
-    };
-  } else if (typeof value === "object" && !value.tb) {
-    value.tb = "1";
-  }
-
-  const isValueArray = Array.isArray((value as any)?.v?.[0]);
-
-  try {
-    if (isValueArray) {
-      if (spillSortResult(ctx, r, c, value, d)) {
-        cancelNormalSelected(ctx);
-        if (ctx.hooks.afterUpdateCell) {
-          const newValue = _.cloneDeep(d[r][c]);
-          setTimeout(() => ctx.hooks.afterUpdateCell?.(r, c, null, newValue));
-        }
-        ctx.formulaCache.execFunctionGlobalData = null;
-        return;
-      }
-    }
-  } catch (e) {
-    console.log("[updateCell] spill failed; falling back", e);
-  }
-
-  // --- hyperlink-on-edit-paste support ---
-  // If user pasted a URL while editing (double click), persist hyperlink using sheet.hyperlink + cell.hl
-  const url = getUrlFromText($input?.innerText);
-  if (url && typeof value === "object" && value) {
-    (value as any).hl = 1;
-
-    if (!sheetFile.hyperlink) sheetFile.hyperlink = {};
-    sheetFile.hyperlink[`${r}_${c}`] = {
-      linkType: "webpage",
-      linkAddress: url,
-    };
-
-    if (typeof (value as any).v !== "string") {
-      (value as any).v = $input?.innerText ?? url;
+      // Persist hyperlink look (blue + underline)
+      if ((value as any).fc == null) (value as any).fc = "rgb(0, 0, 255)";
+      if ((value as any).un == null) (value as any).un = 1;
     }
 
-    if ((value as any).m == null) {
-      (value as any).m = (value as any).v;
-    }
+    // --- end ---
 
-    // Persist hyperlink look (blue + underline)
-    if ((value as any).fc == null) (value as any).fc = "rgb(0, 0, 255)";
-    if ((value as any).un == null) (value as any).un = 1;
-  }
+    setCellValue(ctx, r, c, d, value);
 
-  // --- end ---
+    cancelNormalSelected(ctx);
 
-  setCellValue(ctx, r, c, d, value);
-
-  cancelNormalSelected(ctx);
-
-  /*
+    /*
   let RowlChange = false;
   const cfg =
     ctx.luckysheetfile?.[getSheetIndex(ctx, ctx.currentSheetId)]?.config ||
@@ -1234,57 +1242,57 @@ export function updateCell(
   }
   */
 
-  if ((curv?.tb === "2" && curv.v) || isInlineStringCell(d[r][c])) {
-    // 自动换行
-    const { defaultrowlen } = ctx;
+    if ((curv?.tb === "2" && curv.v) || isInlineStringCell(d[r][c])) {
+      // 自动换行
+      const { defaultrowlen } = ctx;
 
-    // const canvas = $("#luckysheetTableContent").get(0).getContext("2d");
-    // offlinecanvas.textBaseline = 'top'; //textBaseline以top计算
+      // const canvas = $("#luckysheetTableContent").get(0).getContext("2d");
+      // offlinecanvas.textBaseline = 'top'; //textBaseline以top计算
 
-    // let fontset = luckysheetfontformat(d[r][c]);
-    // offlinecanvas.font = fontset;
+      // let fontset = luckysheetfontformat(d[r][c]);
+      // offlinecanvas.font = fontset;
 
-    const cfg =
-      ctx.luckysheetfile[
-        getSheetIndex(ctx, ctx.currentSheetId as string) as number
-      ].config || {};
-    if (!(cfg.columnlen?.[c] && cfg.rowlen?.[r])) {
-      // let currentRowLen = defaultrowlen;
-      // if(!_.isNil(cfg["rowlen"][r])){
-      //     currentRowLen = cfg["rowlen"][r];
-      // }
+      const cfg =
+        ctx.luckysheetfile[
+          getSheetIndex(ctx, ctx.currentSheetId as string) as number
+        ].config || {};
+      if (!(cfg.columnlen?.[c] && cfg.rowlen?.[r])) {
+        // let currentRowLen = defaultrowlen;
+        // if(!_.isNil(cfg["rowlen"][r])){
+        //     currentRowLen = cfg["rowlen"][r];
+        // }
 
-      const cellWidth = cfg.columnlen?.[c] || ctx.defaultcollen;
+        const cellWidth = cfg.columnlen?.[c] || ctx.defaultcollen;
 
-      const textInfo = canvas
-        ? getCellTextInfo(d[r][c] as Cell, canvas, ctx, {
-            r,
-            c,
-            cellWidth,
-          })
-        : null;
+        const textInfo = canvas
+          ? getCellTextInfo(d[r][c] as Cell, canvas, ctx, {
+              r,
+              c,
+              cellWidth,
+            })
+          : null;
 
-      let currentRowLen = defaultrowlen;
-      // console.log("rowlen", textInfo);
-      if (textInfo) {
-        currentRowLen = textInfo.textHeightAll + 2;
-      }
+        let currentRowLen = defaultrowlen;
+        // console.log("rowlen", textInfo);
+        if (textInfo) {
+          currentRowLen = textInfo.textHeightAll + 2;
+        }
 
-      const previousRowHeight = getRowHeight(ctx, [r])[r];
+        const previousRowHeight = getRowHeight(ctx, [r])[r];
 
-      if (
-        currentRowLen > defaultrowlen &&
-        !cfg.customHeight?.[r] &&
-        previousRowHeight < currentRowLen
-      ) {
-        if (_.isNil(cfg.rowlen)) cfg.rowlen = {};
-        cfg.rowlen[r] = currentRowLen;
+        if (
+          currentRowLen > defaultrowlen &&
+          !cfg.customHeight?.[r] &&
+          previousRowHeight < currentRowLen
+        ) {
+          if (_.isNil(cfg.rowlen)) cfg.rowlen = {};
+          cfg.rowlen[r] = currentRowLen;
+        }
       }
     }
-  }
 
-  // 动态数组
-  /*
+    // 动态数组
+    /*
   let dynamicArray = null;
   if (dynamicArrayItem) {
     // let file = ctx.luckysheetfile[getSheetIndex(ctx.currentSheetId)];
@@ -1309,15 +1317,18 @@ export function updateCell(
   }
   */
 
-  if (ctx.hooks.afterUpdateCell) {
-    const newValue = _.cloneDeep(flowdata[r][c]);
-    const { afterUpdateCell } = ctx.hooks;
-    setTimeout(() => {
-      afterUpdateCell?.(r, c, oldValue, newValue);
-    });
-  }
+    if (ctx.hooks.afterUpdateCell) {
+      const newValue = _.cloneDeep(flowdata[r][c]);
+      const { afterUpdateCell } = ctx.hooks;
+      setTimeout(() => {
+        afterUpdateCell?.(r, c, oldValue, newValue);
+      });
+    }
 
-  ctx.formulaCache.execFunctionGlobalData = null;
+    ctx.formulaCache.execFunctionGlobalData = null;
+  } catch (e) {
+    cancelNormalSelected(ctx);
+  }
 }
 
 export function getOrigincell(ctx: Context, r: number, c: number, i: string) {

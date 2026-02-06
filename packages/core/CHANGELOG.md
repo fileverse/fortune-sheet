@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-core
 
+## 1.2.97
+
+### Patch Changes
+
+- fix: number, toolbar, multiply, comment box z-index
+- Updated dependencies
+  - @fileverse-dev/formula-parser@0.2.95
+
 ## 1.2.96
 
 ### Patch Changes

@@ -454,7 +454,7 @@ const Toolbar: React.FC<{
   const [toolbarWrapIndex, setToolbarWrapIndex] = useState(-1);
   const [itemLocations, setItemLocations] = useState<number[]>([]);
   const [showDuneModal, setShowDuneModal] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1280);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1480);
   const { showDialog, hideDialog } = useDialog();
   const { showAlert, hideAlert } = useAlert();
   const firstSelection = context.luckysheet_select_save?.[0];
@@ -552,7 +552,7 @@ const Toolbar: React.FC<{
   // Add window resize listener to update desktop state
   useEffect(() => {
     const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1280);
+      setIsDesktop(window.innerWidth >= 1480);
     };
 
     window.addEventListener("resize", handleResize);

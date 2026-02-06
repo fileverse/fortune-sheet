@@ -1,5 +1,11 @@
 All releases are described at https://github.com/handsontable/formula-parser/releases
 
+## 0.2.95
+
+### Patch Changes
+
+- fix: number, toolbar, multiply, comment box z-index
+
 ## 0.2.94
 
 ### Patch Changes

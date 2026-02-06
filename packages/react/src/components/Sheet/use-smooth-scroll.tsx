@@ -95,12 +95,7 @@ export const useSmoothScroll = (
     containerEl: HTMLElement,
     scrollHandler: (x: number, y: number) => void,
     getPixelScale: () => number
-  ): any {
-    if (context.luckysheetCellUpdate.length > 0) {
-      // eslint-disable-next-line no-use-before-define
-      stopAutoScroll();
-      return;
-    }
+  ) {
     let isDragging = false;
     let startY = 0;
     let lastY = 0;
@@ -127,11 +122,11 @@ export const useSmoothScroll = (
         return;
       }
 
-      // Accelerate velocity over time (Y-axis only)
-      if (Math.abs(velocityY) > 0.1) {
+      // Accelerate velocity over time (only for downward scrolling)
+      if (velocityY > 0.1) {
         velocityY *= ACCELERATION_FACTOR;
         // Cap at maximum velocity
-        velocityY = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, velocityY));
+        velocityY = Math.min(MAX_VELOCITY, velocityY);
       }
 
       const scale = getPixelScale();
@@ -176,12 +171,12 @@ export const useSmoothScroll = (
       // Calculate delta - positive when dragging down, negative when dragging up
       const deltaY = e.clientY - lastY;
 
-      // Check if we've moved enough to start auto-scrolling
-      const totalMovedY = Math.abs(e.clientY - startY);
+      // Check if we've moved enough downward to start auto-scrolling
+      const totalMovedY = e.clientY - startY; // Positive means moved down
 
       if (totalMovedY > MIN_DRAG_THRESHOLD) {
-        // Only update velocity if mouse is actually moving
-        if (Math.abs(deltaY) > 0.1) {
+        // Only update velocity if mouse is actually moving downward
+        if (deltaY > 0.1) {
           // Calculate instantaneous velocity (pixels per frame at 60fps)
           const instantVelocityY = (deltaY / deltaTime) * 16;
 
@@ -196,6 +191,9 @@ export const useSmoothScroll = (
         if (!autoScrollAnimationId) {
           autoScrollAnimationId = requestAnimationFrame(autoScroll);
         }
+      } else if (totalMovedY < -MIN_DRAG_THRESHOLD) {
+        // If dragging upward, stop auto-scroll
+        stopAutoScroll();
       }
 
       lastY = e.clientY;
@@ -204,8 +202,7 @@ export const useSmoothScroll = (
       e.preventDefault();
     }
 
-    function onMouseUp(e: MouseEvent) {
-      console.log("Mouse up, stopping drag scroll", e);
+    function onMouseUp() {
       if (!isDragging) return;
 
       isDragging = false;
@@ -218,7 +215,6 @@ export const useSmoothScroll = (
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
 
-    // eslint-disable-next-line consistent-return
     return () => {
       stopAutoScroll();
       containerEl.removeEventListener("mousedown", onMouseDown);
@@ -459,21 +455,17 @@ export const useSmoothScroll = (
       scrollHandler,
       () => (window.devicePixelRatio || 1) * context.zoomRatio
     );
-
-    let unmountMouseDragHandler: any;
     // NEW: Add mouse drag scrolling
-    if (context.luckysheetCellUpdate.length === 0) {
-      unmountMouseDragHandler = handleMouseDragScroll(
-        scrollContainerEl,
-        scrollHandler,
-        () => (window.devicePixelRatio || 1) * context.zoomRatio
-      );
-    }
+    const unmountMouseDragHandler = handleMouseDragScroll(
+      scrollContainerEl,
+      scrollHandler,
+      () => (window.devicePixelRatio || 1) * context.zoomRatio
+    );
 
     return () => {
       unmountScrollHandler();
       unmountMobileScrollHandler();
-      unmountMouseDragHandler?.(); // Clean up mouse drag handler
+      unmountMouseDragHandler(); // Clean up mouse drag handler
     };
   }
 

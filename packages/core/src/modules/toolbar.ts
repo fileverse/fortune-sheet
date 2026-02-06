@@ -61,15 +61,6 @@ export function updateFormatCell(
   col_ed: number,
   canvas?: CanvasRenderingContext2D
 ) {
-  console.log(
-    "updateFormatCell",
-    attr,
-    foucsStatus,
-    row_st,
-    row_ed,
-    col_st,
-    col_ed
-  );
   if (_.isNil(d) || _.isNil(attr)) {
     return;
   }

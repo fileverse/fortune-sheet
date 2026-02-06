@@ -315,7 +315,6 @@ export function updateFormat(
   foucsStatus: any,
   canvas?: CanvasRenderingContext2D
 ) {
-  console.log("updateFormat", attr, foucsStatus);
   //   if (!checkProtectionFormatCells(ctx.currentSheetId)) {
   //     return;
   //   }
@@ -355,7 +354,6 @@ export function updateFormat(
       col_ed,
       canvas
     );
-    ctx.luckysheetCellUpdate = [];
 
     // if (attr === "tb" || attr === "tr" || attr === "fs") {
     //   cfg = rowlenByRange(ctx, d, row_st, row_ed, cfg);
@@ -390,7 +388,6 @@ function setAttr(
   value: any,
   canvas?: CanvasRenderingContext2D
 ) {
-  console.log("setAttr", attr, value);
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
 
@@ -1628,7 +1625,6 @@ export function handleTextSize(
   size: number,
   canvas?: CanvasRenderingContext2D
 ) {
-  console.log("handleTextSize", size);
   setAttr(ctx, cellInput, "fs", size, canvas);
 }
 

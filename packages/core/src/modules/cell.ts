@@ -1034,11 +1034,16 @@ export function updateCell(
             ? oldValue?.m?.toString().split(" ")[0].split(".")[1]?.length
             : 0;
           const coin = oldValue?.m?.toString().split(" ")[1];
-          if (typeof curv === "object" && curv?.baseValue && oldValue?.baseCurrencyPrice) {
+          if (
+            typeof curv === "object" &&
+            curv?.baseValue &&
+            oldValue?.baseCurrencyPrice
+          ) {
             curv.m = `${
               // eslint-disable-next-line no-unsafe-optional-chaining
               (
-                parseFloat(value as string) / (oldValue.baseCurrencyPrice as number)
+                parseFloat(value as string) /
+                (oldValue.baseCurrencyPrice as number)
               ).toFixed(decemialCount || 2)
             } ${coin}`;
             curv.baseValue = value;

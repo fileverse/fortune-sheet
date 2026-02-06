@@ -50,8 +50,8 @@ export function isRealNull(val: any) {
   return _.isNil(val) || val.toString().replace(/\s/g, "") === "";
 }
 export function isHexValue(str: string): boolean {
-  // Accepts with or without 0x prefix
-  return /^0x?[a-fA-F0-9]+$/.test(str);
+  // Requires 0x prefix for hex values
+  return /^0x[a-fA-F0-9]+$/i.test(str);
 }
 
 // 是否是纯数字

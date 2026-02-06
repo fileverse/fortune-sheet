@@ -389,7 +389,8 @@ export function setCellValue(
           const flag = vupdate
             .split("")
             .every((ele) => ele === "0" || ele === ".");
-          if (flag) {
+          // Convert to number if: all zeros/dots, or has leading zeros that should be stripped
+          if (flag || /^0+\d/.test(vupdate)) {
             vupdate = parseFloat(vupdate);
           }
         }

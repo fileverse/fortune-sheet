@@ -90,6 +90,223 @@ export const useSmoothScroll = (
     };
   }
 
+  // NEW: Add mouse drag scrolling handler with continuous auto-scroll (Y-axis only)
+  function handleMouseDragScroll(
+    containerEl: HTMLElement,
+    scrollHandler: (x: number, y: number) => void,
+    getPixelScale: () => number
+  ) {
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let velocityX = 0;
+    let velocityY = 0;
+    let autoScrollAnimationId = 0;
+    let lastMoveTime = 0;
+    let scrollDirection: "horizontal" | "vertical" | "none" = "none";
+
+    const VELOCITY_SMOOTHING = 0.3; // Smoothing factor for velocity changes
+    const MIN_DRAG_THRESHOLD = 5; // Minimum pixels to start dragging
+    const ACCELERATION_FACTOR = 1.02; // Multiply velocity by this each frame (1.02 = 2% increase per frame)
+    const MAX_VELOCITY = 50; // Maximum velocity cap to prevent it from getting too fast
+    const DIRECTION_LOCK_THRESHOLD = 1.5; // Ratio threshold for direction locking
+    const EDGE_SCROLL_ZONE = 10; // Pixels from edge to trigger auto-scroll
+
+    function stopAutoScroll() {
+      if (autoScrollAnimationId) {
+        cancelAnimationFrame(autoScrollAnimationId);
+        autoScrollAnimationId = 0;
+      }
+      velocityX = 0;
+      velocityY = 0;
+    }
+
+    function autoScroll() {
+      if (!isDragging) {
+        stopAutoScroll();
+        return;
+      }
+
+      // Accelerate velocity over time for both axes in both directions
+      if (Math.abs(velocityX) > 0.1) {
+        velocityX *= ACCELERATION_FACTOR;
+        // Cap at maximum velocity
+        velocityX = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, velocityX));
+      }
+
+      if (Math.abs(velocityY) > 0.1) {
+        velocityY *= ACCELERATION_FACTOR;
+        // Cap at maximum velocity
+        velocityY = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, velocityY));
+      }
+
+      const scale = getPixelScale();
+      scrollHandler(velocityX * scale, velocityY * scale);
+
+      autoScrollAnimationId = requestAnimationFrame(autoScroll);
+    }
+
+    function onMouseDown(e: MouseEvent) {
+      // Only handle primary mouse button (left click)
+      if (e.button !== 0) return;
+
+      // Don't interfere with interactive elements
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "BUTTON" ||
+        target.tagName === "SELECT" ||
+        target.tagName === "TEXTAREA" ||
+        target.closest("button") ||
+        target.closest("input")
+      ) {
+        return;
+      }
+
+      isDragging = true;
+      scrollDirection = "none"; // Reset scroll direction
+      startX = e.clientX;
+      startY = e.clientY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      lastMoveTime = performance.now();
+      velocityX = 0;
+      velocityY = 0;
+
+      containerEl.style.cursor = "grabbing";
+      e.preventDefault();
+    }
+
+    function onMouseMove(e: MouseEvent) {
+      if (!isDragging) return;
+
+      const currentTime = performance.now();
+      const deltaTime = Math.max(1, currentTime - lastMoveTime);
+
+      // Calculate delta - positive when dragging right/down, negative when dragging left/up
+      const deltaX = e.clientX - lastX;
+      const deltaY = e.clientY - lastY;
+
+      // Calculate total movement from start
+      const totalMovedX = e.clientX - startX;
+      const totalMovedY = e.clientY - startY;
+      const absMovedX = Math.abs(totalMovedX);
+      const absMovedY = Math.abs(totalMovedY);
+
+      // Get container bounds for edge detection
+      const containerRect = containerEl.getBoundingClientRect();
+      const mouseX = e.clientX - containerRect.left;
+      const mouseY = e.clientY - containerRect.top;
+
+      // Check if mouse is near edges
+      const isNearLeftEdge = mouseX < EDGE_SCROLL_ZONE;
+      const isNearRightEdge = mouseX > containerRect.width - EDGE_SCROLL_ZONE;
+      const isNearTopEdge = mouseY < EDGE_SCROLL_ZONE;
+      const isNearBottomEdge = mouseY > containerRect.height - EDGE_SCROLL_ZONE;
+
+      // Determine scroll direction if not set yet
+      if (
+        scrollDirection === "none" &&
+        (absMovedX > MIN_DRAG_THRESHOLD || absMovedY > MIN_DRAG_THRESHOLD)
+      ) {
+        if (absMovedX > absMovedY * DIRECTION_LOCK_THRESHOLD) {
+          scrollDirection = "horizontal";
+        } else if (absMovedY > absMovedX * DIRECTION_LOCK_THRESHOLD) {
+          scrollDirection = "vertical";
+        } else {
+          scrollDirection = "none"; // Allow both if movement is diagonal
+        }
+      }
+
+      // Handle X-axis (horizontal) with direction locking AND edge detection
+      if (scrollDirection === "horizontal" || scrollDirection === "none") {
+        if (absMovedX > MIN_DRAG_THRESHOLD) {
+          // Only trigger auto-scroll if near left or right edge
+          if (isNearLeftEdge || isNearRightEdge) {
+            // Only update velocity if mouse is actually moving
+            if (Math.abs(deltaX) > 0.1) {
+              const instantVelocityX = (deltaX / deltaTime) * 16;
+              velocityX =
+                velocityX * (1 - VELOCITY_SMOOTHING) +
+                instantVelocityX * VELOCITY_SMOOTHING;
+            }
+            // If mouse stops moving, velocity stays at last value
+
+            // Start auto-scroll animation if not already running
+            if (!autoScrollAnimationId) {
+              autoScrollAnimationId = requestAnimationFrame(autoScroll);
+            }
+          } else {
+            // Not near edge, reset horizontal velocity
+            velocityX = 0;
+          }
+        }
+      } else {
+        // If locked to vertical, reset horizontal velocity
+        velocityX = 0;
+      }
+
+      // Handle Y-axis (vertical) with direction locking AND edge detection
+      if (scrollDirection === "vertical" || scrollDirection === "none") {
+        if (absMovedY > MIN_DRAG_THRESHOLD) {
+          // Only trigger auto-scroll if near top or bottom edge
+          if (isNearTopEdge || isNearBottomEdge) {
+            // Update velocity if mouse is actually moving
+            if (Math.abs(deltaY) > 0.1) {
+              // Calculate instantaneous velocity (pixels per frame at 60fps)
+              const instantVelocityY = (deltaY / deltaTime) * 16;
+
+              // Smooth velocity changes to avoid jitter
+              velocityY =
+                velocityY * (1 - VELOCITY_SMOOTHING) +
+                instantVelocityY * VELOCITY_SMOOTHING;
+            }
+            // If mouse stops moving, velocity stays at last value
+
+            // Start auto-scroll animation if not already running
+            if (!autoScrollAnimationId) {
+              autoScrollAnimationId = requestAnimationFrame(autoScroll);
+            }
+          } else {
+            // Not near edge, reset vertical velocity
+            velocityY = 0;
+          }
+        }
+      } else {
+        // If locked to horizontal, reset vertical velocity
+        velocityY = 0;
+      }
+
+      lastX = e.clientX;
+      lastY = e.clientY;
+      lastMoveTime = currentTime;
+
+      e.preventDefault();
+    }
+
+    function onMouseUp() {
+      if (!isDragging) return;
+
+      isDragging = false;
+      stopAutoScroll();
+      containerEl.style.cursor = "";
+    }
+
+    // Attach event listeners
+    containerEl.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+
+    return () => {
+      stopAutoScroll();
+      containerEl.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }
+
   function handleMobileScroll(
     containerEl: HTMLElement,
     scrollHandler: (x: number, y: number) => void,
@@ -322,10 +539,17 @@ export const useSmoothScroll = (
       scrollHandler,
       () => (window.devicePixelRatio || 1) * context.zoomRatio
     );
+    // NEW: Add mouse drag scrolling
+    const unmountMouseDragHandler = handleMouseDragScroll(
+      scrollContainerEl,
+      scrollHandler,
+      () => (window.devicePixelRatio || 1) * context.zoomRatio
+    );
 
     return () => {
       unmountScrollHandler();
       unmountMobileScrollHandler();
+      unmountMouseDragHandler(); // Clean up mouse drag handler
     };
   }
 

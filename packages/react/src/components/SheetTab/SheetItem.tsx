@@ -22,7 +22,9 @@ type Props = {
 };
 
 const toCssId = (s: string) =>
-  String(s).replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-");
+  String(s)
+    .replace(/[^a-zA-Z0-9-]/g, "-")
+    .replace(/-+/g, "-");
 
 const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
   const { context, setContext, refs } = useContext(WorkbookContext);
@@ -31,7 +33,8 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
   const editable = useRef<HTMLSpanElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const { showAlert } = useAlert();
-  const sheetIdClass = sheet.id != null ? toCssId(String(sheet.id)) : "placeholder";
+  const sheetIdClass =
+    sheet.id != null ? toCssId(String(sheet.id)) : "placeholder";
   const sheetNameClass = sheet.name ? toCssId(sheet.name) : "";
 
   useEffect(() => {
@@ -165,7 +168,11 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
       className={
         isDropPlaceholder
           ? "fortune-sheettab-item fortune-sheettab-placeholder"
-          : `fortune-sheettab-item fortune-sheettab-item--${sheetIdClass}${sheetNameClass ? ` fortune-sheettab-item--name-${sheetNameClass}` : ""} luckysheet-sheets-item${
+          : `fortune-sheettab-item fortune-sheettab-item--${sheetIdClass}${
+              sheetNameClass
+                ? ` fortune-sheettab-item--name-${sheetNameClass}`
+                : ""
+            } luckysheet-sheets-item${
               context.currentSheetId === sheet.id
                 ? " luckysheet-sheets-item-active"
                 : ""
@@ -241,13 +248,15 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
           onKeyDown={onKeyDown}
           ref={editable}
           style={dragOver ? { pointerEvents: "none" } : {}}
-          data-testid={`sheettab-item-para-editable-${sheet.id ?? "placeholder"}`}
+          data-testid={`sheettab-item-para-editable-${
+            sheet.id ?? "placeholder"
+          }`}
         >
           {sheet.name}
         </span>
       )}
       <span
-        className={`fortune-sheettab-item__icon fortune-sheettab-item__action fortune-sheettab-item__icon--menu luckysheet-sheets-item-function`}
+        className="fortune-sheettab-item__icon fortune-sheettab-item__action fortune-sheettab-item__icon--menu luckysheet-sheets-item-function"
         style={{
           marginRight: "4px",
           marginLeft: "4px",

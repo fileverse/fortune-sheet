@@ -9,43 +9,6 @@
   overflow: auto;
 }
 
-/* BEM selectors for testing and styling */
-.fortune-dialog__header {
-  /* header container */
-}
-
-.fortune-dialog__heading {
-  /* dialog title */
-}
-
-.fortune-dialog__para {
-  /* dialog body content */
-}
-
-.fortune-dialog__icon {
-  /* icon in header (e.g. close) */
-}
-
-.fortune-dialog__icon--close {
-  /* close button icon */
-}
-
-.fortune-dialog__actions {
-  /* footer action container */
-}
-
-.fortune-dialog__cta {
-  /* primary/secondary action button */
-}
-
-.fortune-dialog__cta--cancel {
-  /* cancel button */
-}
-
-.fortune-dialog__cta--confirm {
-  /* confirm/ok button */
-}
-
 .fortune-dialog-box-button-container {
   display: flex;
   align-items: center;

@@ -181,7 +181,12 @@ const SheetTab: React.FC = () => {
               isMobile && "w-full flex justify-between"
             }`}
           >
-            <p className={`fortune-sheettab__para ${isMobile ? "text-left" : "text-center"} text-xsm`} data-testid="sheettab-para-disclaimer">
+            <p
+              className={`fortune-sheettab__para ${
+                isMobile ? "text-left" : "text-center"
+              } text-xsm`}
+              data-testid="sheettab-para-disclaimer"
+            >
               <span className="font-medium">Disclaimer:</span> Prices are not
               updated in real time and may differ slightly. Updates may be
               delayed by up to 20 minutes.
@@ -206,7 +211,11 @@ const SheetTab: React.FC = () => {
         id="luckysheet-sheet-area"
         data-testid="sheettab"
       >
-        <div id="luckysheet-sheet-content" className="fortune-sheettab__content" data-testid="sheettab-content">
+        <div
+          id="luckysheet-sheet-content"
+          className="fortune-sheettab__content"
+          data-testid="sheettab-content"
+        >
           {context.allowEdit && (
             <IconButton
               className="fortune-sheettab__cta fortune-sheettab-button border-none shadow-none"
@@ -328,7 +337,10 @@ const SheetTab: React.FC = () => {
         <div className="fortune-sheet-area-right">
           {statsFilter.length === 6 && calInfo.count > 1 && (
             <Popover>
-              <PopoverTrigger className="fortune-sheettab__info-trigger p-0 m-0 mr-2" data-testid="sheettab-info-stats-trigger">
+              <PopoverTrigger
+                className="fortune-sheettab__info-trigger p-0 m-0 mr-2"
+                data-testid="sheettab-info-stats-trigger"
+              >
                 <Button
                   variant="ghost"
                   className="fortune-sheettab__info fortune-sheettab__info--stats w-full !h-6 p-2 m-1 text-left flex items-center justify-center transition mr-2 !rounded-[0px]"
@@ -378,7 +390,9 @@ const SheetTab: React.FC = () => {
                     <Button
                       variant="ghost"
                       key={option.value}
-                      className={`fortune-sheettab__stats-option fortune-sheettab__stats-option--${option.value} w-full h-8 rounded p-2 m-1 text-left flex items-center justify-between transition mr-2 min-w-[50px] ${
+                      className={`fortune-sheettab__stats-option fortune-sheettab__stats-option--${
+                        option.value
+                      } w-full h-8 rounded p-2 m-1 text-left flex items-center justify-between transition mr-2 min-w-[50px] ${
                         selectedStat === option.value && "bg-[#F8F9FA]"
                       }`}
                       data-stat-value={option.value}

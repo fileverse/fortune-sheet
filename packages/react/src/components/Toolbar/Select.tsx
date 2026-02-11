@@ -20,7 +20,9 @@ type OptionProps = {
 };
 
 const toCssId = (s: string) =>
-  String(s).replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-");
+  String(s)
+    .replace(/[^a-zA-Z0-9-]/g, "-")
+    .replace(/-+/g, "-");
 
 const Option: React.FC<React.PropsWithChildren<OptionProps>> = ({
   iconId,

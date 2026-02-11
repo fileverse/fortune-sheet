@@ -51,17 +51,41 @@ const Dialog: React.FC<Props> = ({
         data-testid="dialog-header"
       >
         {title ? (
-          <div className="fortune-dialog__heading text-heading-sm" data-testid="dialog-heading">{title}</div>
+          <div
+            className="fortune-dialog__heading text-heading-sm"
+            data-testid="dialog-heading"
+          >
+            {title}
+          </div>
         ) : (
-          <div className="fortune-dialog__heading text-heading-sm" data-testid="dialog-heading">Oops! Something went wrong</div>
+          <div
+            className="fortune-dialog__heading text-heading-sm"
+            data-testid="dialog-heading"
+          >
+            Oops! Something went wrong
+          </div>
         )}
-        <IconButton icon="X" variant="ghost" onClick={onCancel} tabIndex={0} className="fortune-dialog__icon fortune-dialog__icon--close" data-testid="dialog-icon-close" />
+        <IconButton
+          icon="X"
+          variant="ghost"
+          onClick={onCancel}
+          tabIndex={0}
+          className="fortune-dialog__icon fortune-dialog__icon--close"
+          data-testid="dialog-icon-close"
+        />
       </div>
-      <div className="fortune-dialog__para px-6 pb-6 pt-4 text-body-sm" style={contentStyle} data-testid="dialog-para">
+      <div
+        className="fortune-dialog__para px-6 pb-6 pt-4 text-body-sm"
+        style={contentStyle}
+        data-testid="dialog-para"
+      >
         {children}
       </div>
       {type != null && (
-        <div className="fortune-dialog__actions px-6 pb-6 flex flex-row gap-2 justify-end" data-testid="dialog-actions">
+        <div
+          className="fortune-dialog__actions px-6 pb-6 flex flex-row gap-2 justify-end"
+          data-testid="dialog-actions"
+        >
           {type === "ok" ? (
             <Button
               variant="default"

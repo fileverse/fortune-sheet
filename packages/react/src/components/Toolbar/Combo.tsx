@@ -26,7 +26,9 @@ type Props = {
 };
 
 const toCssId = (s: string) =>
-  String(s).replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-");
+  String(s)
+    .replace(/[^a-zA-Z0-9-]/g, "-")
+    .replace(/-+/g, "-");
 
 const Combo: React.FC<Props> = ({
   tooltip,

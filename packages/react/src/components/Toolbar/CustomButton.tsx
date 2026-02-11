@@ -12,7 +12,9 @@ type Props = {
 };
 
 const toCssId = (s: string) =>
-  String(s).replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-");
+  String(s)
+    .replace(/[^a-zA-Z0-9-]/g, "-")
+    .replace(/-+/g, "-");
 
 const CustomButton: React.FC<Props> = ({
   tooltip,
@@ -34,8 +36,16 @@ const CustomButton: React.FC<Props> = ({
         style={selected ? { backgroundColor: "#FFDF0A" } : {}}
         data-testid={`toolbar-cta-${iconName ?? "custom"}`}
       >
-        <span className={`fortune-toolbar-button__icon fortune-toolbar-button__icon--${iconNameClass}`} data-icon-name={iconName ?? undefined}>
-          <CustomIcon width={16} height={16} iconName={iconName} content={icon} />
+        <span
+          className={`fortune-toolbar-button__icon fortune-toolbar-button__icon--${iconNameClass}`}
+          data-icon-name={iconName ?? undefined}
+        >
+          <CustomIcon
+            width={16}
+            height={16}
+            iconName={iconName}
+            content={icon}
+          />
         </span>
         {children}
       </div>

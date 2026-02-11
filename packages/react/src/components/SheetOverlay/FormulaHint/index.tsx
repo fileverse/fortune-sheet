@@ -103,7 +103,11 @@ const FormulaHint = (props: any) => {
 
   if (!fn) return null;
 
-  const fnNameClass = fn.n ? String(fn.n).replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-") : "";
+  const fnNameClass = fn.n
+    ? String(fn.n)
+        .replace(/[^a-zA-Z0-9-]/g, "-")
+        .replace(/-+/g, "-")
+    : "";
 
   return (
     <DraggableDiv
@@ -163,7 +167,9 @@ const FormulaHint = (props: any) => {
             {...props}
             ref={hintRef}
             id="luckysheet-formula-help-c"
-            className={`fortune-formula-hint fortune-formula-hint--${fnNameClass || "unknown"} luckysheet-formula-help-c`}
+            className={`fortune-formula-hint fortune-formula-hint--${
+              fnNameClass || "unknown"
+            } luckysheet-formula-help-c`}
             data-function-name={fn.n ?? undefined}
             data-testid={`formula-hint-${fn.n ?? "unknown"}`}
             style={{
@@ -178,10 +184,18 @@ const FormulaHint = (props: any) => {
               padding: "0px",
             }}
           >
-            <div className="fortune-formula-hint__icon fortune-formula-help-close" title="关闭" data-testid="formula-hint-icon-close-legacy">
+            <div
+              className="fortune-formula-hint__icon fortune-formula-help-close"
+              title="关闭"
+              data-testid="formula-hint-icon-close-legacy"
+            >
               <i className="fa fa-times" aria-hidden="true" />
             </div>
-            <div className="fortune-formula-hint__icon fortune-formula-help-collapse" title="收起" data-testid="formula-hint-icon-collapse">
+            <div
+              className="fortune-formula-hint__icon fortune-formula-help-collapse"
+              title="收起"
+              data-testid="formula-hint-icon-collapse"
+            >
               <i className="fa fa-angle-up" aria-hidden="true" />
             </div>
             <div
@@ -211,7 +225,10 @@ const FormulaHint = (props: any) => {
                 userSelect: "none",
               }}
             >
-              <div className="fortune-formula-hint__para flex-grow color-text-default" data-testid="formula-hint-para">
+              <div
+                className="fortune-formula-hint__para flex-grow color-text-default"
+                data-testid="formula-hint-para"
+              >
                 <code
                   style={{ fontWeight: "bold" }}
                   className="luckysheet-arguments-help-function-name font-family-mono mb-1 mt-2 color-text-default font-family-mono"
@@ -349,7 +366,7 @@ const FormulaHint = (props: any) => {
                         cursor: "pointer",
                       }}
                       onClick={() => setShowAPInput(!showAPInput)}
-                    data-testid="formula-hint-info-api"
+                      data-testid="formula-hint-info-api"
                     >
                       <h3
                         style={{
@@ -370,7 +387,10 @@ const FormulaHint = (props: any) => {
                       />
                     </div>
                     {showAPInput && (
-                      <div className="fortune-formula-hint__info-content" data-testid="formula-hint-info-content">
+                      <div
+                        className="fortune-formula-hint__info-content"
+                        data-testid="formula-hint-info-content"
+                      >
                         <p
                           style={{
                             margin: "0 0 16px 0",

@@ -75,12 +75,25 @@ const RangeDialog: React.FC = () => {
         )}
         data-testid="range-dialog-header"
       >
-        <div className="fortune-range-dialog__heading text-heading-sm" data-testid="range-dialog-heading">
+        <div
+          className="fortune-range-dialog__heading text-heading-sm"
+          data-testid="range-dialog-heading"
+        >
           {dataVerification.selectCellRange}
         </div>
-        <IconButton icon="X" variant="ghost" onClick={close} tabIndex={0} className="fortune-range-dialog__icon fortune-range-dialog__icon--close" data-testid="range-dialog-icon-close" />
+        <IconButton
+          icon="X"
+          variant="ghost"
+          onClick={close}
+          tabIndex={0}
+          className="fortune-range-dialog__icon fortune-range-dialog__icon--close"
+          data-testid="range-dialog-icon-close"
+        />
       </div>
-      <div className="fortune-range-dialog__para px-6 pb-6 pt-4 text-body-sm" data-testid="range-dialog-para">
+      <div
+        className="fortune-range-dialog__para px-6 pb-6 pt-4 text-body-sm"
+        data-testid="range-dialog-para"
+      >
         <TextField
           className="w-full"
           readOnly
@@ -88,7 +101,10 @@ const RangeDialog: React.FC = () => {
           value={rangeTxt2}
         />
       </div>
-      <div className="fortune-range-dialog__actions px-6 pb-6 flex flex-row gap-2 justify-end" data-testid="range-dialog-actions">
+      <div
+        className="fortune-range-dialog__actions px-6 pb-6 flex flex-row gap-2 justify-end"
+        data-testid="range-dialog-actions"
+      >
         <Button
           variant="secondary"
           className="fortune-range-dialog__cta fortune-range-dialog__cta--close"

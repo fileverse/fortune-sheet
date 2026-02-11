@@ -27,8 +27,18 @@ const ErrorBoxes: React.FC = () => {
       className="fortune-error-state shadow-lg flex flex-col gap-2 break-all"
       data-testid="error-state"
     >
-      <h3 className="fortune-error-state__heading text-heading-xsm color-text-danger" data-testid="error-state-heading">{title}</h3>
-      <div className="fortune-error-state__para color-text-default text-body-sm" data-testid="error-state-para">{message}</div>
+      <h3
+        className="fortune-error-state__heading text-heading-xsm color-text-danger"
+        data-testid="error-state-heading"
+      >
+        {title}
+      </h3>
+      <div
+        className="fortune-error-state__para color-text-default text-body-sm"
+        data-testid="error-state-para"
+      >
+        {message}
+      </div>
     </div>
   );
 };

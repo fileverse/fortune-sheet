@@ -36,7 +36,11 @@ const Button: React.FC<Props> = ({
         style={selected ? { backgroundColor: "#FFDF0A" } : style}
         data-testid={`toolbar-cta-${id ?? iconId}`}
       >
-        <span className={`fortune-toolbar-button__icon fortune-toolbar-button__icon--${iconIdClass}`} data-icon-id={iconId} data-testid={`toolbar-icon-${iconId}`}>
+        <span
+          className={`fortune-toolbar-button__icon fortune-toolbar-button__icon--${iconIdClass}`}
+          data-icon-id={iconId}
+          data-testid={`toolbar-icon-${iconId}`}
+        >
           <LucideIcon
             name={getLucideIcon(iconId)}
             width={16}

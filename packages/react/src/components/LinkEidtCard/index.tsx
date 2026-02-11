@@ -98,7 +98,9 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
 
   const renderToolbarButton = useCallback(
     (iconId: string, onClick: () => void) => {
-      const iconIdClass = iconId.replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-");
+      const iconIdClass = iconId
+        .replace(/[^a-zA-Z0-9-]/g, "-")
+        .replace(/-+/g, "-");
       return (
         <div
           className={`fortune-link-card__icon fortune-link-card__action fortune-link-card__action--${iconIdClass} fortune-toolbar-button`}
@@ -257,7 +259,10 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
         </SelectContent>
       </Select>
 
-      <div className="fortune-link-card__para fortune-input-with-icon" data-testid="link-card-para-text">
+      <div
+        className="fortune-link-card__para fortune-input-with-icon"
+        data-testid="link-card-para-text"
+      >
         <div className="fortune-link-card__icon input-icon">
           <LucideIcon name="ALargeSmall" />
         </div>

@@ -38,9 +38,7 @@ import "./formating.css";
 // Initialize datepicker styles
 injectDatepickerStyles();
 
-const ConditionRules: React.FC<{ context?: any }> = ({
-  context,
-}) => {
+const ConditionRules: React.FC<{ context?: any }> = ({ context }) => {
   const [type, setType] = useState<string>("greaterThan");
   const [create, setCreate] = useState<boolean>(false);
   const buttonClickCreateRef = useRef<boolean>(false);

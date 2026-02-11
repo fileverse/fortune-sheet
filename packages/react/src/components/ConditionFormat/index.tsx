@@ -141,7 +141,7 @@ const ConditionalFormat: React.FC<{
                     onClick={() => {
                       setOpen?.(false);
                       showDialog(
-                        <ConditionRules context={context}/>,
+                        <ConditionRules context={context} />,
                         undefined,
                         (conditionformat as any)[`conditionformat_${v.text}`]
                       );
@@ -191,7 +191,7 @@ const ConditionalFormat: React.FC<{
                     onClick={() => {
                       setOpen?.(false);
                       showDialog(
-                        <ConditionRules context={context}/>,
+                        <ConditionRules context={context} />,
                         undefined,
                         (conditionformat as any)[`conditionformat_${v.text}`]
                       );

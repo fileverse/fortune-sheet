@@ -60,7 +60,8 @@ const RangeDialog: React.FC = () => {
   return (
     <div
       id="range-dialog"
-      className="fortune-dialog"
+      className="fortune-dialog fortune-range-dialog"
+      data-testid="range-dialog"
       onClick={(e) => e.stopPropagation()}
       onChange={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
@@ -70,15 +71,16 @@ const RangeDialog: React.FC = () => {
     >
       <div
         className={cn(
-          "flex items-center justify-between border-b color-border-default py-3 px-6"
+          "fortune-range-dialog__header flex items-center justify-between border-b color-border-default py-3 px-6"
         )}
+        data-testid="range-dialog-header"
       >
-        <div className="text-heading-sm">
+        <div className="fortune-range-dialog__heading text-heading-sm" data-testid="range-dialog-heading">
           {dataVerification.selectCellRange}
         </div>
-        <IconButton icon="X" variant="ghost" onClick={close} tabIndex={0} />
+        <IconButton icon="X" variant="ghost" onClick={close} tabIndex={0} className="fortune-range-dialog__icon fortune-range-dialog__icon--close" data-testid="range-dialog-icon-close" />
       </div>
-      <div className="px-6 pb-6 pt-4 text-body-sm">
+      <div className="fortune-range-dialog__para px-6 pb-6 pt-4 text-body-sm" data-testid="range-dialog-para">
         <TextField
           className="w-full"
           readOnly
@@ -86,17 +88,20 @@ const RangeDialog: React.FC = () => {
           value={rangeTxt2}
         />
       </div>
-      <div className="px-6 pb-6 flex flex-row gap-2 justify-end">
+      <div className="fortune-range-dialog__actions px-6 pb-6 flex flex-row gap-2 justify-end" data-testid="range-dialog-actions">
         <Button
           variant="secondary"
+          className="fortune-range-dialog__cta fortune-range-dialog__cta--close"
           style={{ minWidth: "80px" }}
           onClick={close}
           tabIndex={0}
+          data-testid="range-dialog-cta-close"
         >
           {button.close}
         </Button>
         <Button
           variant="default"
+          className="fortune-range-dialog__cta fortune-range-dialog__cta--confirm"
           style={{ minWidth: "80px" }}
           onClick={() => {
             setContext((ctx) => {
@@ -105,6 +110,7 @@ const RangeDialog: React.FC = () => {
             close();
           }}
           tabIndex={0}
+          data-testid="range-dialog-cta-confirm"
         >
           {button.confirm}
         </Button>

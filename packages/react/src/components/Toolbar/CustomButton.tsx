@@ -11,6 +11,9 @@ type Props = {
   icon?: React.ReactNode;
 };
 
+const toCssId = (s: string) =>
+  String(s).replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-");
+
 const CustomButton: React.FC<Props> = ({
   tooltip,
   onClick,
@@ -19,17 +22,21 @@ const CustomButton: React.FC<Props> = ({
   iconName,
   icon,
 }) => {
-  // const style: CSSProperties = { userSelect: "none" };
+  const iconNameClass = iconName ? toCssId(iconName) : "custom";
   return (
     <Tooltip text={tooltip} placement="bottom">
       <div
-        className="fortune-toolbar-button fortune-toolbar-item"
+        className={`fortune-toolbar-button fortune-toolbar-item fortune-toolbar-button--${iconNameClass}`}
+        data-icon-name={iconName ?? undefined}
         onClick={onClick}
         tabIndex={0}
         role="button"
         style={selected ? { backgroundColor: "#FFDF0A" } : {}}
+        data-testid={`toolbar-cta-${iconName ?? "custom"}`}
       >
-        <CustomIcon width={16} height={16} iconName={iconName} content={icon} />
+        <span className={`fortune-toolbar-button__icon fortune-toolbar-button__icon--${iconNameClass}`} data-icon-name={iconName ?? undefined}>
+          <CustomIcon width={16} height={16} iconName={iconName} content={icon} />
+        </span>
         {children}
       </div>
     </Tooltip>

@@ -25,6 +25,9 @@ type Props = {
   triggerRef?: React.RefObject<HTMLButtonElement | null>;
 };
 
+const toCssId = (s: string) =>
+  String(s).replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-");
+
 const Combo: React.FC<Props> = ({
   tooltip,
   onClick,
@@ -39,6 +42,7 @@ const Combo: React.FC<Props> = ({
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLButtonElement>(null);
+  const iconIdClass = iconId ? toCssId(iconId) : "combo";
 
   if (!triggerRef) {
     triggerRef = ref;
@@ -79,7 +83,9 @@ const Combo: React.FC<Props> = ({
   const trigger = !isLucideIcon ? (
     <Tooltip text={tooltip} placement="bottom">
       <div
-        className="fortune-toolbar-combo-button"
+        className={`fortune-toolbar-combo-button fortune-toolbar-combo-button--${iconIdClass}`}
+        data-icon-id={iconId ?? undefined}
+        data-testid={`toolbar-combo-${iconId ?? "combo"}`}
         onClick={(e) => {
           if (onClick) {
             onClick(e);
@@ -152,7 +158,9 @@ const Combo: React.FC<Props> = ({
   return (
     <div
       ref={buttonRef}
-      className="fortune-toolbar-item"
+      className={`fortune-toolbar-item fortune-toolbar-combo fortune-toolbar-combo--${iconIdClass}`}
+      data-icon-id={iconId ?? undefined}
+      data-testid={`toolbar-combo-${iconId ?? "combo"}`}
       onKeyDown={(e) => {
         e.stopPropagation();
       }}

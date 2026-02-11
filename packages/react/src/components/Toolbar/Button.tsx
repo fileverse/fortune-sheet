@@ -23,23 +23,27 @@ const Button: React.FC<Props> = ({
   style,
   id,
 }) => {
-  // const style: CSSProperties = { userSelect: "none" };
+  const iconIdClass = iconId.replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-");
   return (
     <Tooltip text={tooltip} placement="bottom">
       <div
         id={id}
-        className="fortune-toolbar-button fortune-toolbar-item"
+        className={`fortune-toolbar-button fortune-toolbar-item fortune-toolbar-button__cta fortune-toolbar-button--${iconIdClass}`}
+        data-icon-id={iconId}
         onClick={onClick}
         tabIndex={0}
         role="button"
         style={selected ? { backgroundColor: "#FFDF0A" } : style}
+        data-testid={`toolbar-cta-${id ?? iconId}`}
       >
-        <LucideIcon
-          name={getLucideIcon(iconId)}
-          width={16}
-          height={16}
-          style={disabled ? { opacity: 0.3 } : {}}
-        />
+        <span className={`fortune-toolbar-button__icon fortune-toolbar-button__icon--${iconIdClass}`} data-icon-id={iconId} data-testid={`toolbar-icon-${iconId}`}>
+          <LucideIcon
+            name={getLucideIcon(iconId)}
+            width={16}
+            height={16}
+            style={disabled ? { opacity: 0.3 } : {}}
+          />
+        </span>
         {children}
       </div>
     </Tooltip>

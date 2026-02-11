@@ -21,6 +21,9 @@ type Props = {
   isDropPlaceholder?: boolean;
 };
 
+const toCssId = (s: string) =>
+  String(s).replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-");
+
 const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
   const { context, setContext, refs } = useContext(WorkbookContext);
   const [editing, setEditing] = useState(false);
@@ -28,6 +31,8 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
   const editable = useRef<HTMLSpanElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const { showAlert } = useAlert();
+  const sheetIdClass = sheet.id != null ? toCssId(String(sheet.id)) : "placeholder";
+  const sheetNameClass = sheet.name ? toCssId(sheet.name) : "";
 
   useEffect(() => {
     setContext((draftCtx) => {
@@ -159,13 +164,16 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
       ref={containerRef}
       className={
         isDropPlaceholder
-          ? "fortune-sheettab-placeholder"
-          : `luckysheet-sheets-item${
+          ? "fortune-sheettab-item fortune-sheettab-placeholder"
+          : `fortune-sheettab-item fortune-sheettab-item--${sheetIdClass}${sheetNameClass ? ` fortune-sheettab-item--name-${sheetNameClass}` : ""} luckysheet-sheets-item${
               context.currentSheetId === sheet.id
                 ? " luckysheet-sheets-item-active"
                 : ""
             }`
       }
+      data-sheet-id={sheet.id != null ? String(sheet.id) : undefined}
+      data-sheet-name={sheet.name || undefined}
+      data-testid={`sheettab-item-${sheet.id ?? "placeholder"}`}
       onClick={() => {
         if (isDropPlaceholder) return;
         setContext((draftCtx) => {
@@ -209,18 +217,19 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
     >
       {editing === false && (
         <p
-          className="luckysheet-sheets-item-name"
+          className="fortune-sheettab-item__para luckysheet-sheets-item-name"
           onDoubleClick={() => {
             if (context.isFlvReadOnly) return;
             setEditing(true);
           }}
+          data-testid={`sheettab-item-para-${sheet.id ?? "placeholder"}`}
         >
           {sheet.name}
         </p>
       )}
       {editing && (
         <span
-          className="luckysheet-sheets-item-name"
+          className="fortune-sheettab-item__para luckysheet-sheets-item-name"
           spellCheck="false"
           suppressContentEditableWarning
           contentEditable={isDropPlaceholder ? false : editing}
@@ -232,16 +241,19 @@ const SheetItem: React.FC<Props> = ({ sheet, isDropPlaceholder }) => {
           onKeyDown={onKeyDown}
           ref={editable}
           style={dragOver ? { pointerEvents: "none" } : {}}
+          data-testid={`sheettab-item-para-editable-${sheet.id ?? "placeholder"}`}
         >
           {sheet.name}
         </span>
       )}
       <span
-        className="luckysheet-sheets-item-function"
+        className={`fortune-sheettab-item__icon fortune-sheettab-item__action fortune-sheettab-item__icon--menu luckysheet-sheets-item-function`}
         style={{
           marginRight: "4px",
           marginLeft: "4px",
         }}
+        data-sheet-id={sheet.id != null ? String(sheet.id) : undefined}
+        data-testid={`sheettab-item-icon-menu-${sheet.id ?? "placeholder"}`}
         onClick={(e) => {
           if (isDropPlaceholder || context.allowEdit === false) return;
           const rect = refs.workbookContainer.current!.getBoundingClientRect();

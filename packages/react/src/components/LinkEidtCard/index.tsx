@@ -97,11 +97,20 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
   );
 
   const renderToolbarButton = useCallback(
-    (iconId: string, onClick: () => void) => (
-      <div className="fortune-toolbar-button" onClick={onClick} tabIndex={0}>
-        <SVGIcon name={iconId} style={{ width: 16, height: 16 }} />
-      </div>
-    ),
+    (iconId: string, onClick: () => void) => {
+      const iconIdClass = iconId.replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-");
+      return (
+        <div
+          className={`fortune-link-card__icon fortune-link-card__action fortune-link-card__action--${iconIdClass} fortune-toolbar-button`}
+          data-icon-id={iconId}
+          onClick={onClick}
+          tabIndex={0}
+          data-testid={`link-card-action-${iconId}`}
+        >
+          <SVGIcon name={iconId} style={{ width: 16, height: 16 }} />
+        </div>
+      );
+    },
     []
   );
 
@@ -157,11 +166,12 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
         onKeyDown={(e) => {
           e.stopPropagation();
         }}
-        className="fortune-link-modify-modal link-toolbar"
+        className="fortune-link-card fortune-link-modify-modal link-toolbar"
         style={{ left: position.cellLeft + 20, top: position.cellBottom - 5 }}
+        data-testid="link-card"
       >
         <div
-          className="link-content"
+          className="fortune-link-card__info link-content"
           onClick={() => {
             setContext((draftCtx) =>
               goToLink(
@@ -176,6 +186,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
             );
           }}
           tabIndex={0}
+          data-testid="link-card-info-open"
         >
           {linkType === "webpage"
             ? insertLink.openLink
@@ -209,13 +220,14 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
   }
   return (
     <div
-      className="fortune-link-card"
+      className="fortune-link-card fortune-link-card--editing"
       ref={cardRef}
       style={{
         left: position.cellLeft + 20,
         top: cardTop,
       }}
       {...containerEvent}
+      data-testid="link-card-editing"
     >
       <Select
         value={linkType}
@@ -245,8 +257,8 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
         </SelectContent>
       </Select>
 
-      <div className="fortune-input-with-icon">
-        <div className="input-icon">
+      <div className="fortune-link-card__para fortune-input-with-icon" data-testid="link-card-para-text">
+        <div className="fortune-link-card__icon input-icon">
           <LucideIcon name="ALargeSmall" />
         </div>
         <TextField
@@ -302,7 +314,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
       )}
 
       <Button
-        className="fortune-insert-button"
+        className="fortune-link-card__cta fortune-insert-button"
         disabled={isButtonDisabled}
         onClick={() => {
           if (isButtonDisabled) return;
@@ -311,6 +323,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
             saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress)
           );
         }}
+        data-testid="link-card-cta-insert"
       >
         Insert link
       </Button>

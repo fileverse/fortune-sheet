@@ -403,8 +403,10 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                       allConditionFormats[key].conditionValue
                     );
                   }}
-                  className="group flex items-center border-b border-gray-200 condition-list-parent"
+                  className={`group flex items-center border-b border-gray-200 condition-list-parent fortune-condition-rules__item fortune-condition-rules__item--${String(key).replace(/[^a-zA-Z0-9-]/g, "-").replace(/-+/g, "-")}`}
+                  data-condition-key={key}
                   key={key}
+                  data-testid={`condition-rules-item-${key}`}
                 >
                   <div
                     className="condition-list-pill"
@@ -433,7 +435,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                       buttonClickCreateRef.current = true;
                     }}
                   >
-                    <h3 className="condition-list-type">
+                    <h3 className="fortune-condition-rules__heading condition-list-type" data-testid={`condition-rules-heading-${key}`}>
                       {
                         (conditionformat as any)[
                           allConditionFormats[key].conditionName
@@ -441,7 +443,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                       }{" "}
                       {allConditionFormats[key].conditionValue?.[0]}
                     </h3>
-                    <p className="condition-list-range">
+                    <p className="fortune-condition-rules__para condition-list-range" data-testid={`condition-rules-para-${key}`}>
                       {allConditionFormats[key].cellrange
                         ?.map((range: any) => {
                           const startCol = numberToColumn(range.column[0] + 1);
@@ -453,12 +455,13 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
                         .join(", ")}
                     </p>
                   </div>
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="fortune-condition-rules__icon fortune-condition-rules__action opacity-0 group-hover:opacity-100 transition-opacity" data-condition-key={key} data-testid={`condition-rules-action-delete-${key}`}>
                     <IconButton
                       elevation={1}
                       icon="Trash2"
                       size="md"
                       variant="secondary"
+                      className="fortune-condition-rules__icon--trash"
                       style={{
                         border: "0px",
                         boxShadow: "none",
@@ -491,6 +494,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
             leftIcon="Plus"
             size="md"
             variant="secondary"
+            className="fortune-condition-rules__cta fortune-condition-rules__cta--add"
             onClick={() => {
               setType("greaterThan");
               setCreate(true);
@@ -507,14 +511,15 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
               editKeyRef.current = null;
               buttonClickCreateRef.current = true;
             }}
+            data-testid="condition-rules-cta-add"
           >
             Add another rule
           </Button>
         </div>
       ) : (
         <>
-          <div className="flex flex-col">
-            <div className="condition-rules-value text-heading-xsm">
+          <div className="flex flex-col fortune-condition-rules__form">
+            <div className="fortune-condition-rules__info condition-rules-value text-heading-xsm" data-testid="condition-rules-info-range">
               {conditionformat.applyRange} range
             </div>
             <TextField
@@ -538,7 +543,7 @@ const ConditionRules: React.FC<{ type?: string; context?: any }> = ({
             />
           </div>
           <div>
-            <div className="condition-rules-value text-heading-xsm">
+            <div className="fortune-condition-rules__heading-sm condition-rules-value text-heading-xsm" data-testid="condition-rules-heading-format">
               Format cells if
             </div>
             <Select

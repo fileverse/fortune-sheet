@@ -159,8 +159,9 @@ const SheetTab: React.FC = () => {
     <div>
       {showDisclaimer && (
         <div
-          className="w-full"
+          className="fortune-sheettab__info fortune-sheettab__disclaimer w-full"
           id="denomination-warning"
+          data-testid="sheettab-info-disclaimer"
           style={{
             zIndex: 1003,
             position: "absolute",
@@ -180,7 +181,12 @@ const SheetTab: React.FC = () => {
               isMobile && "w-full flex justify-between"
             }`}
           >
-            <p className={`${isMobile ? "text-left" : "text-center"} text-xsm`}>
+            <p
+              className={`fortune-sheettab__para ${
+                isMobile ? "text-left" : "text-center"
+              } text-xsm`}
+              data-testid="sheettab-para-disclaimer"
+            >
               <span className="font-medium">Disclaimer:</span> Prices are not
               updated in real time and may differ slightly. Updates may be
               delayed by up to 20 minutes.
@@ -188,9 +194,10 @@ const SheetTab: React.FC = () => {
             {isMobile && (
               // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
               <p
-                className="ml-4 content-center cursor-pointer"
+                className="fortune-sheettab__action fortune-sheettab__action--close-disclaimer ml-4 content-center cursor-pointer"
                 style={{ alignContent: "center" }}
                 onClick={handleCloseDisclaimer}
+                data-testid="sheettab-action-close-disclaimer"
               >
                 Close
               </p>
@@ -199,27 +206,34 @@ const SheetTab: React.FC = () => {
         </div>
       )}
       <div
-        className="luckysheet-sheet-area luckysheet-noselected-text border-t color-border-default color-bg-secondary"
+        className="fortune-sheettab luckysheet-sheet-area luckysheet-noselected-text border-t color-border-default color-bg-secondary"
         onContextMenu={(e) => e.preventDefault()}
         id="luckysheet-sheet-area"
+        data-testid="sheettab"
       >
-        <div id="luckysheet-sheet-content">
+        <div
+          id="luckysheet-sheet-content"
+          className="fortune-sheettab__content"
+          data-testid="sheettab-content"
+        >
           {context.allowEdit && (
             <IconButton
-              className="fortune-sheettab-button border-none shadow-none"
+              className="fortune-sheettab__cta fortune-sheettab-button border-none shadow-none"
               onClick={onAddSheetClick}
               elevation={1}
               icon="Plus"
               size="sm"
               variant="secondary"
+              data-testid="sheettab-cta-add-sheet"
             />
           )}
           {context.allowEdit && (
             <div className="sheet-list-container">
               <div
                 id="all-sheets"
-                className="fortune-sheettab-button"
+                className="fortune-sheettab__icon fortune-sheettab-button"
                 ref={tabContainerRef}
+                data-testid="sheettab-icon-all-sheets"
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   setContext((ctx) => {
@@ -231,11 +245,12 @@ const SheetTab: React.FC = () => {
                 }}
               >
                 <IconButton
-                  className="fortune-sheettab-button border-none shadow-none"
+                  className="fortune-sheettab__icon fortune-sheettab-button border-none shadow-none"
                   elevation={1}
                   icon="Menu"
                   size="sm"
                   variant="secondary"
+                  data-testid="sheettab-icon-menu"
                 />
                 {/* <SVGIcon name="all-sheets" width={16} height={16} /> */}
               </div>
@@ -248,8 +263,9 @@ const SheetTab: React.FC = () => {
             <i className="iconfont luckysheet-iconfont-caidan2" />
           </div> */}
           <div
-            className="fortune-sheettab-container"
+            className="fortune-sheettab__tabs fortune-sheettab-container"
             id="fortune-sheettab-container"
+            data-testid="sheettab-tabs"
           >
             {!isShowBoundary && <div className="boundary boundary-left" />}
             <div
@@ -321,16 +337,21 @@ const SheetTab: React.FC = () => {
         <div className="fortune-sheet-area-right">
           {statsFilter.length === 6 && calInfo.count > 1 && (
             <Popover>
-              <PopoverTrigger className="p-0 m-0 mr-2">
+              <PopoverTrigger
+                className="fortune-sheettab__info-trigger p-0 m-0 mr-2"
+                data-testid="sheettab-info-stats-trigger"
+              >
                 <Button
                   variant="ghost"
-                  className="w-full !h-6 p-2 m-1 text-left flex items-center justify-center transition mr-2 !rounded-[0px]"
+                  className="fortune-sheettab__info fortune-sheettab__info--stats w-full !h-6 p-2 m-1 text-left flex items-center justify-center transition mr-2 !rounded-[0px]"
                   style={{ height: "24px !important" }}
+                  data-testid="sheettab-info-stats"
                 >
                   <div className="flex items-center">
                     <p
-                      className="text-body-sm"
+                      className="fortune-sheettab__para fortune-sheettab__para--stats text-body-sm"
                       style={{ fontWeight: "500", marginRight: "8px" }}
+                      data-testid="sheettab-para-stats"
                     >
                       {STATS_LABELS[selectedStat as keyof typeof STATS_LABELS]}:{" "}
                       {calInfo[selectedStat as keyof typeof calInfo]}
@@ -369,9 +390,13 @@ const SheetTab: React.FC = () => {
                     <Button
                       variant="ghost"
                       key={option.value}
-                      className={`w-full h-8 rounded p-2 m-1 text-left flex items-center justify-between transition mr-2 min-w-[50px] ${
+                      className={`fortune-sheettab__stats-option fortune-sheettab__stats-option--${
+                        option.value
+                      } w-full h-8 rounded p-2 m-1 text-left flex items-center justify-between transition mr-2 min-w-[50px] ${
                         selectedStat === option.value && "bg-[#F8F9FA]"
                       }`}
+                      data-stat-value={option.value}
+                      data-testid={`sheettab-stats-option-${option.value}`}
                       onClick={() => setSelectedStat(option.value)}
                     >
                       <div className="flex gap-2 items-center w-full">

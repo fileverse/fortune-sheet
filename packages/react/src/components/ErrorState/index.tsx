@@ -24,10 +24,21 @@ const ErrorBoxes: React.FC = () => {
         zIndex: 100,
         borderRadius: "4px",
       }}
-      className="shadow-lg flex flex-col gap-2 break-all"
+      className="fortune-error-state shadow-lg flex flex-col gap-2 break-all"
+      data-testid="error-state"
     >
-      <h3 className="text-heading-xsm color-text-danger">{title}</h3>
-      <div className="color-text-default text-body-sm">{message}</div>
+      <h3
+        className="fortune-error-state__heading text-heading-xsm color-text-danger"
+        data-testid="error-state-heading"
+      >
+        {title}
+      </h3>
+      <div
+        className="fortune-error-state__para color-text-default text-body-sm"
+        data-testid="error-state-para"
+      >
+        {message}
+      </div>
     </div>
   );
 };

@@ -521,8 +521,7 @@ export function pasteHandlerOfPaintModel(
       const currentIndex = getSheetIndex(ctx, ctx.currentSheetId) as number;
       const existingCf =
         ctx.luckysheetfile[currentIndex].luckysheet_conditionformat_save;
-      const cdformat: any[] =
-        _.cloneDeep(existingCf) ?? [];
+      const cdformat: any[] = _.cloneDeep(existingCf) ?? [];
 
       for (let i = 0; i < ruleArr.length; i += 1) {
         const cdformat_cellrange = ruleArr[i].cellrange;

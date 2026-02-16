@@ -73,7 +73,7 @@ const NotationBoxes: React.FC = () => {
                 position: "absolute",
                 left: size.left,
                 top: size.top,
-                zIndex: 100,
+                zIndex: 400,
                 pointerEvents: "none",
               }}
             />
@@ -83,7 +83,7 @@ const NotationBoxes: React.FC = () => {
                 position: "absolute",
                 left,
                 top,
-                zIndex: isEditing ? 200 : 100,
+                zIndex: isEditing ? 500 : 400,
                 boxShadow: "0 1px 1px #0000002e,0 4px 8px #0000001a",
               }}
               onMouseDown={(e) => {

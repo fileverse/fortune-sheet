@@ -32,6 +32,7 @@ const Dialog: React.FC<Props> = ({
   return (
     <div
       className="fortune-dialog"
+      data-testid="dialog"
       style={{
         ...containerStyle,
         ...([
@@ -45,29 +46,56 @@ const Dialog: React.FC<Props> = ({
     >
       <div
         className={cn(
-          "flex items-center justify-between border-b color-border-default py-3 px-6"
+          "fortune-dialog__header flex items-center justify-between border-b color-border-default py-3 px-6"
         )}
+        data-testid="dialog-header"
       >
         {title ? (
-          <div className="text-heading-sm">{title}</div>
+          <div
+            className="fortune-dialog__heading text-heading-sm"
+            data-testid="dialog-heading"
+          >
+            {title}
+          </div>
         ) : (
-          <div className="text-heading-sm">Oops! Something went wrong</div>
+          <div
+            className="fortune-dialog__heading text-heading-sm"
+            data-testid="dialog-heading"
+          >
+            Oops! Something went wrong
+          </div>
         )}
-        <IconButton icon="X" variant="ghost" onClick={onCancel} tabIndex={0} />
+        <IconButton
+          icon="X"
+          variant="ghost"
+          onClick={onCancel}
+          tabIndex={0}
+          className="fortune-dialog__icon fortune-dialog__icon--close"
+          data-testid="dialog-icon-close"
+        />
       </div>
-      <div className="px-6 pb-6 pt-4 text-body-sm" style={contentStyle}>
+      <div
+        className="fortune-dialog__para px-6 pb-6 pt-4 text-body-sm"
+        style={contentStyle}
+        data-testid="dialog-para"
+      >
         {children}
       </div>
       {type != null && (
-        <div className="px-6 pb-6 flex flex-row gap-2 justify-end">
+        <div
+          className="fortune-dialog__actions px-6 pb-6 flex flex-row gap-2 justify-end"
+          data-testid="dialog-actions"
+        >
           {type === "ok" ? (
             <Button
               variant="default"
+              className="fortune-dialog__cta fortune-dialog__cta--confirm"
               style={{
                 minWidth: "80px",
               }}
               onClick={onOk}
               tabIndex={0}
+              data-testid="dialog-cta-confirm"
             >
               {okLabel || button.confirm}
             </Button>
@@ -75,21 +103,25 @@ const Dialog: React.FC<Props> = ({
             <>
               <Button
                 variant="secondary"
+                className="fortune-dialog__cta fortune-dialog__cta--cancel"
                 style={{
                   minWidth: "80px",
                 }}
                 onClick={onCancel}
                 tabIndex={0}
+                data-testid="dialog-cta-cancel"
               >
                 {cancelLabel || button.cancel}
               </Button>
               <Button
                 variant="default"
+                className="fortune-dialog__cta fortune-dialog__cta--confirm"
                 style={{
                   minWidth: "80px",
                 }}
                 onClick={onOk}
                 tabIndex={0}
+                data-testid="dialog-cta-confirm"
               >
                 {okLabel || button.confirm}
               </Button>

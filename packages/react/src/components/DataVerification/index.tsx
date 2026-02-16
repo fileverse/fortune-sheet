@@ -24,6 +24,7 @@ import DynamicInputList from "./DropdownOption";
 import WorkbookContext from "../../context";
 import { useDialog } from "../../hooks/useDialog";
 import { injectDatepickerStyles } from "../../utils/datepickerStyles";
+import { findMatchingCells, cellsToRangeString } from "./helpers";
 import "./index.css";
 
 type Item = { id: string; value: string; color?: string | null };
@@ -51,14 +52,14 @@ const DataVerification: React.FC = () => {
     "noLaterThan",
   ]);
 
-  function getSheetIndex() {
+  const getSheetIndex = useCallback(() => {
     for (let i = 0; i < context.luckysheetfile.length; i += 1) {
       if (context.luckysheetfile[i]?.id === context.currentSheetId) {
         return i;
       }
     }
     return null;
-  }
+  }, [context.luckysheetfile, context.currentSheetId]);
 
   const [optionItems, setOptionItems] = useState<Item[]>([]);
 
@@ -115,54 +116,111 @@ const DataVerification: React.FC = () => {
     [hideDialog, setContext]
   );
 
+  // Helper function to apply validation to a specific range
+  const applyValidation = useCallback(
+    (rangeString: string) => {
+      setContext((ctx) => {
+        const range = getRangeByTxt(ctx, rangeString);
+        if (range.length === 0) {
+          return;
+        }
+        const regulation = ctx.dataVerification!.dataRegulation!;
+        const verifacationT = regulation?.type;
+        const { value1 } = regulation;
+        const item = {
+          ...regulation,
+          checked: false,
+        };
+        if (verifacationT === "dropdown") {
+          const list = getDropdownList(ctx, value1);
+          item.value1 = list.join(",");
+        }
+        const currentDataVerification =
+          ctx.luckysheetfile[getSheetIndex() as number].dataVerification ?? {};
+
+        const d = getFlowdata(ctx);
+        if (!d) return;
+
+        // Loop through ALL range segments (handles non-contiguous ranges like "A1:A4,A6:A10")
+        for (let ri = 0; ri < range.length; ri += 1) {
+          const str = range[ri].row[0];
+          const edr = range[ri].row[1];
+          const stc = range[ri].column[0];
+          const edc = range[ri].column[1];
+          for (let r = str; r <= edr; r += 1) {
+            for (let c = stc; c <= edc; c += 1) {
+              const key = `${r}_${c}`;
+              currentDataVerification[key] = item;
+              if (regulation.type === "checkbox") {
+                setCellValue(ctx, r, c, d, item.value2);
+              }
+            }
+          }
+        }
+
+        ctx.luckysheetfile[getSheetIndex() as number].dataVerification =
+          currentDataVerification;
+
+        // Clear context properties
+        ctx.dataVerification!.updateScope = undefined;
+        ctx.dataVerification!.sourceCell = undefined;
+      });
+    },
+    [getSheetIndex, setContext]
+  );
+
   // 确定和取消按钮
   const btn = useCallback(
     (type: string) => {
       if (type === "confirm") {
-        setContext((ctx) => {
-          const isPass = confirmMessage(ctx, generalDialog, dataVerification);
-          if (isPass) {
-            const range = getRangeByTxt(
-              ctx,
-              ctx.dataVerification?.dataRegulation?.rangeTxt as string
-            );
-            if (range.length === 0) {
-              return;
-            }
-            const regulation = ctx.dataVerification!.dataRegulation!;
-            const verifacationT = regulation?.type;
-            const { value1 } = regulation;
-            const item = {
-              ...regulation,
-              checked: false, // checkbox默认在单元格中false为未选中，true为选中
-            };
-            if (verifacationT === "dropdown") {
-              const list = getDropdownList(ctx, value1);
-              item.value1 = list.join(",");
-            }
-            const currentDataVerification =
-              ctx.luckysheetfile[getSheetIndex() as number].dataVerification ??
-              {};
+        // First validate the form
+        const isValid = confirmMessage(
+          context,
+          generalDialog,
+          dataVerification
+        );
 
-            const str = range[range.length - 1].row[0];
-            const edr = range[range.length - 1].row[1];
-            const stc = range[range.length - 1].column[0];
-            const edc = range[range.length - 1].column[1];
-            const d = getFlowdata(ctx);
-            if (!d) return;
-            for (let r = str; r <= edr; r += 1) {
-              for (let c = stc; c <= edc; c += 1) {
-                const key = `${r}_${c}`;
-                currentDataVerification[key] = item;
-                if (regulation.type === "checkbox") {
-                  setCellValue(ctx, r, c, d, item.value2);
-                }
+        if (!isValid) return;
+
+        // Read values directly from context
+        const sourceCell = context.dataVerification?.sourceCell;
+        const modalRangeString = context.dataVerification?.dataRegulation
+          ?.rangeTxt as string;
+
+        if (sourceCell) {
+          const matchingCells = findMatchingCells(
+            context,
+            sourceCell.row,
+            sourceCell.col
+          );
+
+          if (matchingCells.length > 1) {
+            // Show dialog to ask user about scope
+            const allMatchingRange = cellsToRangeString(context, matchingCells);
+
+            showDialog(
+              `Found ${matchingCells.length} cells with matching validation. Apply changes to:`,
+              "yesno",
+              "Apply Changes",
+              "All Matching Cells",
+              "Just Selected Range",
+              () => {
+                // User chose "All Matching Cells"
+                applyValidation(allMatchingRange);
+                hideDialog();
+              },
+              () => {
+                // User chose "Just Selected Range"
+                applyValidation(modalRangeString);
+                hideDialog();
               }
-            }
-            ctx.luckysheetfile[getSheetIndex() as number].dataVerification =
-              currentDataVerification;
+            );
+            return; // Don't hide dialog yet, wait for user choice
           }
-        });
+        }
+
+        // No matching cells or only 1 cell - apply directly
+        applyValidation(modalRangeString);
       } else if (type === "delete") {
         setContext((ctx) => {
           const range = getRangeByTxt(
@@ -185,28 +243,51 @@ const DataVerification: React.FC = () => {
               delete currentDataVerification[`${r}_${c}`];
             }
           }
+
+          // Clear updateScope after deleting
+          ctx.dataVerification!.updateScope = undefined;
         });
       }
       hideDialog();
     },
-    [dataVerification, generalDialog, hideDialog, setContext, showDialog]
+    [
+      applyValidation,
+      context,
+      dataVerification,
+      generalDialog,
+      getSheetIndex,
+      hideDialog,
+      setContext,
+      showDialog,
+    ]
   );
 
   // 初始化
   useEffect(() => {
     setContext((ctx) => {
       let rangeT = "";
+      const updateScope = ctx.dataVerification?.updateScope || "current";
 
       // 如果有选区得把选区转为字符形式然后进行显示
       if (ctx.luckysheet_select_save) {
         const range =
           ctx.luckysheet_select_save[ctx.luckysheet_select_save.length - 1];
-        rangeT = getRangetxt(
-          context,
-          context.currentSheetId,
-          range,
-          context.currentSheetId
-        );
+        const rowIndex = range.row_focus;
+        const colIndex = range.column_focus;
+
+        // If updateScope is "all", find all matching cells and convert to range string
+        if (updateScope === "all" && rowIndex != null && colIndex != null) {
+          const matchingCells = findMatchingCells(ctx, rowIndex, colIndex);
+          rangeT = cellsToRangeString(ctx, matchingCells);
+        } else {
+          // Use normal range for current cell(s)
+          rangeT = getRangetxt(
+            context,
+            context.currentSheetId,
+            range,
+            context.currentSheetId
+          );
+        }
       }
 
       // 初始化值
@@ -219,6 +300,10 @@ const DataVerification: React.FC = () => {
         const rowIndex = last.row_focus;
         const colIndex = last.column_focus;
         if (rowIndex == null || colIndex == null) return;
+
+        // Store the source cell that triggered the modal
+        ctx.dataVerification!.sourceCell = { row: rowIndex, col: colIndex };
+
         const item = ctxDataVerification[`${rowIndex}_${colIndex}`];
         const defaultItem = item ?? {};
         let rangValue = defaultItem.value1 ?? "";

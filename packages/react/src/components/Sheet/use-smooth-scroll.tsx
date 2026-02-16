@@ -149,6 +149,8 @@ export const useSmoothScroll = (
     }
 
     function onMouseDown(e: MouseEvent) {
+      if (context.luckysheetCellUpdate.length > 0) return;
+
       // Only handle primary mouse button (left click)
       if (e.button !== 0) return;
 
@@ -567,5 +569,5 @@ export const useSmoothScroll = (
     );
 
     return unmountScrollEventHandlers;
-  }, [context.zoomRatio]);
+  }, [context.zoomRatio, context.luckysheetCellUpdate]);
 };

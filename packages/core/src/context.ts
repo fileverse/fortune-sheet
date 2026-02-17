@@ -75,6 +75,8 @@ export type Context = {
     optionLabel_es: any; // 中文提示消息
     optionLabel_hi: any;
     dataRegulation?: DataRegulationProps; // 数据验证规则
+    updateScope?: "current" | "all"; // Track whether to update just current cell or all matching cells
+    sourceCell?: { row: number; col: number }; // Store the original cell that triggered the edit modal
   };
   // 数据验证下拉列表
   dataVerificationDropDownList?: boolean;

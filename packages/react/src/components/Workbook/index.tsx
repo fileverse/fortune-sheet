@@ -983,7 +983,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           setShow(!show)
           id="placeholder-data-verification placeholder-conditional-format"
         }}>Click</button> */}
-        <div
+        {/* <div
           id="placeholder-data-verification"
           style={{
             width: "500px",
@@ -994,7 +994,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             padding: "12px",
             top: "100px",
           }}
-        />
+        /> */}
         <ModalProvider>
           <div
             className="fortune-container"

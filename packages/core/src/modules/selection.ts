@@ -240,7 +240,6 @@ export function pasteHandlerOfPaintModel(
   ctx: Context,
   copyRange: Context["luckysheet_copy_save"]
 ) {
-  console.log("pasteHandlerOfPaintModel", ctx, copyRange);
   // if (!checkProtectionLockedRangeList(ctx.luckysheet_select_save, ctx.currentSheetId)) {
   //   return;
   // }

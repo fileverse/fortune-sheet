@@ -1734,7 +1734,7 @@ export function handleContextMenu(
   }
 }
 
-function mouseRender(
+export function mouseRender(
   ctx: Context,
   globalCache: GlobalCache,
   e: MouseEvent,
@@ -1788,6 +1788,7 @@ function mouseRender(
   }
   // 拖动选择
   if (ctx.luckysheet_select_status) {
+    console.log("ctx.scrollLeft", ctx.scrollLeft);
     const mouseX = e.pageX - rect.left - window.scrollX;
     const mouseY = e.pageY - rect.top - window.scrollY;
     const _x = mouseX - ctx.rowHeaderWidth + ctx.scrollLeft;

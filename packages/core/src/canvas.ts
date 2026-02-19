@@ -2130,7 +2130,7 @@ export class Canvas {
       renderCtx.scale(this.sheetCtx.zoomRatio, this.sheetCtx.zoomRatio);
 
       const measureText = getMeasureText(value, renderCtx, this.sheetCtx);
-      const textMetrics = measureText.width + 14;
+      const textMetrics = measureText.width + 18;
       const oneLineTextHeight =
         measureText.actualBoundingBoxDescent +
         measureText.actualBoundingBoxAscent;

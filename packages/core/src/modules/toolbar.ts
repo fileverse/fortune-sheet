@@ -80,15 +80,7 @@ export function updateFormatCell(
           value = cell;
         }
 
-        if (_.isNil(value)) {
-          continue;
-        }
-
-        if (foucsStatus !== "@" && isRealNum(value)) {
-          value = Number(value!);
-        }
-
-        const mask = update(foucsStatus, value);
+        // Compute type early (depends only on foucsStatus, not cell value) so it's available for empty cells too
         let type = "n";
 
         if (
@@ -109,10 +101,36 @@ export function updateFormatCell(
           type = "d";
         } else if (foucsStatus === "@" || foucsStatus === 49) {
           type = "s";
-        } else if (foucsStatus === "General" || foucsStatus === 0) {
+        }
+
+        if (_.isNil(value)) {
+          // Store format on empty cells so future data entries inherit it; previously these were skipped entirely
+          if (!_.isNil(d[r])) {
+            // Guard: only write if the row exists in the data array to avoid out-of-bounds
+            if (_.isNil(d[r][c])) {
+              // Cell slot is null/undefined — create a minimal cell carrying only the format
+              d[r][c] = { ct: { fa: foucsStatus, t: type } };
+            } else if (_.isPlainObject(d[r][c])) {
+              // Cell exists but has no value — update its format in place
+              if (_.isNil(d[r][c]!.ct)) d[r][c]!.ct = {};
+              d[r][c]!.ct!.fa = foucsStatus;
+              d[r][c]!.ct!.t = type;
+            }
+          }
+          continue;
+        }
+
+        if (foucsStatus !== "@" && isRealNum(value)) {
+          value = Number(value!);
+        }
+
+        // Refine type for General format after confirming a value exists (requires isRealNum check)
+        if (foucsStatus === "General" || foucsStatus === 0) {
           // type = "g";
           type = isRealNum(value) ? "n" : "g";
         }
+
+        const mask = update(foucsStatus, value);
 
         if (cell && _.isPlainObject(cell)) {
           cell.m = `${mask}`;

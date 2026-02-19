@@ -502,43 +502,50 @@ export function pasteHandlerOfPaintModel(
 
   const currFile = ctx.luckysheetfile[getSheetIndex(ctx, ctx.currentSheetId)!];
   currFile.config = cfg;
-  currFile.dataVerification = dataVerification;
+  // Only overwrite dataVerification when we actually merged in pasted validations;
+  // otherwise we would replace the sheet's dataVerification with null and remove
+  // all existing validations on the sheet (e.g. on other rows).
+  if (dataVerification != null) {
+    currFile.dataVerification = dataVerification;
+  }
 
-  // 复制范围 是否有 条件格式
-  let cdformat: any = null;
+  // 复制范围 是否有 条件格式 (conditional formatting)
   const copyIndex = getSheetIndex(ctx, copySheetIndex);
-  if (!copyIndex) return;
-  const ruleArr = _.cloneDeep(
-    ctx.luckysheetfile[copyIndex].luckysheet_conditionformat_save
-  );
-
-  if (!_.isNil(ruleArr) && ruleArr.length > 0) {
-    const currentIndex = getSheetIndex(ctx, ctx.currentSheetId) as number;
-    cdformat = _.cloneDeep(
-      ctx.luckysheetfile[currentIndex].luckysheet_conditionformat_save
+  if (copyIndex != null) {
+    const ruleArr = _.cloneDeep(
+      ctx.luckysheetfile[copyIndex].luckysheet_conditionformat_save
     );
 
-    for (let i = 0; i < ruleArr.length; i += 1) {
-      const cdformat_cellrange = ruleArr[i].cellrange;
-      let emptyRange: any[] = [];
+    if (!_.isNil(ruleArr) && ruleArr.length > 0) {
+      const currentIndex = getSheetIndex(ctx, ctx.currentSheetId) as number;
+      const existingCf =
+        ctx.luckysheetfile[currentIndex].luckysheet_conditionformat_save;
+      const cdformat: any[] = _.cloneDeep(existingCf) ?? [];
 
-      for (let j = 0; j < cdformat_cellrange.length; j += 1) {
-        const range = CFSplitRange(
-          cdformat_cellrange[j],
-          { row: [c_r1, c_r2], column: [c_c1, c_c2] },
-          { row: [minh, maxh], column: [minc, maxc] },
-          "operatePart"
-        );
+      for (let i = 0; i < ruleArr.length; i += 1) {
+        const cdformat_cellrange = ruleArr[i].cellrange;
+        let emptyRange: any[] = [];
 
-        if (range.length > 0) {
-          emptyRange = emptyRange.concat(range);
+        for (let j = 0; j < cdformat_cellrange.length; j += 1) {
+          const range = CFSplitRange(
+            cdformat_cellrange[j],
+            { row: [c_r1, c_r2], column: [c_c1, c_c2] },
+            { row: [minh, maxh], column: [minc, maxc] },
+            "operatePart"
+          );
+
+          if (range.length > 0) {
+            emptyRange = emptyRange.concat(range);
+          }
+        }
+
+        if (emptyRange.length > 0) {
+          ruleArr[i].cellrange = [{ row: [minh, maxh], column: [minc, maxc] }];
+          cdformat.push(ruleArr[i]);
         }
       }
 
-      if (emptyRange.length > 0) {
-        ruleArr[i].cellrange = [{ row: [minh, maxh], column: [minc, maxc] }];
-        cdformat.push(ruleArr[i]);
-      }
+      currFile.luckysheet_conditionformat_save = cdformat;
     }
   }
 }

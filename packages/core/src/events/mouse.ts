@@ -1734,7 +1734,7 @@ export function handleContextMenu(
   }
 }
 
-function mouseRender(
+export function mouseRender(
   ctx: Context,
   globalCache: GlobalCache,
   e: MouseEvent,

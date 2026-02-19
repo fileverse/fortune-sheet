@@ -1237,7 +1237,6 @@ export function handleVerticalAlign(
 }
 
 export function handleFormatPainter(ctx: Context) {
-  console.log("handleFormatPainter", ctx);
   //   if (!checkIsAllowEdit()) {
   //     tooltip.info("", locale().pivotTable.errorNotAllowEdit);
   //     return

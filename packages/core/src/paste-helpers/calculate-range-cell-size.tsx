@@ -137,6 +137,56 @@ export function calculateRangeCellSize(
   return { rowMax: maxRowHeights, colMax: maxColumnWidths };
 }
 
+export function getColumnAutoFitWidth(ctx: Context, colIndex: number): number {
+  const flowdata = getFlowdata(ctx);
+  if (!flowdata) return ctx.defaultcollen;
+
+  const rowCount = flowdata.length;
+
+  let cellSizeMeasurer = document.getElementById(
+    "fs-cell-measurer"
+  ) as HTMLDivElement | null;
+  if (!cellSizeMeasurer) {
+    cellSizeMeasurer = document.createElement("div");
+    cellSizeMeasurer.id = "fs-cell-measurer";
+    Object.assign(cellSizeMeasurer.style, {
+      position: "fixed",
+      left: "-99999px",
+      top: "-99999px",
+      visibility: "hidden",
+      lineHeight: "1.3",
+      whiteSpace: "pre",
+      wordBreak: "normal",
+      overflowWrap: "break-word",
+    });
+    document.body.appendChild(cellSizeMeasurer);
+  }
+
+  let maxWidth = ctx.defaultcollen;
+
+  for (let row = 0; row < rowCount; row++) {
+    const cell = flowdata[row]?.[colIndex];
+    if (!cell) continue;
+    if (cell.mc && cell.mc.rs == null) continue;
+
+    const text = getCellDisplayText(cell);
+    if (!text) continue;
+
+    applyFontOnMeasurer(cell, cellSizeMeasurer);
+    // fs is stored in points; applyFontOnMeasurer incorrectly applies it as px,
+    // so override with the correct pt unit to match canvas rendering
+    const fontSizePt = (cell.fs as number | undefined) ?? ctx.defaultFontSize;
+    cellSizeMeasurer.style.fontSize = `${fontSizePt}pt`;
+    cellSizeMeasurer.style.whiteSpace = "pre";
+    cellSizeMeasurer.style.width = "auto";
+    cellSizeMeasurer.textContent = text;
+    const intrinsicWidth = Math.ceil(cellSizeMeasurer.scrollWidth + 12);
+    if (intrinsicWidth > maxWidth) maxWidth = intrinsicWidth;
+  }
+
+  return maxWidth;
+}
+
 export const updateSheetCellSizes = (
   ctx: Context,
   sheetIndex: number,

@@ -356,7 +356,7 @@ export function setCellValue(
           cell.ct = { ...cell.ct, fa, t: "n" };
         }
         // Right-align numeric values when no alignment is already set, matching behavior of new numeric entries
-        if (!cell.ht) {
+        if (_.isNil(cell.ht)) {
           cell.ht = 2;
         }
       }
@@ -399,7 +399,9 @@ export function setCellValue(
         const format = getNumberFormat(strValue, commaPresent);
 
         cell.m = v.m ? v.m : update(format, cell.v);
-        cell.ht = v?.ht ? cell.ht : 2;
+        if (_.isNil(cell.ht)) {
+          cell.ht = 2;
+        }
         cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
           cell.m = cell.v.toString();

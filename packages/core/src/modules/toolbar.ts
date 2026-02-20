@@ -122,6 +122,13 @@ export function updateFormatCell(
 
         if (foucsStatus !== "@" && isRealNum(value)) {
           value = Number(value!);
+        } else if (type === "d" && typeof value === "string") {
+          // Convert date string to Excel serial number when switching to date format
+          const dateMask = genarate(value as string);
+          if (dateMask && (dateMask[1] as any).t === "d") {
+            const [, , numericSerial] = dateMask;
+            value = numericSerial; // numeric Excel serial (e.g., 42371 for 2016-01-02)
+          }
         }
 
         // Refine type for General format after confirming a value exists (requires isRealNum check)
@@ -139,7 +146,7 @@ export function updateFormatCell(
           }
           cell.ct.fa = foucsStatus;
           cell.ct.t = type;
-          cell.v = String(value);
+          cell.v = typeof value === "number" ? value : String(value);
           cell.fc = cell.fc || cell.ct?.s?.[0]?.fc;
           cell.bl = cell.bl || cell.ct?.s?.[0]?.bl;
           cell.it = cell.it || cell.ct?.s?.[0]?.it;
@@ -149,7 +156,7 @@ export function updateFormatCell(
         } else {
           d[r][c] = {
             ct: { fa: foucsStatus, t: type },
-            v: value as string,
+            v: typeof value === "number" ? value : (value as string),
             m: mask,
           };
         }

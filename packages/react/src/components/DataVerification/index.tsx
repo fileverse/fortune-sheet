@@ -199,18 +199,18 @@ const DataVerification: React.FC = () => {
             const allMatchingRange = cellsToRangeString(context, matchingCells);
 
             showDialog(
-              `Found ${matchingCells.length} cells with matching validation. Apply changes to:`,
+              `There are ${matchingCells.length} cells with the same validation. Do you want to make changes to all of them?`,
               "yesno",
               "Apply Changes",
-              "All Matching Cells",
-              "Just Selected Range",
+              "All other cells",
+              "Just this instance",
               () => {
-                // User chose "All Matching Cells"
+                // User chose "All other cells"
                 applyValidation(allMatchingRange);
                 hideDialog();
               },
               () => {
-                // User chose "Just Selected Range"
+                // User chose "Just this instance"
                 applyValidation(modalRangeString);
                 hideDialog();
               }

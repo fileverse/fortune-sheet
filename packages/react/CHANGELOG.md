@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.3.3
+
+### Patch Changes
+
+- fix: auto column resize on based on content max width, decrese fx resize handler size
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.3.3
+
 ## 1.2.97
 
 ### Patch Changes

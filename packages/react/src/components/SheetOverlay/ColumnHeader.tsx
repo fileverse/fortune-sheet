@@ -4,6 +4,7 @@ import {
   selectTitlesMap,
   selectTitlesRange,
   handleColSizeHandleMouseDown,
+  handleColSizeHandleDoubleClick,
   handleColumnHeaderMouseDown,
   // handleContextMenu,
   isAllowEdit,
@@ -211,6 +212,22 @@ const ColumnHeader: React.FC = () => {
       e.stopPropagation();
     },
     [refs.cellArea, refs.globalCache, refs.workbookContainer, setContext]
+  );
+
+  const onColSizeHandleDoubleClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      const { nativeEvent } = e;
+      setContext((draftCtx) => {
+        handleColSizeHandleDoubleClick(
+          draftCtx,
+          refs.globalCache,
+          nativeEvent,
+          containerRef.current!
+        );
+      });
+      e.stopPropagation();
+    },
+    [refs.globalCache, setContext]
   );
 
   const onColFreezeHandleMouseDown = useCallback(
@@ -467,6 +484,7 @@ const ColumnHeader: React.FC = () => {
         ref={colChangeSizeRef}
         id="fortune-cols-change-size"
         onMouseDown={onColSizeHandleMouseDown}
+        onDoubleClick={onColSizeHandleDoubleClick}
         style={{
           left:
             hoverLocation.col - 5 + (hoverInFreeze ? context.scrollLeft : 0),

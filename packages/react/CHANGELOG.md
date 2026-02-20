@@ -1,5 +1,13 @@
 # @fileverse-dev/fortune-react
 
+## 1.3.4
+
+### Patch Changes
+
+- change data validation modal copy, include column width change in undo redo
+- Updated dependencies
+  - @fileverse-dev/fortune-core@1.3.4
+
 ## 1.3.3
 
 ### Patch Changes

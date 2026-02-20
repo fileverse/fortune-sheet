@@ -981,10 +981,10 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
       <WorkbookContext.Provider value={providerValue}>
         {/* <button onClick={()=>{
           setShow(!show)
-          id="placeholder-data-verification"
+          id="placeholder-data-verification placeholder-conditional-format"
         }}>Click</button> */}
         {/* <div
-          id="placeholder-conditional-format"
+          id="placeholder-data-verification"
           style={{
             width: "500px",
             height: "500px",

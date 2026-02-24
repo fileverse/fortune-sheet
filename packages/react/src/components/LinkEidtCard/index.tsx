@@ -15,6 +15,7 @@ import {
   replaceHtml,
   goToLink,
   isLinkValid,
+  jfrefreshgrid,
 } from "@fileverse-dev/fortune-core";
 import {
   Button,
@@ -40,6 +41,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
   originAddress,
   isEditing,
   position,
+  applyToSelection,
 }) => {
   const { context, setContext, refs } = useContext(WorkbookContext);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -85,15 +87,33 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
         if (isButtonDisabled) return;
         if (e.key === "Enter") {
           _.set(refs.globalCache, "linkCard.mouseEnter", false);
-          setContext((draftCtx) =>
-            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress)
-          );
+          setContext((draftCtx) => {
+            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress, {
+              applyToSelection: applyToSelection || undefined,
+              cellInput: refs.cellInput.current,
+            });
+            if (!applyToSelection) {
+              draftCtx.luckysheetCellUpdate = [];
+              jfrefreshgrid(draftCtx, null, undefined);
+            }
+          });
         }
       },
       onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
         e.stopPropagation(),
     }),
-    [refs.globalCache, isButtonDisabled]
+    [
+      refs.globalCache,
+      isButtonDisabled,
+      applyToSelection,
+      linkText,
+      linkType,
+      linkAddress,
+      r,
+      c,
+      setContext,
+      refs.cellInput,
+    ]
   );
 
   const renderToolbarButton = useCallback(
@@ -324,9 +344,16 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
         onClick={() => {
           if (isButtonDisabled) return;
           _.set(refs.globalCache, "linkCard.mouseEnter", false);
-          setContext((draftCtx) =>
-            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress)
-          );
+          setContext((draftCtx) => {
+            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress, {
+              applyToSelection: applyToSelection || undefined,
+              cellInput: refs.cellInput.current,
+            });
+            if (!applyToSelection) {
+              draftCtx.luckysheetCellUpdate = [];
+              jfrefreshgrid(draftCtx, null, undefined);
+            }
+          });
         }}
         data-testid="link-card-cta-insert"
       >

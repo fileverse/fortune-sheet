@@ -147,7 +147,7 @@ const SheetOverlay: React.FC = () => {
         ) => {
           if (skip || globalCache.linkCard?.mouseEnter) return;
           setContext((draftCtx) => {
-            showLinkCard(draftCtx, r, c, isEditing);
+            showLinkCard(draftCtx, r, c, undefined, isEditing);
           });
         },
         800
@@ -171,7 +171,7 @@ const SheetOverlay: React.FC = () => {
         debouncedShowLinkCard(globalCache, rc.r, rc.c, false);
       } else {
         if (globalCache.linkCard?.mouseEnter) return;
-        showLinkCard(ctx, rc.r, rc.c, false);
+        showLinkCard(ctx, rc.r, rc.c, undefined, false);
         debouncedShowLinkCard(globalCache, rc.r, rc.c, false, true);
       }
     },

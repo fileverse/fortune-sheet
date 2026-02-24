@@ -1072,7 +1072,7 @@ const ContextMenu: React.FC = () => {
             key={name}
             onClick={() => {
               setContext((draftCtx) => {
-                handleLink(draftCtx);
+                handleLink(draftCtx, refs.cellInput.current ?? undefined);
                 draftCtx.contextMenu = {};
               });
             }}

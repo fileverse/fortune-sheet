@@ -247,6 +247,10 @@ export type LinkCardProps = {
   position: { cellLeft: number; cellBottom: number };
   isEditing: boolean;
   selectingCellRange?: boolean;
+  /** When true, link is applied only to the current selection (edit mode) */
+  applyToSelection?: boolean;
+  /** Character offsets in the cell to restore selection before applying link on Insert */
+  selectionOffsets?: { start: number; end: number };
 };
 
 export type RangeDialogProps = {

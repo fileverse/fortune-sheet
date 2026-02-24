@@ -1680,10 +1680,25 @@ export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
       const strObj = strings[i];
       if (strObj.v) {
         const style = getFontStyleByCell(strObj);
+        const { link } = strObj as any;
+        if (link?.linkType && link?.linkAddress) {
+          style.color = style.color || "rgb(0, 0, 255)";
+          style.borderBottom = style.borderBottom || "1px solid rgb(0, 0, 255)";
+        }
         const styleStr = _.map(style, (v, key) => {
           return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
         }).join("");
-        value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'>${strObj.v}</span>`;
+        const dataAttrs =
+          link?.linkType && link?.linkAddress
+            ? ` data-link-type='${String(link.linkType).replace(
+                /'/g,
+                "&#39;"
+              )}' data-link-address='${String(link.linkAddress).replace(
+                /'/g,
+                "&#39;"
+              )}'`
+            : "";
+        value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${strObj.v}</span>`;
       }
     }
     return value;

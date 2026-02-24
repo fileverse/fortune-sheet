@@ -12,6 +12,7 @@ import {
 } from "./cell";
 import { colors } from "./color";
 import { genarate, is_date, update } from "./format";
+import { getSelectionCharacterOffsets } from "./cursor";
 import {
   execfunction,
   execFunctionGroup,
@@ -1637,14 +1638,50 @@ export function handleSum(
   autoSelectionFormula(ctx, cellInput, fxInput, "SUM", cache!);
 }
 
-export function handleLink(ctx: Context) {
+export function handleLink(
+  ctx: Context,
+  cellInput: HTMLDivElement | null | undefined
+) {
   const allowEdit = isAllowEdit(ctx);
   if (!allowEdit) return;
   const selection = ctx.luckysheet_select_save?.[0];
   const flowdata = getFlowdata(ctx);
-  if (flowdata != null && selection != null) {
-    showLinkCard(ctx, selection.row[0], selection.column[0], true);
+  if (flowdata == null || selection == null) return;
+
+  const r = selection.row[0];
+  const c = selection.column[0];
+  const isEditMode =
+    ctx.luckysheetCellUpdate?.length === 2 &&
+    ctx.luckysheetCellUpdate[0] === r &&
+    ctx.luckysheetCellUpdate[1] === c;
+
+  let applyToSelection = false;
+  let originText: string | undefined;
+  let selectionOffsets: { start: number; end: number } | undefined;
+
+  if (isEditMode && cellInput) {
+    const sel = window.getSelection();
+    if (
+      sel &&
+      sel.rangeCount > 0 &&
+      !sel.getRangeAt(0).collapsed &&
+      cellInput.contains(sel.anchorNode)
+    ) {
+      const value = cellInput.innerText ?? "";
+      if (value.substring(0, 1) !== "=") {
+        originText = sel.toString();
+        applyToSelection = true;
+        const off = getSelectionCharacterOffsets(cellInput);
+        if (off) selectionOffsets = off;
+      }
+    }
   }
+
+  showLinkCard(ctx, r, c, {
+    applyToSelection: applyToSelection || undefined,
+    originText,
+    selectionOffsets,
+  }, true, false);
 }
 
 const handlerMap: Record<string, ToolbarItemClickHandler> = {

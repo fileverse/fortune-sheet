@@ -653,7 +653,7 @@ export async function handleGlobalKeyDown(
     textFormat(ctx, "right");
   }
   if ((e.metaKey || e.ctrlKey) && e.code === "KeyK") {
-    handleLink(ctx);
+    handleLink(ctx, cellInput);
   }
   if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.code === "Semicolon") {
     fillDate(ctx);

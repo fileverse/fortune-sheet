@@ -139,9 +139,7 @@ export function setCellValue(
       setCellValueInternal(ctx, row, column, data, curv); // update text value
     }
     _.forEach(value, (v, attr) => {
-      console.log("attr haha why here", attr);
       if (attr in formatList && callAfterUpdate) {
-        console.log("attr calling updateFormatCell", attr, callAfterUpdate);
         updateFormatCell(
           ctx,
           data!,

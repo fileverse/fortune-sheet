@@ -2603,8 +2603,6 @@ export function updateDropCell(ctx: Context) {
 
             [, cell.v, cell.f] = v;
 
-            console.log(j, i);
-
             const { afterUpdateCell } = ctx.hooks;
             if (afterUpdateCell) {
               afterUpdateCell(i, j, null, {

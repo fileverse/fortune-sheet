@@ -449,7 +449,6 @@ export function generateAPIs(
       id: string,
       refCell?: string[]
     ) => {
-      console.log("calculateCellReferencedSubSheetFormula", id, refCell);
       setContext((draftCtx) => {
         api.calculateReferencedCellSheetFromula(
           draftCtx,

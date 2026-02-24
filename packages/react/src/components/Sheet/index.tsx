@@ -98,8 +98,10 @@ const Sheet: React.FC<Props> = ({ sheet }) => {
   ]);
 
   /**
-   * Redraw canvas When context changes
-   * All context changes will trigger this
+   * Redraw canvas when context values that affect drawing change.
+   * Depends only on context properties used by Canvas and repaint (scroll, layout, data, config).
+   * Selection and other UI state (e.g. linkCard, contextMenu) are intentionally omitted so
+   * selection changes do not trigger repaint.
    */
   useEffect(() => {
     // update formula chains value first if not empty
@@ -253,14 +255,36 @@ const Sheet: React.FC<Props> = ({ sheet }) => {
       }
     };
 
-    // draw now
     repaint();
 
     // keep repainting while fades are active
     cellFadeAnimator.setOnTick(repaint);
     // eslint-disable-next-line consistent-return
     return () => cellFadeAnimator.setOnTick(null);
-  }, [context, refs.canvas, refs.globalCache.freezen, setContext, sheet.id]);
+    // Only context fields used by Canvas/repaint; selection and other UI state omitted to avoid repaint on selection change.
+    // refs.globalCache.freezen is read inside repaint but mutated by initFreeze; repaint re-runs when layout/scroll/sheet change.
+  }, [
+    context.scrollLeft,
+    context.scrollTop,
+    context.rowHeaderWidth,
+    context.columnHeaderHeight,
+    context.visibledatarow,
+    context.visibledatacolumn,
+    context.config,
+    context.currentSheetId,
+    context.luckysheetfile,
+    context.zoomRatio,
+    context.devicePixelRatio,
+    context.showGridLines,
+    context.luckysheetTableContentHW,
+    context.defaultFontSize,
+    context.defaultcollen,
+    context.ch_width,
+    context.luckysheetcurrentisPivotTable,
+    context.hooks,
+    refs.canvas,
+    sheet.id,
+  ]);
 
   useSmoothScroll(containerRef);
 

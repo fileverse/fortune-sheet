@@ -84,7 +84,6 @@ export function adjustFormulaForPaste(
 
       if (!cellRef) return m; // Inside quotes → DO NOT modify
       if (cellRef.startsWith("$")) return m; // Absolute column → DO NOT modify
-      console.log(m, "cellRef", cellRef);
 
       // Now process your cell reference normally:
       return cellRef.replace(
@@ -1685,7 +1684,6 @@ function pasteHandlerOfCopyPaste(
                 h
               );
 
-              console.log("adjustedFormula", adjustedFormula);
             } catch (error: any) {
               isError = true;
               value.error = {

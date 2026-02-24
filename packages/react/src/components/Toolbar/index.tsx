@@ -296,7 +296,6 @@ export const CurrencySelector = ({
                     value={searchTerm}
                     onValueChange={(value) => {
                       setSearchTerm(value);
-                      console.log(value, "djksfgnkjsedfngskjn");
                     }}
                   />
                 </div>

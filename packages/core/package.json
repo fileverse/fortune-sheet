@@ -1,6 +1,6 @@
 {
   "name": "@fileverse-dev/fortune-core",
-  "version": "1.2.99-ydoc",
+  "version": "1.2.99-ydoc-1",
   "main": "lib/index.js",
   "module": "es/index.js",
   "typings": "lib/index.d.ts",

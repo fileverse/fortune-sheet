@@ -1683,7 +1683,6 @@ function pasteHandlerOfCopyPaste(
                 c,
                 h
               );
-
             } catch (error: any) {
               isError = true;
               value.error = {

@@ -1677,11 +1677,18 @@ export function handleLink(
     }
   }
 
-  showLinkCard(ctx, r, c, {
-    applyToSelection: applyToSelection || undefined,
-    originText,
-    selectionOffsets,
-  }, true, false);
+  showLinkCard(
+    ctx,
+    r,
+    c,
+    {
+      applyToSelection: applyToSelection || undefined,
+      originText,
+      selectionOffsets,
+    },
+    true,
+    false
+  );
 }
 
 const handlerMap: Record<string, ToolbarItemClickHandler> = {

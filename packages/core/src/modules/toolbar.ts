@@ -11,7 +11,7 @@ import {
   setCellValue,
 } from "./cell";
 import { colors } from "./color";
-import { genarate, is_date, update } from "./format";
+import { datenum_local, genarate, is_date, update } from "./format";
 import {
   execfunction,
   execFunctionGroup,
@@ -33,6 +33,7 @@ import {
 } from "./selection";
 import { sortSelection } from "./sort";
 import {
+  detectDateFormat,
   hasPartMC,
   isdatatypemulti,
   isRealNull,
@@ -124,10 +125,17 @@ export function updateFormatCell(
           value = Number(value!);
         } else if (type === "d" && typeof value === "string") {
           // Convert date string to Excel serial number when switching to date format
-          const dateMask = genarate(value as string);
-          if (dateMask && (dateMask[1] as any).t === "d") {
-            const [, , numericSerial] = dateMask;
-            value = numericSerial; // numeric Excel serial (e.g., 42371 for 2016-01-02)
+          const dateInfo = detectDateFormat(value);
+          if (dateInfo) {
+            const dateObj = new Date(
+              dateInfo.year,
+              dateInfo.month - 1,
+              dateInfo.day,
+              dateInfo.hours,
+              dateInfo.minutes,
+              dateInfo.seconds
+            );
+            value = datenum_local(dateObj);
           }
         }
 

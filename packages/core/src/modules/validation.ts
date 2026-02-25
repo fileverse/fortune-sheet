@@ -70,41 +70,355 @@ export function isRealNum(val: any) {
   return !Number.isNaN(Number(val));
 }
 
-function checkDateTime(str: string) {
-  const reg1 =
-    /^(\d{4})-(\d{1,2})-(\d{1,2})(\s(\d{1,2}):(\d{1,2})(:(\d{1,2}))?)?$/;
-  const reg2 =
-    /^(\d{4})\/(\d{1,2})\/(\d{1,2})(\s(\d{1,2}):(\d{1,2})(:(\d{1,2}))?)?$/;
+export type DateFormatInfo = {
+  year: number;
+  month: number;
+  day: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  formatType: string;
+};
 
-  if (!reg1.test(str) && !reg2.test(str)) {
-    return false;
-  }
+const MONTH_NAME_MAP: Record<string, number> = {
+  january: 1,
+  february: 2,
+  march: 3,
+  april: 4,
+  may: 5,
+  june: 6,
+  july: 7,
+  august: 8,
+  september: 9,
+  october: 10,
+  november: 11,
+  december: 12,
+  jan: 1,
+  feb: 2,
+  mar: 3,
+  apr: 4,
+  jun: 6,
+  jul: 7,
+  aug: 8,
+  sep: 9,
+  oct: 10,
+  nov: 11,
+  dec: 12,
+};
 
-  const year = Number(RegExp.$1);
-  const month = Number(RegExp.$2);
-  const day = Number(RegExp.$3);
+const MONTH_NAMES_RE =
+  "january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec";
+const MONTH_ABBR_RE = "jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec";
 
-  if (year < 1900) {
-    return false;
-  }
-
-  if (month > 12) {
-    return false;
-  }
-
-  if (day > 31) {
-    return false;
-  }
-
+function isValidDateParts(
+  year: number,
+  month: number,
+  day: number
+): boolean {
+  if (year < 1900) return false;
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
   if (month === 2) {
-    if (new Date(year, 1, 29).getDate() === 29 && day > 29) {
-      return false;
-    }
-    if (new Date(year, 1, 29).getDate() !== 29 && day > 28) {
-      return false;
+    const isLeap = new Date(year, 1, 29).getDate() === 29;
+    if (isLeap && day > 29) return false;
+    if (!isLeap && day > 28) return false;
+  }
+  if ([4, 6, 9, 11].includes(month) && day > 30) return false;
+  return true;
+}
+
+export function detectDateFormat(str: string): DateFormatInfo | null {
+  if (!str || str.toString().length < 5) return null;
+  const s = str.toString().trim();
+  let m: RegExpExecArray | null;
+
+  // ISO 8601: 2026-02-25T14:30:00 or 2026-02-25T14:30
+  m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(s);
+  if (m) {
+    const y = +m[1],
+      mo = +m[2],
+      d = +m[3],
+      h = +m[4],
+      mi = +m[5],
+      sec = m[6] != null ? +m[6] : 0;
+    if (isValidDateParts(y, mo, d)) {
+      return {
+        year: y,
+        month: mo,
+        day: d,
+        hours: h,
+        minutes: mi,
+        seconds: sec,
+        formatType: "yyyy-MM-ddTHH:mm",
+      };
     }
   }
-  return true;
+
+  // yyyy-MM-dd with optional time: 2026-02-25 or 2026-02-25 14:30 or 2026-02-25 14:30:00
+  m =
+    /^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(
+      s
+    );
+  if (m) {
+    const y = +m[1],
+      mo = +m[2],
+      d = +m[3];
+    if (isValidDateParts(y, mo, d)) {
+      const h = m[4] != null ? +m[4] : 0;
+      const mi = m[5] != null ? +m[5] : 0;
+      const sec = m[6] != null ? +m[6] : 0;
+      return {
+        year: y,
+        month: mo,
+        day: d,
+        hours: h,
+        minutes: mi,
+        seconds: sec,
+        formatType: m[4] != null ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd",
+      };
+    }
+  }
+
+  // yyyy/MM/dd with optional time
+  m =
+    /^(\d{4})\/(\d{1,2})\/(\d{1,2})(?:\s(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(
+      s
+    );
+  if (m) {
+    const y = +m[1],
+      mo = +m[2],
+      d = +m[3];
+    if (isValidDateParts(y, mo, d)) {
+      const h = m[4] != null ? +m[4] : 0;
+      const mi = m[5] != null ? +m[5] : 0;
+      const sec = m[6] != null ? +m[6] : 0;
+      return {
+        year: y,
+        month: mo,
+        day: d,
+        hours: h,
+        minutes: mi,
+        seconds: sec,
+        formatType: m[4] != null ? "yyyy/MM/dd HH:mm" : "yyyy/MM/dd",
+      };
+    }
+  }
+
+  // yyyy.MM.dd: 2026.02.25
+  m = /^(\d{4})\.(\d{1,2})\.(\d{1,2})$/.exec(s);
+  if (m) {
+    const y = +m[1],
+      mo = +m[2],
+      d = +m[3];
+    if (isValidDateParts(y, mo, d)) {
+      return {
+        year: y,
+        month: mo,
+        day: d,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        formatType: "yyyy.MM.dd",
+      };
+    }
+  }
+
+  // MM/dd/yyyy h:mm AM/PM: 02/25/2026 2:30 PM
+  m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s(\d{1,2}):(\d{2})\s?(AM|PM)$/i.exec(
+    s
+  );
+  if (m) {
+    const p1 = +m[1],
+      p2 = +m[2],
+      y = +m[3],
+      h = +m[4],
+      mi = +m[5];
+    const ampm = m[6].toUpperCase();
+    if (p1 <= 12 && isValidDateParts(y, p1, p2)) {
+      let actualH = h;
+      if (ampm === "PM" && h !== 12) actualH = h + 12;
+      if (ampm === "AM" && h === 12) actualH = 0;
+      return {
+        year: y,
+        month: p1,
+        day: p2,
+        hours: actualH,
+        minutes: mi,
+        seconds: 0,
+        formatType: "MM/dd/yyyy h:mm AM/PM",
+      };
+    }
+  }
+
+  // Slash-separated with 4-digit year last: 25/02/2026, 02/25/2026, 2/25/2026
+  m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
+  if (m) {
+    const p1 = +m[1],
+      p2 = +m[2],
+      y = +m[3];
+    if (p1 > 12 && isValidDateParts(y, p2, p1)) {
+      // dd/MM/yyyy
+      return {
+        year: y,
+        month: p2,
+        day: p1,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        formatType: "dd/MM/yyyy",
+      };
+    } else if (p2 > 12 && p1 <= 12 && isValidDateParts(y, p1, p2)) {
+      // MM/dd/yyyy or M/d/yyyy (single-digit month)
+      const formatType = m[1].length === 1 ? "M/d/yyyy" : "MM/dd/yyyy";
+      return {
+        year: y,
+        month: p1,
+        day: p2,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        formatType,
+      };
+    } else if (p1 <= 12 && p2 <= 31 && isValidDateParts(y, p1, p2)) {
+      // Ambiguous — default to MM/dd/yyyy
+      const formatType = m[1].length === 1 ? "M/d/yyyy" : "MM/dd/yyyy";
+      return {
+        year: y,
+        month: p1,
+        day: p2,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        formatType,
+      };
+    }
+  }
+
+  // Slash-separated with 2-digit year: MM/dd/yy (e.g. 02/25/26)
+  m = /^(\d{2})\/(\d{2})\/(\d{2})$/.exec(s);
+  if (m) {
+    const p1 = +m[1],
+      p2 = +m[2],
+      y = 2000 + +m[3];
+    if (p1 <= 12 && p2 <= 31 && isValidDateParts(y, p1, p2)) {
+      return {
+        year: y,
+        month: p1,
+        day: p2,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        formatType: "MM/dd/yy",
+      };
+    }
+  }
+
+  // dd-MM-yyyy: 25-02-2026 (only when first part > 12 to avoid ambiguity)
+  m = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(s);
+  if (m) {
+    const p1 = +m[1],
+      p2 = +m[2],
+      y = +m[3];
+    if (p1 > 12 && isValidDateParts(y, p2, p1)) {
+      return {
+        year: y,
+        month: p2,
+        day: p1,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        formatType: "dd-MM-yyyy",
+      };
+    }
+  }
+
+  // dd.MM.yyyy: 25.02.2026 (only when first part > 12 to avoid ambiguity)
+  m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s);
+  if (m) {
+    const p1 = +m[1],
+      p2 = +m[2],
+      y = +m[3];
+    if (p1 > 12 && isValidDateParts(y, p2, p1)) {
+      return {
+        year: y,
+        month: p2,
+        day: p1,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        formatType: "dd.MM.yyyy",
+      };
+    }
+  }
+
+  // Named month first: "February 25, 2026", "Feb 25, 2026", "February 25 2026"
+  m = new RegExp(
+    `^(${MONTH_NAMES_RE})\\s+(\\d{1,2}),?\\s+(\\d{4})$`,
+    "i"
+  ).exec(s);
+  if (m) {
+    const mo = MONTH_NAME_MAP[m[1].toLowerCase()];
+    const d = +m[2],
+      y = +m[3];
+    if (mo && isValidDateParts(y, mo, d)) {
+      return {
+        year: y,
+        month: mo,
+        day: d,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        formatType: "named",
+      };
+    }
+  }
+
+  // Day first: "25 February 2026", "25 Feb 2026"
+  m = new RegExp(
+    `^(\\d{1,2})\\s+(${MONTH_NAMES_RE})\\s+(\\d{4})$`,
+    "i"
+  ).exec(s);
+  if (m) {
+    const d = +m[1],
+      mo = MONTH_NAME_MAP[m[2].toLowerCase()],
+      y = +m[3];
+    if (mo && isValidDateParts(y, mo, d)) {
+      return {
+        year: y,
+        month: mo,
+        day: d,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        formatType: "named",
+      };
+    }
+  }
+
+  // Abbreviated month with dashes: "Feb-25-2026"
+  m = new RegExp(`^(${MONTH_ABBR_RE})-(\\d{1,2})-(\\d{4})$`, "i").exec(s);
+  if (m) {
+    const mo = MONTH_NAME_MAP[m[1].toLowerCase()];
+    const d = +m[2],
+      y = +m[3];
+    if (mo && isValidDateParts(y, mo, d)) {
+      return {
+        year: y,
+        month: mo,
+        day: d,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        formatType: "named",
+      };
+    }
+  }
+
+  return null;
+}
+
+function checkDateTime(str: string) {
+  return detectDateFormat(str) !== null;
 }
 
 export function isdatetime(s: any) {

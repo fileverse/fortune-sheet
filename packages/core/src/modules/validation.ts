@@ -110,11 +110,7 @@ const MONTH_NAMES_RE =
   "january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec";
 const MONTH_ABBR_RE = "jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec";
 
-function isValidDateParts(
-  year: number,
-  month: number,
-  day: number
-): boolean {
+function isValidDateParts(year: number, month: number, day: number): boolean {
   if (year < 1900) return false;
   if (month < 1 || month > 12) return false;
   if (day < 1 || day > 31) return false;
@@ -135,12 +131,12 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   // ISO 8601: 2026-02-25T14:30:00 or 2026-02-25T14:30
   m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(s);
   if (m) {
-    const y = +m[1],
-      mo = +m[2],
-      d = +m[3],
-      h = +m[4],
-      mi = +m[5],
-      sec = m[6] != null ? +m[6] : 0;
+    const y = +m[1];
+    const mo = +m[2];
+    const d = +m[3];
+    const h = +m[4];
+    const mi = +m[5];
+    const sec = m[6] != null ? +m[6] : 0;
     if (isValidDateParts(y, mo, d)) {
       return {
         year: y,
@@ -155,14 +151,13 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   }
 
   // yyyy-MM-dd with optional time: 2026-02-25 or 2026-02-25 14:30 or 2026-02-25 14:30:00
-  m =
-    /^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(
-      s
-    );
+  m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(
+    s
+  );
   if (m) {
-    const y = +m[1],
-      mo = +m[2],
-      d = +m[3];
+    const y = +m[1];
+    const mo = +m[2];
+    const d = +m[3];
     if (isValidDateParts(y, mo, d)) {
       const h = m[4] != null ? +m[4] : 0;
       const mi = m[5] != null ? +m[5] : 0;
@@ -185,9 +180,9 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
       s
     );
   if (m) {
-    const y = +m[1],
-      mo = +m[2],
-      d = +m[3];
+    const y = +m[1];
+    const mo = +m[2];
+    const d = +m[3];
     if (isValidDateParts(y, mo, d)) {
       const h = m[4] != null ? +m[4] : 0;
       const mi = m[5] != null ? +m[5] : 0;
@@ -207,9 +202,9 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   // yyyy.MM.dd: 2026.02.25
   m = /^(\d{4})\.(\d{1,2})\.(\d{1,2})$/.exec(s);
   if (m) {
-    const y = +m[1],
-      mo = +m[2],
-      d = +m[3];
+    const y = +m[1];
+    const mo = +m[2];
+    const d = +m[3];
     if (isValidDateParts(y, mo, d)) {
       return {
         year: y,
@@ -224,15 +219,13 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   }
 
   // MM/dd/yyyy h:mm AM/PM: 02/25/2026 2:30 PM
-  m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s(\d{1,2}):(\d{2})\s?(AM|PM)$/i.exec(
-    s
-  );
+  m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s(\d{1,2}):(\d{2})\s?(AM|PM)$/i.exec(s);
   if (m) {
-    const p1 = +m[1],
-      p2 = +m[2],
-      y = +m[3],
-      h = +m[4],
-      mi = +m[5];
+    const p1 = +m[1];
+    const p2 = +m[2];
+    const y = +m[3];
+    const h = +m[4];
+    const mi = +m[5];
     const ampm = m[6].toUpperCase();
     if (p1 <= 12 && isValidDateParts(y, p1, p2)) {
       let actualH = h;
@@ -253,9 +246,9 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   // Slash-separated with 4-digit year last: 25/02/2026, 02/25/2026, 2/25/2026
   m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
   if (m) {
-    const p1 = +m[1],
-      p2 = +m[2],
-      y = +m[3];
+    const p1 = +m[1];
+    const p2 = +m[2];
+    const y = +m[3];
     if (p1 > 12 && isValidDateParts(y, p2, p1)) {
       // dd/MM/yyyy
       return {
@@ -267,7 +260,8 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
         seconds: 0,
         formatType: "dd/MM/yyyy",
       };
-    } else if (p2 > 12 && p1 <= 12 && isValidDateParts(y, p1, p2)) {
+    }
+    if (p2 > 12 && p1 <= 12 && isValidDateParts(y, p1, p2)) {
       // MM/dd/yyyy or M/d/yyyy (single-digit month)
       const formatType = m[1].length === 1 ? "M/d/yyyy" : "MM/dd/yyyy";
       return {
@@ -279,7 +273,8 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
         seconds: 0,
         formatType,
       };
-    } else if (p1 <= 12 && p2 <= 31 && isValidDateParts(y, p1, p2)) {
+    }
+    if (p1 <= 12 && p2 <= 31 && isValidDateParts(y, p1, p2)) {
       // Ambiguous — default to MM/dd/yyyy
       const formatType = m[1].length === 1 ? "M/d/yyyy" : "MM/dd/yyyy";
       return {
@@ -297,9 +292,9 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   // Slash-separated with 2-digit year: MM/dd/yy (e.g. 02/25/26)
   m = /^(\d{2})\/(\d{2})\/(\d{2})$/.exec(s);
   if (m) {
-    const p1 = +m[1],
-      p2 = +m[2],
-      y = 2000 + +m[3];
+    const p1 = +m[1];
+    const p2 = +m[2];
+    const y = 2000 + +m[3];
     if (p1 <= 12 && p2 <= 31 && isValidDateParts(y, p1, p2)) {
       return {
         year: y,
@@ -316,9 +311,9 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   // dd-MM-yyyy: 25-02-2026 (only when first part > 12 to avoid ambiguity)
   m = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(s);
   if (m) {
-    const p1 = +m[1],
-      p2 = +m[2],
-      y = +m[3];
+    const p1 = +m[1];
+    const p2 = +m[2];
+    const y = +m[3];
     if (p1 > 12 && isValidDateParts(y, p2, p1)) {
       return {
         year: y,
@@ -335,9 +330,9 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   // dd.MM.yyyy: 25.02.2026 (only when first part > 12 to avoid ambiguity)
   m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s);
   if (m) {
-    const p1 = +m[1],
-      p2 = +m[2],
-      y = +m[3];
+    const p1 = +m[1];
+    const p2 = +m[2];
+    const y = +m[3];
     if (p1 > 12 && isValidDateParts(y, p2, p1)) {
       return {
         year: y,
@@ -352,14 +347,13 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   }
 
   // Named month first: "February 25, 2026", "Feb 25, 2026", "February 25 2026"
-  m = new RegExp(
-    `^(${MONTH_NAMES_RE})\\s+(\\d{1,2}),?\\s+(\\d{4})$`,
-    "i"
-  ).exec(s);
+  m = new RegExp(`^(${MONTH_NAMES_RE})\\s+(\\d{1,2}),?\\s+(\\d{4})$`, "i").exec(
+    s
+  );
   if (m) {
     const mo = MONTH_NAME_MAP[m[1].toLowerCase()];
-    const d = +m[2],
-      y = +m[3];
+    const d = +m[2];
+    const y = +m[3];
     if (mo && isValidDateParts(y, mo, d)) {
       return {
         year: y,
@@ -374,14 +368,13 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   }
 
   // Day first: "25 February 2026", "25 Feb 2026"
-  m = new RegExp(
-    `^(\\d{1,2})\\s+(${MONTH_NAMES_RE})\\s+(\\d{4})$`,
-    "i"
-  ).exec(s);
+  m = new RegExp(`^(\\d{1,2})\\s+(${MONTH_NAMES_RE})\\s+(\\d{4})$`, "i").exec(
+    s
+  );
   if (m) {
-    const d = +m[1],
-      mo = MONTH_NAME_MAP[m[2].toLowerCase()],
-      y = +m[3];
+    const d = +m[1];
+    const mo = MONTH_NAME_MAP[m[2].toLowerCase()];
+    const y = +m[3];
     if (mo && isValidDateParts(y, mo, d)) {
       return {
         year: y,
@@ -399,8 +392,8 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
   m = new RegExp(`^(${MONTH_ABBR_RE})-(\\d{1,2})-(\\d{4})$`, "i").exec(s);
   if (m) {
     const mo = MONTH_NAME_MAP[m[1].toLowerCase()];
-    const d = +m[2],
-      y = +m[3];
+    const d = +m[2];
+    const y = +m[3];
     if (mo && isValidDateParts(y, mo, d)) {
       return {
         year: y,

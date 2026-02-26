@@ -695,7 +695,10 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
             }
           } else {
             // Convert boolean to string if needed, since m only accepts string | number
-            originCell.m = typeof originCell.v === "boolean" ? String(originCell.v) : originCell.v;
+            originCell.m =
+              typeof originCell.v === "boolean"
+                ? String(originCell.v)
+                : originCell.v;
           }
 
           if (originCell.f != null && originCell.f.length > 0) {
@@ -2197,7 +2200,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             // Get the cell position
             const last =
               ctx.luckysheet_select_save?.[
-              ctx.luckysheet_select_save.length - 1
+                ctx.luckysheet_select_save.length - 1
               ];
             if (last) {
               const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;

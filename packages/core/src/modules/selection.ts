@@ -2277,7 +2277,7 @@ export function fillRightData(ctx: Context): string {
           const sourceCell = d[r]?.[c1];
           for (let c = c1 + 1; c <= c2; c += 1) {
             if (d[r]) {
-              d[r][c] = sourceCell != null ? { ...sourceCell } : (d[r][c] ?? {});
+              d[r][c] = sourceCell != null ? { ...sourceCell } : d[r][c] ?? {};
             }
           }
         }
@@ -2333,7 +2333,7 @@ export function fillDownData(ctx: Context): string {
           const sourceCell = d[r1]?.[c];
           for (let r = r1 + 1; r <= r2; r += 1) {
             if (!d[r]) d[r] = [];
-            d[r][c] = sourceCell != null ? { ...sourceCell } : (d[r][c] ?? {});
+            d[r][c] = sourceCell != null ? { ...sourceCell } : d[r][c] ?? {};
           }
         }
       }

@@ -727,9 +727,7 @@ const Toolbar: React.FC<{
               iconId={name}
               tooltip={tooltip}
               showArrow={false}
-              fillColor={
-                name === "font-color" ? displayTextColor : undefined
-              }
+              fillColor={name === "font-color" ? displayTextColor : undefined}
               onClick={() => {
                 const color =
                   name === "font-color"

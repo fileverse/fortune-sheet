@@ -74,7 +74,12 @@ export function handleGlobalEnter(
         column_focus: lastCellUpdate[1],
       },
     ];
-    moveHighlightCell(ctx, "down", 1, "rangeOfSelect");
+    moveHighlightCell(
+      ctx,
+      "down",
+      hideCRCount(ctx, "ArrowDown"),
+      "rangeOfSelect"
+    );
     // }
 
     // // 若有参数弹出框，隐藏
@@ -780,9 +785,19 @@ export async function handleGlobalKeyDown(
       );
     }
     if (e.shiftKey) {
-      moveHighlightCell(ctx, "right", -1, "rangeOfSelect");
+      moveHighlightCell(
+        ctx,
+        "right",
+        -hideCRCount(ctx, "ArrowLeft"),
+        "rangeOfSelect"
+      );
     } else {
-      moveHighlightCell(ctx, "right", 1, "rangeOfSelect");
+      moveHighlightCell(
+        ctx,
+        "right",
+        hideCRCount(ctx, "ArrowRight"),
+        "rangeOfSelect"
+      );
     }
     e.preventDefault();
   } else if (kstr === "F2") {

@@ -2266,10 +2266,20 @@ export function fillRightData(ctx: Context): string {
       const c1 = selection[s].column[0];
       const c2 = selection[s].column[1];
 
-      for (let r = r1; r <= r2; r += 1) {
-        for (let c = c1; c <= c2; c += 1) {
-          const previousCell = d[r][c - 1];
-          d[r][c] = { ...previousCell };
+      const isSingleCell = r1 === r2 && c1 === c2;
+      if (isSingleCell) {
+        if (c1 - 1 >= 0 && d[r1]) {
+          const prev = d[r1][c1 - 1];
+          d[r1][c1] = prev != null ? { ...prev } : {};
+        }
+      } else {
+        for (let r = r1; r <= r2; r += 1) {
+          const sourceCell = d[r]?.[c1];
+          for (let c = c1 + 1; c <= c2; c += 1) {
+            if (d[r]) {
+              d[r][c] = sourceCell != null ? { ...sourceCell } : (d[r][c] ?? {});
+            }
+          }
         }
       }
     }
@@ -2311,10 +2321,20 @@ export function fillDownData(ctx: Context): string {
       const c1 = selection[s].column[0];
       const c2 = selection[s].column[1];
 
-      for (let r = r1; r <= r2; r += 1) {
+      const isSingleCell = r1 === r2 && c1 === c2;
+      if (isSingleCell) {
+        if (r1 - 1 >= 0 && d[r1 - 1]) {
+          const prev = d[r1 - 1][c1];
+          if (!d[r1]) d[r1] = [];
+          d[r1][c1] = prev != null ? { ...prev } : {};
+        }
+      } else {
         for (let c = c1; c <= c2; c += 1) {
-          const previousCell = d[r - 1][c];
-          d[r][c] = { ...previousCell };
+          const sourceCell = d[r1]?.[c];
+          for (let r = r1 + 1; r <= r2; r += 1) {
+            if (!d[r]) d[r] = [];
+            d[r][c] = sourceCell != null ? { ...sourceCell } : (d[r][c] ?? {});
+          }
         }
       }
     }

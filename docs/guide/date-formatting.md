@@ -30,6 +30,7 @@ When a user types a string into a cell, the following pipeline runs:
 | `yyyy-MM-ddTHH:mm:ss` | `2026-02-25T14:30:00` | `dd/MM/yyyy`          | `25/02/2026`   |
 | `yyyy/MM/dd`          | `2026/02/25`          | `dd/MM/yyyy`          | `25/02/2026`   |
 | `yyyy/MM/dd HH:mm`    | `2026/02/25 14:30`    | `dd/MM/yyyy`          | `25/02/2026`   |
+| `yyyy/MM/dd HH:mm:ss` | `2026/02/25 14:30:00` | `dd/MM/yyyy`          | `25/02/2026`   |
 | `yyyy.MM.dd`          | `2026.02.25`          | `yyyy.MM.dd`          | `2026.02.25`   |
 
 > ISO-style datetime inputs (24h, T or space separator) are stored with their time component but displayed as date-only using `dd/MM/yyyy`.
@@ -139,33 +140,48 @@ The display format (`ct.fa`) is chosen based on the detected input pattern, not 
 
 ## Supported Display Formats
 
-### Fortune-Sheet Native Formats
+### Format Picker Formats
 
-These formats are available in the locale files (`packages/core/src/locale/`) and the format picker UI:
+These are the formats available in the **date format picker** (`dateFmtList` in `packages/core/src/locale/`):
 
-| Format string            | Example output                |
-| ------------------------ | ----------------------------- |
-| `yyyy-MM-dd`             | 2017-11-29                    |
-| `yyyy/MM/dd`             | 2017/11/29                    |
-| `yyyy.MM.dd`             | 2017.11.29                    |
-| `dd/MM/yyyy`             | 29/11/2017                    |
-| `MM/dd/yyyy`             | 11/29/2017                    |
-| `M/d/yyyy`               | 11/29/2017 (no leading zeros) |
-| `MM/dd/yy`               | 11/29/17                      |
-| `dd.MM.yyyy`             | 29.11.2017                    |
-| `MM-dd`                  | 08-05                         |
-| `M-d`                    | 8-5                           |
-| `yyyy-MM-dd hh:mm`       | 2017-11-29 14:30              |
-| `yyyy-MM-dd hh:mm AM/PM` | 2017-11-29 02:30 PM           |
-| `yyyy-MM-dd hh:mm:ss`    | 2017-11-29 14:30:00           |
-| `MM/dd/yyyy h:mm AM/PM`  | 11/29/2017 2:30 PM            |
-| `hh:mm`                  | 14:30                         |
-| `h:mm`                   | 14:30 (no leading zero)       |
-| `hh:mm AM/PM`            | 02:30 PM                      |
-| `h:mm AM/PM`             | 2:30 PM                       |
-| `h:mm:ss`                | 14:30:00                      |
-| `AM/PM h:mm:ss`          | PM 2:30:00                    |
-| `MM-dd AM/PM hh:mm`      | 08-05 PM 02:30                |
+| Format string       | Example output |
+| ------------------- | -------------- |
+| `yyyy-MM-dd`        | 1930-08-05     |
+| `yyyy/MM/dd`        | 1930/8/5       |
+| `MM-dd`             | 08-05          |
+| `M-d`               | 8-5            |
+| `h:mm:ss`           | 13:30:30       |
+| `h:mm`              | 13:30          |
+| `AM/PM hh:mm`       | PM 01:30       |
+| `AM/PM h:mm`        | PM 1:30        |
+| `AM/PM h:mm:ss`     | PM 1:30:30     |
+| `MM-dd AM/PM hh:mm` | 08-05 PM 01:30 |
+
+### Toolbar Quick Formats
+
+These appear in the **toolbar format dropdown** (`defaultFmt` in locale files):
+
+| Format string            | Label          | Example output     |
+| ------------------------ | -------------- | ------------------ |
+| `yyyy-MM-dd`             | Date           | 2017-11-29         |
+| `hh:mm AM/PM`            | Time           | 3:00 PM            |
+| `hh:mm`                  | Time 24H       | 15:00              |
+| `yyyy-MM-dd hh:mm AM/PM` | Date time      | 2017-11-29 3:00 PM |
+| `yyyy-MM-dd hh:mm`       | Date time 24H  | 2017-11-29 15:00   |
+
+### Auto-assigned Formats
+
+These are set automatically by `genarate()` when a date string is typed. They are valid `ct.fa` values but are **not** in the format picker UI:
+
+| Format string           | Example output     |
+| ----------------------- | ------------------ |
+| `dd/MM/yyyy`            | 29/11/2017         |
+| `MM/dd/yyyy`            | 11/29/2017         |
+| `M/d/yyyy`              | 11/29/2017         |
+| `MM/dd/yy`              | 11/29/17           |
+| `yyyy.MM.dd`            | 2017.11.29         |
+| `dd.MM.yyyy`            | 29.11.2017         |
+| `MM/dd/yyyy h:mm AM/PM` | 11/29/2017 2:30 PM |
 
 ### SSF format string conventions
 

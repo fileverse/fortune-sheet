@@ -230,9 +230,7 @@ export function genarate(value: string | number | boolean) {
       const map: Record<string, string> = {
         "yyyy-MM-dd": "dd/MM/yyyy",
         "yyyy-MM-dd HH:mm": "dd/MM/yyyy",
-        "yyyy-MM-dd HH:mm:ss": "dd/MM/yyyy",
         "yyyy-MM-ddTHH:mm": "dd/MM/yyyy",
-        "yyyy-MM-ddTHH:mm:ss": "dd/MM/yyyy",
         "yyyy/MM/dd": "dd/MM/yyyy",
         "yyyy/MM/dd HH:mm": "dd/MM/yyyy",
         "yyyy.MM.dd": "yyyy.MM.dd",
@@ -249,12 +247,12 @@ export function genarate(value: string | number | boolean) {
       ct.fa = map[df.formatType] || "dd/MM/yyyy";
       m = SSF.format(ct.fa, v);
     } else {
-      m = value as string;
+      m = value.toString();
       ct.fa = "General";
       ct.t = "g";
     }
   } else {
-    m = value as string;
+    m = value.toString();
     ct.fa = "General";
     ct.t = "g";
   }

@@ -408,6 +408,32 @@ export const useRowDragAndDrop = (
             _sheet.dataVerification = newDataVerification;
           }
 
+          if (_sheet.hyperlink) {
+            const newHyperlink: Record<string, { linkType: string; linkAddress: string }> = {};
+            Object.keys(_sheet.hyperlink).forEach((key) => {
+              const itemData = _sheet.hyperlink?.[key];
+              if (!itemData) return;
+              const parts = key.split("_");
+              if (parts.length !== 2) return;
+              const presentRow = parseInt(parts[0], 10);
+              const col = parts[1];
+              let updatedRow = presentRow;
+              if (selectedSourceRow.includes(presentRow)) {
+                const index = selectedSourceRow.indexOf(presentRow);
+                updatedRow = selectedTargetRow[index];
+              } else if (presentRow > sourceIndex && presentRow < targetIndex) {
+                updatedRow -= selectedSourceRow.length;
+              } else if (
+                presentRow < sourceIndex &&
+                presentRow >= targetIndex
+              ) {
+                updatedRow += selectedSourceRow.length;
+              }
+              newHyperlink[`${updatedRow}_${col}`] = itemData;
+            });
+            _sheet.hyperlink = newHyperlink;
+          }
+
           _sheet.calcChain?.forEach((item) => {
             if (selectedSourceRow.includes(item.r)) {
               const index = selectedSourceRow.indexOf(item.c);

@@ -79,9 +79,10 @@ const InputBox: React.FC = () => {
 
   const ZWSP = "\u200B";
   const inputBoxInnerRef = useRef<HTMLDivElement>(null);
-  const [linkSelectionHighlightRects, setLinkSelectionHighlightRects] = useState<
-    { left: number; top: number; width: number; height: number }[]
-  >([]);
+  const [linkSelectionHighlightRects, setLinkSelectionHighlightRects] =
+    useState<{ left: number; top: number; width: number; height: number }[]>(
+      []
+    );
 
   const ensureNotEmpty = () => {
     const el = inputRef.current;
@@ -872,11 +873,7 @@ const InputBox: React.FC = () => {
       return;
     }
     const { start, end } = lc.selectionOffsets;
-    const rects = getRangeRectsByCharacterOffset(
-      inputRef.current,
-      start,
-      end
-    );
+    const rects = getRangeRectsByCharacterOffset(inputRef.current, start, end);
     const containerRect = inputBoxInnerRef.current.getBoundingClientRect();
     const relative = rects.map((r) => ({
       left: r.left - containerRect.left,

@@ -72,6 +72,32 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
     });
   }, [refs.globalCache, setContext]);
 
+  const handleInsertLink = useCallback(() => {
+    if (isButtonDisabled) return;
+    _.set(refs.globalCache, "linkCard.mouseEnter", false);
+    setContext((draftCtx) => {
+      saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress, {
+        applyToSelection: applyToSelection || undefined,
+        cellInput: refs.cellInput.current,
+      });
+      if (!applyToSelection) {
+        draftCtx.luckysheetCellUpdate = [];
+        jfrefreshgrid(draftCtx, null, undefined);
+      }
+    });
+  }, [
+    isButtonDisabled,
+    refs.globalCache,
+    refs.cellInput,
+    setContext,
+    r,
+    c,
+    linkText,
+    linkType,
+    linkAddress,
+    applyToSelection,
+  ]);
+
   const containerEvent = useMemo(
     () => ({
       onMouseEnter: () => _.set(refs.globalCache, "linkCard.mouseEnter", true),
@@ -84,36 +110,15 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
         e.stopPropagation(),
       onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
         e.stopPropagation();
-        if (isButtonDisabled) return;
         if (e.key === "Enter") {
-          _.set(refs.globalCache, "linkCard.mouseEnter", false);
-          setContext((draftCtx) => {
-            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress, {
-              applyToSelection: applyToSelection || undefined,
-              cellInput: refs.cellInput.current,
-            });
-            if (!applyToSelection) {
-              draftCtx.luckysheetCellUpdate = [];
-              jfrefreshgrid(draftCtx, null, undefined);
-            }
-          });
+          e.preventDefault();
+          handleInsertLink();
         }
       },
       onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
         e.stopPropagation(),
     }),
-    [
-      refs.globalCache,
-      isButtonDisabled,
-      applyToSelection,
-      linkText,
-      linkType,
-      linkAddress,
-      r,
-      c,
-      setContext,
-      refs.cellInput,
-    ]
+    [handleInsertLink]
   );
 
   const renderToolbarButton = useCallback(
@@ -291,6 +296,13 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
           placeholder="Display text"
           value={linkText}
           onChange={(e) => setLinkText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              e.stopPropagation();
+              handleInsertLink();
+            }
+          }}
           className="fortune-link-input"
         />
       </div>
@@ -304,6 +316,13 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
             ref={linkAddressRef}
             placeholder="Paste URL"
             value={linkAddress}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation();
+                handleInsertLink();
+              }
+            }}
             onChange={(e) => setLinkAddress(e.target.value)}
             className={`fortune-link-input ${
               !linkAddress || isLinkAddressValid.isValid ? "" : "error-input"
@@ -341,20 +360,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
       <Button
         className="fortune-link-card__cta fortune-insert-button"
         disabled={isButtonDisabled}
-        onClick={() => {
-          if (isButtonDisabled) return;
-          _.set(refs.globalCache, "linkCard.mouseEnter", false);
-          setContext((draftCtx) => {
-            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress, {
-              applyToSelection: applyToSelection || undefined,
-              cellInput: refs.cellInput.current,
-            });
-            if (!applyToSelection) {
-              draftCtx.luckysheetCellUpdate = [];
-              jfrefreshgrid(draftCtx, null, undefined);
-            }
-          });
-        }}
+        onClick={handleInsertLink}
         data-testid="link-card-cta-insert"
       >
         Insert link

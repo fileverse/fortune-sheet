@@ -344,21 +344,20 @@ export function setCellValue(
     ) {
       let { fa } = cell.ct;
       if (isRealNum(vupdate)) {
-        if (
-          (commaPresent && !fa.includes(",")) ||
-          (String(vupdate).includes(".") &&
-            String(vupdate).split(".")?.[1]?.length !==
-              fa.split(".")?.[1]?.length) ||
-          fa.includes(",") !== String(vupdate).includes(",")
-        ) {
-          if (fa.includes(",") !== String(vupdate).includes(",")) {
-            commaPresent = true;
-          }
+        // Only override fa when the user explicitly typed commas that the format doesn't support.
+        // Conditions that compared format commas/decimals against input were removed because they
+        // incorrectly changed an explicit format (e.g. "#,##0.00") when a plain value like "42" was typed,
+        // causing the decimal places to be lost.
+        if (commaPresent && !fa.includes(",")) {
           fa = getNumberFormat(String(vupdate), commaPresent);
         }
         vupdate = parseFloat(vupdate);
         if (cell?.ct) {
           cell.ct = { ...cell.ct, fa, t: "n" };
+        }
+        // Right-align numeric values when no alignment is already set, matching behavior of new numeric entries
+        if (_.isNil(cell.ht)) {
+          cell.ht = 2;
         }
       }
 
@@ -400,7 +399,9 @@ export function setCellValue(
         const format = getNumberFormat(strValue, commaPresent);
 
         cell.m = v.m ? v.m : update(format, cell.v);
-        cell.ht = v?.ht ? cell.ht : 2;
+        if (_.isNil(cell.ht)) {
+          cell.ht = 2;
+        }
         cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
           cell.m = cell.v.toString();

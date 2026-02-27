@@ -219,14 +219,18 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
             ? insertLink.openLink
             : replaceHtml(insertLink.goTo, { linkAddress })}
         </div>
-        {context.allowEdit === true && <div className="divider" />}
-        {context.allowEdit === true &&
+        {(context.allowEdit === true ||
+          (context.isFlvReadOnly && linkType === "webpage")) && (
+          <div className="divider" />
+        )}
+        {(context.allowEdit === true || context.isFlvReadOnly) &&
           linkType === "webpage" &&
           renderToolbarButton("copy", () => {
             navigator.clipboard.writeText(originAddress);
             hideLinkCard();
           })}
         {context.allowEdit === true &&
+          !context.isFlvReadOnly &&
           renderToolbarButton("pencil", () =>
             setContext((draftCtx) => {
               if (draftCtx.linkCard != null && draftCtx.allowEdit) {
@@ -234,8 +238,11 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
               }
             })
           )}
-        {context.allowEdit === true && <div className="divider" />}
+        {context.allowEdit === true && !context.isFlvReadOnly && (
+          <div className="divider" />
+        )}
         {context.allowEdit === true &&
+          !context.isFlvReadOnly &&
           renderToolbarButton("unlink", () =>
             setContext((draftCtx) => {
               _.set(refs.globalCache, "linkCard.mouseEnter", false);

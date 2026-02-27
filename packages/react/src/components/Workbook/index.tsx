@@ -1028,6 +1028,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             className="fortune-container"
             ref={workbookContainer}
             onKeyDown={onKeyDown}
+            tabIndex={-1}
           >
             <SVGDefines currency={mergedSettings.currency} />
             <div className="fortune-workarea">

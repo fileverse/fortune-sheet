@@ -1682,7 +1682,7 @@ const make_ssf = function make_ssf(SSF) {
     if (!Number.isInteger(n)) return null;
     if (n < 0) return null;
 
-    const minSec = 0; // 1970-01-01
+    const minSec = 100000; // Excel serial numbers max ~73050 for year 2100; avoids collision
     const maxSec = 4102444800; // ~2100-01-01
     const minMs = minSec * 1000;
     const maxMs = maxSec * 1000;

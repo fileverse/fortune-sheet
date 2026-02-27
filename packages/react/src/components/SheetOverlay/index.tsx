@@ -22,6 +22,7 @@ import {
   getCellRowColumn,
   getCellHyperlink,
   showLinkCard,
+  isAllowEdit,
   Context,
   GlobalCache,
   onCellsMoveStart,
@@ -79,9 +80,17 @@ const SheetOverlay: React.FC = () => {
             !_.isEmpty(draftCtx.luckysheet_select_save?.[0]) &&
             refs.cellInput.current
           ) {
-            setTimeout(() => {
-              refs.cellInput.current?.focus();
-            });
+            if (!isAllowEdit(draftCtx)) {
+              // In read-only mode, focus the workbook container directly so
+              // keyboard events (e.g. Ctrl/Cmd+C) reach the onKeyDown handler.
+              setTimeout(() => {
+                refs.workbookContainer.current?.focus({ preventScroll: true });
+              });
+            } else {
+              setTimeout(() => {
+                refs.cellInput.current?.focus();
+              });
+            }
           }
         });
       }
@@ -93,6 +102,7 @@ const SheetOverlay: React.FC = () => {
       refs.cellArea,
       refs.fxInput,
       refs.canvas,
+      refs.workbookContainer,
     ]
   );
 

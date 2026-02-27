@@ -249,12 +249,12 @@ export function genarate(value: string | number | boolean) {
       ct.fa = map[df.formatType] || "dd/MM/yyyy";
       m = SSF.format(ct.fa, v);
     } else {
-      m = value as string;
+      m = String(value);
       ct.fa = "General";
       ct.t = "g";
     }
   } else {
-    m = value as string;
+    m = String(value);
     ct.fa = "General";
     ct.t = "g";
   }

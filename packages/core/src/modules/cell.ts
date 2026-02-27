@@ -187,6 +187,10 @@ export function setCellValue(
       if (!_.isNil(v.ct)) {
         cell.ct = v.ct;
       }
+      // Preserve horizontal alignment from value object (e.g. when editing, keep number/currency right-aligned)
+      if (!_.isNil(v.ht)) {
+        cell.ht = v.ht;
+      }
     }
 
     if (_.isPlainObject(v.v)) {
@@ -355,10 +359,8 @@ export function setCellValue(
         if (cell?.ct) {
           cell.ct = { ...cell.ct, fa, t: "n" };
         }
-        // Right-align numeric values when no alignment is already set, matching behavior of new numeric entries
-        if (_.isNil(cell.ht)) {
-          cell.ht = 2;
-        }
+        // Right-align numeric/currency values so alignment is preserved after edit
+        cell.ht = 2;
       }
 
       let mask = update(fa, vupdate);
@@ -369,6 +371,10 @@ export function setCellValue(
 
         cell.m = mask[0].toString();
         [, cell.ct, cell.v] = mask;
+        // Keep numbers right-aligned when format was replaced (e.g. format didn't apply)
+        if (isRealNum(vupdate)) {
+          cell.ht = 2;
+        }
       } else {
         if (v.m) {
           cell.m = v.m;
@@ -399,9 +405,8 @@ export function setCellValue(
         const format = getNumberFormat(strValue, commaPresent);
 
         cell.m = v.m ? v.m : update(format, cell.v);
-        if (_.isNil(cell.ht)) {
-          cell.ht = 2;
-        }
+        // Right-align numeric values so alignment is preserved after edit
+        cell.ht = 2;
         cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
           cell.m = cell.v.toString();

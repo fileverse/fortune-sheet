@@ -409,7 +409,10 @@ export const useRowDragAndDrop = (
           }
 
           if (_sheet.hyperlink) {
-            const newHyperlink: Record<string, { linkType: string; linkAddress: string }> = {};
+            const newHyperlink: Record<
+              string,
+              { linkType: string; linkAddress: string }
+            > = {};
             Object.keys(_sheet.hyperlink).forEach((key) => {
               const itemData = _sheet.hyperlink?.[key];
               if (!itemData) return;

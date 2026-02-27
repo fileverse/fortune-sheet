@@ -21,6 +21,7 @@ import {
   handleItalic,
   handleUnderline,
   handleStrikeThrough,
+  getRangeRectsByCharacterOffset,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -77,6 +78,10 @@ const InputBox: React.FC = () => {
   const isComposingRef = useRef(false);
 
   const ZWSP = "\u200B";
+  const inputBoxInnerRef = useRef<HTMLDivElement>(null);
+  const [linkSelectionHighlightRects, setLinkSelectionHighlightRects] = useState<
+    { left: number; top: number; width: number; height: number }[]
+  >([]);
 
   const ensureNotEmpty = () => {
     const el = inputRef.current;
@@ -848,6 +853,46 @@ const InputBox: React.FC = () => {
     };
   }, [showFormulaHint]);
 
+  // Keep selection highlight visible in input box when link modal is open (focus moved to modal)
+  useLayoutEffect(() => {
+    const lc = context.linkCard;
+    const isSameCell =
+      context.luckysheetCellUpdate?.length === 2 &&
+      lc &&
+      context.luckysheetCellUpdate[0] === lc.r &&
+      context.luckysheetCellUpdate[1] === lc.c;
+    if (
+      !lc?.applyToSelection ||
+      !lc?.selectionOffsets ||
+      !isSameCell ||
+      !inputRef.current ||
+      !inputBoxInnerRef.current
+    ) {
+      setLinkSelectionHighlightRects([]);
+      return;
+    }
+    const { start, end } = lc.selectionOffsets;
+    const rects = getRangeRectsByCharacterOffset(
+      inputRef.current,
+      start,
+      end
+    );
+    const containerRect = inputBoxInnerRef.current.getBoundingClientRect();
+    const relative = rects.map((r) => ({
+      left: r.left - containerRect.left,
+      top: r.top - containerRect.top,
+      width: r.width,
+      height: r.height,
+    }));
+    setLinkSelectionHighlightRects(relative);
+  }, [
+    context.linkCard?.applyToSelection,
+    context.linkCard?.selectionOffsets,
+    context.linkCard?.r,
+    context.linkCard?.c,
+    context.luckysheetCellUpdate,
+  ]);
+
   const wraperGetCell = () => {
     const cell = getCellAddress();
     placeRef.current = cell;
@@ -906,15 +951,17 @@ const InputBox: React.FC = () => {
         </div>
       )}
       <div
+        ref={inputBoxInnerRef}
         className="luckysheet-input-box-inner"
         style={
           firstSelection
             ? {
+                position: "relative",
                 minWidth: firstSelection.width,
                 minHeight: firstSelection.height,
                 ...inputBoxStyle,
               }
-            : {}
+            : { position: "relative" }
         }
       >
         <ContentEditable
@@ -960,6 +1007,34 @@ const InputBox: React.FC = () => {
           onPaste={onPaste}
           allowEdit={edit ? !isHidenRC : edit}
         />
+        {linkSelectionHighlightRects.length > 0 && (
+          <div
+            className="luckysheet-input-box-link-selection-highlight"
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              pointerEvents: "none",
+            }}
+          >
+            {linkSelectionHighlightRects.map((r, i) => (
+              <div
+                key={i}
+                style={{
+                  position: "absolute",
+                  left: r.left,
+                  top: r.top,
+                  width: r.width,
+                  height: r.height,
+                  backgroundColor: "rgba(0, 123, 255, 0.25)",
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {(context.functionCandidates.length > 0 ||

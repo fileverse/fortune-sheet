@@ -7,7 +7,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: 1px solid #e5e5e5;
   border-radius: 8px;
-  min-width: 320px;
 }
 
 .fortune-link-cards-container {
@@ -23,12 +22,16 @@
   border: 1px solid #e5e5e5;
   border-radius: 8px;
   padding: 16px;
-  width: 300px;
+  width: fit-content;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   gap: 12px;
   z-index: 300;
+}
+
+.fortune-link-card--editing {
+  min-width: 280px;
 }
 
 .fortune-link-type-select {

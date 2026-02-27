@@ -284,7 +284,7 @@ export function handleCellAreaMouseDown(
     [col_pre, col, col_index, col_index_ed] = margeset.column;
   }
 
-  showLinkCard(ctx, row_index, col_index, false, true);
+  showLinkCard(ctx, row_index, col_index, undefined, false, true);
   // //单元格单击之前
   if (
     ctx.hooks.beforeCellMouseDown?.(flowdata[row_index]?.[col_index], {

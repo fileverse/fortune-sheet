@@ -429,6 +429,35 @@ export const useColumnDragAndDrop = (
             _sheet.dataVerification = newDataVerification;
           }
 
+          if (_sheet.hyperlink) {
+            const newHyperlink: Record<
+              string,
+              { linkType: string; linkAddress: string }
+            > = {};
+            Object.keys(_sheet.hyperlink).forEach((key) => {
+              const itemData = _sheet.hyperlink?.[key];
+              if (!itemData) return;
+              const parts = key.split("_");
+              if (parts.length !== 2) return;
+              const row = parts[0];
+              const presentCol = parseInt(parts[1], 10);
+              let updatedCol = presentCol;
+              if (selectedSourceCol.includes(presentCol)) {
+                const index = selectedSourceCol.indexOf(presentCol);
+                updatedCol = selectedTargetCol[index];
+              } else if (presentCol > sourceIndex && presentCol < targetIndex) {
+                updatedCol -= selectedSourceCol.length;
+              } else if (
+                presentCol < sourceIndex &&
+                presentCol >= targetIndex
+              ) {
+                updatedCol += selectedSourceCol.length;
+              }
+              newHyperlink[`${row}_${updatedCol}`] = itemData;
+            });
+            _sheet.hyperlink = newHyperlink;
+          }
+
           // update calc chain
           _sheet.calcChain?.forEach((item) => {
             if (selectedSourceCol.includes(item.c)) {

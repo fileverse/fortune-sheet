@@ -127,23 +127,33 @@ export function convertCssToStyleList(cssText: string, originCell: Cell) {
   return styleList;
 }
 
+export type InlineSegmentLink = { linkType: string; linkAddress: string };
+
 export function convertSpanToShareString(
   // eslint-disable-next-line no-undef
   $dom: NodeListOf<HTMLSpanElement>,
   originCell: Cell
 ) {
-  const styles: CellStyle[] = [];
-  let preStyleList: Cell;
+  const styles: (CellStyle & { v?: string; link?: InlineSegmentLink })[] = [];
+  let preStyleList:
+    | (CellStyle & { v?: string; link?: InlineSegmentLink })
+    | null = null;
   let preStyleListString = null;
   for (let i = 0; i < $dom.length; i += 1) {
     const span = $dom[i];
     const styleList = convertCssToStyleList(
       span.style.cssText,
       originCell
-    ) as Cell;
+    ) as CellStyle & { v?: string; link?: InlineSegmentLink };
 
-    const curStyleListString = JSON.stringify(styleList);
-    // let v = span.innerHTML;
+    if (span.dataset?.linkType && span.dataset?.linkAddress) {
+      styleList.link = {
+        linkType: span.dataset.linkType,
+        linkAddress: span.dataset.linkAddress,
+      };
+    }
+
+    const curStyleListString = JSON.stringify(_.omit(styleList, "link"));
     let v = span.innerText;
     v = v.replace(/\n/g, "\r\n");
     if (i === $dom.length - 1) {
@@ -152,12 +162,14 @@ export function convertSpanToShareString(
       }
     }
 
-    if (curStyleListString === preStyleListString) {
-      preStyleList!.v += v;
+    if (
+      curStyleListString === preStyleListString &&
+      _.isEqual(preStyleList?.link, styleList.link)
+    ) {
+      preStyleList!.v! += v;
     } else {
       styleList.v = v;
       styles.push(styleList);
-
       preStyleListString = curStyleListString;
       preStyleList = styleList;
     }
@@ -555,5 +567,169 @@ export function updateInlineStringFormat(
         );
       }
     }
+  }
+}
+
+function escapeHtmlAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function getLinkDataAttrs(span: HTMLElement): string {
+  if (span.dataset?.linkType && span.dataset?.linkAddress) {
+    return ` data-link-type='${escapeHtmlAttr(
+      span.dataset.linkType
+    )}' data-link-address='${escapeHtmlAttr(span.dataset.linkAddress)}'`;
+  }
+  return "";
+}
+
+function getLinkStyleCssText(baseCssText: string): string {
+  let css = getCssText(baseCssText, "fc", "rgb(0, 0, 255)");
+  css = getCssText(css, "un", 1);
+  return css;
+}
+
+/** Applies link style (blue + underline) and data-link-* to the current selection in cellInput. Persisted on blur via convertSpanToShareString. */
+export function applyLinkToSelection(
+  cellInput: HTMLDivElement,
+  linkType: string,
+  linkAddress: string
+) {
+  const w = window.getSelection();
+  if (!w || w.rangeCount === 0) return;
+  const range = w.getRangeAt(0);
+  if (range.collapsed) return;
+
+  const $textEditor = cellInput;
+  const { endContainer, startContainer, endOffset, startOffset } = range;
+
+  if (startContainer === endContainer) {
+    const span = startContainer.parentNode as HTMLElement | null;
+    const content = span?.innerHTML || "";
+    const fullContent = $textEditor.innerHTML;
+    const inherit = fullContent.substring(0, 5) !== "<span";
+    const s2 = startOffset;
+    const s3 = endOffset;
+    const left = content.substring(0, s2);
+    const mid = content.substring(s2, s3);
+    const right = content.substring(s3, content.length);
+
+    let cont = "";
+    const dataAttrs = getLinkDataAttrs(span!);
+    if (left !== "") {
+      let { cssText } = span!.style;
+      if (inherit) {
+        const box = span!.closest(
+          "#luckysheet-input-box"
+        ) as HTMLElement | null;
+        if (box != null) cssText = extendCssText(box.style.cssText, cssText);
+      }
+      cont += `<span style='${cssText}'${dataAttrs}>${left}</span>`;
+    }
+    if (mid !== "") {
+      let cssText = getLinkStyleCssText(span!.style.cssText);
+      if (inherit) {
+        const box = span!.closest(
+          "#luckysheet-input-box"
+        ) as HTMLElement | null;
+        if (box != null) cssText = extendCssText(box.style.cssText, cssText);
+      }
+      cont += `<span style='${cssText}' data-link-type='${escapeHtmlAttr(
+        linkType
+      )}' data-link-address='${escapeHtmlAttr(linkAddress)}'>${mid}</span>`;
+    }
+    if (right !== "") {
+      let { cssText } = span!.style;
+      if (inherit) {
+        const box = span!.closest(
+          "#luckysheet-input-box"
+        ) as HTMLElement | null;
+        if (box != null) cssText = extendCssText(box.style.cssText, cssText);
+      }
+      cont += `<span style='${cssText}'${dataAttrs}>${right}</span>`;
+    }
+    if (startContainer.parentElement?.tagName === "SPAN") {
+      (span as HTMLElement).outerHTML = cont;
+    } else {
+      span!.innerHTML = cont;
+    }
+    const newSpans = $textEditor.querySelectorAll("span");
+    const linkSpanIndex = left === "" ? 0 : 1;
+    if (newSpans[linkSpanIndex]) {
+      selectTextContent(newSpans[linkSpanIndex]);
+    }
+  } else if (
+    startContainer.parentElement?.tagName === "SPAN" &&
+    endContainer.parentElement?.tagName === "SPAN"
+  ) {
+    const startSpan = startContainer.parentNode as HTMLElement | null;
+    const endSpan = endContainer.parentNode as HTMLElement | null;
+    const allSpans = $textEditor.querySelectorAll("span");
+    const startSpanIndex = _.indexOf(allSpans, startSpan);
+    const endSpanIndex = _.indexOf(allSpans, endSpan);
+    const startContent = startSpan?.innerHTML || "";
+    const endContent = endSpan?.innerHTML || "";
+    const s2 = startOffset;
+    const s3 = endOffset;
+    const sleft = startContent.substring(0, s2);
+    const sright = startContent.substring(s2, startContent.length);
+    const eleft = endContent.substring(0, s3);
+    const eright = endContent.substring(s3, endContent.length);
+    let spans = $textEditor.querySelectorAll("span");
+    let cont = "";
+    for (let i = 0; i < startSpanIndex; i += 1) {
+      const sp = spans[i] as HTMLElement;
+      cont += `<span style='${sp.style.cssText}'${getLinkDataAttrs(sp)}>${
+        sp.innerHTML
+      }</span>`;
+    }
+    if (sleft !== "") {
+      cont += `<span style='${startSpan!.style.cssText}'${getLinkDataAttrs(
+        startSpan!
+      )}>${sleft}</span>`;
+    }
+    if (sright !== "") {
+      const cssText = getLinkStyleCssText(startSpan!.style.cssText);
+      cont += `<span style='${cssText}' data-link-type='${escapeHtmlAttr(
+        linkType
+      )}' data-link-address='${escapeHtmlAttr(linkAddress)}'>${sright}</span>`;
+    }
+    if (startSpanIndex < endSpanIndex) {
+      for (let i = startSpanIndex + 1; i < endSpanIndex; i += 1) {
+        const sp = spans[i];
+        const cssText = getLinkStyleCssText(sp.style.cssText);
+        cont += `<span style='${cssText}' data-link-type='${escapeHtmlAttr(
+          linkType
+        )}' data-link-address='${escapeHtmlAttr(linkAddress)}'>${
+          sp.innerHTML
+        }</span>`;
+      }
+    }
+    if (eleft !== "") {
+      const cssText = getLinkStyleCssText(endSpan!.style.cssText);
+      cont += `<span style='${cssText}' data-link-type='${escapeHtmlAttr(
+        linkType
+      )}' data-link-address='${escapeHtmlAttr(linkAddress)}'>${eleft}</span>`;
+    }
+    if (eright !== "") {
+      cont += `<span style='${endSpan!.style.cssText}'${getLinkDataAttrs(
+        endSpan!
+      )}>${eright}</span>`;
+    }
+    for (let i = endSpanIndex + 1; i < spans.length; i += 1) {
+      const sp = spans[i] as HTMLElement;
+      cont += `<span style='${sp.style.cssText}'${getLinkDataAttrs(sp)}>${
+        sp.innerHTML
+      }</span>`;
+    }
+    $textEditor.innerHTML = cont;
+    spans = $textEditor.querySelectorAll("span");
+    const startSel = sleft === "" ? startSpanIndex : startSpanIndex + 1;
+    const endSel = eright === "" ? endSpanIndex : endSpanIndex + 1;
+    selectTextContentCross(spans[startSel], spans[endSel]);
   }
 }

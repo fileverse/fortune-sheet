@@ -671,6 +671,14 @@ const Toolbar: React.FC<{
     window.conditionalFormatClick = conditionalFormatClick;
   }, []);
 
+  // Sync toolbar recent colors from selected cell so picker and display stay correct (only when cell exists)
+  useEffect(() => {
+    if (cell != null) {
+      refs.globalCache.recentTextColor = normalizedCellAttr(cell, "fc");
+      refs.globalCache.recentBackgroundColor = normalizedCellAttr(cell, "bg");
+    }
+  }, [cell, refs.globalCache]);
+
   const getToolbarItem = useCallback(
     (name: string, i: number) => {
       // @ts-ignore
@@ -679,6 +687,12 @@ const Toolbar: React.FC<{
         return <Divider key={i} />;
       }
       if (["font-color", "background"].includes(name)) {
+        // Show selected cell's format when a cell exists; for empty/no cell use defaults so we never show wrong color
+        const displayTextColor =
+          cell != null ? normalizedCellAttr(cell, "fc") : "#000000";
+        const displayBackgroundColor =
+          cell != null ? normalizedCellAttr(cell, "bg") : undefined;
+
         const pick = (color: string | undefined) => {
           setContext((draftCtx) =>
             (name === "font-color" ? handleTextColor : handleTextBackground)(
@@ -701,8 +715,8 @@ const Toolbar: React.FC<{
                 height: 4,
                 backgroundColor:
                   name === "font-color"
-                    ? refs.globalCache.recentTextColor
-                    : refs.globalCache.recentBackgroundColor,
+                    ? displayTextColor
+                    : displayBackgroundColor,
                 position: "absolute",
                 bottom: 2,
                 left: 3,
@@ -713,16 +727,12 @@ const Toolbar: React.FC<{
               iconId={name}
               tooltip={tooltip}
               showArrow={false}
-              fillColor={
-                name === "font-color"
-                  ? refs.globalCache.recentTextColor
-                  : undefined
-              }
+              fillColor={name === "font-color" ? displayTextColor : undefined}
               onClick={() => {
                 const color =
                   name === "font-color"
-                    ? refs.globalCache.recentTextColor
-                    : refs.globalCache.recentBackgroundColor;
+                    ? displayTextColor
+                    : displayBackgroundColor;
                 if (color) pick(color);
               }}
             >

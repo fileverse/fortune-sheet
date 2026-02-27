@@ -197,10 +197,37 @@ export function copySheet(ctx: Context, sheetId: string) {
     sheetName,
     sheetData
   );
+  // Fix formula references: cloned calcChain (and dynamic arrays) still had the original sheet id.
+  // Formula execution and groupValuesRefresh use entry.id to target the sheet; wrong id writes to the wrong sheet.
+  const newSheetIndex = ctx.luckysheetfile.length - 1;
+  const newSheet = ctx.luckysheetfile[newSheetIndex];
+  const newSheetId = newSheet.id as string;
+  if (newSheet.calcChain?.length) {
+    newSheet.calcChain = newSheet.calcChain.map(
+      (entry: { r: number; c: number; id?: string }) => ({
+        ...entry,
+        id: newSheetId,
+      })
+    );
+  }
+  if (newSheet.dynamicArray?.length) {
+    newSheet.dynamicArray = newSheet.dynamicArray.map(
+      (entry: { id?: string; [k: string]: any }) =>
+        entry && typeof entry === "object" && "id" in entry
+          ? { ...entry, id: newSheetId }
+          : entry
+    );
+  }
+  if (newSheet.dynamicArray_compute?.length) {
+    newSheet.dynamicArray_compute = newSheet.dynamicArray_compute.map(
+      (entry: { id?: string; [k: string]: any }) =>
+        entry && typeof entry === "object" && "id" in entry
+          ? { ...entry, id: newSheetId }
+          : entry
+    );
+  }
   const sheetOrderList: Record<string, number> = {};
-  sheetOrderList[
-    ctx.luckysheetfile[ctx.luckysheetfile.length - 1].id as string
-  ] = order;
+  sheetOrderList[newSheetId] = order;
   api.setSheetOrder(ctx, sheetOrderList);
 }
 
@@ -243,7 +270,6 @@ export function calculateReferencedCellSheetFromula(
   if (!ctx.luckysheetfile[index].data) return;
   for (let r = 0; r < ctx.luckysheetfile[index].data!.length; r += 1) {
     for (let c = 0; c < ctx.luckysheetfile[index].data![r].length; c += 1) {
-      console.log(refCell, ctx.luckysheetfile[index].data![r][c]?.f);
       let isRef = false;
       if (
         refCell &&

@@ -74,7 +74,8 @@ export function adjustFormulaForPaste(
   let hadInvalid = false;
 
   const cellRefRegex = /\b(\$?)([A-Z]+)(\$?)(\d+)\b/g;
-  const stringOrCellRef = /"(?:\\.|[^"])*"|(?<!\$)([A-Z]+\d+\b)/g;
+  // Match quoted strings or cell refs (A1, $A1, A$1, $A$1). Avoid matching sheet names (e.g. Sheet1 in "Sheet1!A1") by requiring ref not to be followed by "!"
+  const stringOrCellRef = /"(?:\\.|[^"])*"|(\$?[A-Z]+\$?\d+)(?!\s*!)\b/g;
 
   const result = formula.replace(
     stringOrCellRef,
@@ -83,10 +84,7 @@ export function adjustFormulaForPaste(
       // cellRef = only group 1 when it's a cell reference (undefined for quoted strings)
 
       if (!cellRef) return m; // Inside quotes → DO NOT modify
-      if (cellRef.startsWith("$")) return m; // Absolute column → DO NOT modify
-      console.log(m, "cellRef", cellRef);
-
-      // Now process your cell reference normally:
+      // Inner regex handles $ for column/row; we adjust only relative parts
       return cellRef.replace(
         cellRefRegex,
         (
@@ -1654,16 +1652,17 @@ function pasteHandlerOfCopyPaste(
           if (!_.isNil(value) && !_.isNil(value.f)) {
             let adjustedFormula = value.f;
             let isError = false;
+            // Use actual source cell for this pasted cell so relative refs adjust correctly
+            const srcRow = c_r1 + (h - mth);
+            const srcCol = c_c1 + (c - mtc);
             try {
               adjustedFormula = adjustFormulaForPaste(
                 value.f,
-                c_c1,
-                c_r1,
+                srcCol,
+                srcRow,
                 c,
                 h
               );
-
-              console.log("adjustedFormula", adjustedFormula);
             } catch (error: any) {
               isError = true;
               value.error = {

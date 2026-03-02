@@ -2288,14 +2288,27 @@ export function fillRightData(ctx: Context): string {
             if (dataVerification != null) {
               const dv = dataVerification[srcKey];
               if (dv != null) {
-                console.log("[fillRightData] dataVerification copy from", { row: srcRow, col: srcCol }, "→", { row: r1, col: c1 }, dv);
-                file.dataVerification = { ...(file.dataVerification || {}), [tgtKey]: _.cloneDeep(dv) };
+                console.log(
+                  "[fillRightData] dataVerification copy from",
+                  { row: srcRow, col: srcCol },
+                  "→",
+                  { row: r1, col: c1 },
+                  dv
+                );
+                file.dataVerification = {
+                  ...(file.dataVerification || {}),
+                  [tgtKey]: _.cloneDeep(dv),
+                };
               }
             }
             if (hyperlink != null && hyperlink[srcKey] != null) {
-              file.hyperlink = { ...(file.hyperlink || {}), [tgtKey]: _.cloneDeep(hyperlink[srcKey]) };
+              file.hyperlink = {
+                ...(file.hyperlink || {}),
+                [tgtKey]: _.cloneDeep(hyperlink[srcKey]),
+              };
               const tgtCell = d[r1][c1];
-              if (tgtCell != null) tgtCell.hl = { r: r1, c: c1, id: ctx.currentSheetId };
+              if (tgtCell != null)
+                tgtCell.hl = { r: r1, c: c1, id: ctx.currentSheetId };
             }
             if (cdformat != null && cdformat.length > 0) {
               for (let i = 0; i < cdformat.length; i += 1) {
@@ -2303,7 +2316,12 @@ export function fillRightData(ctx: Context): string {
                 if (!ranges) continue;
                 for (let j = 0; j < ranges.length; j += 1) {
                   const cr = ranges[j];
-                  if (srcRow >= cr.row[0] && srcRow <= cr.row[1] && srcCol >= cr.column[0] && srcCol <= cr.column[1]) {
+                  if (
+                    srcRow >= cr.row[0] &&
+                    srcRow <= cr.row[1] &&
+                    srcCol >= cr.column[0] &&
+                    srcCol <= cr.column[1]
+                  ) {
                     ranges.push({ row: [r1, r1], column: [c1, c1] });
                     break;
                   }
@@ -2325,14 +2343,27 @@ export function fillRightData(ctx: Context): string {
               if (dataVerification != null) {
                 const dv = dataVerification[srcKey];
                 if (dv != null) {
-                  console.log("[fillRightData] dataVerification copy from", { row: r, col: c1 }, "→", { row: r, col: c }, dv);
-                  file.dataVerification = { ...(file.dataVerification || {}), [tgtKey]: _.cloneDeep(dv) };
+                  console.log(
+                    "[fillRightData] dataVerification copy from",
+                    { row: r, col: c1 },
+                    "→",
+                    { row: r, col: c },
+                    dv
+                  );
+                  file.dataVerification = {
+                    ...(file.dataVerification || {}),
+                    [tgtKey]: _.cloneDeep(dv),
+                  };
                 }
               }
               if (hyperlink != null && hyperlink[srcKey] != null) {
-                file.hyperlink = { ...(file.hyperlink || {}), [tgtKey]: _.cloneDeep(hyperlink[srcKey]) };
+                file.hyperlink = {
+                  ...(file.hyperlink || {}),
+                  [tgtKey]: _.cloneDeep(hyperlink[srcKey]),
+                };
                 const tgtCell = d[r]?.[c];
-                if (tgtCell != null) tgtCell.hl = { r, c, id: ctx.currentSheetId };
+                if (tgtCell != null)
+                  tgtCell.hl = { r, c, id: ctx.currentSheetId };
               }
               if (cdformat != null && cdformat.length > 0) {
                 for (let i = 0; i < cdformat.length; i += 1) {
@@ -2340,7 +2371,12 @@ export function fillRightData(ctx: Context): string {
                   if (!ranges) continue;
                   for (let j = 0; j < ranges.length; j += 1) {
                     const cr = ranges[j];
-                    if (r >= cr.row[0] && r <= cr.row[1] && c1 >= cr.column[0] && c1 <= cr.column[1]) {
+                    if (
+                      r >= cr.row[0] &&
+                      r <= cr.row[1] &&
+                      c1 >= cr.column[0] &&
+                      c1 <= cr.column[1]
+                    ) {
                       ranges.push({ row: [r, r], column: [c, c] });
                       break;
                     }
@@ -2410,14 +2446,27 @@ export function fillDownData(ctx: Context): string {
             if (dataVerification != null) {
               const dv = dataVerification[srcKey];
               if (dv != null) {
-                console.log("[fillDownData] dataVerification copy from", { row: srcRow, col: srcCol }, "→", { row: r1, col: c1 }, dv);
-                file.dataVerification = { ...(file.dataVerification || {}), [tgtKey]: _.cloneDeep(dv) };
+                console.log(
+                  "[fillDownData] dataVerification copy from",
+                  { row: srcRow, col: srcCol },
+                  "→",
+                  { row: r1, col: c1 },
+                  dv
+                );
+                file.dataVerification = {
+                  ...(file.dataVerification || {}),
+                  [tgtKey]: _.cloneDeep(dv),
+                };
               }
             }
             if (hyperlink != null && hyperlink[srcKey] != null) {
-              file.hyperlink = { ...(file.hyperlink || {}), [tgtKey]: _.cloneDeep(hyperlink[srcKey]) };
+              file.hyperlink = {
+                ...(file.hyperlink || {}),
+                [tgtKey]: _.cloneDeep(hyperlink[srcKey]),
+              };
               const tgtCell = d[r1][c1];
-              if (tgtCell != null) tgtCell.hl = { r: r1, c: c1, id: ctx.currentSheetId };
+              if (tgtCell != null)
+                tgtCell.hl = { r: r1, c: c1, id: ctx.currentSheetId };
             }
             if (cdformat != null && cdformat.length > 0) {
               for (let i = 0; i < cdformat.length; i += 1) {
@@ -2425,7 +2474,12 @@ export function fillDownData(ctx: Context): string {
                 if (!ranges) continue;
                 for (let j = 0; j < ranges.length; j += 1) {
                   const cr = ranges[j];
-                  if (srcRow >= cr.row[0] && srcRow <= cr.row[1] && srcCol >= cr.column[0] && srcCol <= cr.column[1]) {
+                  if (
+                    srcRow >= cr.row[0] &&
+                    srcRow <= cr.row[1] &&
+                    srcCol >= cr.column[0] &&
+                    srcCol <= cr.column[1]
+                  ) {
                     ranges.push({ row: [r1, r1], column: [c1, c1] });
                     break;
                   }
@@ -2446,14 +2500,27 @@ export function fillDownData(ctx: Context): string {
               if (dataVerification != null) {
                 const dv = dataVerification[srcKey];
                 if (dv != null) {
-                  console.log("[fillDownData] dataVerification copy from", { row: r1, col: c }, "→", { row: r, col: c }, dv);
-                  file.dataVerification = { ...(file.dataVerification || {}), [tgtKey]: _.cloneDeep(dv) };
+                  console.log(
+                    "[fillDownData] dataVerification copy from",
+                    { row: r1, col: c },
+                    "→",
+                    { row: r, col: c },
+                    dv
+                  );
+                  file.dataVerification = {
+                    ...(file.dataVerification || {}),
+                    [tgtKey]: _.cloneDeep(dv),
+                  };
                 }
               }
               if (hyperlink != null && hyperlink[srcKey] != null) {
-                file.hyperlink = { ...(file.hyperlink || {}), [tgtKey]: _.cloneDeep(hyperlink[srcKey]) };
+                file.hyperlink = {
+                  ...(file.hyperlink || {}),
+                  [tgtKey]: _.cloneDeep(hyperlink[srcKey]),
+                };
                 const tgtCell = d[r]?.[c];
-                if (tgtCell != null) tgtCell.hl = { r, c, id: ctx.currentSheetId };
+                if (tgtCell != null)
+                  tgtCell.hl = { r, c, id: ctx.currentSheetId };
               }
               if (cdformat != null && cdformat.length > 0) {
                 for (let i = 0; i < cdformat.length; i += 1) {
@@ -2461,7 +2528,12 @@ export function fillDownData(ctx: Context): string {
                   if (!ranges) continue;
                   for (let j = 0; j < ranges.length; j += 1) {
                     const cr = ranges[j];
-                    if (r1 >= cr.row[0] && r1 <= cr.row[1] && c >= cr.column[0] && c <= cr.column[1]) {
+                    if (
+                      r1 >= cr.row[0] &&
+                      r1 <= cr.row[1] &&
+                      c >= cr.column[0] &&
+                      c <= cr.column[1]
+                    ) {
                       ranges.push({ row: [r, r], column: [c, c] });
                       break;
                     }

@@ -68,15 +68,8 @@ export function changeSheet(
     //     luckysheetsizeauto(false);
   }
 
-  // 隐藏其他sheet的图表，显示当前sheet的图表 chartMix
-  //   renderChartShow(index);
-
-  //   luckysheetFreezen.initialFreezen(index);
-  //   _this.restoreselect();
   if (ctx.hooks.afterActivateSheet) {
-    // setTimeout(() => {
     ctx.hooks.afterActivateSheet?.(id);
-    // });
   }
 }
 
@@ -130,14 +123,8 @@ export function addSheet(
 
   //   server.saveParam("sha", null, $.extend(true, {}, sheetconfig));
 
-  // if (!newSheetID) {
-  //   changeSheet(ctx, id, isPivotTable, true);
-  // }
-
   if (ctx.hooks.afterAddSheet) {
-    // setTimeout(() => {
     ctx.hooks.afterAddSheet?.({ ...sheetconfig });
-    // });
   }
 }
 
@@ -183,9 +170,7 @@ export function deleteSheet(ctx: Context, id: string) {
   }
 
   if (ctx.hooks.afterDeleteSheet) {
-    // setTimeout(() => {
     ctx.hooks.afterDeleteSheet?.(id);
-    // });
   }
 }
 

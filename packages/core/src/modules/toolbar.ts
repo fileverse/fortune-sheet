@@ -342,7 +342,6 @@ export function updateFormat(
   foucsStatus: any,
   canvas?: CanvasRenderingContext2D
 ) {
-
   const allowEdit = isAllowEdit(ctx);
   if (!allowEdit) return;
 

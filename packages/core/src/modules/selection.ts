@@ -2277,7 +2277,14 @@ export function fillRightData(ctx: Context): string {
           const srcRow = r;
           const srcCol = c - 1;
           const previousCell = d[r][c - 1];
-          console.log("[fillRightData] copy from cell", { row: srcRow, col: srcCol }, "→ fill into", { row: r, col: c }, "source data:", previousCell);
+          console.log(
+            "[fillRightData] copy from cell",
+            { row: srcRow, col: srcCol },
+            "→ fill into",
+            { row: r, col: c },
+            "source data:",
+            previousCell
+          );
           d[r][c] = { ...previousCell };
 
           if (dataVerification != null && file != null) {
@@ -2285,7 +2292,11 @@ export function fillRightData(ctx: Context): string {
             const tgtKey = `${r}_${c}`;
             const dv = dataVerification[srcKey];
             if (dv != null) {
-              console.log("[fillRightData] dataVerification exists for copy-from cell", { row: srcRow, col: srcCol }, dv);
+              console.log(
+                "[fillRightData] dataVerification exists for copy-from cell",
+                { row: srcRow, col: srcCol },
+                dv
+              );
               file.dataVerification = {
                 ...(file.dataVerification || {}),
                 [tgtKey]: _.cloneDeep(dv),
@@ -2342,7 +2353,14 @@ export function fillDownData(ctx: Context): string {
           const srcRow = r - 1;
           const srcCol = c;
           const previousCell = d[r - 1][c];
-          console.log("[fillDownData] copy from cell", { row: srcRow, col: srcCol }, "→ fill into", { row: r, col: c }, "source data:", previousCell);
+          console.log(
+            "[fillDownData] copy from cell",
+            { row: srcRow, col: srcCol },
+            "→ fill into",
+            { row: r, col: c },
+            "source data:",
+            previousCell
+          );
           d[r][c] = { ...previousCell };
 
           if (dataVerification != null && file != null) {
@@ -2350,7 +2368,11 @@ export function fillDownData(ctx: Context): string {
             const tgtKey = `${r}_${c}`;
             const dv = dataVerification[srcKey];
             if (dv != null) {
-              console.log("[fillDownData] dataVerification exists for copy-from cell", { row: srcRow, col: srcCol }, dv);
+              console.log(
+                "[fillDownData] dataVerification exists for copy-from cell",
+                { row: srcRow, col: srcCol },
+                dv
+              );
               file.dataVerification = {
                 ...(file.dataVerification || {}),
                 [tgtKey]: _.cloneDeep(dv),

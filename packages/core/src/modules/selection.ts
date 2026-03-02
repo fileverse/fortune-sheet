@@ -2138,6 +2138,8 @@ export function deleteSelectedCellText(ctx: Context): string {
             const cell = d[r][c]!;
             delete cell.m;
             delete cell.v;
+            delete cell.fc;
+            delete cell.un;
 
             if (cell.f != null) {
               delete cell.f;
@@ -2266,10 +2268,30 @@ export function fillRightData(ctx: Context): string {
       const c1 = selection[s].column[0];
       const c2 = selection[s].column[1];
 
+      const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
+      const file = sheetIndex != null ? ctx.luckysheetfile[sheetIndex] : null;
+      const dataVerification = file?.dataVerification;
+
       for (let r = r1; r <= r2; r += 1) {
         for (let c = c1; c <= c2; c += 1) {
+          const srcRow = r;
+          const srcCol = c - 1;
           const previousCell = d[r][c - 1];
+          console.log("[fillRightData] copy from cell", { row: srcRow, col: srcCol }, "→ fill into", { row: r, col: c }, "source data:", previousCell);
           d[r][c] = { ...previousCell };
+
+          if (dataVerification != null && file != null) {
+            const srcKey = `${srcRow}_${srcCol}`;
+            const tgtKey = `${r}_${c}`;
+            const dv = dataVerification[srcKey];
+            if (dv != null) {
+              console.log("[fillRightData] dataVerification exists for copy-from cell", { row: srcRow, col: srcCol }, dv);
+              file.dataVerification = {
+                ...(file.dataVerification || {}),
+                [tgtKey]: _.cloneDeep(dv),
+              };
+            }
+          }
         }
       }
     }
@@ -2311,10 +2333,30 @@ export function fillDownData(ctx: Context): string {
       const c1 = selection[s].column[0];
       const c2 = selection[s].column[1];
 
+      const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
+      const file = sheetIndex != null ? ctx.luckysheetfile[sheetIndex] : null;
+      const dataVerification = file?.dataVerification;
+
       for (let r = r1; r <= r2; r += 1) {
         for (let c = c1; c <= c2; c += 1) {
+          const srcRow = r - 1;
+          const srcCol = c;
           const previousCell = d[r - 1][c];
+          console.log("[fillDownData] copy from cell", { row: srcRow, col: srcCol }, "→ fill into", { row: r, col: c }, "source data:", previousCell);
           d[r][c] = { ...previousCell };
+
+          if (dataVerification != null && file != null) {
+            const srcKey = `${srcRow}_${srcCol}`;
+            const tgtKey = `${r}_${c}`;
+            const dv = dataVerification[srcKey];
+            if (dv != null) {
+              console.log("[fillDownData] dataVerification exists for copy-from cell", { row: srcRow, col: srcCol }, dv);
+              file.dataVerification = {
+                ...(file.dataVerification || {}),
+                [tgtKey]: _.cloneDeep(dv),
+              };
+            }
+          }
         }
       }
     }

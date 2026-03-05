@@ -38,6 +38,7 @@ import {
   Cell,
   api,
   getSheetIndex,
+  is_date,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import {
@@ -766,6 +767,14 @@ const Toolbar: React.FC<{
               curr?.fa === "0.00"
             ) {
               currentFmt = "Number";
+            } else if (is_date(curr.fa)) {
+              // Check if format contains time indicators
+              const hasTime =
+                curr.fa.includes("h") ||
+                curr.fa.includes("H") ||
+                curr.fa.includes("m") ||
+                curr.fa.includes("s");
+              currentFmt = hasTime ? "Date time" : "Date";
             } else {
               currentFmt = defaultFormat[defaultFormat.length - 1].text;
             }

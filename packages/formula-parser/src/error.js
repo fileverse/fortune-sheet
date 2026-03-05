@@ -43,7 +43,7 @@ export default function error(type) {
     result = errors[type];
   }
 
-  return result ? result : null;
+  return result ? result : type;
 }
 
 /**

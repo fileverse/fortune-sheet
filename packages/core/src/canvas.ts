@@ -2018,9 +2018,7 @@ export class Canvas {
 
         // Draw text inside the pill
         const text = optionValue[i]; // Use different text for each pill
-        const fontSize =
-          (cell?.fs ?? 13) *
-          this.sheetCtx.zoomRatio;
+        const fontSize = (cell?.fs ?? 13) * this.sheetCtx.zoomRatio;
         // Explicitly set normal weight so pill text is not bold when another cell in the row (e.g. first cell) has bold
         renderCtx.font = `${fontSize}px sans-serif`;
         renderCtx.fillStyle = "rgba(0, 0, 0, 0.8)";

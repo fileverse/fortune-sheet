@@ -111,12 +111,15 @@ export function updateFormatCell(
             // Guard: only write if the row exists in the data array to avoid out-of-bounds
             if (_.isNil(d[r][c])) {
               // Cell slot is null/undefined — create a minimal cell carrying only the format
-              d[r][c] = { ct: { fa: foucsStatus, t: type } };
+              const minimal: any = { ct: { fa: foucsStatus, t: type } };
+              if (type === "n") minimal.ht = 2;
+              d[r][c] = minimal;
             } else if (_.isPlainObject(d[r][c])) {
               // Cell exists but has no value — update its format in place
               if (_.isNil(d[r][c]!.ct)) d[r][c]!.ct = {};
               d[r][c]!.ct!.fa = foucsStatus;
               d[r][c]!.ct!.t = type;
+              if (type === "n") d[r][c]!.ht = 2;
             }
           }
           continue;

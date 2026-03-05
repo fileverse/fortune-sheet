@@ -329,6 +329,8 @@ export function setCellValue(
 
           // cell.m = mask[0].toString();
         }
+        // Right-align numeric formula results (e.g. SUM in a currency-formatted cell)
+        cell.ht = 2;
       }
     } else if (!_.isNil(cell.ct) && cell.ct.fa === "@") {
       cell.m = vupdateStr;

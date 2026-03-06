@@ -2,7 +2,25 @@ import { v4 as uuidv4 } from "uuid";
 import React from "react";
 import { Sheet, Selection, CellMatrix, Cell } from "./types";
 
+type SheetChangePath = {
+  sheetId: string;
+  path: string[]; // ['name'], ['config', 'merge'], ['celldata']
+  key?: string; // 👈 only for celldata
+  value: any;
+  type?: "update" | "delete";
+};
 export type Hooks = {
+  calcChainChange?: () => void;
+  sheetLengthChange?: () => void;
+  dataVerificationChange?: () => void;
+  liveQueryChange?: () => void;
+  imageListChange?: () => void;
+  iframeListChange?: () => void;
+  conditionRulesChange?: () => void;
+  conditionFormatChange?: () => void;
+  cellDataChange?: () => void;
+  hyperlinkChange?: () => void;
+  updateCellYdoc?: (changes: SheetChangePath[]) => void;
   beforeUpdateCell?: (r: number, c: number, value: any) => boolean;
   afterUpdateCell?: (
     row: number,
@@ -120,6 +138,15 @@ export type Hooks = {
     newName: string
   ) => boolean;
   afterUpdateSheetName?: (id: string, oldName: string, newName: string) => void;
+  afterImagesChange?: () => void;
+  afterIframesChange?: () => void;
+  afterFrozenChange?: () => void;
+  afterOrderChanges?: () => void;
+  afterConfigChanges?: () => void;
+  afterColRowChanges?: () => void;
+  afterShowGridLinesChange?: () => void;
+  afterNameChanges?: () => void;
+  afterStatusChanges?: () => void;
 };
 
 type CommentUIDragFn = (

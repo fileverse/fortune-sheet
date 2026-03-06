@@ -202,10 +202,20 @@ export function generateAPIs(
       row: number,
       column: number,
       value: any,
-      options: api.CommonOptions & { type?: keyof Cell } = {}
+      // eslint-disable-next-line default-param-last
+      options: api.CommonOptions & { type?: keyof Cell } = {},
+      callAfterUpdate?: boolean
     ) =>
       setContext((draftCtx) =>
-        api.setCellValue(draftCtx, row, column, value, cellInput, options)
+        api.setCellValue(
+          draftCtx,
+          row,
+          column,
+          value,
+          cellInput,
+          options,
+          callAfterUpdate
+        )
       ),
 
     setCellError: (
@@ -329,10 +339,19 @@ export function generateAPIs(
     setCellValuesByRange: (
       data: any[][],
       range: SingleRange,
-      options: api.CommonOptions = {}
+      // eslint-disable-next-line default-param-last
+      options: api.CommonOptions = {},
+      cellAfter?: boolean
     ) =>
       setContext((draftCtx) =>
-        api.setCellValuesByRange(draftCtx, data, range, cellInput, options)
+        api.setCellValuesByRange(
+          draftCtx,
+          data,
+          range,
+          cellInput,
+          options,
+          cellAfter
+        )
       ),
 
     setCellFormatByRange: (
@@ -430,7 +449,6 @@ export function generateAPIs(
       id: string,
       refCell?: string[]
     ) => {
-      console.log("calculateCellReferencedSubSheetFormula", id, refCell);
       setContext((draftCtx) => {
         api.calculateReferencedCellSheetFromula(
           draftCtx,

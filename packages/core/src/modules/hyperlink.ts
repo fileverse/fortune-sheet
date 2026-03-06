@@ -103,6 +103,21 @@ export function saveHyperlink(
     cell.hl = { r, c, id: ctx.currentSheetId };
     flowdata[r][c] = cell;
     ctx.linkCard = undefined;
+    if (ctx?.hooks?.updateCellYdoc) {
+      ctx?.hooks?.updateCellYdoc([
+        {
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: {
+            r,
+            c,
+            v: cell,
+          },
+          key: `${r}_${c}`,
+          type: "update",
+        },
+      ]);
+    }
   }
 }
 

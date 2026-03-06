@@ -2122,6 +2122,7 @@ export function deleteSelectedCellText(ctx: Context): string {
       const c1 = selection[s].column[0];
       const c2 = selection[s].column[1];
 
+      const changes: any = [];
       for (let r = r1; r <= r2; r += 1) {
         for (let c = c1; c <= c2; c += 1) {
           const index = getSheetIndex(ctx, ctx.currentSheetId) as number;
@@ -2167,6 +2168,19 @@ export function deleteSelectedCellText(ctx: Context): string {
           if (hyperlinkMap && hyperlinkMap[`${r}_${c}`]) {
             delete hyperlinkMap[`${r}_${c}`];
           }
+
+          if (ctx?.hooks?.afterUpdateCell) {
+            ctx.hooks.afterUpdateCell(r, c, null, d[r][c]);
+          }
+          changes.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: {
+              r,
+              c,
+              v: d[r][c],
+            },
+          });
         }
       }
     }

@@ -97,7 +97,9 @@ export function setCellValuesByRange(
   data: any[][],
   range: SingleRange,
   cellInput: HTMLDivElement | null,
-  options: CommonOptions = {}
+  // eslint-disable-next-line default-param-last
+  options: CommonOptions = {},
+  callAfterUpdate?: boolean
 ) {
   if (data == null) {
     throw INVALID_PARAMS;
@@ -122,7 +124,15 @@ export function setCellValuesByRange(
     for (let j = 0; j < columnCount; j += 1) {
       const row = range.row[0] + i;
       const column = range.column[0] + j;
-      setCellValue(ctx, row, column, data[i][j], cellInput, options);
+      setCellValue(
+        ctx,
+        row,
+        column,
+        data[i][j],
+        cellInput,
+        options,
+        callAfterUpdate
+      );
     }
   }
 }

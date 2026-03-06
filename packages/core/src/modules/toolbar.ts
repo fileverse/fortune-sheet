@@ -67,6 +67,7 @@ export function updateFormatCell(
     return;
   }
   if (attr === "ct") {
+    const changes: any = [];
     for (let r = row_st; r <= row_ed; r += 1) {
       if (!_.isNil(ctx.config.rowhidden) && !_.isNil(ctx.config.rowhidden[r])) {
         continue;
@@ -172,6 +173,20 @@ export function updateFormatCell(
             m: mask,
           };
         }
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: {
+            r,
+            c,
+            v: d[r][c],
+          },
+          key: `${r}_${c}`,
+          type: "update",
+        });
+      }
+      if (ctx?.hooks?.updateCellYdoc) {
+        ctx.hooks?.updateCellYdoc(changes);
       }
     }
   } else {
@@ -219,6 +234,7 @@ export function updateFormatCell(
     if (sheetIndex == null) {
       return;
     }
+    const changes: any = [];
     for (let r = row_st; r <= row_ed; r += 1) {
       if (!_.isNil(ctx.config.rowhidden) && !_.isNil(ctx.config.rowhidden[r])) {
         continue;
@@ -336,10 +352,21 @@ export function updateFormatCell(
           d[r][c][attr] = foucsStatus;
         }
 
-        // if(attr === "tr" && !_.isNil(d[r][c].tb)){
-        //     d[r][c].tb = "0";
-        // }
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: {
+            r,
+            c,
+            v: d[r][c],
+          },
+          key: `${r}_${c}`,
+          type: "update",
+        });
       }
+    }
+    if (ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks?.updateCellYdoc(changes);
     }
   }
 }
@@ -352,10 +379,6 @@ export function updateFormat(
   foucsStatus: any,
   canvas?: CanvasRenderingContext2D
 ) {
-  //   if (!checkProtectionFormatCells(ctx.currentSheetId)) {
-  //     return;
-  //   }
-
   const allowEdit = isAllowEdit(ctx);
   if (!allowEdit) return;
 
@@ -363,8 +386,6 @@ export function updateFormat(
     if (ctx.luckysheetCellUpdate.length > 0) {
       const value = $input.innerText;
       if (value.substring(0, 1) !== "=") {
-        // const cell =
-        //   d[ctx.luckysheetCellUpdate[0]][ctx.luckysheetCellUpdate[1]];
         updateInlineStringFormat(ctx, attr, foucsStatus, $input);
         return;
       }

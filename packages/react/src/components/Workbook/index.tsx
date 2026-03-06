@@ -536,6 +536,120 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
     );
 
     useEffect(() => {
+      if (context?.hooks?.sheetLengthChange) {
+        context.hooks.sheetLengthChange();
+      }
+    }, [context.luckysheetfile.length]);
+
+    const currentSheet = useMemo(() => {
+      return context?.luckysheetfile?.find(
+        (sheet) => sheet.id === context?.currentSheetId
+      );
+    }, [context?.luckysheetfile, context?.currentSheetId]);
+
+    useEffect(() => {
+      if (context?.hooks?.calcChainChange) {
+        context.hooks.calcChainChange();
+      }
+    }, [currentSheet?.calcChain]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterImagesChange) {
+        context.hooks.afterImagesChange();
+      }
+    }, [currentSheet?.images]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterIframesChange) {
+        context.hooks.afterIframesChange();
+      }
+    }, [currentSheet?.iframes]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterFrozenChange) {
+        context.hooks.afterFrozenChange();
+      }
+    }, [currentSheet?.frozen]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterOrderChanges) {
+        context.hooks.afterOrderChanges();
+      }
+    }, [currentSheet?.order]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterConfigChanges) {
+        context.hooks.afterConfigChanges();
+      }
+    }, [currentSheet?.config]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterColRowChanges) {
+        context.hooks.afterColRowChanges();
+      }
+    }, [currentSheet?.row, currentSheet?.column]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterShowGridLinesChange) {
+        context.hooks.afterShowGridLinesChange();
+      }
+    }, [currentSheet?.showGridLines]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterNameChanges) {
+        context.hooks.afterNameChanges();
+      }
+    }, [currentSheet?.name]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterStatusChanges) {
+        context.hooks.afterStatusChanges();
+      }
+    }, [currentSheet?.status]);
+
+    useEffect(() => {
+      if (context?.hooks?.dataVerificationChange) {
+        context.hooks.dataVerificationChange();
+      }
+    }, [currentSheet?.dataVerification]);
+
+    useEffect(() => {
+      if (context?.hooks?.liveQueryChange) {
+        context.hooks.liveQueryChange();
+      }
+    }, [currentSheet?.liveQueryList]);
+
+    useEffect(() => {
+      if (context?.hooks?.imageListChange) {
+        context.hooks.imageListChange();
+      }
+    }, [currentSheet?.images]);
+
+    useEffect(() => {
+      if (context?.hooks?.iframeListChange) {
+        context.hooks.iframeListChange();
+      }
+    }, [currentSheet?.iframes]);
+
+    useEffect(() => {
+      if (context?.hooks?.conditionRulesChange) {
+        context.hooks.conditionRulesChange();
+      }
+    }, [currentSheet?.conditionRules]);
+
+    useEffect(() => {
+      if (context?.hooks?.conditionFormatChange) {
+        context.hooks.conditionFormatChange();
+      }
+    }, [currentSheet?.luckysheet_conditionformat_save]);
+
+    useEffect(() => {
+      if (context?.hooks?.hyperlinkChange) {
+        context.hooks.hyperlinkChange();
+      }
+    }, [currentSheet?.hyperlink]);
+
+    useEffect(() => {
       if (!_.isEmpty(context.luckysheetfile)) {
         onChange?.(context.luckysheetfile);
       }

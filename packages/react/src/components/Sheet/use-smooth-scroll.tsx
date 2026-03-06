@@ -12,7 +12,6 @@ export const useSmoothScroll = (
     moveScrollBy: (deltaX: number, deltaY: number) => void,
     getPixelScale: () => number = () => window.devicePixelRatio || 1
   ) {
-    console.log("handleScroll called 6.2");
     let queuedXPixels = 0;
     let queuedYPixels = 0;
     let animationFrameId = 0;

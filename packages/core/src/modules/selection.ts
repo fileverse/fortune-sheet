@@ -502,43 +502,50 @@ export function pasteHandlerOfPaintModel(
 
   const currFile = ctx.luckysheetfile[getSheetIndex(ctx, ctx.currentSheetId)!];
   currFile.config = cfg;
-  currFile.dataVerification = dataVerification;
+  // Only overwrite dataVerification when we actually merged in pasted validations;
+  // otherwise we would replace the sheet's dataVerification with null and remove
+  // all existing validations on the sheet (e.g. on other rows).
+  if (dataVerification != null) {
+    currFile.dataVerification = dataVerification;
+  }
 
-  // 复制范围 是否有 条件格式
-  let cdformat: any = null;
+  // 复制范围 是否有 条件格式 (conditional formatting)
   const copyIndex = getSheetIndex(ctx, copySheetIndex);
-  if (!copyIndex) return;
-  const ruleArr = _.cloneDeep(
-    ctx.luckysheetfile[copyIndex].luckysheet_conditionformat_save
-  );
-
-  if (!_.isNil(ruleArr) && ruleArr.length > 0) {
-    const currentIndex = getSheetIndex(ctx, ctx.currentSheetId) as number;
-    cdformat = _.cloneDeep(
-      ctx.luckysheetfile[currentIndex].luckysheet_conditionformat_save
+  if (copyIndex != null) {
+    const ruleArr = _.cloneDeep(
+      ctx.luckysheetfile[copyIndex].luckysheet_conditionformat_save
     );
 
-    for (let i = 0; i < ruleArr.length; i += 1) {
-      const cdformat_cellrange = ruleArr[i].cellrange;
-      let emptyRange: any[] = [];
+    if (!_.isNil(ruleArr) && ruleArr.length > 0) {
+      const currentIndex = getSheetIndex(ctx, ctx.currentSheetId) as number;
+      const existingCf =
+        ctx.luckysheetfile[currentIndex].luckysheet_conditionformat_save;
+      const cdformat: any[] = _.cloneDeep(existingCf) ?? [];
 
-      for (let j = 0; j < cdformat_cellrange.length; j += 1) {
-        const range = CFSplitRange(
-          cdformat_cellrange[j],
-          { row: [c_r1, c_r2], column: [c_c1, c_c2] },
-          { row: [minh, maxh], column: [minc, maxc] },
-          "operatePart"
-        );
+      for (let i = 0; i < ruleArr.length; i += 1) {
+        const cdformat_cellrange = ruleArr[i].cellrange;
+        let emptyRange: any[] = [];
 
-        if (range.length > 0) {
-          emptyRange = emptyRange.concat(range);
+        for (let j = 0; j < cdformat_cellrange.length; j += 1) {
+          const range = CFSplitRange(
+            cdformat_cellrange[j],
+            { row: [c_r1, c_r2], column: [c_c1, c_c2] },
+            { row: [minh, maxh], column: [minc, maxc] },
+            "operatePart"
+          );
+
+          if (range.length > 0) {
+            emptyRange = emptyRange.concat(range);
+          }
+        }
+
+        if (emptyRange.length > 0) {
+          ruleArr[i].cellrange = [{ row: [minh, maxh], column: [minc, maxc] }];
+          cdformat.push(ruleArr[i]);
         }
       }
 
-      if (emptyRange.length > 0) {
-        ruleArr[i].cellrange = [{ row: [minh, maxh], column: [minc, maxc] }];
-        cdformat.push(ruleArr[i]);
-      }
+      currFile.luckysheet_conditionformat_save = cdformat;
     }
   }
 }
@@ -2132,6 +2139,8 @@ export function deleteSelectedCellText(ctx: Context): string {
             const cell = d[r][c]!;
             delete cell.m;
             delete cell.v;
+            delete cell.fc;
+            delete cell.un;
 
             if (cell.f != null) {
               delete cell.f;
@@ -2273,10 +2282,123 @@ export function fillRightData(ctx: Context): string {
       const c1 = selection[s].column[0];
       const c2 = selection[s].column[1];
 
-      for (let r = r1; r <= r2; r += 1) {
-        for (let c = c1; c <= c2; c += 1) {
-          const previousCell = d[r][c - 1];
-          d[r][c] = { ...previousCell };
+      const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
+      const file = sheetIndex != null ? ctx.luckysheetfile[sheetIndex] : null;
+      const dataVerification = file?.dataVerification;
+
+      const hyperlink = file?.hyperlink;
+      const cdformat = file?.luckysheet_conditionformat_save;
+
+      const isSingleCell = r1 === r2 && c1 === c2;
+      if (isSingleCell) {
+        if (c1 - 1 >= 0 && d[r1]) {
+          const srcRow = r1;
+          const srcCol = c1 - 1;
+          const prev = d[r1][c1 - 1];
+          d[r1][c1] = prev != null ? { ...prev } : {};
+          if (file != null) {
+            const srcKey = `${srcRow}_${srcCol}`;
+            const tgtKey = `${r1}_${c1}`;
+            if (dataVerification != null) {
+              const dv = dataVerification[srcKey];
+              if (dv != null) {
+                console.log(
+                  "[fillRightData] dataVerification copy from",
+                  { row: srcRow, col: srcCol },
+                  "→",
+                  { row: r1, col: c1 },
+                  dv
+                );
+                file.dataVerification = {
+                  ...(file.dataVerification || {}),
+                  [tgtKey]: _.cloneDeep(dv),
+                };
+              }
+            }
+            if (hyperlink != null && hyperlink[srcKey] != null) {
+              file.hyperlink = {
+                ...(file.hyperlink || {}),
+                [tgtKey]: _.cloneDeep(hyperlink[srcKey]),
+              };
+              const tgtCell = d[r1][c1];
+              if (tgtCell != null)
+                tgtCell.hl = { r: r1, c: c1, id: ctx.currentSheetId };
+            }
+            if (cdformat != null && cdformat.length > 0) {
+              for (let i = 0; i < cdformat.length; i += 1) {
+                const ranges = cdformat[i].cellrange;
+                if (!ranges) continue;
+                for (let j = 0; j < ranges.length; j += 1) {
+                  const cr = ranges[j];
+                  if (
+                    srcRow >= cr.row[0] &&
+                    srcRow <= cr.row[1] &&
+                    srcCol >= cr.column[0] &&
+                    srcCol <= cr.column[1]
+                  ) {
+                    ranges.push({ row: [r1, r1], column: [c1, c1] });
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } else {
+        for (let r = r1; r <= r2; r += 1) {
+          const sourceCell = d[r]?.[c1];
+          for (let c = c1 + 1; c <= c2; c += 1) {
+            if (d[r]) {
+              d[r][c] = sourceCell != null ? { ...sourceCell } : d[r][c] ?? {};
+            }
+            if (file != null) {
+              const srcKey = `${r}_${c1}`;
+              const tgtKey = `${r}_${c}`;
+              if (dataVerification != null) {
+                const dv = dataVerification[srcKey];
+                if (dv != null) {
+                  console.log(
+                    "[fillRightData] dataVerification copy from",
+                    { row: r, col: c1 },
+                    "→",
+                    { row: r, col: c },
+                    dv
+                  );
+                  file.dataVerification = {
+                    ...(file.dataVerification || {}),
+                    [tgtKey]: _.cloneDeep(dv),
+                  };
+                }
+              }
+              if (hyperlink != null && hyperlink[srcKey] != null) {
+                file.hyperlink = {
+                  ...(file.hyperlink || {}),
+                  [tgtKey]: _.cloneDeep(hyperlink[srcKey]),
+                };
+                const tgtCell = d[r]?.[c];
+                if (tgtCell != null)
+                  tgtCell.hl = { r, c, id: ctx.currentSheetId };
+              }
+              if (cdformat != null && cdformat.length > 0) {
+                for (let i = 0; i < cdformat.length; i += 1) {
+                  const ranges = cdformat[i].cellrange;
+                  if (!ranges) continue;
+                  for (let j = 0; j < ranges.length; j += 1) {
+                    const cr = ranges[j];
+                    if (
+                      r >= cr.row[0] &&
+                      r <= cr.row[1] &&
+                      c1 >= cr.column[0] &&
+                      c1 <= cr.column[1]
+                    ) {
+                      ranges.push({ row: [r, r], column: [c, c] });
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -2318,10 +2440,122 @@ export function fillDownData(ctx: Context): string {
       const c1 = selection[s].column[0];
       const c2 = selection[s].column[1];
 
-      for (let r = r1; r <= r2; r += 1) {
+      const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
+      const file = sheetIndex != null ? ctx.luckysheetfile[sheetIndex] : null;
+      const dataVerification = file?.dataVerification;
+      const hyperlink = file?.hyperlink;
+      const cdformat = file?.luckysheet_conditionformat_save;
+
+      const isSingleCell = r1 === r2 && c1 === c2;
+      if (isSingleCell) {
+        if (r1 - 1 >= 0 && d[r1 - 1]) {
+          const srcRow = r1 - 1;
+          const srcCol = c1;
+          const prev = d[r1 - 1][c1];
+          if (!d[r1]) d[r1] = [];
+          d[r1][c1] = prev != null ? { ...prev } : {};
+          if (file != null) {
+            const srcKey = `${srcRow}_${srcCol}`;
+            const tgtKey = `${r1}_${c1}`;
+            if (dataVerification != null) {
+              const dv = dataVerification[srcKey];
+              if (dv != null) {
+                console.log(
+                  "[fillDownData] dataVerification copy from",
+                  { row: srcRow, col: srcCol },
+                  "→",
+                  { row: r1, col: c1 },
+                  dv
+                );
+                file.dataVerification = {
+                  ...(file.dataVerification || {}),
+                  [tgtKey]: _.cloneDeep(dv),
+                };
+              }
+            }
+            if (hyperlink != null && hyperlink[srcKey] != null) {
+              file.hyperlink = {
+                ...(file.hyperlink || {}),
+                [tgtKey]: _.cloneDeep(hyperlink[srcKey]),
+              };
+              const tgtCell = d[r1][c1];
+              if (tgtCell != null)
+                tgtCell.hl = { r: r1, c: c1, id: ctx.currentSheetId };
+            }
+            if (cdformat != null && cdformat.length > 0) {
+              for (let i = 0; i < cdformat.length; i += 1) {
+                const ranges = cdformat[i].cellrange;
+                if (!ranges) continue;
+                for (let j = 0; j < ranges.length; j += 1) {
+                  const cr = ranges[j];
+                  if (
+                    srcRow >= cr.row[0] &&
+                    srcRow <= cr.row[1] &&
+                    srcCol >= cr.column[0] &&
+                    srcCol <= cr.column[1]
+                  ) {
+                    ranges.push({ row: [r1, r1], column: [c1, c1] });
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } else {
         for (let c = c1; c <= c2; c += 1) {
-          const previousCell = d[r - 1][c];
-          d[r][c] = { ...previousCell };
+          const sourceCell = d[r1]?.[c];
+          for (let r = r1 + 1; r <= r2; r += 1) {
+            if (!d[r]) d[r] = [];
+            d[r][c] = sourceCell != null ? { ...sourceCell } : d[r][c] ?? {};
+            if (file != null) {
+              const srcKey = `${r1}_${c}`;
+              const tgtKey = `${r}_${c}`;
+              if (dataVerification != null) {
+                const dv = dataVerification[srcKey];
+                if (dv != null) {
+                  console.log(
+                    "[fillDownData] dataVerification copy from",
+                    { row: r1, col: c },
+                    "→",
+                    { row: r, col: c },
+                    dv
+                  );
+                  file.dataVerification = {
+                    ...(file.dataVerification || {}),
+                    [tgtKey]: _.cloneDeep(dv),
+                  };
+                }
+              }
+              if (hyperlink != null && hyperlink[srcKey] != null) {
+                file.hyperlink = {
+                  ...(file.hyperlink || {}),
+                  [tgtKey]: _.cloneDeep(hyperlink[srcKey]),
+                };
+                const tgtCell = d[r]?.[c];
+                if (tgtCell != null)
+                  tgtCell.hl = { r, c, id: ctx.currentSheetId };
+              }
+              if (cdformat != null && cdformat.length > 0) {
+                for (let i = 0; i < cdformat.length; i += 1) {
+                  const ranges = cdformat[i].cellrange;
+                  if (!ranges) continue;
+                  for (let j = 0; j < ranges.length; j += 1) {
+                    const cr = ranges[j];
+                    if (
+                      r1 >= cr.row[0] &&
+                      r1 <= cr.row[1] &&
+                      c >= cr.column[0] &&
+                      c <= cr.column[1]
+                    ) {
+                      ranges.push({ row: [r, r], column: [c, c] });
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

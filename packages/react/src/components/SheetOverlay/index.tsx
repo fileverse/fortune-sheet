@@ -22,6 +22,7 @@ import {
   getCellRowColumn,
   getCellHyperlink,
   showLinkCard,
+  isAllowEdit,
   Context,
   GlobalCache,
   onCellsMoveStart,
@@ -79,9 +80,17 @@ const SheetOverlay: React.FC = () => {
             !_.isEmpty(draftCtx.luckysheet_select_save?.[0]) &&
             refs.cellInput.current
           ) {
-            setTimeout(() => {
-              refs.cellInput.current?.focus();
-            });
+            if (!isAllowEdit(draftCtx)) {
+              // In read-only mode, focus the workbook container directly so
+              // keyboard events (e.g. Ctrl/Cmd+C) reach the onKeyDown handler.
+              setTimeout(() => {
+                refs.workbookContainer.current?.focus({ preventScroll: true });
+              });
+            } else {
+              setTimeout(() => {
+                refs.cellInput.current?.focus();
+              });
+            }
           }
         });
       }
@@ -93,6 +102,7 @@ const SheetOverlay: React.FC = () => {
       refs.cellArea,
       refs.fxInput,
       refs.canvas,
+      refs.workbookContainer,
     ]
   );
 
@@ -147,7 +157,7 @@ const SheetOverlay: React.FC = () => {
         ) => {
           if (skip || globalCache.linkCard?.mouseEnter) return;
           setContext((draftCtx) => {
-            showLinkCard(draftCtx, r, c, isEditing);
+            showLinkCard(draftCtx, r, c, undefined, isEditing);
           });
         },
         800
@@ -171,7 +181,7 @@ const SheetOverlay: React.FC = () => {
         debouncedShowLinkCard(globalCache, rc.r, rc.c, false);
       } else {
         if (globalCache.linkCard?.mouseEnter) return;
-        showLinkCard(ctx, rc.r, rc.c, false);
+        showLinkCard(ctx, rc.r, rc.c, undefined, false);
         debouncedShowLinkCard(globalCache, rc.r, rc.c, false, true);
       }
     },

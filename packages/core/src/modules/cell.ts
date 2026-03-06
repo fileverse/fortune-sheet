@@ -187,6 +187,10 @@ export function setCellValue(
       if (!_.isNil(v.ct)) {
         cell.ct = v.ct;
       }
+      // Preserve horizontal alignment from value object (e.g. when editing, keep number/currency right-aligned)
+      if (!_.isNil(v.ht)) {
+        cell.ht = v.ht;
+      }
     }
 
     if (_.isPlainObject(v.v)) {
@@ -325,6 +329,8 @@ export function setCellValue(
 
           // cell.m = mask[0].toString();
         }
+        // Right-align numeric formula results (e.g. SUM in a currency-formatted cell)
+        cell.ht = 2;
       }
     } else if (!_.isNil(cell.ct) && cell.ct.fa === "@") {
       cell.m = vupdateStr;
@@ -344,22 +350,19 @@ export function setCellValue(
     ) {
       let { fa } = cell.ct;
       if (isRealNum(vupdate)) {
-        if (
-          (commaPresent && !fa.includes(",")) ||
-          (String(vupdate).includes(".") &&
-            String(vupdate).split(".")?.[1]?.length !==
-              fa.split(".")?.[1]?.length) ||
-          fa.includes(",") !== String(vupdate).includes(",")
-        ) {
-          if (fa.includes(",") !== String(vupdate).includes(",")) {
-            commaPresent = true;
-          }
+        // Only override fa when the user explicitly typed commas that the format doesn't support.
+        // Conditions that compared format commas/decimals against input were removed because they
+        // incorrectly changed an explicit format (e.g. "#,##0.00") when a plain value like "42" was typed,
+        // causing the decimal places to be lost.
+        if (commaPresent && !fa.includes(",")) {
           fa = getNumberFormat(String(vupdate), commaPresent);
         }
         vupdate = parseFloat(vupdate);
         if (cell?.ct) {
           cell.ct = { ...cell.ct, fa, t: "n" };
         }
+        // Right-align numeric/currency values so alignment is preserved after edit
+        cell.ht = 2;
       }
 
       let mask = update(fa, vupdate);
@@ -370,6 +373,10 @@ export function setCellValue(
 
         cell.m = mask[0].toString();
         [, cell.ct, cell.v] = mask;
+        // Keep numbers right-aligned when format was replaced (e.g. format didn't apply)
+        if (isRealNum(vupdate)) {
+          cell.ht = 2;
+        }
       } else {
         if (v.m) {
           cell.m = v.m;
@@ -400,7 +407,8 @@ export function setCellValue(
         const format = getNumberFormat(strValue, commaPresent);
 
         cell.m = v.m ? v.m : update(format, cell.v);
-        cell.ht = v?.ht ? cell.ht : 2;
+        // Right-align numeric values so alignment is preserved after edit
+        cell.ht = 2;
         cell.ct = { fa: format, t: "n" };
         if (cell.v === Infinity || cell.v === -Infinity) {
           cell.m = cell.v.toString();
@@ -1686,10 +1694,25 @@ export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
       const strObj = strings[i];
       if (strObj.v) {
         const style = getFontStyleByCell(strObj);
+        const { link } = strObj as any;
+        if (link?.linkType && link?.linkAddress) {
+          style.color = style.color || "rgb(0, 0, 255)";
+          style.borderBottom = style.borderBottom || "1px solid rgb(0, 0, 255)";
+        }
         const styleStr = _.map(style, (v, key) => {
           return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
         }).join("");
-        value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'>${strObj.v}</span>`;
+        const dataAttrs =
+          link?.linkType && link?.linkAddress
+            ? ` data-link-type='${String(link.linkType).replace(
+                /'/g,
+                "&#39;"
+              )}' data-link-address='${String(link.linkAddress).replace(
+                /'/g,
+                "&#39;"
+              )}'`
+            : "";
+        value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${strObj.v}</span>`;
       }
     }
     return value;

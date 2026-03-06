@@ -3,7 +3,6 @@ import _ from "lodash";
 import { Context } from "./context";
 import { locale } from "./locale";
 import { getQKBorder, saveHyperlink } from "./modules";
-import { genarate } from "./modules/format";
 import { Cell } from "./types";
 import { getSheetIndex } from "./utils";
 import { setRowHeight, setColumnWidth } from "./api";
@@ -189,12 +188,13 @@ const buildCellFromTd = (
     const value = brToNewline(rawText);
     cell = { ...cell, ct: { ...cell.ct, t: "inlineStr", s: [{ v: value }] } };
   } else {
-    const mask = genarate(rawText);
-    [cell.m, cell.ct, cell.v] = mask || [];
+    // Store as plain text without auto-detecting date/currency/percentage formats,
+    // matching the behaviour of the plain-text paste path in pasteHandler.
+    cell.v = rawText;
+    cell.m = rawText;
+    cell.ct = { fa: "General", t: "g" };
     if (HEX_REGEX.test(rawText)) {
       cell.ct = { fa: "@", t: "s" };
-      cell.m = rawText;
-      cell.v = rawText;
     }
   }
 

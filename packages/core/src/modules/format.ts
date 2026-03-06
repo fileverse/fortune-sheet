@@ -1,6 +1,6 @@
 import numeral from "numeral";
 import _ from "lodash";
-import { isRealNum, valueIsError, isdatetime } from "./validation";
+import { isRealNum, valueIsError, detectDateFormat } from "./validation";
 // @ts-ignore
 import SSF from "./ssf";
 import { CellMatrix } from "../types";
@@ -22,45 +22,6 @@ export function datenum_local(v: Date, date1904?: number) {
   if (date1904) epoch -= 1461 * 24 * 60 * 60 * 1000;
   else if (v >= base1904) epoch += 24 * 60 * 60 * 1000;
   return (epoch - dnthresh_utc) / (24 * 60 * 60 * 1000);
-}
-
-let good_pd_date = new Date("2017-02-19T19:06:09.000Z");
-if (Number.isNaN(good_pd_date.getFullYear()))
-  good_pd_date = new Date("2/19/17");
-const good_pd = good_pd_date.getFullYear() === 2017;
-
-/* parses a date as a local date */
-function parseDate(str: string | Date, fixdate?: number) {
-  const d = new Date(str);
-  // console.log(d);
-  if (good_pd) {
-    if (!_.isNil(fixdate)) {
-      if (fixdate > 0)
-        d.setTime(d.getTime() + d.getTimezoneOffset() * 60 * 1000);
-      else if (fixdate < 0)
-        d.setTime(d.getTime() - d.getTimezoneOffset() * 60 * 1000);
-    }
-    return d;
-  }
-  if (str instanceof Date) return str;
-  if (good_pd_date.getFullYear() === 1917 && !Number.isNaN(d.getFullYear())) {
-    const s = d.getFullYear();
-    if (str.indexOf(`${s}`) > -1) return d;
-    d.setFullYear(d.getFullYear() + 100);
-    return d;
-  }
-  const n = str.match(/\d+/g) || ["2017", "2", "19", "0", "0", "0"];
-  let out = new Date(
-    +n[0],
-    +n[1] - 1,
-    +n[2],
-    +n[3] || 0,
-    +n[4] || 0,
-    +n[5] || 0
-  );
-  if (str.indexOf("Z") > -1)
-    out = new Date(out.getTime() - out.getTimezoneOffset() * 60 * 1000);
-  return out;
 }
 
 export function genarate(value: string | number | boolean) {
@@ -252,30 +213,46 @@ export function genarate(value: string | number | boolean) {
     m = parseFloat(value as string).toString();
     ct = { fa: "General", t: "n" };
     v = parseFloat(value as string);
-  } else if (
-    isdatetime(value) &&
-    (value.toString().indexOf(".") > -1 ||
-      value.toString().indexOf(":") > -1 ||
-      value.toString().length < 16)
-  ) {
-    v = datenum_local(parseDate(value.toString().replace(/-/g, "/")));
+  } else if (typeof value === "string") {
+    const df = detectDateFormat(value.toString());
+    if (df) {
+      const dateObj = new Date(
+        df.year,
+        df.month - 1,
+        df.day,
+        df.hours,
+        df.minutes,
+        df.seconds
+      );
+      v = datenum_local(dateObj);
+      ct.t = "d";
 
-    if (v.toString().indexOf(".") > -1) {
-      if (value.toString().length > 18) {
-        ct.fa = "yyyy-MM-dd hh:mm:ss";
-      } else if (value.toString().length > 11) {
-        ct.fa = "yyyy-MM-dd hh:mm";
-      } else {
-        ct.fa = "yyyy-MM-dd";
-      }
+      const map: Record<string, string> = {
+        "yyyy-MM-dd": "dd/MM/yyyy",
+        "yyyy-MM-dd HH:mm": "dd/MM/yyyy",
+        "yyyy-MM-ddTHH:mm": "dd/MM/yyyy",
+        "yyyy/MM/dd": "dd/MM/yyyy",
+        "yyyy/MM/dd HH:mm": "dd/MM/yyyy",
+        "yyyy.MM.dd": "yyyy.MM.dd",
+        "MM/dd/yyyy h:mm AM/PM": "MM/dd/yyyy h:mm AM/PM",
+        "MM/dd/yyyy": "MM/dd/yyyy",
+        "M/d/yyyy": "M/d/yyyy",
+        "MM/dd/yy": "MM/dd/yy",
+        "dd/MM/yyyy": "dd/MM/yyyy",
+        "dd-MM-yyyy": "dd/MM/yyyy",
+        "dd.MM.yyyy": "dd.MM.yyyy",
+        named: "dd/MM/yyyy",
+      };
+
+      ct.fa = map[df.formatType] || "dd/MM/yyyy";
+      m = SSF.format(ct.fa, v);
     } else {
-      ct.fa = "yyyy-MM-dd";
+      m = String(value);
+      ct.fa = "General";
+      ct.t = "g";
     }
-
-    ct.t = "d";
-    m = SSF.format(ct.fa, v);
   } else {
-    m = value as string;
+    m = String(value);
     ct.fa = "General";
     ct.t = "g";
   }

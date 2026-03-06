@@ -15,6 +15,7 @@ import {
   replaceHtml,
   goToLink,
   isLinkValid,
+  jfrefreshgrid,
 } from "@fileverse-dev/fortune-core";
 import {
   Button,
@@ -40,6 +41,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
   originAddress,
   isEditing,
   position,
+  applyToSelection,
 }) => {
   const { context, setContext, refs } = useContext(WorkbookContext);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -70,6 +72,32 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
     });
   }, [refs.globalCache, setContext]);
 
+  const handleInsertLink = useCallback(() => {
+    if (isButtonDisabled) return;
+    _.set(refs.globalCache, "linkCard.mouseEnter", false);
+    setContext((draftCtx) => {
+      saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress, {
+        applyToSelection: applyToSelection || undefined,
+        cellInput: refs.cellInput.current,
+      });
+      if (!applyToSelection) {
+        draftCtx.luckysheetCellUpdate = [];
+        jfrefreshgrid(draftCtx, null, undefined);
+      }
+    });
+  }, [
+    isButtonDisabled,
+    refs.globalCache,
+    refs.cellInput,
+    setContext,
+    r,
+    c,
+    linkText,
+    linkType,
+    linkAddress,
+    applyToSelection,
+  ]);
+
   const containerEvent = useMemo(
     () => ({
       onMouseEnter: () => _.set(refs.globalCache, "linkCard.mouseEnter", true),
@@ -82,18 +110,15 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
         e.stopPropagation(),
       onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
         e.stopPropagation();
-        if (isButtonDisabled) return;
         if (e.key === "Enter") {
-          _.set(refs.globalCache, "linkCard.mouseEnter", false);
-          setContext((draftCtx) =>
-            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress)
-          );
+          e.preventDefault();
+          handleInsertLink();
         }
       },
       onDoubleClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
         e.stopPropagation(),
     }),
-    [refs.globalCache, isButtonDisabled]
+    [handleInsertLink]
   );
 
   const renderToolbarButton = useCallback(
@@ -194,14 +219,18 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
             ? insertLink.openLink
             : replaceHtml(insertLink.goTo, { linkAddress })}
         </div>
-        {context.allowEdit === true && <div className="divider" />}
-        {context.allowEdit === true &&
+        {(context.allowEdit === true ||
+          (context.isFlvReadOnly && linkType === "webpage")) && (
+          <div className="divider" />
+        )}
+        {(context.allowEdit === true || context.isFlvReadOnly) &&
           linkType === "webpage" &&
           renderToolbarButton("copy", () => {
             navigator.clipboard.writeText(originAddress);
             hideLinkCard();
           })}
         {context.allowEdit === true &&
+          !context.isFlvReadOnly &&
           renderToolbarButton("pencil", () =>
             setContext((draftCtx) => {
               if (draftCtx.linkCard != null && draftCtx.allowEdit) {
@@ -209,8 +238,11 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
               }
             })
           )}
-        {context.allowEdit === true && <div className="divider" />}
+        {context.allowEdit === true && !context.isFlvReadOnly && (
+          <div className="divider" />
+        )}
         {context.allowEdit === true &&
+          !context.isFlvReadOnly &&
           renderToolbarButton("unlink", () =>
             setContext((draftCtx) => {
               _.set(refs.globalCache, "linkCard.mouseEnter", false);
@@ -271,6 +303,13 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
           placeholder="Display text"
           value={linkText}
           onChange={(e) => setLinkText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              e.stopPropagation();
+              handleInsertLink();
+            }
+          }}
           className="fortune-link-input"
         />
       </div>
@@ -284,6 +323,13 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
             ref={linkAddressRef}
             placeholder="Paste URL"
             value={linkAddress}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation();
+                handleInsertLink();
+              }
+            }}
             onChange={(e) => setLinkAddress(e.target.value)}
             className={`fortune-link-input ${
               !linkAddress || isLinkAddressValid.isValid ? "" : "error-input"
@@ -321,13 +367,7 @@ export const LinkEditCard: React.FC<LinkCardProps> = ({
       <Button
         className="fortune-link-card__cta fortune-insert-button"
         disabled={isButtonDisabled}
-        onClick={() => {
-          if (isButtonDisabled) return;
-          _.set(refs.globalCache, "linkCard.mouseEnter", false);
-          setContext((draftCtx) => {
-            saveHyperlink(draftCtx, r, c, linkText, linkType, linkAddress);
-          });
-        }}
+        onClick={handleInsertLink}
         data-testid="link-card-cta-insert"
       >
         Insert link

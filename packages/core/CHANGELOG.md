@@ -1,5 +1,17 @@
 # @fileverse-dev/fortune-core
 
+## 1.3.4
+
+### Patch Changes
+
+- change data validation modal copy, include column width change in undo redo
+
+## 1.3.3
+
+### Patch Changes
+
+- fix: auto column resize on based on content max width, decrese fx resize handler size
+
 ## 1.2.97
 
 ### Patch Changes

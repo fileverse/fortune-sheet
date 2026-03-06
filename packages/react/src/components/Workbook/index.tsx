@@ -380,7 +380,22 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             delete inversedOptions!.addSheet!.value!.data;
           }
           emitOp(newContext, history.inversePatches, inversedOptions, true);
-          let nw = { ...newContext };
+          // Sync ctx.config from current sheet after applying inverse patches.
+          // This ensures components watching context.config (e.g. Sheet.tsx which
+          // recalculates visibledatacolumn) react correctly to config changes.
+          const sheetIdxAfterUndo = getSheetIndex(
+            newContext,
+            newContext.currentSheetId
+          );
+          let nw = {
+            ...newContext,
+            ...(sheetIdxAfterUndo != null &&
+            newContext.luckysheetfile[sheetIdxAfterUndo]?.config != null
+              ? {
+                  config: newContext.luckysheetfile[sheetIdxAfterUndo].config,
+                }
+              : {}),
+          };
           if (isBorderUndo) {
             const nwborderlist = nw?.config?.borderInfo?.slice(0, -1);
             nw = {
@@ -391,7 +406,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
               },
             };
           }
-          return isBorderUndo ? nw : newContext;
+          return nw;
         });
       }
     }, [emitOp, globalCache]);
@@ -407,7 +422,20 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
 
           globalCache.current.undoList.push(history);
           emitOp(newContext, history.patches, history.options);
-          let nw = { ...newContext };
+          // Sync ctx.config from current sheet after applying patches.
+          const sheetIdxAfterRedo = getSheetIndex(
+            newContext,
+            newContext.currentSheetId
+          );
+          let nw = {
+            ...newContext,
+            ...(sheetIdxAfterRedo != null &&
+            newContext.luckysheetfile[sheetIdxAfterRedo]?.config != null
+              ? {
+                  config: newContext.luckysheetfile[sheetIdxAfterRedo].config,
+                }
+              : {}),
+          };
           if (isBorderUndo) {
             const nwborderlist = (nw?.config?.borderInfo ?? []).concat(
               history.patches[0].value?.borderInfo[0]
@@ -420,7 +448,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
               },
             };
           }
-          return isBorderUndo ? nw : newContext;
+          return nw;
         });
       }
     }, [emitOp, globalCache]);
@@ -1095,10 +1123,10 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
       <WorkbookContext.Provider value={providerValue}>
         {/* <button onClick={()=>{
           setShow(!show)
-          id="placeholder-data-verification"
+          id="placeholder-data-verification placeholder-conditional-format"
         }}>Click</button> */}
         {/* <div
-          id="placeholder-conditional-format"
+          id="placeholder-data-verification"
           style={{
             width: "500px",
             height: "500px",
@@ -1114,6 +1142,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             className="fortune-container"
             ref={workbookContainer}
             onKeyDown={onKeyDown}
+            tabIndex={-1}
           >
             <SVGDefines currency={mergedSettings.currency} />
             <div className="fortune-workarea">

@@ -659,7 +659,10 @@ const FxEditor: React.FC = () => {
       <div
         className="resize-handle"
         onMouseDown={startResize}
-        style={{ cursor: isResizing ? "grabbing" : "ns-resize", height: "2px" }}
+        style={{
+          cursor: isResizing ? "grabbing" : "ns-resize",
+          height: "1px",
+        }}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 import { RefObject, useContext, useEffect } from "react";
-import { removeEditingComment } from "@fileverse-dev/fortune-core";
+import { removeEditingComment, mouseRender } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../context";
 
 export const useSmoothScroll = (
@@ -144,10 +144,39 @@ export const useSmoothScroll = (
       const scale = getPixelScale();
       scrollHandler(velocityX * scale, velocityY * scale);
 
+      // Update selection every frame while auto-scrolling (mouse held at edge)
+      setContext((draftCtx) => {
+        const scrollXEl = refs.scrollbarX.current;
+        const scrollYEl = refs.scrollbarY.current;
+        const cellInputEl = refs.cellInput.current;
+        const containerElCtx = refs.cellArea.current;
+        const fxInputEl = refs.fxInput.current;
+        if (scrollXEl && scrollYEl && cellInputEl && containerElCtx) {
+          const syntheticEvent = new MouseEvent("mousemove", {
+            bubbles: true,
+            clientX: lastX,
+            clientY: lastY,
+            view: window,
+          });
+          mouseRender(
+            draftCtx,
+            refs.globalCache,
+            syntheticEvent,
+            cellInputEl,
+            scrollXEl,
+            scrollYEl,
+            containerElCtx,
+            fxInputEl ?? null
+          );
+        }
+      });
+
       autoScrollAnimationId = requestAnimationFrame(autoScroll);
     }
 
     function onMouseDown(e: MouseEvent) {
+      if (context.luckysheetCellUpdate.length > 0) return;
+
       // Only handle primary mouse button (left click)
       if (e.button !== 0) return;
 
@@ -566,5 +595,5 @@ export const useSmoothScroll = (
     );
 
     return unmountScrollEventHandlers;
-  }, [context.zoomRatio]);
+  }, [context.zoomRatio, context.luckysheetCellUpdate]);
 };

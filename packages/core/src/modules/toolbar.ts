@@ -11,7 +11,8 @@ import {
   setCellValue,
 } from "./cell";
 import { colors } from "./color";
-import { genarate, is_date, update } from "./format";
+import { getSelectionCharacterOffsets } from "./cursor";
+import { datenum_local, genarate, is_date, update } from "./format";
 import {
   execfunction,
   execFunctionGroup,
@@ -33,6 +34,7 @@ import {
 } from "./selection";
 import { sortSelection } from "./sort";
 import {
+  detectDateFormat,
   hasPartMC,
   isdatatypemulti,
   isRealNull,
@@ -81,15 +83,7 @@ export function updateFormatCell(
           value = cell;
         }
 
-        if (_.isNil(value)) {
-          continue;
-        }
-
-        if (foucsStatus !== "@" && isRealNum(value)) {
-          value = Number(value!);
-        }
-
-        const mask = update(foucsStatus, value);
+        // Compute type early (depends only on foucsStatus, not cell value) so it's available for empty cells too
         let type = "n";
 
         if (
@@ -110,10 +104,53 @@ export function updateFormatCell(
           type = "d";
         } else if (foucsStatus === "@" || foucsStatus === 49) {
           type = "s";
-        } else if (foucsStatus === "General" || foucsStatus === 0) {
+        }
+
+        if (_.isNil(value)) {
+          // Store format on empty cells so future data entries inherit it; previously these were skipped entirely
+          if (!_.isNil(d[r])) {
+            // Guard: only write if the row exists in the data array to avoid out-of-bounds
+            if (_.isNil(d[r][c])) {
+              // Cell slot is null/undefined — create a minimal cell carrying only the format
+              const minimal: any = { ct: { fa: foucsStatus, t: type } };
+              if (type === "n") minimal.ht = 2;
+              d[r][c] = minimal;
+            } else if (_.isPlainObject(d[r][c])) {
+              // Cell exists but has no value — update its format in place
+              if (_.isNil(d[r][c]!.ct)) d[r][c]!.ct = {};
+              d[r][c]!.ct!.fa = foucsStatus;
+              d[r][c]!.ct!.t = type;
+              if (type === "n") d[r][c]!.ht = 2;
+            }
+          }
+          continue;
+        }
+
+        if (foucsStatus !== "@" && isRealNum(value)) {
+          value = Number(value!);
+        } else if (type === "d" && typeof value === "string") {
+          // Convert date string to Excel serial number when switching to date format
+          const dateInfo = detectDateFormat(value);
+          if (dateInfo) {
+            const dateObj = new Date(
+              dateInfo.year,
+              dateInfo.month - 1,
+              dateInfo.day,
+              dateInfo.hours,
+              dateInfo.minutes,
+              dateInfo.seconds
+            );
+            value = datenum_local(dateObj);
+          }
+        }
+
+        // Refine type for General format after confirming a value exists (requires isRealNum check)
+        if (foucsStatus === "General" || foucsStatus === 0) {
           // type = "g";
           type = isRealNum(value) ? "n" : "g";
         }
+
+        const mask = update(foucsStatus, value);
 
         if (cell && _.isPlainObject(cell)) {
           cell.m = `${mask}`;
@@ -122,7 +159,7 @@ export function updateFormatCell(
           }
           cell.ct.fa = foucsStatus;
           cell.ct.t = type;
-          cell.v = String(value);
+          cell.v = typeof value === "number" ? value : String(value);
           cell.fc = cell.fc || cell.ct?.s?.[0]?.fc;
           cell.bl = cell.bl || cell.ct?.s?.[0]?.bl;
           cell.it = cell.it || cell.ct?.s?.[0]?.it;
@@ -132,7 +169,7 @@ export function updateFormatCell(
         } else {
           d[r][c] = {
             ct: { fa: foucsStatus, t: type },
-            v: value as string,
+            v: typeof value === "number" ? value : (value as string),
             m: mask,
           };
         }
@@ -1658,14 +1695,57 @@ export function handleSum(
   autoSelectionFormula(ctx, cellInput, fxInput, "SUM", cache!);
 }
 
-export function handleLink(ctx: Context) {
+export function handleLink(
+  ctx: Context,
+  cellInput: HTMLDivElement | null | undefined
+) {
   const allowEdit = isAllowEdit(ctx);
   if (!allowEdit) return;
   const selection = ctx.luckysheet_select_save?.[0];
   const flowdata = getFlowdata(ctx);
-  if (flowdata != null && selection != null) {
-    showLinkCard(ctx, selection.row[0], selection.column[0], true);
+  if (flowdata == null || selection == null) return;
+
+  const r = selection.row[0];
+  const c = selection.column[0];
+  const isEditMode =
+    ctx.luckysheetCellUpdate?.length === 2 &&
+    ctx.luckysheetCellUpdate[0] === r &&
+    ctx.luckysheetCellUpdate[1] === c;
+
+  let applyToSelection = false;
+  let originText: string | undefined;
+  let selectionOffsets: { start: number; end: number } | undefined;
+
+  if (isEditMode && cellInput) {
+    const sel = window.getSelection();
+    if (
+      sel &&
+      sel.rangeCount > 0 &&
+      !sel.getRangeAt(0).collapsed &&
+      cellInput.contains(sel.anchorNode)
+    ) {
+      const value = cellInput.innerText ?? "";
+      if (value.substring(0, 1) !== "=") {
+        originText = sel.toString();
+        applyToSelection = true;
+        const off = getSelectionCharacterOffsets(cellInput);
+        if (off) selectionOffsets = off;
+      }
+    }
   }
+
+  showLinkCard(
+    ctx,
+    r,
+    c,
+    {
+      applyToSelection: applyToSelection || undefined,
+      originText,
+      selectionOffsets,
+    },
+    true,
+    false
+  );
 }
 
 const handlerMap: Record<string, ToolbarItemClickHandler> = {

@@ -1,8 +1,10 @@
 import _ from "lodash";
 import { Context, getFlowdata } from "../context";
 import { getSheetIndex, isAllowEdit } from "../utils";
-import { mergeBorder } from "./cell";
+import { cancelNormalSelected, mergeBorder } from "./cell";
+import { setSelectionByCharacterOffset } from "./cursor";
 import { getcellrange, iscelldata } from "./formula";
+import { applyLinkToSelection } from "./inline-string";
 import { colLocation, rowLocation } from "./location";
 import { normalizeSelection } from "./selection";
 import { changeSheet } from "./sheet";
@@ -51,10 +53,42 @@ export function saveHyperlink(
   c: number,
   linkText: string,
   linkType: string,
-  linkAddress: string
+  linkAddress: string,
+  options?: { applyToSelection?: boolean; cellInput?: HTMLDivElement | null }
 ) {
+  const applyToSelection = options?.applyToSelection && options?.cellInput;
   const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
   const flowdata = getFlowdata(ctx);
+
+  if (applyToSelection) {
+    if (sheetIndex != null && flowdata != null && linkType && linkAddress) {
+      let cell = flowdata[r][c];
+      if (cell == null) cell = {};
+      _.set(ctx.luckysheetfile[sheetIndex], ["hyperlink", `${r}_${c}`], {
+        linkType,
+        linkAddress,
+      });
+      cell.v = linkText || linkAddress;
+      cell.m = linkText || linkAddress;
+      cell.hl = { r, c, id: ctx.currentSheetId };
+      flowdata[r][c] = cell;
+    }
+    const offsets = ctx.linkCard?.selectionOffsets;
+    if (offsets) {
+      setSelectionByCharacterOffset(
+        options.cellInput!,
+        offsets.start,
+        offsets.end
+      );
+    }
+    applyLinkToSelection(options.cellInput!, linkType, linkAddress);
+    ctx.linkCard = undefined;
+    return;
+  }
+  if (options?.cellInput) {
+    cancelNormalSelected(ctx);
+  }
+
   if (sheetIndex != null && flowdata != null && linkType && linkAddress) {
     let cell = flowdata[r][c];
     if (cell == null) cell = {};
@@ -112,6 +146,11 @@ export function showLinkCard(
   ctx: Context,
   r: number,
   c: number,
+  options?: {
+    applyToSelection?: boolean;
+    originText?: string;
+    selectionOffsets?: { start: number; end: number };
+  },
   isEditing = false,
   isMouseDown = false
 ) {
@@ -136,12 +175,17 @@ export function showLinkCard(
   ) {
     const col_pre = c - 1 === -1 ? 0 : ctx.visibledatacolumn[c - 1];
     const row = ctx.visibledatarow[r];
+    const originText = (() => {
+      if (options?.originText !== undefined) return options.originText;
+      if (cell?.v == null) return "";
+      return `${cell.v}`;
+    })();
     ctx.linkCard = {
       sheetId: ctx.currentSheetId,
       r,
       c,
       rc: `${r}_${c}`,
-      originText: cell?.v == null ? "" : `${cell.v}`,
+      originText,
       originType: link?.linkType || "webpage",
       originAddress: link?.linkAddress || "",
       position: {
@@ -149,6 +193,8 @@ export function showLinkCard(
         cellBottom: row,
       },
       isEditing,
+      applyToSelection: options?.applyToSelection ?? false,
+      selectionOffsets: options?.selectionOffsets,
     };
   }
 }

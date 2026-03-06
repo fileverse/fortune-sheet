@@ -68,3 +68,115 @@ export function selectTextContentCross(sEle: HTMLElement, eEle: HTMLElement) {
     }
   }
 }
+
+/** Returns character offsets of the current selection within the element, or null if collapsed/outside. */
+export function getSelectionCharacterOffsets(
+  element: Node
+): { start: number; end: number } | null {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return null;
+  const range = sel.getRangeAt(0);
+  if (range.collapsed) return null;
+  if (
+    !element.contains(range.startContainer) ||
+    !element.contains(range.endContainer)
+  ) {
+    return null;
+  }
+  const pre = document.createRange();
+  pre.selectNodeContents(element);
+  pre.setEnd(range.startContainer, range.startOffset);
+  const start = pre.toString().length;
+  return { start, end: start + range.toString().length };
+}
+
+/** Sets the selection in the element to the character range [start, end] and focuses it. */
+export function setSelectionByCharacterOffset(
+  element: HTMLDivElement,
+  start: number,
+  end: number
+) {
+  element.focus();
+  const sel = window.getSelection();
+  if (!sel) return;
+  let charIndex = 0;
+  let startNode: Node | null = null;
+  let startOffset = 0;
+  let endNode: Node | null = null;
+  let endOffset = 0;
+
+  function walk(node: Node): boolean {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const len = (node.textContent || "").length;
+      if (startNode == null && charIndex + len > start) {
+        startNode = node;
+        startOffset = start - charIndex;
+      }
+      if (endNode == null && charIndex + len >= end) {
+        endNode = node;
+        endOffset = end - charIndex;
+        return true;
+      }
+      charIndex += len;
+      return false;
+    }
+    for (let i = 0; i < node.childNodes.length; i += 1) {
+      if (walk(node.childNodes[i])) return true;
+    }
+    return false;
+  }
+  walk(element);
+  if (startNode && endNode) {
+    const range = document.createRange();
+    range.setStart(startNode, startOffset);
+    range.setEnd(endNode, endOffset);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+}
+
+/**
+ * Returns the bounding client rects for a character range in the element.
+ * Does not change the current selection. Used to draw a persistent highlight
+ * (e.g. when the link modal is open and focus moved away from the input).
+ */
+export function getRangeRectsByCharacterOffset(
+  element: HTMLDivElement,
+  start: number,
+  end: number
+): DOMRect[] {
+  if (start >= end) return [];
+  let charIndex = 0;
+  let startNode: Node | null = null;
+  let startOffset = 0;
+  let endNode: Node | null = null;
+  let endOffset = 0;
+
+  function walk(node: Node): boolean {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const len = (node.textContent || "").length;
+      if (startNode == null && charIndex + len > start) {
+        startNode = node;
+        startOffset = start - charIndex;
+      }
+      if (endNode == null && charIndex + len >= end) {
+        endNode = node;
+        endOffset = end - charIndex;
+        return true;
+      }
+      charIndex += len;
+      return false;
+    }
+    for (let i = 0; i < node.childNodes.length; i += 1) {
+      if (walk(node.childNodes[i])) return true;
+    }
+    return false;
+  }
+  walk(element);
+  if (!startNode || !endNode) return [];
+  const range = document.createRange();
+  range.setStart(startNode, startOffset);
+  range.setEnd(endNode, endOffset);
+  const rects = range.getClientRects();
+  return Array.from(rects);
+}

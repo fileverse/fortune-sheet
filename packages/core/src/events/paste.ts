@@ -7,11 +7,11 @@ import {
   // execFunctionGroup,
 } from "../modules/formula";
 import { getdatabyselection } from "../modules/cell";
-import { genarate, update } from "../modules/format";
+import { update, datenum_local } from "../modules/format";
 import { normalizeSelection, selectionCache } from "../modules/selection";
 import { Cell, CellMatrix } from "../types";
 import { getSheetIndex, isAllowEdit } from "../utils";
-import { hasPartMC, isRealNum } from "../modules/validation";
+import { hasPartMC, isRealNum, detectDateFormat } from "../modules/validation";
 import { getBorderInfoCompute } from "../modules/border";
 import { expandRowsAndColumns, storeSheetParamALL } from "../modules/sheet";
 import { jfrefreshgrid } from "../modules/refresh";
@@ -74,7 +74,8 @@ export function adjustFormulaForPaste(
   let hadInvalid = false;
 
   const cellRefRegex = /\b(\$?)([A-Z]+)(\$?)(\d+)\b/g;
-  const stringOrCellRef = /"(?:\\.|[^"])*"|(?<!\$)([A-Z]+\d+\b)/g;
+  // Match quoted strings or cell refs (A1, $A1, A$1, $A$1). Avoid matching sheet names (e.g. Sheet1 in "Sheet1!A1") by requiring ref not to be followed by "!"
+  const stringOrCellRef = /"(?:\\.|[^"])*"|(\$?[A-Z]+\$?\d+)(?!\s*!)\b/g;
 
   const result = formula.replace(
     stringOrCellRef,
@@ -695,10 +696,35 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
         }
 
         if (originCell) {
-          // If it's a URL, keep it as string
-          originCell.v = isUrl ? originalValueStr : value;
+          // If destination cell already has a date format, try to parse pasted string into a date serial
+          if (originCell.ct && originCell.ct.t === "d" && !isUrl) {
+            const df = detectDateFormat(originalValueStr);
+            if (df) {
+              const dateObj = new Date(
+                df.year,
+                df.month - 1,
+                df.day,
+                df.hours,
+                df.minutes,
+                df.seconds
+              );
+              originCell.v = datenum_local(dateObj);
+            } else {
+              // Not a date: preserve original text so user can apply formats later
+              originCell.v = originalValueStr;
+            }
+          } else {
+            // Default: keep pasted value (numbers already parsed above)
+            originCell.v = isUrl ? originalValueStr : value;
+          }
+
           if (originCell.ct != null && originCell.ct.fa != null) {
-            originCell.m = update(originCell.ct.fa, originCell.v);
+            // If value is not a numeric serial for date formats, avoid calling update
+            if (originCell.ct.t === "d" && typeof originCell.v !== "number") {
+              originCell.m = String(originCell.v);
+            } else {
+              originCell.m = update(originCell.ct.fa, originCell.v);
+            }
           } else {
             // Convert boolean to string if needed, since m only accepts string | number
             originCell.m =
@@ -745,8 +771,10 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
               t: "s",
             };
           } else {
-            const mask = genarate(value);
-            [cell.m, cell.ct, cell.v] = mask!;
+            // Preserve original pasted text when creating new cells (automatic format)
+            cell.v = originalValueStr;
+            cell.m = originalValueStr;
+            cell.ct = { fa: "General", t: "g" };
             // check if hex value to handle hex address
             if (/^0x?[a-fA-F0-9]+$/.test(value)) {
               cell.m = value;
@@ -1675,11 +1703,14 @@ function pasteHandlerOfCopyPaste(
           if (!_.isNil(value) && !_.isNil(value.f)) {
             let adjustedFormula = value.f;
             let isError = false;
+            // Use actual source cell for this pasted cell so relative refs adjust correctly
+            const srcRow = c_r1 + (h - mth);
+            const srcCol = c_c1 + (c - mtc);
             try {
               adjustedFormula = adjustFormulaForPaste(
                 value.f,
-                c_c1,
-                c_r1,
+                srcCol,
+                srcRow,
                 c,
                 h
               );

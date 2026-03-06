@@ -75,6 +75,7 @@ import {
   onSearchDialogMove,
   onSearchDialogMoveEnd,
 } from "../modules/searchReplace";
+import { getColumnAutoFitWidth } from "../paste-helpers/calculate-range-cell-size";
 
 let mouseWheelUniqueTimeout: ReturnType<typeof setTimeout>;
 let scrollLockTimeout: ReturnType<typeof setTimeout>;
@@ -283,7 +284,7 @@ export function handleCellAreaMouseDown(
     [col_pre, col, col_index, col_index_ed] = margeset.column;
   }
 
-  showLinkCard(ctx, row_index, col_index, false, true);
+  showLinkCard(ctx, row_index, col_index, undefined, false, true);
   // //单元格单击之前
   if (
     ctx.hooks.beforeCellMouseDown?.(flowdata[row_index]?.[col_index], {
@@ -1734,7 +1735,7 @@ export function handleContextMenu(
   }
 }
 
-function mouseRender(
+export function mouseRender(
   ctx: Context,
   globalCache: GlobalCache,
   e: MouseEvent,
@@ -5353,6 +5354,69 @@ export function handleColSizeHandleMouseDown(
   // $("#luckysheet-cols-h-hover").hide();
   // $("#luckysheet-cols-menu-btn").hide();
   // ctx.luckysheet_cols_dbclick_times = 0;
+  e.stopPropagation();
+}
+
+export function handleColSizeHandleDoubleClick(
+  ctx: Context,
+  globalCache: GlobalCache,
+  e: MouseEvent,
+  headerContainer: HTMLDivElement
+) {
+  const { scrollLeft } = ctx;
+
+  const mouseX =
+    e.pageX - headerContainer.getBoundingClientRect().left - window.scrollX;
+  const _x = mouseX + scrollLeft;
+  const freeze = globalCache.freezen?.[ctx.currentSheetId];
+  const { x } = fixPositionOnFrozenCells(freeze, _x, 0, mouseX, 0);
+
+  const col_location = colLocation(x, ctx.visibledatacolumn);
+  const col_index = col_location[2];
+
+  const cfg = ctx.config;
+  if (cfg.columnlen == null) {
+    cfg.columnlen = {};
+  }
+  if (cfg.customWidth == null) {
+    cfg.customWidth = {};
+  }
+
+  const applyAutoFit = (colIdx: number) => {
+    const autoWidth = getColumnAutoFitWidth(ctx, colIdx);
+    cfg.columnlen![colIdx] = autoWidth;
+    cfg.customWidth![colIdx] = 1;
+  };
+
+  let changeColumnSelected = false;
+  if ((ctx.luckysheet_select_save?.length ?? 0) > 0) {
+    ctx.luckysheet_select_save
+      ?.filter((select) => select.column_select)
+      ?.some((select) => {
+        if (col_index >= select.column[0] && col_index <= select.column[1]) {
+          changeColumnSelected = true;
+        }
+        return changeColumnSelected;
+      });
+  }
+
+  if (changeColumnSelected) {
+    ctx.luckysheet_select_save
+      ?.filter((select) => select.column_select)
+      ?.forEach((select) => {
+        for (let c = select.column[0]; c <= select.column[1]; c += 1) {
+          applyAutoFit(c);
+        }
+      });
+  } else {
+    applyAutoFit(col_index);
+  }
+
+  ctx.config = cfg;
+  const idx = getSheetIndex(ctx, ctx.currentSheetId);
+  if (idx == null) return;
+  ctx.luckysheetfile[idx].config = ctx.config;
+
   e.stopPropagation();
 }
 

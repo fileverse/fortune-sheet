@@ -26,6 +26,8 @@ export function mergeCells(
 
   const d = sheet.data!;
 
+  const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+
   // if (!checkProtectionNotEnable(ctx.currentSheetId)) {
   //   return;
   // }
@@ -67,6 +69,13 @@ export function mergeCells(
               delete cell_clone.spl;
 
               d[r][c] = cell_clone;
+              cellChanges.push({
+                sheetId,
+                path: ["celldata"],
+                value: { r, c, v: d[r][c] },
+                key: `${r}_${c}`,
+                type: "update",
+              });
             }
           }
         }
@@ -134,6 +143,13 @@ export function mergeCells(
                 delete cell_clone.spl;
 
                 d[r][c] = cell_clone;
+                cellChanges.push({
+                  sheetId,
+                  path: ["celldata"],
+                  value: { r, c, v: d[r][c] },
+                  key: `${r}_${c}`,
+                  type: "update",
+                });
               }
             }
           }
@@ -176,6 +192,13 @@ export function mergeCells(
             }
 
             d[r][c] = { mc: { r: r1, c: c1 } };
+            cellChanges.push({
+              sheetId,
+              path: ["celldata"],
+              value: { r, c, v: d[r][c] },
+              key: `${r}_${c}`,
+              type: "update",
+            });
           }
         }
 
@@ -183,6 +206,13 @@ export function mergeCells(
         const a = d[r1][c1];
         if (!a) return;
         a.mc = { r: r1, c: c1, rs: r2 - r1 + 1, cs: c2 - c1 + 1 };
+        cellChanges.push({
+          sheetId,
+          path: ["celldata"],
+          value: { r: r1, c: c1, v: d[r1][c1] },
+          key: `${r1}_${c1}`,
+          type: "update",
+        });
 
         cfg.merge[`${r1}_${c1}`] = {
           r: r1,
@@ -213,12 +243,26 @@ export function mergeCells(
             }
 
             d[r][c] = { mc: { r: r1, c } };
+            cellChanges.push({
+              sheetId,
+              path: ["celldata"],
+              value: { r, c, v: d[r][c] },
+              key: `${r}_${c}`,
+              type: "update",
+            });
           }
 
           d[r1][c] = fv;
           const a = d[r1][c];
           if (!a) return;
           a.mc = { r: r1, c, rs: r2 - r1 + 1, cs: 1 };
+          cellChanges.push({
+            sheetId,
+            path: ["celldata"],
+            value: { r: r1, c, v: d[r1][c] },
+            key: `${r1}_${c}`,
+            type: "update",
+          });
 
           cfg.merge[`${r1}_${c}`] = {
             r: r1,
@@ -250,12 +294,26 @@ export function mergeCells(
             }
 
             d[r][c] = { mc: { r, c: c1 } };
+            cellChanges.push({
+              sheetId,
+              path: ["celldata"],
+              value: { r, c, v: d[r][c] },
+              key: `${r}_${c}`,
+              type: "update",
+            });
           }
 
           d[r][c1] = fv;
           const a = d[r][c1];
           if (!a) return;
           a.mc = { r, c: c1, rs: 1, cs: c2 - c1 + 1 };
+          cellChanges.push({
+            sheetId,
+            path: ["celldata"],
+            value: { r, c: c1, v: d[r][c1] },
+            key: `${r}_${c1}`,
+            type: "update",
+          });
 
           cfg.merge[`${r}_${c1}`] = {
             r,
@@ -266,6 +324,9 @@ export function mergeCells(
         }
       }
     }
+  }
+  if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(cellChanges);
   }
   sheet.config = cfg;
   if (sheet.id === ctx.currentSheetId) {

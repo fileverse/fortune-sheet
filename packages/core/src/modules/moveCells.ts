@@ -321,6 +321,8 @@ export function onCellsMoveEnd(
 
   const borderInfoCompute = getBorderInfoCompute(ctx, ctx.currentSheetId);
 
+  const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+
   const hyperLinkList: Record<
     string,
     {
@@ -347,6 +349,13 @@ export function onCellsMoveEnd(
       }
 
       d[r][c] = null;
+      cellChanges.push({
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r, c, v: null },
+        key: `${r}_${c}`,
+        type: "update",
+      });
       if (ctx.luckysheetfile[index].hyperlink?.[`${r}_${c}`]) {
         hyperLinkList[`${r}_${c}`] =
           ctx.luckysheetfile[index].hyperlink?.[`${r}_${c}`]!;
@@ -481,6 +490,13 @@ export function onCellsMoveEnd(
         }
       }
       d[r + row_s][c + col_s] = value;
+      cellChanges.push({
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r: r + row_s, c: c + col_s, v: d[r + row_s][c + col_s] },
+        key: `${r + row_s}_${c + col_s}`,
+        type: "update",
+      });
       if (hyperLinkList?.[`${r + last.row[0]}_${c + last.column[0]}`]) {
         ctx.luckysheetfile[index].hyperlink![`${r + row_s}_${c + col_s}`] =
           hyperLinkList?.[`${r + last.row[0]}_${c + last.column[0]}`] as {
@@ -548,6 +564,10 @@ export function onCellsMoveEnd(
   const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
   if (sheetIndex != null) {
     ctx.luckysheetfile[sheetIndex].config = _.assign({}, cfg);
+  }
+
+  if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(cellChanges);
   }
 
   // const allParam = {

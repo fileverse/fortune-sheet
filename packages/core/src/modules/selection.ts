@@ -2276,6 +2276,8 @@ export function fillRightData(ctx: Context): string {
       return "partMC";
     }
 
+    const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+
     for (let s = 0; s < selection.length; s += 1) {
       const r1 = selection[s].row[0];
       const r2 = selection[s].row[1];
@@ -2296,6 +2298,13 @@ export function fillRightData(ctx: Context): string {
           const srcCol = c1 - 1;
           const prev = d[r1][c1 - 1];
           d[r1][c1] = prev != null ? { ...prev } : {};
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: r1, c: c1, v: d[r1][c1] },
+            key: `${r1}_${c1}`,
+            type: "update",
+          });
           if (file != null) {
             const srcKey = `${srcRow}_${srcCol}`;
             const tgtKey = `${r1}_${c1}`;
@@ -2350,6 +2359,13 @@ export function fillRightData(ctx: Context): string {
           for (let c = c1 + 1; c <= c2; c += 1) {
             if (d[r]) {
               d[r][c] = sourceCell != null ? { ...sourceCell } : d[r][c] ?? {};
+              cellChanges.push({
+                sheetId: ctx.currentSheetId,
+                path: ["celldata"],
+                value: { r, c, v: d[r][c] },
+                key: `${r}_${c}`,
+                type: "update",
+              });
             }
             if (file != null) {
               const srcKey = `${r}_${c1}`;
@@ -2402,6 +2418,9 @@ export function fillRightData(ctx: Context): string {
         }
       }
     }
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
+    }
   }
   return "success";
 }
@@ -2434,6 +2453,8 @@ export function fillDownData(ctx: Context): string {
       return "partMC";
     }
 
+    const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+
     for (let s = 0; s < selection.length; s += 1) {
       const r1 = selection[s].row[0];
       const r2 = selection[s].row[1];
@@ -2454,6 +2475,13 @@ export function fillDownData(ctx: Context): string {
           const prev = d[r1 - 1][c1];
           if (!d[r1]) d[r1] = [];
           d[r1][c1] = prev != null ? { ...prev } : {};
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: r1, c: c1, v: d[r1][c1] },
+            key: `${r1}_${c1}`,
+            type: "update",
+          });
           if (file != null) {
             const srcKey = `${srcRow}_${srcCol}`;
             const tgtKey = `${r1}_${c1}`;
@@ -2508,6 +2536,13 @@ export function fillDownData(ctx: Context): string {
           for (let r = r1 + 1; r <= r2; r += 1) {
             if (!d[r]) d[r] = [];
             d[r][c] = sourceCell != null ? { ...sourceCell } : d[r][c] ?? {};
+            cellChanges.push({
+              sheetId: ctx.currentSheetId,
+              path: ["celldata"],
+              value: { r, c, v: d[r][c] },
+              key: `${r}_${c}`,
+              type: "update",
+            });
             if (file != null) {
               const srcKey = `${r1}_${c}`;
               const tgtKey = `${r}_${c}`;
@@ -2558,6 +2593,9 @@ export function fillDownData(ctx: Context): string {
           }
         }
       }
+    }
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
     }
   }
   return "success";

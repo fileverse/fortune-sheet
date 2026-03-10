@@ -480,6 +480,27 @@ export const useColumnDragAndDrop = (
             sourceIndex,
             targetIndex
           );
+          // Notify Yjs for every cell in the disturbed range (moved column + all columns in between)
+          const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+          const affectedColStart = Math.min(sourceIndex, targetIndex);
+          const affectedColEnd = Math.max(sourceIndex, targetIndex) + selectedSourceCol.length - 1;
+          const numRows = rows.length;
+          for (let r = 0; r < numRows; r += 1) {
+            const row = rows[r];
+            for (let c = affectedColStart; c <= affectedColEnd; c += 1) {
+              const cell = row?.[c];
+              cellChanges.push({
+                sheetId: draft.currentSheetId,
+                path: ["celldata"],
+                value: { r, c, v: cell ?? null },
+                key: `${r}_${c}`,
+                type: "update",
+              });
+            }
+          }
+          if (cellChanges.length > 0 && draft.hooks?.updateCellYdoc) {
+            draft.hooks.updateCellYdoc(cellChanges);
+          }
           const rowLen = d?.length || 0;
           api.setSelection(
             draft,

@@ -2279,6 +2279,7 @@ function getApplyData(
 }
 
 export function updateDropCell(ctx: Context) {
+  console.log("updateDropCell");
   // if (
   //   !checkProtectionLockedRangeList([_this.applyRange], ctx.currentSheetId)
   // ) {
@@ -2336,6 +2337,8 @@ export function updateDropCell(ctx: Context) {
   const apply_end_r = applyRange.row[1];
   const apply_str_c = applyRange.column[0];
   const apply_end_c = applyRange.column[1];
+
+  const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
 
   if (direction === "down" || direction === "up") {
     const asLen = apply_end_r - apply_str_r + 1;
@@ -2425,6 +2428,13 @@ export function updateDropCell(ctx: Context) {
           }
 
           d[j][i] = cell || null;
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: j, c: i, v: d[j][i] },
+            key: `${j}_${i}`,
+            type: "update",
+          });
 
           // 边框
           const bd_r = copy_str_r + ((j - apply_str_r) % csLen);
@@ -2534,6 +2544,13 @@ export function updateDropCell(ctx: Context) {
           }
 
           d[j][i] = cell || null;
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: j, c: i, v: d[j][i] },
+            key: `${j}_${i}`,
+            type: "update",
+          });
 
           // 边框
           const bd_r = copy_end_r - ((apply_end_r - j) % csLen);
@@ -2652,6 +2669,13 @@ export function updateDropCell(ctx: Context) {
           }
 
           d[i][j] = cell || null;
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: i, c: j, v: d[i][j] },
+            key: `${i}_${j}`,
+            type: "update",
+          });
 
           // 边框
           const bd_r = i;
@@ -2760,6 +2784,13 @@ export function updateDropCell(ctx: Context) {
           }
 
           d[i][j] = cell || null;
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: i, c: j, v: d[i][j] },
+            key: `${i}_${j}`,
+            type: "update",
+          });
 
           // 边框
           const bd_r = i;
@@ -2802,6 +2833,10 @@ export function updateDropCell(ctx: Context) {
         }
       }
     }
+  }
+
+  if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(cellChanges);
   }
 
   // 条件格式

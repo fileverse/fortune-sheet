@@ -2276,7 +2276,13 @@ export function fillRightData(ctx: Context): string {
       return "partMC";
     }
 
-    const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
 
     for (let s = 0; s < selection.length; s += 1) {
       const r1 = selection[s].row[0];
@@ -2453,7 +2459,13 @@ export function fillDownData(ctx: Context): string {
       return "partMC";
     }
 
-    const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
 
     for (let s = 0; s < selection.length; s += 1) {
       const r1 = selection[s].row[0];

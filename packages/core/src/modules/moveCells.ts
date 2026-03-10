@@ -321,7 +321,13 @@ export function onCellsMoveEnd(
 
   const borderInfoCompute = getBorderInfoCompute(ctx, ctx.currentSheetId);
 
-  const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+  const cellChanges: {
+    sheetId: string;
+    path: string[];
+    key?: string;
+    value: any;
+    type?: "update" | "delete";
+  }[] = [];
 
   const hyperLinkList: Record<
     string,

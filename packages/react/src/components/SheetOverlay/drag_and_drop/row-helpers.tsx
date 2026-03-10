@@ -455,9 +455,16 @@ export const useRowDragAndDrop = (
             context.currentSheetId
           );
           // Notify Yjs for every cell in the disturbed range (moved row + all rows in between)
-          const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+          const cellChanges: {
+            sheetId: string;
+            path: string[];
+            key?: string;
+            value: any;
+            type?: "update" | "delete";
+          }[] = [];
           const affectedRowStart = Math.min(sourceIndex, targetIndex);
-          const affectedRowEnd = Math.max(sourceIndex, targetIndex) + selectedSourceRow.length - 1;
+          const affectedRowEnd =
+            Math.max(sourceIndex, targetIndex) + selectedSourceRow.length - 1;
           const numCols = d?.[0]?.length ?? 0;
           for (let r = affectedRowStart; r <= affectedRowEnd; r += 1) {
             const row = rows[r];

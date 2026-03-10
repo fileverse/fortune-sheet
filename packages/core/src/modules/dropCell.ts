@@ -2338,7 +2338,13 @@ export function updateDropCell(ctx: Context) {
   const apply_str_c = applyRange.column[0];
   const apply_end_c = applyRange.column[1];
 
-  const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+  const cellChanges: {
+    sheetId: string;
+    path: string[];
+    key?: string;
+    value: any;
+    type?: "update" | "delete";
+  }[] = [];
 
   if (direction === "down" || direction === "up") {
     const asLen = apply_end_r - apply_str_r + 1;

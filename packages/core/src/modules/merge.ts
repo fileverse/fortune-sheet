@@ -26,7 +26,13 @@ export function mergeCells(
 
   const d = sheet.data!;
 
-  const cellChanges: { sheetId: string; path: string[]; key?: string; value: any; type?: "update" | "delete" }[] = [];
+  const cellChanges: {
+    sheetId: string;
+    path: string[];
+    key?: string;
+    value: any;
+    type?: "update" | "delete";
+  }[] = [];
 
   // if (!checkProtectionNotEnable(ctx.currentSheetId)) {
   //   return;

@@ -990,9 +990,7 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
               ) {
                 const cell = _.isNil(d[r]) || _.isNil(d[r][c]) ? null : d[r][c];
                 const isEmpty =
-                  _.isNil(cell) ||
-                  _.isNil(cell.v) ||
-                  isRealNull(cell.v);
+                  _.isNil(cell) || _.isNil(cell.v) || isRealNull(cell.v);
                 if (isEmpty) {
                   if (`${r}_${c}` in computeMap) {
                     computeMap[`${r}_${c}`].textColor = textColor;

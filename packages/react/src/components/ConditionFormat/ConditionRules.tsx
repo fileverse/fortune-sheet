@@ -446,7 +446,9 @@ const ConditionRules: React.FC<{ context?: any }> = ({ context }) => {
                         ]
                       }
                       {allConditionFormats[key].conditionName !== "empty" &&
-                        ` ${allConditionFormats[key].conditionValue?.[0] ?? ""}`}
+                        ` ${
+                          allConditionFormats[key].conditionValue?.[0] ?? ""
+                        }`}
                     </h3>
                     <p
                       className="fortune-condition-rules__para condition-list-range"

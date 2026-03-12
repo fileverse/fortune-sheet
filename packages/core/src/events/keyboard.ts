@@ -155,19 +155,19 @@ function handleControlPlusArrowKey(
   e: KeyboardEvent,
   shiftPressed: boolean
 ) {
-  //if (ctx.luckysheetCellUpdate.length > 0) return;
+  // if (ctx.luckysheetCellUpdate.length > 0) return;
 
   const idx = getSheetIndex(ctx, ctx.currentSheetId);
   if (_.isNil(idx)) return;
 
   const file = ctx.luckysheetfile[idx];
-  //if (!file || !file.row || !file.column) return;
+  // if (!file || !file.row || !file.column) return;
   const maxRow = file.row;
   const maxCol = file.column;
   let last;
   if (ctx.luckysheet_select_save && ctx.luckysheet_select_save.length > 0)
     last = ctx.luckysheet_select_save[ctx.luckysheet_select_save.length - 1];
-  //if (!last) return;
+  // if (!last) return;
 
   const currR = last.row_focus;
   const currC = last.column_focus;

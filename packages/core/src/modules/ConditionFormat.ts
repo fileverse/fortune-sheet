@@ -976,6 +976,44 @@ export function compute(ctx: Context, ruleArr: any, d: CellMatrix) {
                 }
               }
             }
+          } else if (conditionName === "empty") {
+            // Format cells that are empty (no value or blank)
+            for (
+              let r = cellrange[s].row[0];
+              r <= cellrange[s].row[1];
+              r += 1
+            ) {
+              for (
+                let c = cellrange[s].column[0];
+                c <= cellrange[s].column[1];
+                c += 1
+              ) {
+                const cell = _.isNil(d[r]) || _.isNil(d[r][c]) ? null : d[r][c];
+                const isEmpty =
+                  _.isNil(cell) ||
+                  _.isNil(cell.v) ||
+                  isRealNull(cell.v);
+                if (isEmpty) {
+                  if (`${r}_${c}` in computeMap) {
+                    computeMap[`${r}_${c}`].textColor = textColor;
+                    computeMap[`${r}_${c}`].cellColor = cellColor;
+                    computeMap[`${r}_${c}`].bold = bold;
+                    computeMap[`${r}_${c}`].italic = italic;
+                    computeMap[`${r}_${c}`].underline = underline;
+                    computeMap[`${r}_${c}`].strikethrough = strikethrough;
+                  } else {
+                    computeMap[`${r}_${c}`] = {
+                      textColor,
+                      cellColor,
+                      bold,
+                      italic,
+                      underline,
+                      strikethrough,
+                    };
+                  }
+                }
+              }
+            }
           } else if (conditionName === "between") {
             // UPDATED BETWEEN COMPARISON WITH STRING SUPPORT
             // 循环应用范围计算

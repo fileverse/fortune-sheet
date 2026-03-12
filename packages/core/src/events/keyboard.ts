@@ -155,19 +155,19 @@ function handleControlPlusArrowKey(
   e: KeyboardEvent,
   shiftPressed: boolean
 ) {
-  if (ctx.luckysheetCellUpdate.length > 0) return;
+  //if (ctx.luckysheetCellUpdate.length > 0) return;
 
   const idx = getSheetIndex(ctx, ctx.currentSheetId);
   if (_.isNil(idx)) return;
 
   const file = ctx.luckysheetfile[idx];
-  if (!file || !file.row || !file.column) return;
+  //if (!file || !file.row || !file.column) return;
   const maxRow = file.row;
   const maxCol = file.column;
   let last;
   if (ctx.luckysheet_select_save && ctx.luckysheet_select_save.length > 0)
     last = ctx.luckysheet_select_save[ctx.luckysheet_select_save.length - 1];
-  if (!last) return;
+  //if (!last) return;
 
   const currR = last.row_focus;
   const currC = last.column_focus;
@@ -872,7 +872,29 @@ export async function handleGlobalKeyDown(
       kstr === "ArrowLeft" ||
       kstr === "ArrowRight"
     ) {
-      handleArrowKey(ctx, e);
+      const isEditing = ctx.luckysheetCellUpdate.length > 0;
+      const inputText = cellInput?.innerText ?? "";
+      const isFormulaEdit = isEditing && inputText.trim().startsWith("=");
+      const enteredByTyping = cache.enteredEditByTyping === true;
+
+      // Only when we entered edit by typing (not double-click): arrow keys
+      // commit and move to next cell in that direction.
+      if (isEditing && !isFormulaEdit && enteredByTyping) {
+        updateCell(
+          ctx,
+          ctx.luckysheetCellUpdate[0],
+          ctx.luckysheetCellUpdate[1],
+          cellInput,
+          undefined,
+          canvas
+        );
+        cache.enteredEditByTyping = false;
+        handleArrowKey(ctx, e);
+        e.preventDefault();
+      } else {
+        // Double-click edit mode or formula: preserve existing behavior
+        handleArrowKey(ctx, e);
+      }
     } else if (
       !(
         (kcode >= 112 && kcode <= 123) ||
@@ -907,6 +929,8 @@ export async function handleGlobalKeyDown(
 
         ctx.luckysheetCellUpdate = [row_index, col_index];
         cache.overwriteCell = true;
+        cache.overwriteCellFirstChar = e.key;
+        cache.enteredEditByTyping = true;
 
         // if (kstr === "Backspace") {
         //   $("#luckysheet-rich-text-editor").html("<br/>");
@@ -917,6 +941,7 @@ export async function handleGlobalKeyDown(
         //   $("#luckysheet-rich-text-editor"),
         //   kcode
         // );
+        e.preventDefault();
       }
     }
   }

@@ -11674,6 +11674,8 @@ export default {
     conditionformat_textContains: "Conditional format - Text Contains",
     conditionformat_textContains_title:
       "Format cells containing the following text",
+    conditionformat_empty: "Conditional format - Empty",
+    conditionformat_empty_title: "Format cells that are empty",
     conditionformat_occurrenceDate: "Conditional format - Occurrence Date",
     conditionformat_occurrenceDate_title:
       "Format cells containing the following dates",
@@ -11780,6 +11782,7 @@ export default {
     between2: "",
     contain: "Contain",
     textContains: "Text contains",
+    empty: "Empty",
     duplicateValue: "Duplicate value",
     uniqueValue: "Unique value",
     top: "Top",

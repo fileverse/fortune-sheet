@@ -44,10 +44,6 @@ import {
   getCursorPosition,
   isLetterNumberPattern,
   removeLastSpan,
-  incrementColumn,
-  decrementColumn,
-  incrementRow,
-  decrementRow,
   countCommasBeforeCursor,
 } from "./helper";
 import { LucideIcon } from "./LucideIcon";
@@ -163,6 +159,8 @@ const InputBox: React.FC = () => {
       const flowdata = getFlowdata(context);
       const cell = flowdata?.[row_index]?.[col_index];
       let value = "";
+      const wasOverwrite = refs.globalCache.overwriteCell;
+      const overwriteFirstChar = refs.globalCache.overwriteCellFirstChar;
       if (cell && !refs.globalCache.overwriteCell) {
         if (isInlineStringCell(cell)) {
           value = getInlineStringHTML(row_index, col_index, flowdata);
@@ -179,12 +177,25 @@ const InputBox: React.FC = () => {
         }
       }
       refs.globalCache.overwriteCell = false;
-      if (!refs.globalCache.ignoreWriteCell && inputRef.current && value) {
+      delete refs.globalCache.overwriteCellFirstChar;
+      if (wasOverwrite && inputRef.current) {
+        // Typing without double-click: overwrite cell (Google Sheets/Excel behavior).
+        // Show only the first character that was typed; user continues in empty field.
+        inputRef.current.innerText = overwriteFirstChar ?? "";
+        if (overwriteFirstChar) {
+          moveToEnd(inputRef.current);
+        }
+      } else if (
+        !refs.globalCache.ignoreWriteCell &&
+        inputRef.current &&
+        value
+      ) {
         inputRef.current!.innerHTML = escapeHTMLTag(escapeScriptTag(value));
       } else if (
         !refs.globalCache.ignoreWriteCell &&
         inputRef.current &&
-        !value
+        !value &&
+        !wasOverwrite
       ) {
         // @ts-ignore
         const valueD = getCellValue(row_index, col_index, flowdata, "f");
@@ -377,6 +388,83 @@ const InputBox: React.FC = () => {
     event.preventDefault();
   };
 
+  useEffect(() => {
+    const selection = context.luckysheet_select_save?.[0];
+    const editor = inputRef.current;
+    if (
+      !selection ||
+      !editor ||
+      !isInputBoxActive ||
+      context.rangeDialog?.show
+    ) {
+      return;
+    }
+
+    const rowSel = selection.row as [number, number] | undefined;
+    const colSel = selection.column as [number, number] | undefined;
+    if (!rowSel || !colSel || rowSel.length < 2 || colSel.length < 2) return;
+
+    const rowStart = Math.min(rowSel[0], rowSel[1]);
+    const rowEnd = Math.max(rowSel[0], rowSel[1]);
+    const colStart = Math.min(colSel[0], colSel[1]);
+    const colEnd = Math.max(colSel[0], colSel[1]);
+
+    const startRef = `${indexToColumnChar(colStart)}${rowStart + 1}`;
+    const endRef = `${indexToColumnChar(colEnd)}${rowEnd + 1}`;
+    const refText = startRef === endRef ? startRef : `${startRef}:${endRef}`;
+
+    const editorText = editor.innerText || "";
+    if (!editorText.startsWith("=")) return;
+
+    const spans = editor.querySelectorAll("span");
+    const lastSpan = spans[spans.length - 1] as HTMLSpanElement | undefined;
+    const lastSpanText = lastSpan?.innerText || "";
+
+    const isA1RangePattern = /^[a-zA-Z]+\d+:[a-zA-Z]+\d+$/.test(lastSpanText);
+    const notFunctionInit = !editorText.includes("(");
+    const refNotAllowed =
+      lastSpanText.includes(")") ||
+      (notFunctionInit &&
+        /^[a-zA-Z]+$/.test(lastSpanText) &&
+        !_.includes(["="], lastSpanText));
+
+    const shouldHandleRef =
+      lastSpan?.classList.contains("fortune-formula-functionrange-cell") ||
+      isLetterNumberPattern(lastSpanText) ||
+      isA1RangePattern ||
+      ((lastSpanText === "(" ||
+        lastSpanText === "," ||
+        lastSpanText.includes(":") ||
+        lastSpanText === "=") &&
+        !lastSpanText.includes('"') &&
+        !refNotAllowed &&
+        !/^[a-zA-Z]+$/.test(lastSpanText));
+
+    if (!shouldHandleRef) return;
+
+    const refSpanHtml = `<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refText}</span>`;
+
+    if (lastSpan?.classList.contains("fortune-formula-functionrange-cell")) {
+      if (lastSpan.textContent !== refText) lastSpan.textContent = refText;
+      setTimeout(() => moveCursorToEnd(editor), 1);
+      return;
+    }
+
+    if (isLetterNumberPattern(lastSpanText) || isA1RangePattern) {
+      const htmlR = removeLastSpan(editor.innerHTML);
+      editor.innerHTML = `${htmlR}${refSpanHtml}`;
+      setTimeout(() => moveCursorToEnd(editor), 1);
+      return;
+    }
+
+    editor.innerHTML = `${editor.innerHTML}${refSpanHtml}`;
+    setTimeout(() => moveCursorToEnd(editor), 1);
+  }, [
+    context.luckysheet_select_save,
+    context.rangeDialog?.show,
+    isInputBoxActive,
+  ]);
+
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
@@ -410,7 +498,6 @@ const InputBox: React.FC = () => {
         setCommaCount(currentCommaCount);
       }
 
-      /* Arrow navigation for cell reference starts here */
       let allowListNavigation = true;
 
       if (e.key === "Delete" || e.key === "Backspace") {
@@ -425,80 +512,55 @@ const InputBox: React.FC = () => {
         }
       }
 
-      let refCell = placeRef.current;
+      const isArrowKey =
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight";
 
-      if (e.key === "ArrowUp") {
-        refCell = decrementRow(placeRef.current);
-      } else if (e.key === "ArrowDown") {
-        refCell = incrementRow(placeRef.current);
-      } else if (e.key === "ArrowLeft") {
-        refCell = decrementColumn(placeRef.current);
-      } else if (e.key === "ArrowRight") {
-        refCell = incrementColumn(placeRef.current);
-      }
-
-      // current hack to for arrow navigation, try to find a better way like using rangeDrag
       if (
-        (e.key === "ArrowUp" ||
-          e.key === "ArrowDown" ||
-          e.key === "ArrowLeft" ||
-          e.key === "ArrowRight") &&
+        isArrowKey &&
         !(
           getCursorPosition(inputRef?.current!) !==
             inputRef?.current!.innerText.length && e.key === "ArrowRight"
         )
       ) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(
-          `<div>${inputRef?.current?.innerHTML}</div>`,
-          "text/html"
+        const editorText = inputRef.current?.innerText || "";
+        const lastSpanText = getLastInputSpanText() || "";
+        const isA1RangePattern = /^[a-zA-Z]+\d+:[a-zA-Z]+\d+$/.test(
+          lastSpanText
         );
-        const spans = doc.querySelectorAll("span");
-        const lastSpan = spans[spans.length - 1];
-
-        const notFunctionInit = !document
-          .getElementById("luckysheet-rich-text-editor")
-          ?.innerText.includes("(");
-
-        // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
-        const arrowRefNotAllowed =
-          lastSpan?.innerText.includes(")") ||
+        const notFunctionInit = !editorText.includes("(");
+        const refNotAllowed =
+          lastSpanText.includes(")") ||
           (notFunctionInit &&
-            /^[a-zA-Z]+$/.test(lastSpan?.innerText) &&
-            !_.includes(["="], lastSpan?.innerText));
+            /^[a-zA-Z]+$/.test(lastSpanText) &&
+            !_.includes(["="], lastSpanText));
 
-        if (
-          (lastSpan?.innerText === "(" ||
-            lastSpan?.innerText === "," ||
-            lastSpan?.innerText.includes(":") ||
-            lastSpan?.innerText !== ")") &&
-          !lastSpan?.innerText.includes('"') &&
-          !isLetterNumberPattern(lastSpan?.innerText) &&
-          !arrowRefNotAllowed &&
-          !/^[a-zA-Z]+$/.test(lastSpan?.innerText)
-        ) {
+        const shouldTreatAsRefNavigation =
+          editorText.startsWith("=") &&
+          (Boolean(
+            inputRef.current?.querySelector(
+              ".fortune-formula-functionrange-cell"
+            )
+          ) ||
+            isLetterNumberPattern(lastSpanText) ||
+            isA1RangePattern ||
+            ((lastSpanText === "(" ||
+              lastSpanText === "," ||
+              lastSpanText.includes(":") ||
+              lastSpanText === "=") &&
+              !lastSpanText.includes('"') &&
+              !refNotAllowed &&
+              !/^[a-zA-Z]+$/.test(lastSpanText)));
+
+        if (shouldTreatAsRefNavigation) {
           allowListNavigation = false;
-          inputRef.current!.innerHTML = `${
-            inputRef.current!.innerHTML
-          }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
-
           setTimeout(() => {
-            moveCursorToEnd(inputRef.current!);
-          }, 1);
-        }
-
-        if (isLetterNumberPattern(lastSpan?.innerText)) {
-          allowListNavigation = false;
-          const htmlR = removeLastSpan(inputRef?.current!.innerHTML);
-          inputRef.current!.innerHTML = `${htmlR}<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
-
-          moveCursorToEnd(inputRef.current!);
-          setTimeout(() => {
-            moveCursorToEnd(inputRef.current!);
+            if (inputRef.current) moveCursorToEnd(inputRef.current);
           }, 1);
         }
       }
-      /* Arrow navigation for cell reference ends here */
 
       if (e.key === "Escape" && context.luckysheetCellUpdate.length > 0) {
         setContext((draftCtx) => {
@@ -602,7 +664,6 @@ const InputBox: React.FC = () => {
       context.luckysheetCellUpdate.length,
       selectActiveFormula,
       setContext,
-      firstSelection,
     ]
   );
 

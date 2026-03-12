@@ -11696,6 +11696,8 @@ export default {
     conditionformat_textContains: "Conditionformat-TextContains",
     conditionformat_textContains_title:
       "निम्नलिखित पाठ वाली कोशिकाओं को प्रारूपित करें",
+    conditionformat_empty: "Conditional format - Empty",
+    conditionformat_empty_title: "खाली कोशिकाओं को प्रारूपित करें",
     conditionformat_occurrenceDate: "Conditionformat-OccurrenceDate",
     conditionformat_occurrenceDate_title:
       "निम्नलिखित तिथियों वाली कोशिकाओं को प्रारूपित करें",
@@ -11806,6 +11808,7 @@ export default {
     between2: "",
     contain: "शामिल",
     textContains: "पाठ शामिल है",
+    empty: "खाली",
     duplicateValue: "डुप्लिकेट मान",
     uniqueValue: "अद्वितीय मान",
     top: "शीर्ष",

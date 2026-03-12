@@ -317,6 +317,7 @@ const ConditionRules: React.FC<{ context?: any }> = ({ context }) => {
     { text: "between", value: "[]", label: "Between" },
     { text: "equal", value: "=", label: "Equal" },
     { text: "textContains", value: "()", label: "Text Contains" },
+    { text: "empty", value: "", label: "Empty" },
     {
       text: "occurrenceDate",
       value: conditionformat.yesterday,
@@ -443,8 +444,9 @@ const ConditionRules: React.FC<{ context?: any }> = ({ context }) => {
                         (conditionformat as any)[
                           allConditionFormats[key].conditionName
                         ]
-                      }{" "}
-                      {allConditionFormats[key].conditionValue?.[0]}
+                      }
+                      {allConditionFormats[key].conditionName !== "empty" &&
+                        ` ${allConditionFormats[key].conditionValue?.[0] ?? ""}`}
                     </h3>
                     <p
                       className="fortune-condition-rules__para condition-list-range"
@@ -565,6 +567,12 @@ const ConditionRules: React.FC<{ context?: any }> = ({ context }) => {
             <Select
               value={type}
               onValueChange={(value) => {
+                if (value === "empty" || type === "empty") {
+                  setContext((ctx) => {
+                    ctx.conditionRules.rulesValue = "";
+                  });
+                  setEditConditionFormatValue(null);
+                }
                 setType(value);
               }}
             >
@@ -1017,7 +1025,9 @@ const ConditionRules: React.FC<{ context?: any }> = ({ context }) => {
             </Button>
             {editConditionFormatKey !== null ? (
               <Button
-                disabled={context.conditionRules.rulesValue === ""}
+                disabled={
+                  context.conditionRules.rulesValue === "" && type !== "empty"
+                }
                 variant="default"
                 style={{
                   minWidth: "80px",
@@ -1031,7 +1041,9 @@ const ConditionRules: React.FC<{ context?: any }> = ({ context }) => {
               </Button>
             ) : (
               <Button
-                disabled={context.conditionRules.rulesValue === ""}
+                disabled={
+                  context.conditionRules.rulesValue === "" && type !== "empty"
+                }
                 variant="default"
                 style={{
                   minWidth: "80px",

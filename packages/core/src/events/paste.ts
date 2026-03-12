@@ -7,11 +7,11 @@ import {
   // execFunctionGroup,
 } from "../modules/formula";
 import { getdatabyselection } from "../modules/cell";
-import { update, datenum_local } from "../modules/format";
+import { update, genarate } from "../modules/format";
 import { normalizeSelection, selectionCache } from "../modules/selection";
 import { Cell, CellMatrix } from "../types";
 import { getSheetIndex, isAllowEdit } from "../utils";
-import { hasPartMC, isRealNum, detectDateFormat } from "../modules/validation";
+import { hasPartMC, isRealNum } from "../modules/validation";
 import { getBorderInfoCompute } from "../modules/border";
 import { expandRowsAndColumns, storeSheetParamALL } from "../modules/sheet";
 import { jfrefreshgrid } from "../modules/refresh";
@@ -662,41 +662,48 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
         }
 
         if (originCell) {
-          // If destination cell already has a date format, try to parse pasted string into a date serial
-          if (originCell.ct && originCell.ct.t === "d" && !isUrl) {
-            const df = detectDateFormat(originalValueStr);
-            if (df) {
-              const dateObj = new Date(
-                df.year,
-                df.month - 1,
-                df.day,
-                df.hours,
-                df.minutes,
-                df.seconds
-              );
-              originCell.v = datenum_local(dateObj);
+          if (!isUrl) {
+            const generated = genarate(originalValueStr);
+            if (generated) {
+              const [genM, genCt, genV] = generated;
+              if (genCt?.t === "d") {
+                // Pasted value is a date — always update ct so toolbar shows "Date"
+                originCell.v = genV;
+                originCell.m = genM ?? originalValueStr;
+                originCell.ct = genCt;
+              } else {
+                // Not a date: preserve destination format, just update value
+                originCell.v = value;
+                if (originCell.ct != null && originCell.ct.fa != null) {
+                  if (
+                    originCell.ct.t === "d" &&
+                    typeof originCell.v !== "number"
+                  ) {
+                    originCell.m = String(originCell.v);
+                  } else {
+                    originCell.m = update(originCell.ct.fa, originCell.v);
+                  }
+                } else {
+                  originCell.m =
+                    typeof originCell.v === "boolean"
+                      ? String(originCell.v)
+                      : originCell.v;
+                }
+              }
             } else {
-              // Not a date: preserve original text so user can apply formats later
-              originCell.v = originalValueStr;
+              originCell.v = value;
+              if (originCell.ct != null && originCell.ct.fa != null) {
+                originCell.m = update(originCell.ct.fa, originCell.v);
+              } else {
+                originCell.m =
+                  typeof originCell.v === "boolean"
+                    ? String(originCell.v)
+                    : originCell.v;
+              }
             }
           } else {
-            // Default: keep pasted value (numbers already parsed above)
-            originCell.v = isUrl ? originalValueStr : value;
-          }
-
-          if (originCell.ct != null && originCell.ct.fa != null) {
-            // If value is not a numeric serial for date formats, avoid calling update
-            if (originCell.ct.t === "d" && typeof originCell.v !== "number") {
-              originCell.m = String(originCell.v);
-            } else {
-              originCell.m = update(originCell.ct.fa, originCell.v);
-            }
-          } else {
-            // Convert boolean to string if needed, since m only accepts string | number
-            originCell.m =
-              typeof originCell.v === "boolean"
-                ? String(originCell.v)
-                : originCell.v;
+            originCell.v = originalValueStr;
+            originCell.m = originalValueStr;
           }
 
           if (originCell.f != null && originCell.f.length > 0) {
@@ -737,18 +744,16 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
               t: "s",
             };
           } else {
-            // Preserve original pasted text when creating new cells (automatic format)
-            cell.v = originalValueStr;
-            cell.m = originalValueStr;
-            cell.ct = { fa: "General", t: "g" };
             // check if hex value to handle hex address
             if (/^0x?[a-fA-F0-9]+$/.test(value)) {
-              cell.m = value;
-              cell.ct = {
-                fa: "@",
-                t: "s",
-              };
               cell.v = value;
+              cell.m = value;
+              cell.ct = { fa: "@", t: "s" };
+            } else {
+              const [m, ct, v] = genarate(originalValueStr) ?? [];
+              cell.v = v ?? originalValueStr;
+              cell.m = m != null ? String(m) : originalValueStr;
+              cell.ct = ct ?? { fa: "General", t: "g" };
             }
           }
 

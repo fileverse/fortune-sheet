@@ -373,19 +373,20 @@ const handleFormulaOnPaste = (ctx: Context, d: any) => {
         cell.f = f;
         cell.m = v.toString();
         x[c] = cell;
+
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: {
+            r,
+            c,
+            v: d[r][c],
+          },
+          key: `${r}_${c}`,
+          type: "update",
+        });
       }
       d[r] = x;
-      changes.push({
-        sheetId: ctx.currentSheetId,
-        path: ["celldata"],
-        value: {
-          r,
-          c,
-          v: d[r][c],
-        },
-        key: `${r}_${c}`,
-        type: "update",
-      });
     }
   }
   if (ctx?.hooks?.updateCellYdoc) {
@@ -590,7 +591,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
       // selectHightlightShow();
     }
     jfrefreshgrid(ctx, null, undefined);
-    handleFormulaOnPaste(ctx, d);
+    if (data.includes("=")) {
+      handleFormulaOnPaste(ctx, d);
+    }
     // for (let r = 0; r < d.length; r += 1) {
     //   const x = d[r];
     //   for (let c = 0; c < d[0].length; c += 1) {
@@ -806,19 +809,17 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
 
           x[c + curC] = cell;
         }
-        changes.push(
-          changes.push({
-            sheetId: ctx.currentSheetId,
-            path: ["celldata"],
-            value: {
-              r,
-              c,
-              v: d[r][c],
-            },
-            key: `${r}_${c}`,
-            type: "update",
-          })
-        );
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: {
+            r: r + curR,
+            c: c + curC,
+            v: d[r + curR][c + curC],
+          },
+          key: `${r + curR}_${c + curC}`,
+          type: "update",
+        });
       }
       d[r + curR] = x;
     }
@@ -840,7 +841,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
     //   selectHightlightShow();
     // }
     jfrefreshgrid(ctx, null, undefined);
-    handleFormulaOnPaste(ctx, d);
+    if (data.includes("=")) {
+      handleFormulaOnPaste(ctx, d);
+    }
 
     // for (let r = 0; r < d.length; r += 1) {
     //   const x = d[r];
@@ -956,6 +959,14 @@ function pasteHandlerOfCutPaste(
     expandRowsAndColumns(d, addr, addc);
   }
 
+  const changes: {
+    sheetId: string;
+    path: string[];
+    value: any;
+    key: string;
+    type: "update";
+  }[] = [];
+
   const borderInfoCompute = getBorderInfoCompute(ctx, copySheetId);
   const c_dataVerification =
     _.cloneDeep(
@@ -1016,6 +1027,13 @@ function pasteHandlerOfCutPaste(
         }
 
         d[i][j] = null;
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r: i, c: j, v: null },
+          key: `${i}_${j}`,
+          type: "update",
+        });
 
         delete dataVerification[`${i}_${j}`];
 
@@ -1145,6 +1163,13 @@ function pasteHandlerOfCutPaste(
       }
 
       x[c] = _.cloneDeep(value);
+      changes.push({
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r: h, c, v: d[h][c] },
+        key: `${h}_${c}`,
+        type: "update",
+      });
 
       if (value != null && copyHasMC && x[c]?.mc) {
         if (x[c]!.mc!.rs != null) {
@@ -1174,6 +1199,10 @@ function pasteHandlerOfCutPaste(
 
   last.row = [minh, maxh];
   last.column = [minc, maxc];
+
+  if (changes.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(changes);
+  }
 
   // 若有行高改变，重新计算行高改变
   if (copyRowlChange) {
@@ -1575,6 +1604,14 @@ function pasteHandlerOfCopyPaste(
     expandRowsAndColumns(d, addr, addc);
   }
 
+  const changes: {
+    sheetId: string;
+    path: string[];
+    value: any;
+    key: string;
+    type: "update";
+  }[] = [];
+
   const borderInfoCompute = getBorderInfoCompute(ctx, copySheetIndex);
   const c_dataVerification =
     _.cloneDeep(
@@ -1825,6 +1862,13 @@ function pasteHandlerOfCopyPaste(
               };
             }
           }
+          changes.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: h, c, v: d[h][c] },
+            key: `${h}_${c}`,
+            type: "update",
+          });
         }
         d[h] = x;
       }
@@ -1971,6 +2015,10 @@ function pasteHandlerOfCopyPaste(
         }
       }
     }
+  }
+
+  if (changes.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(changes);
   }
 
   if (copyRowlChange || addr > 0 || addc > 0) {

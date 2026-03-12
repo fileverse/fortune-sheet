@@ -21,6 +21,7 @@ export type Hooks = {
   cellDataChange?: () => void;
   hyperlinkChange?: () => void;
   updateCellYdoc?: (changes: SheetChangePath[]) => void;
+  updateAllCell?: (sheetId: string) => void;
   beforeUpdateCell?: (r: number, c: number, value: any) => boolean;
   afterUpdateCell?: (
     row: number,

@@ -315,6 +315,13 @@ export function pasteHandlerOfPaintModel(
   // let d = editor.deepCopyFlowData(ctx.flowdata);//取数据
   const flowdata = getFlowdata(ctx); // 取数据
   if (flowdata == null) return;
+  const cellChanges: {
+    sheetId: string;
+    path: string[];
+    key?: string;
+    value: any;
+    type?: "update" | "delete";
+  }[] = [];
   const cellMaxLength = flowdata[0].length;
   const rowMaxLength = flowdata.length;
 
@@ -494,10 +501,23 @@ export function pasteHandlerOfPaintModel(
               }
             }
           }
+
+          // Persist every touched cell to Yjs, including "empty" cells.
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: h, c, v: x[c] ?? null },
+            key: `${h}_${c}`,
+            type: "update",
+          });
         }
         flowdata[h] = x;
       }
     }
+  }
+
+  if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(cellChanges);
   }
 
   const currFile = ctx.luckysheetfile[getSheetIndex(ctx, ctx.currentSheetId)!];
@@ -2091,6 +2111,14 @@ export function deleteSelectedCellText(ctx: Context): string {
 
     let has_PartMC = false;
 
+    // const cellChanges: {
+    //   sheetId: string;
+    //   path: string[];
+    //   key?: string;
+    //   value: any;
+    //   type?: "update" | "delete";
+    // }[] = [];
+
     for (let s = 0; s < selection.length; s += 1) {
       const r1 = selection[s].row[0];
       const r2 = selection[s].row[1];
@@ -2180,8 +2208,13 @@ export function deleteSelectedCellText(ctx: Context): string {
               c,
               v: d[r][c],
             },
+            key: `${r}_${c}`,
+            type: "update",
           });
         }
+      }
+      if (changes.length > 0 && ctx?.hooks?.updateCellYdoc) {
+        ctx.hooks.updateCellYdoc(changes);
       }
     }
     // jfrefreshgrid(d, ctx.luckysheet_select_save);
@@ -2221,6 +2254,14 @@ export function deleteSelectedCellFormat(ctx: Context): string {
       return "partMC";
     }
 
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
+
     for (let s = 0; s < selection.length; s += 1) {
       const r1 = selection[s].row[0];
       const r2 = selection[s].row[1];
@@ -2240,9 +2281,20 @@ export function deleteSelectedCellFormat(ctx: Context): string {
               delete cell.bg;
               delete cell.tb;
             }
+            cellChanges.push({
+              sheetId: ctx.currentSheetId,
+              path: ["celldata"],
+              value: { r, c, v: d[r][c] },
+              key: `${r}_${c}`,
+              type: "update",
+            });
           }
         }
       }
+    }
+
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
     }
   }
   return "success";

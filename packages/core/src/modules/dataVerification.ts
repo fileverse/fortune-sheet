@@ -351,6 +351,26 @@ export function checkboxChange(ctx: Context, r: number, c: number) {
   }
   const d = getFlowdata(ctx);
   setCellValue(ctx, r, c, d, value);
+
+  // Sync the data validation state itself (e.g. checkbox checked flag) to Yjs.
+  if (ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc([
+      {
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r, c, v: d?.[r]?.[c] ?? null },
+        key: `${r}_${c}`,
+        type: "update",
+      },
+      {
+        sheetId: ctx.currentSheetId,
+        path: ["dataVerification"],
+        key: `${r}_${c}`,
+        value: JSON.parse(JSON.stringify(item)),
+        type: "update",
+      },
+    ]);
+  }
 }
 
 // 数据无效时的提示信息
@@ -880,6 +900,21 @@ export function setDropdownValue(ctx: Context, value: string, arr: any) {
     v: value,
     pillColor: selectedColor,
   });
+  if (ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc([
+      {
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: {
+          r: rowIndex,
+          c: colIndex,
+          v: d?.[rowIndex]?.[colIndex] ?? null,
+        },
+        key: `${rowIndex}_${colIndex}`,
+        type: "update",
+      },
+    ]);
+  }
   const currentRowHeight = getRowHeight(ctx, [rowIndex])[rowIndex];
   // eslint-disable-next-line no-unsafe-optional-chaining
   const newHeight = 22 * (value.split(",").length || valueData?.length) || 22;

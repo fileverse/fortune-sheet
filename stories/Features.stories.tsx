@@ -18,6 +18,16 @@ const debugHooks = {
     // eslint-disable-next-line no-console
     console.log("[Features.stories] updateCellYdoc called", changes);
   },
+  afterUpdateCell: (r: number, c: number, value: any) => {
+    // eslint-disable-next-line no-console
+    console.log(
+      `[Features.stories] afterUpdateCell called: r=${r}, c=${c}, value=${value}`
+    );
+  },
+  afterHideChanges: () => {
+    // eslint-disable-next-line no-console
+    console.log("[Features.stories] afterHideChanges called");
+  }
 };
 
 const Template: StoryFn<typeof Workbook> = ({

@@ -369,5 +369,30 @@ export function spillSortResult(
     }
   }
 
+  if (ctx?.hooks?.updateCellYdoc) {
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
+    for (let r = 0; r < rowCount; r += 1) {
+      const rr = startRow + r;
+      const row = sheetData?.[rr] || [];
+      for (let c = 0; c < colCount; c += 1) {
+        const cc = startCol + c;
+        cellChanges.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r: rr, c: cc, v: row?.[cc] ?? null },
+          key: `${rr}_${cc}`,
+          type: "update",
+        });
+      }
+    }
+    if (cellChanges.length > 0) ctx.hooks.updateCellYdoc(cellChanges);
+  }
+
   return true;
 }

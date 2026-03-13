@@ -467,6 +467,17 @@ export function replace(
     // }
 
     setCellValue(ctx, r, c, d, v);
+    if (ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc([
+        {
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r, c, v: d?.[r]?.[c] ?? null },
+          key: `${r}_${c}`,
+          type: "update",
+        },
+      ]);
+    }
   } else {
     let reg;
     if (checkModes.caseCheck) {
@@ -485,6 +496,17 @@ export function replace(
     const v = valueShowEs(r, c, d).toString().replace(reg, replaceText);
 
     setCellValue(ctx, r, c, d, v);
+    if (ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc([
+        {
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r, c, v: d?.[r]?.[c] ?? null },
+          key: `${r}_${c}`,
+          type: "update",
+        },
+      ]);
+    }
   }
 
   ctx.luckysheet_select_save = normalizeSelection(ctx, [
@@ -550,6 +572,13 @@ export function replaceAll(
   }
 
   const d = flowdata;
+  const cellChanges: {
+    sheetId: string;
+    path: string[];
+    key?: string;
+    value: any;
+    type?: "update" | "delete";
+  }[] = [];
   let replaceCount = 0;
   if (checkModes.wordCheck) {
     for (let i = 0; i < searchIndexArr.length; i += 1) {
@@ -563,6 +592,15 @@ export function replaceAll(
       const v = replaceText;
 
       setCellValue(ctx, r, c, d, v);
+      if (ctx?.hooks?.updateCellYdoc) {
+        cellChanges.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r, c, v: d?.[r]?.[c] ?? null },
+          key: `${r}_${c}`,
+          type: "update",
+        });
+      }
 
       range.push({ row: [r, r], column: [c, c] });
       replaceCount += 1;
@@ -586,10 +624,23 @@ export function replaceAll(
       const v = valueShowEs(r, c, d).toString().replace(reg, replaceText);
 
       setCellValue(ctx, r, c, d, v);
+      if (ctx?.hooks?.updateCellYdoc) {
+        cellChanges.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r, c, v: d?.[r]?.[c] ?? null },
+          key: `${r}_${c}`,
+          type: "update",
+        });
+      }
 
       range.push({ row: [r, r], column: [c, c] });
       replaceCount += 1;
     }
+  }
+
+  if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(cellChanges);
   }
 
   // jfrefreshgrid(d, range);

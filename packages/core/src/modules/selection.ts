@@ -2200,17 +2200,20 @@ export function deleteSelectedCellText(ctx: Context): string {
           if (ctx?.hooks?.afterUpdateCell) {
             ctx.hooks.afterUpdateCell(r, c, null, d[r][c]);
           }
-          changes.push({
-            sheetId: ctx.currentSheetId,
-            path: ["celldata"],
-            value: {
-              r,
-              c,
-              v: d[r][c],
-            },
-            key: `${r}_${c}`,
-            type: "update",
-          });
+          // If afterUpdateCell is provided, it is expected to handle syncing external state (e.g. Yjs).
+          if (!ctx?.hooks?.afterUpdateCell) {
+            changes.push({
+              sheetId: ctx.currentSheetId,
+              path: ["celldata"],
+              value: {
+                r,
+                c,
+                v: d[r][c],
+              },
+              key: `${r}_${c}`,
+              type: "update",
+            });
+          }
         }
       }
       if (changes.length > 0 && ctx?.hooks?.updateCellYdoc) {
@@ -2679,6 +2682,14 @@ export function textFormat(
     const d = getFlowdata(ctx);
     if (!d) return "dataNullError";
 
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
+
     let has_PartMC = false;
 
     for (let s = 0; s < selection.length; s += 1) {
@@ -2716,9 +2727,20 @@ export function textFormat(
               cell.tb = "1";
               cell.ht = 2;
             }
+            cellChanges.push({
+              sheetId: ctx.currentSheetId,
+              path: ["celldata"],
+              value: { r, c, v: d[r][c] },
+              key: `${r}_${c}`,
+              type: "update",
+            });
           }
         }
       }
+    }
+
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
     }
   }
   return "success";
@@ -2734,6 +2756,14 @@ export function fillDate(ctx: Context): string {
   if (selection && !_.isEmpty(selection)) {
     const d = getFlowdata(ctx);
     if (!d) return "dataNullError";
+
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
 
     let has_PartMC = false;
 
@@ -2769,8 +2799,19 @@ export function fillDate(ctx: Context): string {
             "0"
           )}/${today.getFullYear()}`;
           d[r][c] = { v: formattedDate };
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r, c, v: d[r][c] },
+            key: `${r}_${c}`,
+            type: "update",
+          });
         }
       }
+    }
+
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
     }
   }
   return "success";
@@ -2786,6 +2827,14 @@ export function fillTime(ctx: Context): string {
   if (selection && !_.isEmpty(selection)) {
     const d = getFlowdata(ctx);
     if (!d) return "dataNullError";
+
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
 
     let has_PartMC = false;
 
@@ -2820,8 +2869,19 @@ export function fillTime(ctx: Context): string {
             now.getSeconds()
           ).padStart(2, "0")}`;
           d[r][c] = { v: formattedTime };
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r, c, v: d[r][c] },
+            key: `${r}_${c}`,
+            type: "update",
+          });
         }
       }
+    }
+
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
     }
   }
   return "success";

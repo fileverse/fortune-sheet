@@ -6,6 +6,7 @@ import { CellMatrix, CellWithRowAndCol, Sheet } from "../types";
 import { getSheetIndex } from "../utils";
 import {
   api,
+  changeSheet,
   execfunction,
   getFlowdata,
   insertUpdateFunctionGroup,
@@ -229,6 +230,35 @@ export function copySheet(ctx: Context, sheetId: string) {
   const sheetOrderList: Record<string, number> = {};
   sheetOrderList[newSheetId] = order;
   api.setSheetOrder(ctx, sheetOrderList);
+
+  // Make the duplicated sheet active before doing any full-sheet external sync.
+  // Some integrations derive the active sheet from ctx.currentSheetId.
+  changeSheet(ctx, newSheetId, undefined, true, true);
+
+  // Duplicating a sheet bypasses per-cell update flows; ensure external sync (e.g. Yjs) gets a full snapshot.
+  // Prefer updateAllCell for performance; otherwise emit celldata updates for the new sheet.
+  if (ctx?.hooks?.updateAllCell) {
+    ctx.hooks.updateAllCell(newSheetId);
+  } else if (ctx?.hooks?.updateCellYdoc) {
+    const changes: any[] = [];
+    const celldata = newSheet.celldata || dataToCelldata(newSheet.data);
+    if (Array.isArray(celldata)) {
+      celldata.forEach((d: any) => {
+        if (d == null) return;
+        const { r } = d;
+        const { c } = d;
+        if (!_.isNumber(r) || !_.isNumber(c)) return;
+        changes.push({
+          sheetId: newSheetId,
+          path: ["celldata"],
+          key: `${r}_${c}`,
+          value: { r, c, v: d.v ?? null },
+          type: d.v == null ? "delete" : "update",
+        });
+      });
+    }
+    if (changes.length > 0) ctx.hooks.updateCellYdoc(changes);
+  }
 }
 
 export function calculateSheetFromula(ctx: Context, id: string) {

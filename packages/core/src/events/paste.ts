@@ -1737,6 +1737,7 @@ function pasteHandlerOfCopyPaste(
             }
           }
 
+          let afterHookCalled = false;
           if (!_.isNil(value) && !_.isNil(value.f)) {
             let adjustedFormula = value.f;
             let isError = false;
@@ -1820,6 +1821,7 @@ function pasteHandlerOfCopyPaste(
                   m:
                     funcV[1] instanceof Promise ? "[object Promise]" : funcV[1],
                 });
+                afterHookCalled = true;
               }
             }
 
@@ -1862,13 +1864,16 @@ function pasteHandlerOfCopyPaste(
               };
             }
           }
-          changes.push({
-            sheetId: ctx.currentSheetId,
-            path: ["celldata"],
-            value: { r: h, c, v: d[h][c] },
-            key: `${h}_${c}`,
-            type: "update",
-          });
+          // If afterUpdateCell ran for this cell, it is expected to handle Yjs sync.
+          if (!(ctx?.hooks?.afterUpdateCell && afterHookCalled)) {
+            changes.push({
+              sheetId: ctx.currentSheetId,
+              path: ["celldata"],
+              value: { r: h, c, v: d[h][c] },
+              key: `${h}_${c}`,
+              type: "update",
+            });
+          }
         }
         d[h] = x;
       }

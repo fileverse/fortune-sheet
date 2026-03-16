@@ -784,16 +784,28 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
       }
     }, [currentSheet?.conditionRules]);
 
-    useEffect(() => {
-      if (context?.hooks?.conditionFormatChange) {
-        context.hooks.conditionFormatChange();
-      }
-    }, [currentSheet?.luckysheet_conditionformat_save]);
+	    useEffect(() => {
+	      if (context?.hooks?.conditionFormatChange) {
+	        context.hooks.conditionFormatChange();
+	      }
+	    }, [currentSheet?.luckysheet_conditionformat_save]);
 
-    useEffect(() => {
-      if (context?.hooks?.hyperlinkChange) {
-        context.hooks.hyperlinkChange();
-      }
+	    useEffect(() => {
+	      if (context?.hooks?.filterSelectChange) {
+	        context.hooks.filterSelectChange();
+	      }
+	    }, [currentSheet?.filter_select]);
+
+	    useEffect(() => {
+	      if (context?.hooks?.filterChange) {
+	        context.hooks.filterChange();
+	      }
+	    }, [currentSheet?.filter]);
+	
+	    useEffect(() => {
+	      if (context?.hooks?.hyperlinkChange) {
+	        context.hooks.hyperlinkChange();
+	      }
     }, [currentSheet?.hyperlink]);
 
     useEffect(() => {

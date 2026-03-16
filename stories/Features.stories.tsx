@@ -27,7 +27,11 @@ const debugHooks = {
   afterHideChanges: () => {
     // eslint-disable-next-line no-console
     console.log("[Features.stories] afterHideChanges called");
-  }
+  },
+  updateAllCell: () => {
+    // eslint-disable-next-line no-console
+    console.log("[Features.stories] updateAllCell called");
+  },
 };
 
 const Template: StoryFn<typeof Workbook> = ({

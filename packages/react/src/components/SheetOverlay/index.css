@@ -830,6 +830,12 @@
   cursor: se-resize;
 }
 
+/* FLV: show blue dashed border for active selection while in edit mode */
+.luckysheet-cell-selected-edit-mode .luckysheet-cs-inner-border {
+  border: 2px dashed #12a5ff;
+  border-radius: 1px;
+}
+
 .fortune-formula-functionrange-highlight .luckysheet-highlight {
   position: absolute;
   z-index: 19;

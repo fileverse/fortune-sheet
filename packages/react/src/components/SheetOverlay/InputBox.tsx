@@ -132,6 +132,7 @@ const InputBox: React.FC = () => {
     context.luckysheetCellUpdate,
     context?.luckysheetCellUpdate?.length,
     firstSelectionActiveCell,
+    inputRef.current?.innerText,
   ]);
 
   useLayoutEffect(() => {

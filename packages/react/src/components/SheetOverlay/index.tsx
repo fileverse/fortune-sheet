@@ -593,13 +593,11 @@ const SheetOverlay: React.FC = () => {
                 <div
                   key={index}
                   id="luckysheet-cell-selected"
-                  className={
-                    "luckysheet-cell-selected" 
-                    +
-                    ((context.luckysheetCellUpdate?.length ?? 0) > 0
+                  className={`luckysheet-cell-selected${
+                    (context.luckysheetCellUpdate?.length ?? 0) > 0
                       ? " luckysheet-cell-selected-edit-mode"
-                      : "")
-                  }
+                      : ""
+                  }`}
                   style={_.assign(
                     {
                       left: selection.left_move,

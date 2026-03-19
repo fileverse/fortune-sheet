@@ -2111,14 +2111,6 @@ export function deleteSelectedCellText(ctx: Context): string {
 
     let has_PartMC = false;
 
-    // const cellChanges: {
-    //   sheetId: string;
-    //   path: string[];
-    //   key?: string;
-    //   value: any;
-    //   type?: "update" | "delete";
-    // }[] = [];
-
     for (let s = 0; s < selection.length; s += 1) {
       const r1 = selection[s].row[0];
       const r2 = selection[s].row[1];
@@ -2372,13 +2364,6 @@ export function fillRightData(ctx: Context): string {
             if (dataVerification != null) {
               const dv = dataVerification[srcKey];
               if (dv != null) {
-                console.log(
-                  "[fillRightData] dataVerification copy from",
-                  { row: srcRow, col: srcCol },
-                  "→",
-                  { row: r1, col: c1 },
-                  dv
-                );
                 file.dataVerification = {
                   ...(file.dataVerification || {}),
                   [tgtKey]: _.cloneDeep(dv),
@@ -2434,13 +2419,6 @@ export function fillRightData(ctx: Context): string {
               if (dataVerification != null) {
                 const dv = dataVerification[srcKey];
                 if (dv != null) {
-                  console.log(
-                    "[fillRightData] dataVerification copy from",
-                    { row: r, col: c1 },
-                    "→",
-                    { row: r, col: c },
-                    dv
-                  );
                   file.dataVerification = {
                     ...(file.dataVerification || {}),
                     [tgtKey]: _.cloneDeep(dv),
@@ -2555,13 +2533,6 @@ export function fillDownData(ctx: Context): string {
             if (dataVerification != null) {
               const dv = dataVerification[srcKey];
               if (dv != null) {
-                console.log(
-                  "[fillDownData] dataVerification copy from",
-                  { row: srcRow, col: srcCol },
-                  "→",
-                  { row: r1, col: c1 },
-                  dv
-                );
                 file.dataVerification = {
                   ...(file.dataVerification || {}),
                   [tgtKey]: _.cloneDeep(dv),
@@ -2616,13 +2587,6 @@ export function fillDownData(ctx: Context): string {
               if (dataVerification != null) {
                 const dv = dataVerification[srcKey];
                 if (dv != null) {
-                  console.log(
-                    "[fillDownData] dataVerification copy from",
-                    { row: r1, col: c },
-                    "→",
-                    { row: r, col: c },
-                    dv
-                  );
                   file.dataVerification = {
                     ...(file.dataVerification || {}),
                     [tgtKey]: _.cloneDeep(dv),

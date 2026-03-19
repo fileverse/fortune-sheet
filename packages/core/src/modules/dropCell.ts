@@ -2279,7 +2279,6 @@ function getApplyData(
 }
 
 export function updateDropCell(ctx: Context) {
-  console.log("updateDropCell");
   // if (
   //   !checkProtectionLockedRangeList([_this.applyRange], ctx.currentSheetId)
   // ) {

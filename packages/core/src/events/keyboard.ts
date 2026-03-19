@@ -155,13 +155,11 @@ function handleControlPlusArrowKey(
   e: KeyboardEvent,
   shiftPressed: boolean
 ) {
-  // if (ctx.luckysheetCellUpdate.length > 0) return;
 
   const idx = getSheetIndex(ctx, ctx.currentSheetId);
   if (_.isNil(idx)) return;
 
   const file = ctx.luckysheetfile[idx];
-  // if (!file || !file.row || !file.column) return;
   const maxRow = file.row;
   const maxCol = file.column;
   if (_.isNil(maxRow) || _.isNil(maxCol)) return;

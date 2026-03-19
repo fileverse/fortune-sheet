@@ -109,6 +109,7 @@ const MONTH_NAME_MAP: Record<string, number> = {
 const MONTH_NAMES_RE =
   "january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec";
 const MONTH_ABBR_RE = "jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec";
+const MONTH_ABBR_SET = new Set(MONTH_ABBR_RE.split("|"));
 
 function isValidDateParts(year: number, month: number, day: number): boolean {
   if (year < 1900) return false;
@@ -355,6 +356,7 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
     const d = +m[2];
     const y = +m[3];
     if (mo && isValidDateParts(y, mo, d)) {
+      const isAbbr = MONTH_ABBR_SET.has(m[1].toLowerCase());
       return {
         year: y,
         month: mo,
@@ -362,7 +364,7 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
         hours: 0,
         minutes: 0,
         seconds: 0,
-        formatType: "named",
+        formatType: isAbbr ? "named-mdy-abbr" : "named-mdy-full",
       };
     }
   }
@@ -376,6 +378,7 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
     const mo = MONTH_NAME_MAP[m[2].toLowerCase()];
     const y = +m[3];
     if (mo && isValidDateParts(y, mo, d)) {
+      const isAbbr = MONTH_ABBR_SET.has(m[2].toLowerCase());
       return {
         year: y,
         month: mo,
@@ -383,7 +386,7 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
         hours: 0,
         minutes: 0,
         seconds: 0,
-        formatType: "named",
+        formatType: isAbbr ? "named-dmy-abbr" : "named-dmy-full",
       };
     }
   }
@@ -402,7 +405,7 @@ export function detectDateFormat(str: string): DateFormatInfo | null {
         hours: 0,
         minutes: 0,
         seconds: 0,
-        formatType: "named",
+        formatType: "named-abbr-dashes",
       };
     }
   }

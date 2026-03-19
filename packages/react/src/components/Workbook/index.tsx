@@ -25,6 +25,7 @@ import {
   getFlowdata,
   api,
   handlePasteByClick,
+  update, // formatting helper
 } from "@fileverse-dev/fortune-core";
 import React, {
   useMemo,
@@ -171,6 +172,20 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           celldata?.forEach((d) => {
             // TODO setCellValue(draftCtx, d.r, d.c, expandedData, d.v);
             expandedData[d.r][d.c] = d.v;
+            // if a date cell doesn't already have a formatted string, generate one
+            const cell = d.v as any;
+            if (
+              cell &&
+              cell.ct &&
+              cell.ct.t === "d" &&
+              (cell.m === undefined || cell.m === null)
+            ) {
+              try {
+                cell.m = update(cell.ct.fa || "General", cell.v);
+              } catch (e) {
+                // fallback silently
+              }
+            }
           });
           draftCtx.luckysheetfile = produce(draftCtx.luckysheetfile, (d) => {
             d[index!].data = expandedData;

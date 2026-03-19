@@ -13,6 +13,27 @@ export default {
   component: Workbook,
 } as Meta<typeof Workbook>;
 
+const debugHooks = {
+  updateCellYdoc: (changes: any) => {
+    // eslint-disable-next-line no-console
+    console.log("[Features.stories] updateCellYdoc called", changes);
+  },
+  afterUpdateCell: (r: number, c: number, value: any) => {
+    // eslint-disable-next-line no-console
+    console.log(
+      `[Features.stories] afterUpdateCell called: r=${r}, c=${c}, value=${value}`
+    );
+  },
+  afterHideChanges: () => {
+    // eslint-disable-next-line no-console
+    console.log("[Features.stories] afterHideChanges called");
+  },
+  updateAllCell: () => {
+    // eslint-disable-next-line no-console
+    console.log("[Features.stories] updateAllCell called");
+  },
+};
+
 const Template: StoryFn<typeof Workbook> = ({
   // eslint-disable-next-line react/prop-types
   data: data0,
@@ -179,6 +200,7 @@ const Template: StoryFn<typeof Workbook> = ({
           "|",
           "clear-format",
         ]}
+        hooks={debugHooks}
       />
     </div>
   );
@@ -230,7 +252,7 @@ export const MultiInstance: StoryFn<typeof Workbook> = () => {
           boxSizing: "border-box",
         }}
       >
-        <Workbook data={[empty]} />
+        <Workbook data={[empty]} hooks={debugHooks} />
       </div>
       <div
         style={{
@@ -241,7 +263,7 @@ export const MultiInstance: StoryFn<typeof Workbook> = () => {
           boxSizing: "border-box",
         }}
       >
-        <Workbook data={[empty]} />
+        <Workbook data={[empty]} hooks={debugHooks} />
       </div>
     </div>
   );

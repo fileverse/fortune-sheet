@@ -27,6 +27,71 @@ const refreshLocalMergeData = (merge_new: Record<string, any>, file: Sheet) => {
     }
   });
 };
+const getMergeBounds = (mergeMap: Record<string, any> | null | undefined) => {
+  if (!mergeMap) return null;
+  let minR = Infinity;
+  let minC = Infinity;
+  let maxR = -Infinity;
+  let maxC = -Infinity;
+
+  Object.values(mergeMap).forEach((mc: any) => {
+    if (!mc) return;
+    const r = Number(mc.r);
+    const c = Number(mc.c);
+    const rs = Number(mc.rs ?? 1);
+    const cs = Number(mc.cs ?? 1);
+    if (!Number.isFinite(r) || !Number.isFinite(c)) return;
+
+    minR = Math.min(minR, r);
+    minC = Math.min(minC, c);
+    maxR = Math.max(maxR, r + Math.max(1, rs) - 1);
+    maxC = Math.max(maxC, c + Math.max(1, cs) - 1);
+  });
+
+  if (minR === Infinity) return null;
+  return { minR, minC, maxR, maxC };
+};
+
+const emitCellRangeToYdoc = (
+  ctx: Context,
+  sheetId: string,
+  d: any[][],
+  r1: number,
+  r2: number,
+  c1: number,
+  c2: number
+) => {
+  if (!ctx?.hooks?.updateCellYdoc) return;
+  if (!d || !Array.isArray(d) || d.length === 0) return;
+  const rowEnd = Math.min(r2, d.length - 1);
+  const colEnd = Math.min(c2, (d[0]?.length ?? 0) - 1);
+  const rowStart = Math.max(0, r1);
+  const colStart = Math.max(0, c1);
+  if (rowStart > rowEnd || colStart > colEnd) return;
+
+  const changes: {
+    sheetId: string;
+    path: string[];
+    key?: string;
+    value: any;
+    type?: "update" | "delete";
+  }[] = [];
+
+  for (let r = rowStart; r <= rowEnd; r += 1) {
+    const row = d[r] || [];
+    for (let c = colStart; c <= colEnd; c += 1) {
+      changes.push({
+        sheetId,
+        path: ["celldata"],
+        value: { r, c, v: row?.[c] ?? null },
+        key: `${r}_${c}`,
+        type: "update",
+      });
+    }
+  }
+
+  if (changes.length > 0) ctx.hooks.updateCellYdoc(changes);
+};
 
 /**
  * 增加行列
@@ -1153,6 +1218,38 @@ export function insertRowCol(
 
   refreshLocalMergeData(merge_new, file);
 
+  // Yjs: row/col insertion shifts many cells; emit the disturbed range.
+  const mergeBounds = getMergeBounds(cfg.merge);
+  if (type === "row") {
+    const baseStart = direction === "lefttop" ? index : index + 1;
+    const startR = mergeBounds
+      ? Math.min(baseStart, mergeBounds.minR)
+      : baseStart;
+    emitCellRangeToYdoc(
+      ctx,
+      id,
+      d as any[][],
+      startR,
+      d.length - 1,
+      0,
+      (d[0]?.length ?? 1) - 1
+    );
+  } else {
+    const baseStart = direction === "lefttop" ? index : index + 1;
+    const startC = mergeBounds
+      ? Math.min(baseStart, mergeBounds.minC)
+      : baseStart;
+    emitCellRangeToYdoc(
+      ctx,
+      id,
+      d as any[][],
+      0,
+      d.length - 1,
+      startC,
+      (d[0]?.length ?? 1) - 1
+    );
+  }
+
   // if (type === "row") {
   //   const scrollLeft = $("#luckysheet-cell-main").scrollLeft();
   //   const scrollTop = $("#luckysheet-cell-main").scrollTop();
@@ -2062,6 +2159,32 @@ export function deleteRowCol(
   file.hyperlink = newHyperlink;
 
   refreshLocalMergeData(merge_new, file);
+
+  // Yjs: row/col deletion shifts many cells; emit the disturbed range.
+  const mergeBounds = getMergeBounds(cfg.merge);
+  if (type === "row") {
+    const startR = mergeBounds ? Math.min(start, mergeBounds.minR) : start;
+    emitCellRangeToYdoc(
+      ctx,
+      id,
+      d as any[][],
+      startR,
+      d.length - 1,
+      0,
+      (d[0]?.length ?? 1) - 1
+    );
+  } else {
+    const startC = mergeBounds ? Math.min(start, mergeBounds.minC) : start;
+    emitCellRangeToYdoc(
+      ctx,
+      id,
+      d as any[][],
+      0,
+      d.length - 1,
+      startC,
+      (d[0]?.length ?? 1) - 1
+    );
+  }
 
   if (file.id === ctx.currentSheetId) {
     ctx.config = cfg;

@@ -454,6 +454,34 @@ export const useRowDragAndDrop = (
             "row",
             context.currentSheetId
           );
+          // Notify Yjs for every cell in the disturbed range (moved row + all rows in between)
+          const cellChanges: {
+            sheetId: string;
+            path: string[];
+            key?: string;
+            value: any;
+            type?: "update" | "delete";
+          }[] = [];
+          const affectedRowStart = Math.min(sourceIndex, targetIndex);
+          const affectedRowEnd =
+            Math.max(sourceIndex, targetIndex) + selectedSourceRow.length - 1;
+          const numCols = d?.[0]?.length ?? 0;
+          for (let r = affectedRowStart; r <= affectedRowEnd; r += 1) {
+            const row = rows[r];
+            for (let c = 0; c < numCols; c += 1) {
+              const cell = row?.[c];
+              cellChanges.push({
+                sheetId: draft.currentSheetId,
+                path: ["celldata"],
+                value: { r, c, v: cell ?? null },
+                key: `${r}_${c}`,
+                type: "update",
+              });
+            }
+          }
+          if (cellChanges.length > 0 && draft.hooks?.updateCellYdoc) {
+            draft.hooks.updateCellYdoc(cellChanges);
+          }
           const colLen = d?.[0]?.length || 0;
           api.setSelection(
             draft,

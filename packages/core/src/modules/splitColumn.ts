@@ -25,12 +25,33 @@ export function updateMoreCell(
 ) {
   if (ctx.allowEdit === false) return;
   const flowdata = getFlowdata(ctx);
+  const cellChanges: {
+    sheetId: string;
+    path: string[];
+    key?: string;
+    value: any;
+    type?: "update" | "delete";
+  }[] = [];
   dataMatrix.forEach((datas, i) => {
     datas.forEach((data, j) => {
       const v = dataMatrix[i][j];
       setCellValue(ctx, r + i, c + j, flowdata, v);
+      if (ctx?.hooks?.updateCellYdoc) {
+        const rr = r + i;
+        const cc = c + j;
+        cellChanges.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r: rr, c: cc, v: flowdata?.[rr]?.[cc] ?? null },
+          key: `${rr}_${cc}`,
+          type: "update",
+        });
+      }
     });
   });
+  if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(cellChanges);
+  }
   // jfrefreshgrid(d, range);
   // selectHightlightShow();
 }

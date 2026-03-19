@@ -116,6 +116,30 @@ export function sortDataRange(
   //   };
   // }
   jfrefreshgrid(ctx, sheetData, [{ row: [str, edr], column: [stc, edc] }]);
+
+  // Sync sorted values to Yjs (sorting rewrites many cells without setCellValue()).
+  if (ctx?.hooks?.updateCellYdoc) {
+    const changes: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
+    for (let r = str; r <= edr; r += 1) {
+      const row = sheetData[r] || [];
+      for (let c = stc; c <= edc; c += 1) {
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r, c, v: row?.[c] ?? null },
+          key: `${r}_${c}`,
+          type: "update",
+        });
+      }
+    }
+    if (changes.length > 0) ctx.hooks.updateCellYdoc(changes);
+  }
 }
 
 export function sortSelection(
@@ -221,6 +245,13 @@ function createRowsOrColumnsForSpilledValues(
 ) {
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
+  const cellChanges: {
+    sheetId: string;
+    path: string[];
+    key?: string;
+    value: any;
+    type?: "update" | "delete";
+  }[] = [];
 
   // update luckysheetfile metadata if needed
   try {
@@ -240,20 +271,37 @@ function createRowsOrColumnsForSpilledValues(
     console.error("Failed to update sheet metadata for spill operation", error);
   }
 
+  const requiredRowCount = startRow + spillRows;
+  const requiredColCount = startColumn + spillCols;
+
   // make sure the matrix has at least `startRow + spillRows` rows.
-  while (flowdata.length < startRow + spillRows) {
+  while (flowdata.length < requiredRowCount) {
     flowdata.push([]); // push empty row
   }
   // For each row that will be touched by the spill:
-  for (let rowIndex = startRow; rowIndex < startRow + spillRows; rowIndex++) {
+  for (let rowIndex = startRow; rowIndex < requiredRowCount; rowIndex++) {
     if (!Array.isArray(flowdata[rowIndex])) {
       flowdata[rowIndex] = [];
     }
 
     // Ensure the row has at least `startColumn + spillCols` columns.
-    while (flowdata[rowIndex].length < startColumn + spillCols) {
+    const prevLen = flowdata[rowIndex].length;
+    while (flowdata[rowIndex].length < requiredColCount) {
       flowdata[rowIndex].push(null);
     }
+    for (let c = Math.max(prevLen, startColumn); c < requiredColCount; c += 1) {
+      cellChanges.push({
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r: rowIndex, c, v: flowdata[rowIndex][c] ?? null },
+        key: `${rowIndex}_${c}`,
+        type: "update",
+      });
+    }
+  }
+
+  if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(cellChanges);
   }
 }
 
@@ -319,6 +367,31 @@ export function spillSortResult(
         tb: "1",
       });
     }
+  }
+
+  if (ctx?.hooks?.updateCellYdoc) {
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
+    for (let r = 0; r < rowCount; r += 1) {
+      const rr = startRow + r;
+      const row = sheetData?.[rr] || [];
+      for (let c = 0; c < colCount; c += 1) {
+        const cc = startCol + c;
+        cellChanges.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r: rr, c: cc, v: row?.[cc] ?? null },
+          key: `${rr}_${cc}`,
+          type: "update",
+        });
+      }
+    }
+    if (cellChanges.length > 0) ctx.hooks.updateCellYdoc(cellChanges);
   }
 
   return true;

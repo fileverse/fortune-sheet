@@ -120,6 +120,16 @@ export function setCellValuesByRange(
     throw new Error("data size does not match range");
   }
 
+  const sheet = getSheet(ctx, options);
+  const sheetId = sheet.id || ctx.currentSheetId;
+  const cellChanges: {
+    sheetId: string;
+    path: string[];
+    key?: string;
+    value: any;
+    type?: "update" | "delete";
+  }[] = [];
+
   for (let i = 0; i < rowCount; i += 1) {
     for (let j = 0; j < columnCount; j += 1) {
       const row = range.row[0] + i;
@@ -133,7 +143,20 @@ export function setCellValuesByRange(
         options,
         callAfterUpdate
       );
+      if (ctx?.hooks?.updateCellYdoc && sheet.data) {
+        cellChanges.push({
+          sheetId,
+          path: ["celldata"],
+          value: { r: row, c: column, v: sheet.data?.[row]?.[column] ?? null },
+          key: `${row}_${column}`,
+          type: "update",
+        });
+      }
     }
+  }
+
+  if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(cellChanges);
   }
 }
 

@@ -222,6 +222,14 @@ export async function convertCellsToCrypto({
     const d = getFlowdata(ctx);
     if (!d || !Array.isArray(d)) return;
 
+    const ydocChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
+
     cellUpdates.forEach(
       ({
         row,
@@ -251,8 +259,20 @@ export async function convertCellsToCrypto({
         cellCp.baseCurrencyPrice = baseCurrencyPrice;
 
         d[row][col] = cellCp as CryptoCell;
+
+        ydocChanges.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r: row, c: col, v: d[row]?.[col] ?? null },
+          key: `${row}_${col}`,
+          type: "update",
+        });
       }
     );
+
+    if (ydocChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(ydocChanges);
+    }
   });
   setContext((ctx: any) => {
     api.calculateSheetFromula(ctx, ctx.currentSheetId);

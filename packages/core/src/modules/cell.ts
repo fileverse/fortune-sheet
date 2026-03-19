@@ -158,6 +158,7 @@ export function setCellValue(
 
   // 若采用深拷贝，初始化时的单元格属性丢失
   // let cell = $.extend(true, {}, d[r][c]);
+  // const oldValue = _.cloneDeep(d[r][c]);
   let cell = d[r][c];
 
   let vupdate;
@@ -219,6 +220,9 @@ export function setCellValue(
     }
 
     d[r][c] = cell;
+    // if (ctx?.hooks?.afterUpdateCell) {
+    //   ctx.hooks.afterUpdateCell(r, c, oldValue, d[r][c] ?? null);
+    // }
 
     return;
   }
@@ -464,16 +468,15 @@ export function setCellValue(
   // }
 
   d[r][c] = cell;
+  // if (ctx?.hooks?.afterUpdateCell) {
+  //   ctx.hooks.afterUpdateCell(r, c, oldValue, d[r][c] ?? null);
+  // }
   // after cell data update
   if (ctx.luckysheet_selection_range) {
     ctx.luckysheet_selection_range = [];
   }
 
-  // if (ctx.hooks.afterUpdateCell) {
-  //   const newCell = _.isPlainObject(cell) ? { ...cell } : cell;
-  //   console.log("newCell ======== newCell", newCell, _.isPlainObject(cell));
-  //   ctx.hooks.afterUpdateCell?.(r, c, null, newCell);
-  // }
+  // Note: afterUpdateCell is invoked above (with old/new values).
 }
 
 export function getRealCellValue(
@@ -1207,7 +1210,9 @@ export function updateCell(
           cancelNormalSelected(ctx);
           if (ctx.hooks.afterUpdateCell) {
             const newValue = _.cloneDeep(d[r][c]);
-            setTimeout(() => ctx.hooks.afterUpdateCell?.(r, c, null, newValue));
+            setTimeout(() =>
+              ctx.hooks.afterUpdateCell?.(r, c, oldValue, newValue)
+            );
           }
           ctx.formulaCache.execFunctionGlobalData = null;
           return;
@@ -1332,7 +1337,6 @@ export function updateCell(
       };
     }
     */
-
     if (ctx.hooks.afterUpdateCell) {
       const newValue = _.cloneDeep(flowdata[r][c]);
       const { afterUpdateCell } = ctx.hooks;
@@ -1977,6 +1981,7 @@ export function clearSelectedCellFormat(ctx: Context) {
   const activeSheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
   if (activeSheetIndex == null) return;
 
+  const changeMap = new Map<string, any>();
   const activeSheetFile = ctx.luckysheetfile[activeSheetIndex];
   const selectedRanges = ctx.luckysheet_select_save;
   if (!activeSheetFile || !selectedRanges) return;
@@ -2000,15 +2005,29 @@ export function clearSelectedCellFormat(ctx: Context) {
         rowCells[columnIndex] = keepOnlyValueParts(
           rowCells[columnIndex]
         ) as Cell;
+        const v = (rowCells[columnIndex] as any) ?? null;
+        const key = `${rowIndex}_${columnIndex}`;
+        changeMap.set(key, {
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          key,
+          value: { r: rowIndex, c: columnIndex, v },
+          type: v == null ? "delete" : "update",
+        });
       }
     }
   });
+
+  if (ctx?.hooks?.updateCellYdoc && changeMap.size > 0) {
+    ctx.hooks.updateCellYdoc(Array.from(changeMap.values()));
+  }
 }
 
 export function clearRowsCellsFormat(ctx: Context) {
   const activeSheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
   if (activeSheetIndex == null) return;
 
+  const changeMap = new Map<string, any>();
   const activeSheetFile = ctx.luckysheetfile[activeSheetIndex];
   const selectedRanges = ctx.luckysheet_select_save;
   if (!activeSheetFile || !selectedRanges) return;
@@ -2028,15 +2047,29 @@ export function clearRowsCellsFormat(ctx: Context) {
         rowCells[columnIndex] = keepOnlyValueParts(
           rowCells[columnIndex]
         ) as Cell;
+        const v = (rowCells[columnIndex] as any) ?? null;
+        const key = `${rowIndex}_${columnIndex}`;
+        changeMap.set(key, {
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          key,
+          value: { r: rowIndex, c: columnIndex, v },
+          type: v == null ? "delete" : "update",
+        });
       }
     }
   });
+
+  if (ctx?.hooks?.updateCellYdoc && changeMap.size > 0) {
+    ctx.hooks.updateCellYdoc(Array.from(changeMap.values()));
+  }
 }
 
 export function clearColumnsCellsFormat(ctx: Context) {
   const activeSheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
   if (activeSheetIndex == null) return;
 
+  const changeMap = new Map<string, any>();
   const activeSheetFile = ctx.luckysheetfile[activeSheetIndex];
   const selectedRanges = ctx.luckysheet_select_save;
   if (!activeSheetFile || !selectedRanges) return;
@@ -2060,7 +2093,20 @@ export function clearColumnsCellsFormat(ctx: Context) {
         rowCells[columnIndex] = keepOnlyValueParts(
           rowCells[columnIndex]
         ) as Cell;
+        const v = (rowCells[columnIndex] as any) ?? null;
+        const key = `${rowIndex}_${columnIndex}`;
+        changeMap.set(key, {
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          key,
+          value: { r: rowIndex, c: columnIndex, v },
+          type: v == null ? "delete" : "update",
+        });
       }
     }
   });
+
+  if (ctx?.hooks?.updateCellYdoc && changeMap.size > 0) {
+    ctx.hooks.updateCellYdoc(Array.from(changeMap.values()));
+  }
 }

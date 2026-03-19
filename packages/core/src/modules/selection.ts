@@ -315,6 +315,13 @@ export function pasteHandlerOfPaintModel(
   // let d = editor.deepCopyFlowData(ctx.flowdata);//取数据
   const flowdata = getFlowdata(ctx); // 取数据
   if (flowdata == null) return;
+  const cellChanges: {
+    sheetId: string;
+    path: string[];
+    key?: string;
+    value: any;
+    type?: "update" | "delete";
+  }[] = [];
   const cellMaxLength = flowdata[0].length;
   const rowMaxLength = flowdata.length;
 
@@ -494,10 +501,23 @@ export function pasteHandlerOfPaintModel(
               }
             }
           }
+
+          // Persist every touched cell to Yjs, including "empty" cells.
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: h, c, v: x[c] ?? null },
+            key: `${h}_${c}`,
+            type: "update",
+          });
         }
         flowdata[h] = x;
       }
     }
+  }
+
+  if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(cellChanges);
   }
 
   const currFile = ctx.luckysheetfile[getSheetIndex(ctx, ctx.currentSheetId)!];
@@ -2172,16 +2192,24 @@ export function deleteSelectedCellText(ctx: Context): string {
           if (ctx?.hooks?.afterUpdateCell) {
             ctx.hooks.afterUpdateCell(r, c, null, d[r][c]);
           }
-          changes.push({
-            sheetId: ctx.currentSheetId,
-            path: ["celldata"],
-            value: {
-              r,
-              c,
-              v: d[r][c],
-            },
-          });
+          // If afterUpdateCell is provided, it is expected to handle syncing external state (e.g. Yjs).
+          if (!ctx?.hooks?.afterUpdateCell) {
+            changes.push({
+              sheetId: ctx.currentSheetId,
+              path: ["celldata"],
+              value: {
+                r,
+                c,
+                v: d[r][c],
+              },
+              key: `${r}_${c}`,
+              type: "update",
+            });
+          }
         }
+      }
+      if (changes.length > 0 && ctx?.hooks?.updateCellYdoc) {
+        ctx.hooks.updateCellYdoc(changes);
       }
     }
     // jfrefreshgrid(d, ctx.luckysheet_select_save);
@@ -2221,6 +2249,14 @@ export function deleteSelectedCellFormat(ctx: Context): string {
       return "partMC";
     }
 
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
+
     for (let s = 0; s < selection.length; s += 1) {
       const r1 = selection[s].row[0];
       const r2 = selection[s].row[1];
@@ -2240,9 +2276,20 @@ export function deleteSelectedCellFormat(ctx: Context): string {
               delete cell.bg;
               delete cell.tb;
             }
+            cellChanges.push({
+              sheetId: ctx.currentSheetId,
+              path: ["celldata"],
+              value: { r, c, v: d[r][c] },
+              key: `${r}_${c}`,
+              type: "update",
+            });
           }
         }
       }
+    }
+
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
     }
   }
   return "success";
@@ -2276,6 +2323,14 @@ export function fillRightData(ctx: Context): string {
       return "partMC";
     }
 
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
+
     for (let s = 0; s < selection.length; s += 1) {
       const r1 = selection[s].row[0];
       const r2 = selection[s].row[1];
@@ -2296,19 +2351,19 @@ export function fillRightData(ctx: Context): string {
           const srcCol = c1 - 1;
           const prev = d[r1][c1 - 1];
           d[r1][c1] = prev != null ? { ...prev } : {};
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: r1, c: c1, v: d[r1][c1] },
+            key: `${r1}_${c1}`,
+            type: "update",
+          });
           if (file != null) {
             const srcKey = `${srcRow}_${srcCol}`;
             const tgtKey = `${r1}_${c1}`;
             if (dataVerification != null) {
               const dv = dataVerification[srcKey];
               if (dv != null) {
-                console.log(
-                  "[fillRightData] dataVerification copy from",
-                  { row: srcRow, col: srcCol },
-                  "→",
-                  { row: r1, col: c1 },
-                  dv
-                );
                 file.dataVerification = {
                   ...(file.dataVerification || {}),
                   [tgtKey]: _.cloneDeep(dv),
@@ -2350,6 +2405,13 @@ export function fillRightData(ctx: Context): string {
           for (let c = c1 + 1; c <= c2; c += 1) {
             if (d[r]) {
               d[r][c] = sourceCell != null ? { ...sourceCell } : d[r][c] ?? {};
+              cellChanges.push({
+                sheetId: ctx.currentSheetId,
+                path: ["celldata"],
+                value: { r, c, v: d[r][c] },
+                key: `${r}_${c}`,
+                type: "update",
+              });
             }
             if (file != null) {
               const srcKey = `${r}_${c1}`;
@@ -2357,13 +2419,6 @@ export function fillRightData(ctx: Context): string {
               if (dataVerification != null) {
                 const dv = dataVerification[srcKey];
                 if (dv != null) {
-                  console.log(
-                    "[fillRightData] dataVerification copy from",
-                    { row: r, col: c1 },
-                    "→",
-                    { row: r, col: c },
-                    dv
-                  );
                   file.dataVerification = {
                     ...(file.dataVerification || {}),
                     [tgtKey]: _.cloneDeep(dv),
@@ -2402,6 +2457,9 @@ export function fillRightData(ctx: Context): string {
         }
       }
     }
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
+    }
   }
   return "success";
 }
@@ -2434,6 +2492,14 @@ export function fillDownData(ctx: Context): string {
       return "partMC";
     }
 
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
+
     for (let s = 0; s < selection.length; s += 1) {
       const r1 = selection[s].row[0];
       const r2 = selection[s].row[1];
@@ -2454,19 +2520,19 @@ export function fillDownData(ctx: Context): string {
           const prev = d[r1 - 1][c1];
           if (!d[r1]) d[r1] = [];
           d[r1][c1] = prev != null ? { ...prev } : {};
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r: r1, c: c1, v: d[r1][c1] },
+            key: `${r1}_${c1}`,
+            type: "update",
+          });
           if (file != null) {
             const srcKey = `${srcRow}_${srcCol}`;
             const tgtKey = `${r1}_${c1}`;
             if (dataVerification != null) {
               const dv = dataVerification[srcKey];
               if (dv != null) {
-                console.log(
-                  "[fillDownData] dataVerification copy from",
-                  { row: srcRow, col: srcCol },
-                  "→",
-                  { row: r1, col: c1 },
-                  dv
-                );
                 file.dataVerification = {
                   ...(file.dataVerification || {}),
                   [tgtKey]: _.cloneDeep(dv),
@@ -2508,19 +2574,19 @@ export function fillDownData(ctx: Context): string {
           for (let r = r1 + 1; r <= r2; r += 1) {
             if (!d[r]) d[r] = [];
             d[r][c] = sourceCell != null ? { ...sourceCell } : d[r][c] ?? {};
+            cellChanges.push({
+              sheetId: ctx.currentSheetId,
+              path: ["celldata"],
+              value: { r, c, v: d[r][c] },
+              key: `${r}_${c}`,
+              type: "update",
+            });
             if (file != null) {
               const srcKey = `${r1}_${c}`;
               const tgtKey = `${r}_${c}`;
               if (dataVerification != null) {
                 const dv = dataVerification[srcKey];
                 if (dv != null) {
-                  console.log(
-                    "[fillDownData] dataVerification copy from",
-                    { row: r1, col: c },
-                    "→",
-                    { row: r, col: c },
-                    dv
-                  );
                   file.dataVerification = {
                     ...(file.dataVerification || {}),
                     [tgtKey]: _.cloneDeep(dv),
@@ -2559,6 +2625,9 @@ export function fillDownData(ctx: Context): string {
         }
       }
     }
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
+    }
   }
   return "success";
 }
@@ -2576,6 +2645,14 @@ export function textFormat(
   if (selection && !_.isEmpty(selection)) {
     const d = getFlowdata(ctx);
     if (!d) return "dataNullError";
+
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
 
     let has_PartMC = false;
 
@@ -2614,9 +2691,20 @@ export function textFormat(
               cell.tb = "1";
               cell.ht = 2;
             }
+            cellChanges.push({
+              sheetId: ctx.currentSheetId,
+              path: ["celldata"],
+              value: { r, c, v: d[r][c] },
+              key: `${r}_${c}`,
+              type: "update",
+            });
           }
         }
       }
+    }
+
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
     }
   }
   return "success";
@@ -2632,6 +2720,14 @@ export function fillDate(ctx: Context): string {
   if (selection && !_.isEmpty(selection)) {
     const d = getFlowdata(ctx);
     if (!d) return "dataNullError";
+
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
 
     let has_PartMC = false;
 
@@ -2667,8 +2763,19 @@ export function fillDate(ctx: Context): string {
             "0"
           )}/${today.getFullYear()}`;
           d[r][c] = { v: formattedDate };
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r, c, v: d[r][c] },
+            key: `${r}_${c}`,
+            type: "update",
+          });
         }
       }
+    }
+
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
     }
   }
   return "success";
@@ -2684,6 +2791,14 @@ export function fillTime(ctx: Context): string {
   if (selection && !_.isEmpty(selection)) {
     const d = getFlowdata(ctx);
     if (!d) return "dataNullError";
+
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
 
     let has_PartMC = false;
 
@@ -2718,8 +2833,19 @@ export function fillTime(ctx: Context): string {
             now.getSeconds()
           ).padStart(2, "0")}`;
           d[r][c] = { v: formattedTime };
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r, c, v: d[r][c] },
+            key: `${r}_${c}`,
+            type: "update",
+          });
         }
       }
+    }
+
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
     }
   }
   return "success";

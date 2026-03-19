@@ -619,6 +619,17 @@ function backFormulaInput(
   const v = execfunction(ctx, f, r, c);
   const value = { v: v[1], f: v[2] };
   setCellValue(ctx, r, c, d, value);
+  if (ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc([
+      {
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r, c, v: d?.[r]?.[c] ?? null },
+        key: `${r}_${c}`,
+        type: "update",
+      },
+    ]);
+  }
   ctx.formulaCache.execFunctionExist ||= [];
   ctx.formulaCache.execFunctionExist.push({
     r,
@@ -1411,6 +1422,8 @@ export function handleClearFormat(ctx: Context) {
   if (ctx.allowEdit === false) return;
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
+  const ydocChanges: any[] = [];
+  let borderInfoChanged = false;
   ctx.luckysheet_select_save?.every((selection) => {
     const [rowSt, rowEd] = selection.row;
     const [colSt, colEd] = selection.column;
@@ -1422,6 +1435,13 @@ export function handleClearFormat(ctx: Context) {
         const cell = flowdata[r][c];
         if (!cell) continue;
         flowdata[r][c] = _.pick(cell, "v", "m", "mc", "f", "ct");
+        ydocChanges.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          key: `${r}_${c}`,
+          value: { r, c, v: flowdata[r][c] },
+          type: "update",
+        });
       }
     }
     // 清空表格样式时，清除边框样式
@@ -1481,9 +1501,29 @@ export function handleClearFormat(ctx: Context) {
       }
 
       ctx.luckysheetfile[index].config!.borderInfo = source_borderInfo;
+      borderInfoChanged = true;
     }
     return true;
   });
+
+  if (ctx?.hooks?.updateCellYdoc) {
+    if (borderInfoChanged) {
+      const index = getSheetIndex(ctx, ctx.currentSheetId);
+      const borderInfo =
+        index == null
+          ? ctx.config?.borderInfo ?? []
+          : ctx.luckysheetfile[index]?.config?.borderInfo ?? [];
+      ydocChanges.push({
+        sheetId: ctx.currentSheetId,
+        path: ["config", "borderInfo"],
+        value: borderInfo,
+        type: "update",
+      });
+    }
+    if (ydocChanges.length > 0) {
+      ctx.hooks.updateCellYdoc(ydocChanges);
+    }
+  }
 }
 
 export function handleTextColor(

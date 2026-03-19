@@ -72,6 +72,25 @@ export function saveHyperlink(
       cell.m = linkText || linkAddress;
       cell.hl = { r, c, id: ctx.currentSheetId };
       flowdata[r][c] = cell;
+
+      if (ctx?.hooks?.updateCellYdoc) {
+        ctx.hooks.updateCellYdoc([
+          {
+            sheetId: ctx.currentSheetId,
+            path: ["hyperlink"],
+            key: `${r}_${c}`,
+            value: { linkType, linkAddress },
+            type: "update",
+          },
+          {
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r, c, v: cell },
+            key: `${r}_${c}`,
+            type: "update",
+          },
+        ]);
+      }
     }
     const offsets = ctx.linkCard?.selectionOffsets;
     if (offsets) {
@@ -126,6 +145,7 @@ export function removeHyperlink(ctx: Context, r: number, c: number) {
   if (!allowEdit) return;
   const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
   const flowdata = getFlowdata(ctx);
+  let updatedCell: any = null;
   if (flowdata != null && sheetIndex != null) {
     const hyperlink = _.omit(
       ctx.luckysheetfile[sheetIndex].hyperlink,
@@ -137,9 +157,32 @@ export function removeHyperlink(ctx: Context, r: number, c: number) {
       delete flowdata[r][c]?.hl;
       delete flowdata[r][c]?.un;
       delete flowdata[r][c]?.fc;
+      updatedCell = flowdata[r][c];
     }
   }
   ctx.linkCard = undefined;
+
+  if (ctx?.hooks?.updateCellYdoc) {
+    const changes: any[] = [
+      {
+        sheetId: ctx.currentSheetId,
+        path: ["hyperlink"],
+        key: `${r}_${c}`,
+        value: null,
+        type: "delete",
+      },
+    ];
+    if (updatedCell != null) {
+      changes.push({
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r, c, v: updatedCell },
+        key: `${r}_${c}`,
+        type: "update",
+      });
+    }
+    ctx.hooks.updateCellYdoc(changes);
+  }
 }
 
 export function showLinkCard(

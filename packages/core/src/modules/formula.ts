@@ -1385,6 +1385,21 @@ export function groupValuesRefresh(ctx: Context) {
       updateValue.v = item.v;
       updateValue.f = item.f;
       setCellValue(ctx, item.r, item.c, data, updateValue);
+      if (ctx?.hooks?.updateCellYdoc) {
+        ctx.hooks.updateCellYdoc([
+          {
+            sheetId: item.id,
+            path: ["celldata"],
+            value: {
+              r: item.r,
+              c: item.c,
+              v: data?.[item.r]?.[item.c] ?? null,
+            },
+            key: `${item.r}_${item.c}`,
+            type: "update",
+          },
+        ]);
+      }
       // server.saveParam("v", item.id, data[item.r][item.c], {
       //     "r": item.r,
       //     "c": item.c

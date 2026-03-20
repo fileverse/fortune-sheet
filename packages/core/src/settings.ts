@@ -18,9 +18,12 @@ export type Hooks = {
   iframeListChange?: () => void;
   conditionRulesChange?: () => void;
   conditionFormatChange?: () => void;
+  filterSelectChange?: () => void;
+  filterChange?: () => void;
   cellDataChange?: () => void;
   hyperlinkChange?: () => void;
   updateCellYdoc?: (changes: SheetChangePath[]) => void;
+  updateAllCell?: (sheetId: string) => void;
   beforeUpdateCell?: (r: number, c: number, value: any) => boolean;
   afterUpdateCell?: (
     row: number,
@@ -142,6 +145,8 @@ export type Hooks = {
   afterIframesChange?: () => void;
   afterFrozenChange?: () => void;
   afterOrderChanges?: () => void;
+  afterColorChanges?: () => void;
+  afterHideChanges?: () => void;
   afterConfigChanges?: () => void;
   afterColRowChanges?: () => void;
   afterShowGridLinesChange?: () => void;

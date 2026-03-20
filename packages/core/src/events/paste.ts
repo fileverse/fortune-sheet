@@ -7,11 +7,11 @@ import {
   // execFunctionGroup,
 } from "../modules/formula";
 import { getdatabyselection } from "../modules/cell";
-import { update, datenum_local } from "../modules/format";
+import { update, genarate } from "../modules/format";
 import { normalizeSelection, selectionCache } from "../modules/selection";
 import { Cell, CellMatrix } from "../types";
 import { getSheetIndex, isAllowEdit } from "../utils";
-import { hasPartMC, isRealNum, detectDateFormat } from "../modules/validation";
+import { hasPartMC, isRealNum } from "../modules/validation";
 import { getBorderInfoCompute } from "../modules/border";
 import { expandRowsAndColumns, storeSheetParamALL } from "../modules/sheet";
 import { jfrefreshgrid } from "../modules/refresh";
@@ -373,19 +373,20 @@ const handleFormulaOnPaste = (ctx: Context, d: any) => {
         cell.f = f;
         cell.m = v.toString();
         x[c] = cell;
+
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: {
+            r,
+            c,
+            v: d[r][c],
+          },
+          key: `${r}_${c}`,
+          type: "update",
+        });
       }
       d[r] = x;
-      changes.push({
-        sheetId: ctx.currentSheetId,
-        path: ["celldata"],
-        value: {
-          r,
-          c,
-          v: d[r][c],
-        },
-        key: `${r}_${c}`,
-        type: "update",
-      });
     }
   }
   if (ctx?.hooks?.updateCellYdoc) {
@@ -590,7 +591,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
       // selectHightlightShow();
     }
     jfrefreshgrid(ctx, null, undefined);
-    handleFormulaOnPaste(ctx, d);
+    if (data.includes("=")) {
+      handleFormulaOnPaste(ctx, d);
+    }
     // for (let r = 0; r < d.length; r += 1) {
     //   const x = d[r];
     //   for (let c = 0; c < d[0].length; c += 1) {
@@ -696,41 +699,48 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
         }
 
         if (originCell) {
-          // If destination cell already has a date format, try to parse pasted string into a date serial
-          if (originCell.ct && originCell.ct.t === "d" && !isUrl) {
-            const df = detectDateFormat(originalValueStr);
-            if (df) {
-              const dateObj = new Date(
-                df.year,
-                df.month - 1,
-                df.day,
-                df.hours,
-                df.minutes,
-                df.seconds
-              );
-              originCell.v = datenum_local(dateObj);
+          if (!isUrl) {
+            const generated = genarate(originalValueStr);
+            if (generated) {
+              const [genM, genCt, genV] = generated;
+              if (genCt?.t === "d") {
+                // Pasted value is a date — always update ct so toolbar shows "Date"
+                originCell.v = genV;
+                originCell.m = genM ?? originalValueStr;
+                originCell.ct = genCt;
+              } else {
+                // Not a date: preserve destination format, just update value
+                originCell.v = value;
+                if (originCell.ct != null && originCell.ct.fa != null) {
+                  if (
+                    originCell.ct.t === "d" &&
+                    typeof originCell.v !== "number"
+                  ) {
+                    originCell.m = String(originCell.v);
+                  } else {
+                    originCell.m = update(originCell.ct.fa, originCell.v);
+                  }
+                } else {
+                  originCell.m =
+                    typeof originCell.v === "boolean"
+                      ? String(originCell.v)
+                      : originCell.v;
+                }
+              }
             } else {
-              // Not a date: preserve original text so user can apply formats later
-              originCell.v = originalValueStr;
+              originCell.v = value;
+              if (originCell.ct != null && originCell.ct.fa != null) {
+                originCell.m = update(originCell.ct.fa, originCell.v);
+              } else {
+                originCell.m =
+                  typeof originCell.v === "boolean"
+                    ? String(originCell.v)
+                    : originCell.v;
+              }
             }
           } else {
-            // Default: keep pasted value (numbers already parsed above)
-            originCell.v = isUrl ? originalValueStr : value;
-          }
-
-          if (originCell.ct != null && originCell.ct.fa != null) {
-            // If value is not a numeric serial for date formats, avoid calling update
-            if (originCell.ct.t === "d" && typeof originCell.v !== "number") {
-              originCell.m = String(originCell.v);
-            } else {
-              originCell.m = update(originCell.ct.fa, originCell.v);
-            }
-          } else {
-            // Convert boolean to string if needed, since m only accepts string | number
-            originCell.m =
-              typeof originCell.v === "boolean"
-                ? String(originCell.v)
-                : originCell.v;
+            originCell.v = originalValueStr;
+            originCell.m = originalValueStr;
           }
 
           if (originCell.f != null && originCell.f.length > 0) {
@@ -771,18 +781,16 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
               t: "s",
             };
           } else {
-            // Preserve original pasted text when creating new cells (automatic format)
-            cell.v = originalValueStr;
-            cell.m = originalValueStr;
-            cell.ct = { fa: "General", t: "g" };
             // check if hex value to handle hex address
             if (/^0x?[a-fA-F0-9]+$/.test(value)) {
-              cell.m = value;
-              cell.ct = {
-                fa: "@",
-                t: "s",
-              };
               cell.v = value;
+              cell.m = value;
+              cell.ct = { fa: "@", t: "s" };
+            } else {
+              const [m, ct, v] = genarate(originalValueStr) ?? [];
+              cell.v = v ?? originalValueStr;
+              cell.m = m != null ? String(m) : originalValueStr;
+              cell.ct = ct ?? { fa: "General", t: "g" };
             }
           }
 
@@ -806,19 +814,17 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
 
           x[c + curC] = cell;
         }
-        changes.push(
-          changes.push({
-            sheetId: ctx.currentSheetId,
-            path: ["celldata"],
-            value: {
-              r,
-              c,
-              v: d[r][c],
-            },
-            key: `${r}_${c}`,
-            type: "update",
-          })
-        );
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: {
+            r: r + curR,
+            c: c + curC,
+            v: d[r + curR][c + curC],
+          },
+          key: `${r + curR}_${c + curC}`,
+          type: "update",
+        });
       }
       d[r + curR] = x;
     }
@@ -840,7 +846,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
     //   selectHightlightShow();
     // }
     jfrefreshgrid(ctx, null, undefined);
-    handleFormulaOnPaste(ctx, d);
+    if (data.includes("=")) {
+      handleFormulaOnPaste(ctx, d);
+    }
 
     // for (let r = 0; r < d.length; r += 1) {
     //   const x = d[r];
@@ -956,6 +964,14 @@ function pasteHandlerOfCutPaste(
     expandRowsAndColumns(d, addr, addc);
   }
 
+  const changes: {
+    sheetId: string;
+    path: string[];
+    value: any;
+    key: string;
+    type: "update";
+  }[] = [];
+
   const borderInfoCompute = getBorderInfoCompute(ctx, copySheetId);
   const c_dataVerification =
     _.cloneDeep(
@@ -1016,6 +1032,13 @@ function pasteHandlerOfCutPaste(
         }
 
         d[i][j] = null;
+        changes.push({
+          sheetId: ctx.currentSheetId,
+          path: ["celldata"],
+          value: { r: i, c: j, v: null },
+          key: `${i}_${j}`,
+          type: "update",
+        });
 
         delete dataVerification[`${i}_${j}`];
 
@@ -1145,6 +1168,13 @@ function pasteHandlerOfCutPaste(
       }
 
       x[c] = _.cloneDeep(value);
+      changes.push({
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r: h, c, v: d[h][c] },
+        key: `${h}_${c}`,
+        type: "update",
+      });
 
       if (value != null && copyHasMC && x[c]?.mc) {
         if (x[c]!.mc!.rs != null) {
@@ -1174,6 +1204,10 @@ function pasteHandlerOfCutPaste(
 
   last.row = [minh, maxh];
   last.column = [minc, maxc];
+
+  if (changes.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(changes);
+  }
 
   // 若有行高改变，重新计算行高改变
   if (copyRowlChange) {
@@ -1575,6 +1609,14 @@ function pasteHandlerOfCopyPaste(
     expandRowsAndColumns(d, addr, addc);
   }
 
+  const changes: {
+    sheetId: string;
+    path: string[];
+    value: any;
+    key: string;
+    type: "update";
+  }[] = [];
+
   const borderInfoCompute = getBorderInfoCompute(ctx, copySheetIndex);
   const c_dataVerification =
     _.cloneDeep(
@@ -1700,6 +1742,7 @@ function pasteHandlerOfCopyPaste(
             }
           }
 
+          let afterHookCalled = false;
           if (!_.isNil(value) && !_.isNil(value.f)) {
             let adjustedFormula = value.f;
             let isError = false;
@@ -1783,6 +1826,7 @@ function pasteHandlerOfCopyPaste(
                   m:
                     funcV[1] instanceof Promise ? "[object Promise]" : funcV[1],
                 });
+                afterHookCalled = true;
               }
             }
 
@@ -1824,6 +1868,16 @@ function pasteHandlerOfCopyPaste(
                 },
               };
             }
+          }
+          // If afterUpdateCell ran for this cell, it is expected to handle Yjs sync.
+          if (!(ctx?.hooks?.afterUpdateCell && afterHookCalled)) {
+            changes.push({
+              sheetId: ctx.currentSheetId,
+              path: ["celldata"],
+              value: { r: h, c, v: d[h][c] },
+              key: `${h}_${c}`,
+              type: "update",
+            });
           }
         }
         d[h] = x;
@@ -1971,6 +2025,10 @@ function pasteHandlerOfCopyPaste(
         }
       }
     }
+  }
+
+  if (changes.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(changes);
   }
 
   if (copyRowlChange || addr > 0 || addc > 0) {

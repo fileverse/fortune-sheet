@@ -650,27 +650,41 @@ export async function handleGlobalKeyDown(
     e.preventDefault();
     return;
   }
+  let handledFlvShortcut = false;
   if ((e.ctrlKey || (e.metaKey && e.shiftKey)) && e.code === "KeyE") {
     textFormat(ctx, "center");
+    handledFlvShortcut = true;
   } else if ((e.ctrlKey || (e.metaKey && e.shiftKey)) && e.code === "KeyL") {
     textFormat(ctx, "left");
+    handledFlvShortcut = true;
   } else if ((e.ctrlKey || (e.metaKey && e.shiftKey)) && e.code === "KeyR") {
     textFormat(ctx, "right");
+    handledFlvShortcut = true;
   }
   if ((e.metaKey || e.ctrlKey) && e.code === "KeyK") {
     handleLink(ctx, cellInput);
   }
   if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.code === "Semicolon") {
     fillDate(ctx);
+    handledFlvShortcut = true;
   }
   if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === "Semicolon") {
     fillTime(ctx);
+    handledFlvShortcut = true;
   }
   if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.code === "KeyR") {
     fillRightData(ctx);
+    handledFlvShortcut = true;
   }
   if ((e.metaKey || e.ctrlKey) && e.code === "KeyD") {
     fillDownData(ctx);
+    handledFlvShortcut = true;
+  }
+  if (handledFlvShortcut) {
+    jfrefreshgrid(ctx, null, undefined);
+    e.stopPropagation();
+    e.preventDefault();
+    return;
   }
   /* FLV */
 

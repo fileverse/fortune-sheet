@@ -25,6 +25,7 @@ import {
   getFlowdata,
   api,
   handlePasteByClick,
+  update, // formatting helper
 } from "@fileverse-dev/fortune-core";
 import React, {
   useMemo,
@@ -171,6 +172,20 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
           celldata?.forEach((d) => {
             // TODO setCellValue(draftCtx, d.r, d.c, expandedData, d.v);
             expandedData[d.r][d.c] = d.v;
+            // if a date cell doesn't already have a formatted string, generate one
+            const cell = d.v as any;
+            if (
+              cell &&
+              cell.ct &&
+              cell.ct.t === "d" &&
+              (cell.m === undefined || cell.m === null)
+            ) {
+              try {
+                cell.m = update(cell.ct.fa || "General", cell.v);
+              } catch (e) {
+                // fallback silently
+              }
+            }
           });
           draftCtx.luckysheetfile = produce(draftCtx.luckysheetfile, (d) => {
             d[index!].data = expandedData;
@@ -196,6 +211,132 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
         }
       },
       [onOp]
+    );
+
+    const emitYjsFromPatches = useCallback(
+      (ctxBefore: Context, ctxAfter: Context, patches: Patch[]) => {
+        const { updateCellYdoc, updateAllCell } = ctxBefore.hooks ?? {};
+        if (!updateCellYdoc) return;
+
+        const mapFields = new Set([
+          "celldata",
+          "calcChain",
+          "dataBlockCalcFunction",
+          "liveQueryList",
+          "dataVerification",
+          "hyperlink",
+          "conditionRules",
+        ]);
+
+        // De-dupe: last patch wins for the same (sheetId + path[0] + key).
+        const changeMap = new Map<string, any>();
+
+        const upsert = (change: any) => {
+          const k = `${change.sheetId}:${change.path?.[0] ?? ""}:${
+            change.key ?? ""
+          }`;
+          changeMap.set(k, change);
+        };
+
+        const upsertCell = (sheetId: string, r: number, c: number) => {
+          const cell =
+            (getFlowdata(ctxAfter, sheetId) as any)?.[r]?.[c] ?? null;
+          const key = `${r}_${c}`;
+          upsert({
+            sheetId,
+            path: ["celldata"],
+            key,
+            value: { r, c, v: cell },
+            type: cell == null ? "delete" : "update",
+          });
+        };
+
+        // Best-effort: translate patches that touch sheet.data or any "map-like" objects keyed by "r_c".
+        patches.forEach((p) => {
+          const path = p.path as any[];
+          if (path?.[0] !== "luckysheetfile") return;
+          const sheetIndex = path[1];
+          if (!_.isNumber(sheetIndex)) return;
+
+          const sheetBefore = ctxBefore.luckysheetfile?.[sheetIndex];
+          const sheetAfter = ctxAfter.luckysheetfile?.[sheetIndex];
+          const sheetId = (sheetAfter?.id || sheetBefore?.id) as
+            | string
+            | undefined;
+          if (!sheetId) return;
+
+          const root = path[2];
+
+          if (root === "data") {
+            // Any patch under ["data", r, c, ...] -> update whole cell in Yjs.
+            if (_.isNumber(path[3]) && _.isNumber(path[4])) {
+              upsertCell(sheetId, path[3], path[4]);
+              return;
+            }
+
+            // Row replacement ["data", r]
+            if (_.isNumber(path[3]) && path.length === 4) {
+              const r = path[3] as number;
+              const beforeRow = (sheetBefore as any)?.data?.[r] ?? [];
+              const afterRow = (sheetAfter as any)?.data?.[r] ?? [];
+              const max = Math.max(beforeRow.length ?? 0, afterRow.length ?? 0);
+              for (let c = 0; c < max; c += 1) {
+                if (!_.isEqual(beforeRow[c] ?? null, afterRow[c] ?? null)) {
+                  upsertCell(sheetId, r, c);
+                }
+              }
+              return;
+            }
+
+            // Whole-matrix replacement ["data"] (rare). If huge, fall back to updateAllCell when available.
+            if (path.length === 3) {
+              const dataAfter = (sheetAfter as any)?.data as
+                | any[][]
+                | undefined;
+              const rows = dataAfter?.length ?? 0;
+              const cols = rows > 0 ? dataAfter?.[0]?.length ?? 0 : 0;
+              const size = rows * cols;
+              if (size > 50000 && updateAllCell) {
+                updateAllCell(sheetId);
+                return;
+              }
+              for (let r = 0; r < rows; r += 1) {
+                const beforeRow = (sheetBefore as any)?.data?.[r] ?? [];
+                const afterRow = (sheetAfter as any)?.data?.[r] ?? [];
+                const max = Math.max(
+                  beforeRow.length ?? 0,
+                  afterRow.length ?? 0
+                );
+                for (let c = 0; c < max; c += 1) {
+                  if (!_.isEqual(beforeRow[c] ?? null, afterRow[c] ?? null)) {
+                    upsertCell(sheetId, r, c);
+                  }
+                }
+              }
+            }
+            return;
+          }
+
+          // Map-like objects on sheet keyed by "r_c": ["hyperlink", "0_1"], etc.
+          if (typeof root === "string" && mapFields.has(root)) {
+            const key = path[3];
+            if (typeof key === "string") {
+              upsert({
+                sheetId,
+                path: [root],
+                key,
+                value: p.value,
+                type:
+                  p.op === "remove" || p.value == null ? "delete" : "update",
+              });
+            }
+          }
+        });
+
+        const changes = Array.from(changeMap.values());
+        if (changes.length > 0) updateCellYdoc(changes);
+      },
+      []
     );
 
     function reduceUndoList(ctx: Context, ctxBefore: Context) {
@@ -380,6 +521,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
             delete inversedOptions!.addSheet!.value!.data;
           }
           emitOp(newContext, history.inversePatches, inversedOptions, true);
+          emitYjsFromPatches(ctx_, newContext, history.inversePatches);
           // Sync ctx.config from current sheet after applying inverse patches.
           // This ensures components watching context.config (e.g. Sheet.tsx which
           // recalculates visibledatacolumn) react correctly to config changes.
@@ -422,6 +564,7 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
 
           globalCache.current.undoList.push(history);
           emitOp(newContext, history.patches, history.options);
+          emitYjsFromPatches(ctx_, newContext, history.patches);
           // Sync ctx.config from current sheet after applying patches.
           const sheetIdxAfterRedo = getSheetIndex(
             newContext,
@@ -465,19 +608,14 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
       setContext((ctx: any) => {
         const gridData = getFlowdata(ctx);
         const cellData = api.dataToCelldata(gridData as any);
-        let denominatedUsed = false;
-        // eslint-disable-next-line no-restricted-syntax
-        for (const cell of cellData) {
+        const denominatedUsed = (cellData ?? []).some((cell: any) => {
           const value = cell?.v?.m?.toString();
-          if (
+          return (
             value?.includes("BTC") ||
             value?.includes("ETH") ||
             value?.includes("SOL")
-          ) {
-            denominatedUsed = true;
-            break;
-          }
-        }
+          );
+        });
         const denoWarn = document.getElementById("denomination-warning");
         const scrollBar = document.getElementsByClassName(
           "luckysheet-scrollbar-x"
@@ -577,6 +715,30 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
       }
     }, [currentSheet?.order]);
 
+    const sheetColorSig = useMemo(() => {
+      return (context?.luckysheetfile ?? [])
+        .map((s) => `${s.id}:${s.color ?? ""}`)
+        .join("|");
+    }, [context?.luckysheetfile]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterColorChanges) {
+        context.hooks.afterColorChanges();
+      }
+    }, [sheetColorSig]);
+
+    const sheetHideSig = useMemo(() => {
+      return (context?.luckysheetfile ?? [])
+        .map((s) => `${s.id}:${s.hide ?? 0}`)
+        .join("|");
+    }, [context?.luckysheetfile]);
+
+    useEffect(() => {
+      if (context?.hooks?.afterHideChanges) {
+        context.hooks.afterHideChanges();
+      }
+    }, [sheetHideSig]);
+
     useEffect(() => {
       if (context?.hooks?.afterConfigChanges) {
         context.hooks.afterConfigChanges();
@@ -642,6 +804,18 @@ const Workbook = React.forwardRef<WorkbookInstance, Settings & AdditionalProps>(
         context.hooks.conditionFormatChange();
       }
     }, [currentSheet?.luckysheet_conditionformat_save]);
+
+    useEffect(() => {
+      if (context?.hooks?.filterSelectChange) {
+        context.hooks.filterSelectChange();
+      }
+    }, [currentSheet?.filter_select]);
+
+    useEffect(() => {
+      if (context?.hooks?.filterChange) {
+        context.hooks.filterChange();
+      }
+    }, [currentSheet?.filter]);
 
     useEffect(() => {
       if (context?.hooks?.hyperlinkChange) {

@@ -257,6 +257,18 @@ export function removeEditingComment(ctx: Context, globalCache: GlobalCache) {
     ctx.commentBoxes = _.filter(ctx.commentBoxes, (v) => v.rc !== `${r}_${c}`);
   }
 
+  if (ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc([
+      {
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r, c, v: cell },
+        key: `${r}_${c}`,
+        type: "update",
+      },
+    ]);
+  }
+
   if (ctx.hooks.afterUpdateComment) {
     setTimeout(() => {
       ctx.hooks.afterUpdateComment?.(r, c, oldValue, value);
@@ -301,6 +313,18 @@ export function newComment(
     ...getCommentBoxByRC(ctx, flowdata, r, c),
     autoFocus: true,
   };
+
+  if (ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc([
+      {
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r, c, v: flowdata[r][c] ?? null },
+        key: `${r}_${c}`,
+        type: "update",
+      },
+    ]);
+  }
 
   if (ctx.hooks.afterInsertComment) {
     setTimeout(() => {
@@ -361,6 +385,18 @@ export function deleteComment(
   if (!cell) return;
   cell.ps = undefined;
 
+  if (ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc([
+      {
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r, c, v: cell },
+        key: `${r}_${c}`,
+        type: "update",
+      },
+    ]);
+  }
+
   if (ctx.hooks.afterDeleteComment) {
     setTimeout(() => {
       ctx.hooks.afterDeleteComment?.(r, c);
@@ -399,6 +435,19 @@ export function showHideComment(
   } else {
     comment.isShow = true;
   }
+
+  const cell = flowdata?.[r]?.[c];
+  if (cell && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc([
+      {
+        sheetId: ctx.currentSheetId,
+        path: ["celldata"],
+        value: { r, c, v: cell },
+        key: `${r}_${c}`,
+        type: "update",
+      },
+    ]);
+  }
 }
 
 export function showHideAllComments(ctx: Context) {
@@ -423,6 +472,13 @@ export function showHideAllComments(ctx: Context) {
 
   const rcs = [];
   if (allComments.length > 0) {
+    const cellChanges: {
+      sheetId: string;
+      path: string[];
+      key?: string;
+      value: any;
+      type?: "update" | "delete";
+    }[] = [];
     if (isAllShow) {
       // 全部显示，操作为隐藏所有批注
       for (let i = 0; i < allComments.length; i += 1) {
@@ -432,6 +488,13 @@ export function showHideAllComments(ctx: Context) {
         if (comment?.isShow) {
           comment.isShow = false;
           rcs.push(`${r}_${c}`);
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r, c, v: flowdata[r][c] ?? null },
+            key: `${r}_${c}`,
+            type: "update",
+          });
         }
       }
       ctx.commentBoxes = [];
@@ -443,8 +506,18 @@ export function showHideAllComments(ctx: Context) {
 
         if (comment && !comment.isShow) {
           comment.isShow = true;
+          cellChanges.push({
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r, c, v: flowdata[r][c] ?? null },
+            key: `${r}_${c}`,
+            type: "update",
+          });
         }
       }
+    }
+    if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+      ctx.hooks.updateCellYdoc(cellChanges);
     }
   }
 }
@@ -686,6 +759,18 @@ export function onCommentBoxResizeEnd(ctx: Context, globalCache: GlobalCache) {
       cell.ps.width = width / ctx.zoomRatio;
       cell.ps.height = height / ctx.zoomRatio;
       setEditingComment(ctx, flowdata, r, c);
+
+      if (ctx?.hooks?.updateCellYdoc) {
+        ctx.hooks.updateCellYdoc([
+          {
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r, c, v: cell },
+            key: `${r}_${c}`,
+            type: "update",
+          },
+        ]);
+      }
     }
   }
 }
@@ -750,6 +835,18 @@ export function onCommentBoxMoveEnd(ctx: Context, globalCache: GlobalCache) {
       cell.ps.left = left / ctx.zoomRatio;
       cell.ps.top = top / ctx.zoomRatio;
       setEditingComment(ctx, flowdata, r, c);
+
+      if (ctx?.hooks?.updateCellYdoc) {
+        ctx.hooks.updateCellYdoc([
+          {
+            sheetId: ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r, c, v: cell },
+            key: `${r}_${c}`,
+            type: "update",
+          },
+        ]);
+      }
     }
   }
 }

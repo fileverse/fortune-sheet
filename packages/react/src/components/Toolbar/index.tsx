@@ -38,6 +38,7 @@ import {
   Cell,
   api,
   getSheetIndex,
+  is_date,
 } from "@fileverse-dev/fortune-core";
 import _ from "lodash";
 import {
@@ -757,14 +758,21 @@ const Toolbar: React.FC<{
           const curr = normalizedCellAttr(cell, "ct");
           const format = _.find(defaultFormat, (v) => v.value === curr?.fa);
           if (curr?.fa != null) {
-            if (format != null) {
-              currentFmt = format.text;
+            const hasTime = /[hH]:/.test(curr.fa);
+
+            if (curr.t === "d") {
+              currentFmt = hasTime ? "Date time" : "Date";
             } else if (
-              curr?.fa?.includes("#,##0") ||
-              curr?.fa === "0" ||
-              curr?.fa === "0.00"
+              curr.t === "n" ||
+              curr.fa.includes("#,##0") ||
+              curr.fa === "0" ||
+              curr.fa === "0.00"
             ) {
               currentFmt = "Number";
+            } else if (is_date(curr.fa)) {
+              currentFmt = hasTime ? "Date time" : "Date";
+            } else if (format != null) {
+              currentFmt = format.text;
             } else {
               currentFmt = defaultFormat[defaultFormat.length - 1].text;
             }

@@ -155,13 +155,13 @@ function handleControlPlusArrowKey(
   e: KeyboardEvent,
   shiftPressed: boolean
 ) {
-  if (ctx.luckysheetCellUpdate.length > 0) return;
+  // if (ctx.luckysheetCellUpdate.length > 0) return;
 
   const idx = getSheetIndex(ctx, ctx.currentSheetId);
-  if (_.isNil(idx)) return;
+  // if (_.isNil(idx)) return;
 
   const file = ctx.luckysheetfile[idx];
-  if (!file || !file.row || !file.column) return;
+  // if (!file || !file.row || !file.column) return;
   const maxRow = file.row;
   const maxCol = file.column;
   let last;
@@ -603,12 +603,10 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
 
     // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
     if (
-      lastSpan?.innerText.includes(")") ||
-      lastSpan?.innerText.includes('"') ||
-      (notFunctionInit &&
-        /^[a-zA-Z]+$/.test(lastSpan?.innerText) &&
-        !_.includes(["="], lastSpan?.innerText)) ||
-      /^[a-zA-Z]+$/.test(lastSpan?.innerText)
+      true
+      // lastSpan?.innerText.includes(")") ||
+      // lastSpan?.innerText.includes('"') ||
+      // notFunctionInit
     ) {
       return;
     }

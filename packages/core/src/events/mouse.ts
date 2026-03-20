@@ -374,14 +374,10 @@ export function handleCellAreaMouseDown(
     const lastSpan = spans[spans.length - 1];
 
     if (
-      (ctx.formulaCache.rangestart ||
-        ctx.formulaCache.rangedrag_column_start ||
-        ctx.formulaCache.rangedrag_row_start ||
-        israngeseleciton(ctx) ||
-        (firstSpan?.innerText.includes("=") &&
-          !lastSpan?.innerText.includes(")"))) &&
-      lastSpan &&
-      ctx.luckysheetCellUpdate.length === 2
+      ctx.formulaCache.rangestart ||
+      ctx.formulaCache.rangedrag_column_start ||
+      ctx.formulaCache.rangedrag_row_start ||
+      israngeseleciton(ctx)
     ) {
       // 公式选区
       let rowseleted = [row_index, row_index_ed];

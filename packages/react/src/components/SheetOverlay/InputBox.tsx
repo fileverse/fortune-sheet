@@ -22,6 +22,7 @@ import {
   handleUnderline,
   handleStrikeThrough,
   getRangeRectsByCharacterOffset,
+  rangeSetValue,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -32,7 +33,7 @@ import React, {
   useLayoutEffect,
   useState,
 } from "react";
-import _ from "lodash";
+import _, { set } from "lodash";
 import { Tooltip } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import ContentEditable from "./ContentEditable";
@@ -377,6 +378,26 @@ const InputBox: React.FC = () => {
     event.preventDefault();
   };
 
+  useEffect(() => {
+    if (!context.luckysheet_select_save?.[0]?.row) return;
+    console.log("InputBox useEffect triggered", rangeSetValue);
+    setContext((ctx) => {
+      rangeSetValue?.(
+        ctx,
+        refs.cellInput.current!,
+        {
+          row: ctx.luckysheet_select_save?.[0]?.row,
+          column: ctx.luckysheet_select_save?.[0]?.column,
+        },
+        refs.fxInput.current!
+      );
+    });
+  }, [
+    context.luckysheet_select_save,
+    context.rangeDialog?.show,
+    isInputBoxActive,
+  ]);
+
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
@@ -477,14 +498,13 @@ const InputBox: React.FC = () => {
           !arrowRefNotAllowed &&
           !/^[a-zA-Z]+$/.test(lastSpan?.innerText)
         ) {
-          allowListNavigation = false;
-          inputRef.current!.innerHTML = `${
-            inputRef.current!.innerHTML
-          }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
-
-          setTimeout(() => {
-            moveCursorToEnd(inputRef.current!);
-          }, 1);
+          // allowListNavigation = false;
+          // inputRef.current!.innerHTML = `${
+          //   inputRef.current!.innerHTML
+          // }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
+          // setTimeout(() => {
+          //   moveCursorToEnd(inputRef.current!);
+          // }, 1);
         }
 
         if (isLetterNumberPattern(lastSpan?.innerText)) {

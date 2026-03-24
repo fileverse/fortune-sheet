@@ -2765,6 +2765,26 @@ function getRangeIndexes($editor: HTMLDivElement) {
   return res;
 }
 
+export function getLastFormulaRangeIndex(
+  $editor: HTMLDivElement
+): number | null {
+  const spans = Array.from($editor.querySelectorAll("span")).filter(
+    (span) => span.textContent?.trim().length
+  ) as HTMLSpanElement[];
+
+  const lastSpan = spans[spans.length - 1];
+  if (!lastSpan) return null;
+  if (!lastSpan.classList.contains("fortune-formula-functionrange-cell")) {
+    return null;
+  }
+
+  const indexStr = lastSpan.getAttribute("rangeindex");
+  if (!indexStr) return null;
+
+  const rangeIndex = parseInt(indexStr, 10);
+  return Number.isNaN(rangeIndex) ? null : rangeIndex;
+}
+
 export function handleFormulaInput(
   ctx: Context,
   $copyTo: HTMLDivElement | null | undefined,

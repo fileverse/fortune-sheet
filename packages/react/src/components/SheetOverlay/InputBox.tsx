@@ -23,6 +23,7 @@ import {
   handleStrikeThrough,
   getRangeRectsByCharacterOffset,
   rangeSetValue,
+  getLastFormulaRangeIndex,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -44,11 +45,6 @@ import {
   moveCursorToEnd,
   getCursorPosition,
   isLetterNumberPattern,
-  removeLastSpan,
-  incrementColumn,
-  decrementColumn,
-  incrementRow,
-  decrementRow,
   countCommasBeforeCursor,
 } from "./helper";
 import { LucideIcon } from "./LucideIcon";
@@ -75,7 +71,6 @@ const InputBox: React.FC = () => {
   const row_index = firstSelection?.row_focus!;
   const col_index = firstSelection?.column_focus!;
   const preText = useRef("");
-  const placeRef = useRef("");
   const isComposingRef = useRef(false);
 
   const ZWSP = "\u200B";
@@ -214,6 +209,30 @@ const InputBox: React.FC = () => {
       }
     }
   }, [context.luckysheetCellUpdate]);
+
+  // Clear stale formula range visuals/state when editing target cell changes.
+  // This prevents previous formula range highlights from leaking into a new
+  // input session on a different cell.
+  useEffect(() => {
+    if (
+      _.isEmpty(context.luckysheetCellUpdate) ||
+      _.isEmpty(prevCellUpdate) ||
+      _.isEqual(prevCellUpdate, context.luckysheetCellUpdate)
+    ) {
+      return;
+    }
+
+    setContext((ctx) => {
+      ctx.formulaRangeHighlight = [];
+      ctx.formulaRangeSelect = undefined;
+      ctx.formulaCache.selectingRangeIndex = -1;
+      ctx.formulaCache.func_selectedrange = undefined;
+      ctx.formulaCache.rangestart = false;
+      ctx.formulaCache.rangedrag_column_start = false;
+      ctx.formulaCache.rangedrag_row_start = false;
+      ctx.formulaCache.rangechangeindex = undefined;
+    });
+  }, [context.luckysheetCellUpdate, prevCellUpdate, setContext]);
 
   // 当选中行列是处于隐藏状态的话则不允许编辑
   useEffect(() => {
@@ -379,15 +398,41 @@ const InputBox: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!context.luckysheet_select_save?.[0]?.row) return;
-    console.log("InputBox useEffect triggered", rangeSetValue);
+    if (!context.luckysheet_select_save?.[0] || !refs.cellInput.current) return;
     setContext((ctx) => {
+      const currentSelection = ctx.luckysheet_select_save?.[0];
+      if (!currentSelection) return;
+
+      const inputText = refs.cellInput.current?.innerText?.trim() || "";
+      const isInsertionPoint = israngeseleciton(ctx);
+      const isFormulaMode =
+        inputText.startsWith("=") ||
+        isInsertionPoint ||
+        !!ctx.formulaCache.rangestart ||
+        !!ctx.formulaCache.rangedrag_column_start ||
+        !!ctx.formulaCache.rangedrag_row_start;
+
+      // Selection changes should update references only in formula mode.
+      if (!isFormulaMode) return;
+
+      // Keyboard range navigation should replace the active range token unless
+      // the caret is at an insertion point like "(" or ",".
+      if (!isInsertionPoint && refs.cellInput.current) {
+        const rangeIndex = getLastFormulaRangeIndex(refs.cellInput.current);
+        if (rangeIndex !== null) {
+          ctx.formulaCache.rangechangeindex = rangeIndex;
+          ctx.formulaCache.rangestart = true;
+          ctx.formulaCache.rangedrag_column_start = false;
+          ctx.formulaCache.rangedrag_row_start = false;
+        }
+      }
+
       rangeSetValue?.(
         ctx,
         refs.cellInput.current!,
         {
-          row: ctx.luckysheet_select_save?.[0]?.row,
-          column: ctx.luckysheet_select_save?.[0]?.column,
+          row: currentSelection.row,
+          column: currentSelection.column,
         },
         refs.fxInput.current!
       );
@@ -433,6 +478,11 @@ const InputBox: React.FC = () => {
 
       /* Arrow navigation for cell reference starts here */
       let allowListNavigation = true;
+      const isArrowKey =
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight";
 
       if (e.key === "Delete" || e.key === "Backspace") {
         if (isComposingRef.current) requestAnimationFrame(ensureNotEmpty);
@@ -446,77 +496,16 @@ const InputBox: React.FC = () => {
         }
       }
 
-      let refCell = placeRef.current;
-
-      if (e.key === "ArrowUp") {
-        refCell = decrementRow(placeRef.current);
-      } else if (e.key === "ArrowDown") {
-        refCell = incrementRow(placeRef.current);
-      } else if (e.key === "ArrowLeft") {
-        refCell = decrementColumn(placeRef.current);
-      } else if (e.key === "ArrowRight") {
-        refCell = incrementColumn(placeRef.current);
-      }
-
-      // current hack to for arrow navigation, try to find a better way like using rangeDrag
       if (
-        (e.key === "ArrowUp" ||
-          e.key === "ArrowDown" ||
-          e.key === "ArrowLeft" ||
-          e.key === "ArrowRight") &&
-        !(
-          getCursorPosition(inputRef?.current!) !==
-            inputRef?.current!.innerText.length && e.key === "ArrowRight"
-        )
+        isArrowKey &&
+        (context.formulaCache.rangestart ||
+          context.formulaCache.rangedrag_column_start ||
+          context.formulaCache.rangedrag_row_start ||
+          israngeseleciton(context))
       ) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(
-          `<div>${inputRef?.current?.innerHTML}</div>`,
-          "text/html"
-        );
-        const spans = doc.querySelectorAll("span");
-        const lastSpan = spans[spans.length - 1];
-
-        const notFunctionInit = !document
-          .getElementById("luckysheet-rich-text-editor")
-          ?.innerText.includes("(");
-
-        // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
-        const arrowRefNotAllowed =
-          lastSpan?.innerText.includes(")") ||
-          (notFunctionInit &&
-            /^[a-zA-Z]+$/.test(lastSpan?.innerText) &&
-            !_.includes(["="], lastSpan?.innerText));
-
-        if (
-          (lastSpan?.innerText === "(" ||
-            lastSpan?.innerText === "," ||
-            lastSpan?.innerText.includes(":") ||
-            lastSpan?.innerText !== ")") &&
-          !lastSpan?.innerText.includes('"') &&
-          !isLetterNumberPattern(lastSpan?.innerText) &&
-          !arrowRefNotAllowed &&
-          !/^[a-zA-Z]+$/.test(lastSpan?.innerText)
-        ) {
-          // allowListNavigation = false;
-          // inputRef.current!.innerHTML = `${
-          //   inputRef.current!.innerHTML
-          // }<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
-          // setTimeout(() => {
-          //   moveCursorToEnd(inputRef.current!);
-          // }, 1);
-        }
-
-        if (isLetterNumberPattern(lastSpan?.innerText)) {
-          allowListNavigation = false;
-          const htmlR = removeLastSpan(inputRef?.current!.innerHTML);
-          inputRef.current!.innerHTML = `${htmlR}<span class="fortune-formula-functionrange-cell" rangeindex="0" dir="auto" style="color:#c1232b;">${refCell}</span>`;
-
-          moveCursorToEnd(inputRef.current!);
-          setTimeout(() => {
-            moveCursorToEnd(inputRef.current!);
-          }, 1);
-        }
+        // Let global keyboard handlers move selected cells while formula range
+        // updates are performed via `rangeSetValue` in the selection effect.
+        allowListNavigation = false;
       }
       /* Arrow navigation for cell reference ends here */
 
@@ -912,7 +901,6 @@ const InputBox: React.FC = () => {
 
   const wraperGetCell = () => {
     const cell = getCellAddress();
-    placeRef.current = cell;
     if (activeRefCell !== cell) {
       setActiveRefCell(cell);
     }

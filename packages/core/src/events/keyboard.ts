@@ -603,7 +603,7 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
 
     // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
     if (
-      true
+      false
       // lastSpan?.innerText.includes(")") ||
       // lastSpan?.innerText.includes('"') ||
       // notFunctionInit

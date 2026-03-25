@@ -2178,6 +2178,22 @@ export function mouseRender(
     //   }
     //   $("#luckysheet-dataVerificationRange-dialog input").val(range);
   } else if (ctx.formulaCache.rangestart) {
+    if (
+      ctx.formulaCache.rangeSelectionActive === false &&
+      !israngeseleciton(ctx)
+    ) {
+      // Close the formula input like `Enter` would when the last
+      // programmatically inserted range token was manually modified.
+      if (ctx.luckysheetCellUpdate.length > 0) {
+        updateCell(
+          ctx,
+          ctx.luckysheetCellUpdate[0],
+          ctx.luckysheetCellUpdate[1],
+          cellInput
+        );
+      }
+      return;
+    }
     rangeDrag(
       ctx,
       e,
@@ -2188,6 +2204,20 @@ export function mouseRender(
       fxInput
     );
   } else if (ctx.formulaCache.rangedrag_row_start) {
+    if (
+      ctx.formulaCache.rangeSelectionActive === false &&
+      !israngeseleciton(ctx)
+    ) {
+      if (ctx.luckysheetCellUpdate.length > 0) {
+        updateCell(
+          ctx,
+          ctx.luckysheetCellUpdate[0],
+          ctx.luckysheetCellUpdate[1],
+          cellInput
+        );
+      }
+      return;
+    }
     rangeDragRow(
       ctx,
       e,
@@ -2198,6 +2228,20 @@ export function mouseRender(
       fxInput
     );
   } else if (ctx.formulaCache.rangedrag_column_start) {
+    if (
+      ctx.formulaCache.rangeSelectionActive === false &&
+      !israngeseleciton(ctx)
+    ) {
+      if (ctx.luckysheetCellUpdate.length > 0) {
+        updateCell(
+          ctx,
+          ctx.luckysheetCellUpdate[0],
+          ctx.luckysheetCellUpdate[1],
+          cellInput
+        );
+      }
+      return;
+    }
     rangeDragColumn(
       ctx,
       e,

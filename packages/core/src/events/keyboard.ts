@@ -2,7 +2,11 @@ import _ from "lodash";
 import { hideCRCount, removeActiveImage } from "..";
 import { Context, getFlowdata } from "../context";
 import { updateCell, cancelNormalSelected } from "../modules/cell";
-import { handleFormulaInput } from "../modules/formula";
+import {
+  handleFormulaInput,
+  israngeseleciton,
+  markRangeSelectionDirty,
+} from "../modules/formula";
 import {
   copy,
   deleteSelectedCellText,
@@ -29,6 +33,16 @@ import { CellMatrix, GlobalCache } from "../types";
 import { getNowDateTime, getSheetIndex, isAllowEdit } from "../utils";
 import { handleCopy } from "./copy";
 import { jfrefreshgrid } from "../modules/refresh";
+
+function isLegacyFormulaRangeMode(ctx: Context): boolean {
+  return (
+    !!ctx.formulaCache.rangestart ||
+    !!ctx.formulaCache.rangedrag_column_start ||
+    !!ctx.formulaCache.rangedrag_row_start ||
+    ctx.formulaCache.rangeSelectionActive === true ||
+    israngeseleciton(ctx)
+  );
+}
 
 export function handleGlobalEnter(
   ctx: Context,
@@ -155,6 +169,21 @@ function handleControlPlusArrowKey(
   e: KeyboardEvent,
   shiftPressed: boolean
 ) {
+  // Keep Cmd/Ctrl+Arrow navigation consistent with Arrow/Shift+Arrow guards.
+  if (
+    ctx.formulaCache.rangeSelectionActive === false &&
+    !israngeseleciton(ctx)
+  ) {
+    return;
+  }
+  const isFormulaRefMode = isLegacyFormulaRangeMode(ctx);
+  if (isFormulaRefMode) {
+    ctx.formulaCache.rangeSelectionActive = true;
+  }
+  if (ctx.luckysheetCellUpdate.length > 0 && !isFormulaRefMode) {
+    return;
+  }
+
   // if (ctx.luckysheetCellUpdate.length > 0) return;
 
   const idx = getSheetIndex(ctx, ctx.currentSheetId);
@@ -538,14 +567,22 @@ export function handleWithCtrlOrMetaKey(
 }
 
 function handleShiftWithArrowKey(ctx: Context, e: KeyboardEvent) {
-  const inputText = (
-    document.getElementById("luckysheet-rich-text-editor")?.innerText || ""
-  ).trim();
-  const isFormulaMode =
-    inputText.startsWith("=") ||
-    !!ctx.formulaCache.rangestart ||
-    !!ctx.formulaCache.rangedrag_column_start ||
-    !!ctx.formulaCache.rangedrag_row_start;
+  // If the user manually modified a keyboard/mouse-inserted range token,
+  // block further range navigation.
+  if (
+    ctx.formulaCache.rangeSelectionActive === false &&
+    !israngeseleciton(ctx)
+  ) {
+    return;
+  }
+
+  const isFormulaMode = isLegacyFormulaRangeMode(ctx);
+
+  if (isFormulaMode) {
+    // Mark the range selection flow as "keyboard-driven" so any immediate
+    // manual typing/delete invalidates it.
+    ctx.formulaCache.rangeSelectionActive = true;
+  }
 
   if (
     ctx.luckysheetCellUpdate.length > 0 &&
@@ -590,6 +627,22 @@ function handleShiftWithArrowKey(ctx: Context, e: KeyboardEvent) {
 }
 
 export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
+  // Prevent moving grid selection while the current reference range token
+  // was manually modified.
+  if (
+    ctx.formulaCache.rangeSelectionActive === false &&
+    !israngeseleciton(ctx)
+  ) {
+    return;
+  }
+  const isFormulaRefMode = isLegacyFormulaRangeMode(ctx);
+  if (isFormulaRefMode) ctx.formulaCache.rangeSelectionActive = true;
+  // If editor is active but caret is not in formula-reference mode, keep
+  // native caret behavior and do not move selected grid cell/range.
+  if (ctx.luckysheetCellUpdate.length > 0 && !isFormulaRefMode) {
+    return;
+  }
+
   if (
     ctx.luckysheetCellUpdate.length > 0 ||
     ctx.luckysheet_cell_selected_move ||
@@ -880,6 +933,11 @@ export async function handleGlobalKeyDown(
       if (ctx.activeImg != null) {
         removeActiveImage(ctx);
       } else {
+        // Manual modification inside formula editing should invalidate
+        // keyboard/mouse-inserted range references.
+        if (ctx.formulaCache.rangeSelectionActive === true) {
+          markRangeSelectionDirty(ctx);
+        }
         deleteSelectedCellText(ctx);
       }
 

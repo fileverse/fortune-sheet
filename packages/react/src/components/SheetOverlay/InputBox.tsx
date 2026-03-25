@@ -26,6 +26,7 @@ import {
   getLastFormulaRangeIndex,
   createFormulaRangeSelect,
   seletedHighlistByindex,
+  isFormulaReferenceInputMode,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -292,6 +293,7 @@ const InputBox: React.FC = () => {
       ctx.formulaCache.rangedrag_column_start = false;
       ctx.formulaCache.rangedrag_row_start = false;
       ctx.formulaCache.rangechangeindex = undefined;
+      ctx.formulaCache.rangeSelectionActive = null;
     });
   }, [isInputBoxActive, setContext]);
 
@@ -448,7 +450,6 @@ const InputBox: React.FC = () => {
         ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
       if (!currentSelection) return;
 
-      const inputText = refs.cellInput.current?.innerText?.trim() || "";
       const isInsertionPoint = israngeseleciton(ctx);
       const lastRangeIndex = getLastFormulaRangeIndex(refs.cellInput.current);
 
@@ -463,12 +464,7 @@ const InputBox: React.FC = () => {
         }
       }
 
-      const isFormulaMode =
-        inputText.startsWith("=") ||
-        isInsertionPoint ||
-        !!ctx.formulaCache.rangestart ||
-        !!ctx.formulaCache.rangedrag_column_start ||
-        !!ctx.formulaCache.rangedrag_row_start;
+      const isFormulaMode = isFormulaReferenceInputMode(ctx);
 
       // Selection changes should update references only in formula mode.
       if (!isFormulaMode) return;
@@ -483,6 +479,9 @@ const InputBox: React.FC = () => {
           ctx.formulaCache.rangedrag_row_start = false;
         }
       }
+
+      // Mark that range/reference content was inserted by keyboard range selection.
+      ctx.formulaCache.rangeSelectionActive = true;
 
       rangeSetValue?.(
         ctx,
@@ -589,10 +588,23 @@ const InputBox: React.FC = () => {
         context.luckysheetCellUpdate.length === 2 &&
         formulaAnchorCellRef.current == null
       ) {
+        // Starting a new formula flow; clear range-selection dirtiness so
+        // the user can start referencing again.
+        setContext((draftCtx) => {
+          draftCtx.formulaCache.rangeSelectionActive = null;
+        });
         formulaAnchorCellRef.current = [
           context.luckysheetCellUpdate[0],
           context.luckysheetCellUpdate[1],
         ];
+      }
+
+      if (e.key === "(" && currentInputText.startsWith("=")) {
+        // When the user types "(" we are at/near a reference insertion point.
+        // Clear dirtiness so keyboard/mouse referencing can continue.
+        setContext((draftCtx) => {
+          draftCtx.formulaCache.rangeSelectionActive = null;
+        });
       }
 
       if (
@@ -601,6 +613,10 @@ const InputBox: React.FC = () => {
         currentInputText.startsWith("=") &&
         formulaAnchorCellRef.current
       ) {
+        // Moving to next function argument; allow referencing flow again.
+        setContext((draftCtx) => {
+          draftCtx.formulaCache.rangeSelectionActive = null;
+        });
         const [anchorRow, anchorCol] = formulaAnchorCellRef.current;
         skipNextAnchorSelectionSyncRef.current = true;
         setTimeout(() => {
@@ -614,6 +630,13 @@ const InputBox: React.FC = () => {
                 column_focus: anchorCol,
               },
             ];
+            // Reference before comma is complete; clear active formula
+            // range overlay/highlight and reset range-selection state.
+            draftCtx.formulaRangeHighlight = [];
+            draftCtx.formulaRangeSelect = undefined;
+            draftCtx.formulaCache.selectingRangeIndex = -1;
+            draftCtx.formulaCache.func_selectedrange = undefined;
+            draftCtx.formulaCache.rangechangeindex = undefined;
             draftCtx.formulaCache.rangestart = false;
             draftCtx.formulaCache.rangedrag_column_start = false;
             draftCtx.formulaCache.rangedrag_row_start = false;
@@ -672,10 +695,7 @@ const InputBox: React.FC = () => {
 
       if (
         isArrowKey &&
-        (context.formulaCache.rangestart ||
-          context.formulaCache.rangedrag_column_start ||
-          context.formulaCache.rangedrag_row_start ||
-          israngeseleciton(context))
+        isFormulaReferenceInputMode(context)
       ) {
         // Let global keyboard handlers move selected cells while formula range
         // updates are performed via `rangeSetValue` in the selection effect.

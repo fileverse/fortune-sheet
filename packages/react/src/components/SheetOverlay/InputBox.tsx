@@ -24,6 +24,8 @@ import {
   getRangeRectsByCharacterOffset,
   rangeSetValue,
   getLastFormulaRangeIndex,
+  createFormulaRangeSelect,
+  seletedHighlistByindex,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -72,6 +74,9 @@ const InputBox: React.FC = () => {
   const col_index = firstSelection?.column_focus!;
   const preText = useRef("");
   const isComposingRef = useRef(false);
+  const formulaAnchorCellRef = useRef<[number, number] | null>(null);
+  const skipNextAnchorSelectionSyncRef = useRef(false);
+  const lastHandledMouseDragSignatureRef = useRef("");
 
   const ZWSP = "\u200B";
   const inputBoxInnerRef = useRef<HTMLDivElement>(null);
@@ -210,6 +215,21 @@ const InputBox: React.FC = () => {
     }
   }, [context.luckysheetCellUpdate]);
 
+  // Reset cached formula anchor when formula edit session ends.
+  useEffect(() => {
+    if (_.isEmpty(context.luckysheetCellUpdate) || !refs.cellInput.current) {
+      formulaAnchorCellRef.current = null;
+      lastHandledMouseDragSignatureRef.current = "";
+      return;
+    }
+
+    const inputText = refs.cellInput.current.innerText?.trim() || "";
+    if (!inputText.startsWith("=")) {
+      formulaAnchorCellRef.current = null;
+      lastHandledMouseDragSignatureRef.current = "";
+    }
+  }, [context.luckysheetCellUpdate, refs.cellInput]);
+
   // Clear stale formula range visuals/state when editing target cell changes.
   // This prevents previous formula range highlights from leaking into a new
   // input session on a different cell.
@@ -250,6 +270,30 @@ const InputBox: React.FC = () => {
       setIsInputBoxActive(false);
     }
   }, [firstSelection, context.rangeDialog?.show, context.luckysheetCellUpdate]);
+
+  // Cleanup: if input box is no longer active, remove any lingering
+  // blue dotted formula-range overlays from the canvas.
+  useEffect(() => {
+    if (isInputBoxActive) return;
+    setContext((ctx) => {
+      if (
+        _.isEmpty(ctx.formulaRangeHighlight) &&
+        !ctx.formulaRangeSelect &&
+        ctx.formulaCache.selectingRangeIndex === -1 &&
+        !ctx.formulaCache.func_selectedrange
+      ) {
+        return;
+      }
+      ctx.formulaRangeHighlight = [];
+      ctx.formulaRangeSelect = undefined;
+      ctx.formulaCache.selectingRangeIndex = -1;
+      ctx.formulaCache.func_selectedrange = undefined;
+      ctx.formulaCache.rangestart = false;
+      ctx.formulaCache.rangedrag_column_start = false;
+      ctx.formulaCache.rangedrag_row_start = false;
+      ctx.formulaCache.rangechangeindex = undefined;
+    });
+  }, [isInputBoxActive, setContext]);
 
   const getActiveFormula = useCallback(
     () => document.querySelector(".luckysheet-formula-search-item-active"),
@@ -400,11 +444,25 @@ const InputBox: React.FC = () => {
   useEffect(() => {
     if (!context.luckysheet_select_save?.[0] || !refs.cellInput.current) return;
     setContext((ctx) => {
-      const currentSelection = ctx.luckysheet_select_save?.[0];
+      const currentSelection =
+        ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
       if (!currentSelection) return;
 
       const inputText = refs.cellInput.current?.innerText?.trim() || "";
       const isInsertionPoint = israngeseleciton(ctx);
+      const lastRangeIndex = getLastFormulaRangeIndex(refs.cellInput.current);
+
+      if (skipNextAnchorSelectionSyncRef.current && formulaAnchorCellRef.current) {
+        const [anchorRow, anchorCol] = formulaAnchorCellRef.current;
+        const isAnchorSelection =
+          currentSelection.row_focus === anchorRow &&
+          currentSelection.column_focus === anchorCol;
+        if (isAnchorSelection) {
+          skipNextAnchorSelectionSyncRef.current = false;
+          return;
+        }
+      }
+
       const isFormulaMode =
         inputText.startsWith("=") ||
         isInsertionPoint ||
@@ -418,9 +476,8 @@ const InputBox: React.FC = () => {
       // Keyboard range navigation should replace the active range token unless
       // the caret is at an insertion point like "(" or ",".
       if (!isInsertionPoint && refs.cellInput.current) {
-        const rangeIndex = getLastFormulaRangeIndex(refs.cellInput.current);
-        if (rangeIndex !== null) {
-          ctx.formulaCache.rangechangeindex = rangeIndex;
+        if (lastRangeIndex !== null) {
+          ctx.formulaCache.rangechangeindex = lastRangeIndex;
           ctx.formulaCache.rangestart = true;
           ctx.formulaCache.rangedrag_column_start = false;
           ctx.formulaCache.rangedrag_row_start = false;
@@ -436,17 +493,134 @@ const InputBox: React.FC = () => {
         },
         refs.fxInput.current!
       );
+
+      // Mirror mouse behavior: show blue dotted formula-range selection
+      // for keyboard-driven reference selection as well.
+      if (!_.isNil(ctx.formulaCache.rangechangeindex)) {
+        ctx.formulaCache.selectingRangeIndex = ctx.formulaCache.rangechangeindex;
+        createRangeHightlight(
+          ctx,
+          refs.cellInput.current!.innerHTML,
+          ctx.formulaCache.rangechangeindex
+        );
+
+        const rectFromSelection = seletedHighlistByindex(
+          ctx,
+          currentSelection.row[0],
+          currentSelection.row[1],
+          currentSelection.column[0],
+          currentSelection.column[1]
+        );
+
+        if (rectFromSelection) {
+          createFormulaRangeSelect(ctx, {
+            rangeIndex: ctx.formulaCache.rangechangeindex || 0,
+            left: rectFromSelection.left,
+            top: rectFromSelection.top,
+            width: rectFromSelection.width,
+            height: rectFromSelection.height,
+          });
+        }
+      }
     });
   }, [
     context.luckysheet_select_save,
     context.rangeDialog?.show,
-    isInputBoxActive,
+    // isInputBoxActive,
+  ]);
+  const formulaMouseDragSignature = (() => {
+    const r = context.formulaCache.func_selectedrange;
+    if (!r) return "";
+    return [
+      r.row?.[0],
+      r.row?.[1],
+      r.column?.[0],
+      r.column?.[1],
+      r.left_move,
+      r.top_move,
+      r.width_move,
+      r.height_move,
+    ].join(":");
+  })();
+
+  // If formula range is changed by mouse drag, keep normal selected-state
+  // aligned to the dragged cell/range.
+  useEffect(() => {
+    if (!formulaMouseDragSignature) return;
+    if (lastHandledMouseDragSignatureRef.current === formulaMouseDragSignature) {
+      return;
+    }
+    if (!refs.cellInput.current) return;
+    const inputText = refs.cellInput.current.innerText?.trim() || "";
+    if (!inputText.startsWith("=")) return;
+    const dragRange = context.formulaCache.func_selectedrange;
+    if (!dragRange) return;
+
+    lastHandledMouseDragSignatureRef.current = formulaMouseDragSignature;
+    setContext((ctx) => {
+      ctx.luckysheet_select_save = [
+        {
+          row: [dragRange.row[0], dragRange.row[1]],
+          column: [dragRange.column[0], dragRange.column[1]],
+          row_focus: _.isNil(dragRange.row_focus)
+            ? dragRange.row[0]
+            : dragRange.row_focus,
+          column_focus: _.isNil(dragRange.column_focus)
+            ? dragRange.column[0]
+            : dragRange.column_focus,
+        },
+      ];
+    });
+  }, [
+    formulaMouseDragSignature,
+    context.formulaCache.func_selectedrange,
+    refs.cellInput,
+    setContext,
   ]);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
       preText.current = inputRef.current!.innerText;
+      const currentInputText = inputRef.current?.innerText?.trim() || "";
+
+      if (
+        (e.key === "=" || currentInputText.startsWith("=")) &&
+        context.luckysheetCellUpdate.length === 2 &&
+        formulaAnchorCellRef.current == null
+      ) {
+        formulaAnchorCellRef.current = [
+          context.luckysheetCellUpdate[0],
+          context.luckysheetCellUpdate[1],
+        ];
+      }
+
+      if (
+        e.key === "," &&
+        context.luckysheetCellUpdate.length > 0 &&
+        currentInputText.startsWith("=") &&
+        formulaAnchorCellRef.current
+      ) {
+        const [anchorRow, anchorCol] = formulaAnchorCellRef.current;
+        skipNextAnchorSelectionSyncRef.current = true;
+        setTimeout(() => {
+          setContext((draftCtx) => {
+            draftCtx.luckysheetCellUpdate = [anchorRow, anchorCol];
+            draftCtx.luckysheet_select_save = [
+              {
+                row: [anchorRow, anchorRow],
+                column: [anchorCol, anchorCol],
+                row_focus: anchorRow,
+                column_focus: anchorCol,
+              },
+            ];
+            draftCtx.formulaCache.rangestart = false;
+            draftCtx.formulaCache.rangedrag_column_start = false;
+            draftCtx.formulaCache.rangedrag_row_start = false;
+            moveHighlightCell(draftCtx, "down", 0, "rangeOfSelect");
+          });
+        }, 0);
+      }
       // if (
       //   $("#luckysheet-modal-dialog-mask").is(":visible") ||
       //   $(event.target).hasClass("luckysheet-mousedown-cancel") ||
@@ -938,6 +1112,10 @@ const InputBox: React.FC = () => {
   const fn = functionName
     ? context.formulaCache.functionlistMap[functionName]
     : null;
+  const inputBoxBaseSelection =
+    isInputBoxActive && firstSelectionActiveCell
+      ? firstSelectionActiveCell
+      : firstSelection;
 
   return (
     <div
@@ -959,11 +1137,11 @@ const InputBox: React.FC = () => {
         ref={inputBoxInnerRef}
         className="luckysheet-input-box-inner"
         style={
-          firstSelection
+          inputBoxBaseSelection
             ? {
                 position: "relative",
-                minWidth: firstSelection.width,
-                minHeight: firstSelection.height,
+                minWidth: inputBoxBaseSelection.width,
+                minHeight: inputBoxBaseSelection.height,
                 ...inputBoxStyle,
               }
             : { position: "relative" }

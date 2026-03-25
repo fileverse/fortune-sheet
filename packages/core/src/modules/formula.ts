@@ -3711,6 +3711,24 @@ export function rangeDrag(
   func_selectedrange.top_move = top;
   func_selectedrange.height_move = height;
 
+  // Keep normal (yellow) selection in sync during formula mouse drag.
+  ctx.luckysheet_select_save = [
+    {
+      row: [rowseleted[0], rowseleted[1]],
+      column: [columnseleted[0], columnseleted[1]],
+      row_focus: row_index,
+      column_focus: col_index,
+      left,
+      top,
+      width,
+      height,
+      left_move: left,
+      top_move: top,
+      width_move: width,
+      height_move: height,
+    },
+  ];
+
   // luckysheet_count_show(left, top, width, height, rowseleted, columnseleted);
 
   // if ($("#luckysheet-ifFormulaGenerator-multiRange-dialog").is(":visible")) {
@@ -3821,6 +3839,24 @@ export function rangeDragColumn(
   func_selectedrange.left_move = left;
   func_selectedrange.width_move = width;
 
+  // Keep normal (yellow) selection in sync during formula mouse drag.
+  ctx.luckysheet_select_save = [
+    {
+      row: [0, row_index],
+      column: [columnseleted[0], columnseleted[1]],
+      row_focus: 0,
+      column_focus: col_index,
+      left,
+      top: row_pre,
+      width,
+      height: row - row_pre - 1,
+      left_move: left,
+      top_move: row_pre,
+      width_move: width,
+      height_move: row - row_pre - 1,
+    },
+  ];
+
   // luckysheet_count_show(
   //   left,
   //   row_pre,
@@ -3915,6 +3951,24 @@ export function rangeDragRow(
   func_selectedrange.row = rowseleted;
   func_selectedrange.top_move = top;
   func_selectedrange.height_move = height;
+
+  // Keep normal (yellow) selection in sync during formula mouse drag.
+  ctx.luckysheet_select_save = [
+    {
+      row: [rowseleted[0], rowseleted[1]],
+      column: [0, col_index],
+      row_focus: row_index,
+      column_focus: 0,
+      left: col_pre,
+      top,
+      width: col - col_pre - 1,
+      height,
+      left_move: col_pre,
+      top_move: top,
+      width_move: col - col_pre - 1,
+      height_move: height,
+    },
+  ];
 
   // luckysheet_count_show(col_pre, top, col - col_pre - 1, height, rowseleted, [
   //   0,

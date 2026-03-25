@@ -538,8 +538,18 @@ export function handleWithCtrlOrMetaKey(
 }
 
 function handleShiftWithArrowKey(ctx: Context, e: KeyboardEvent) {
+  const inputText = (
+    document.getElementById("luckysheet-rich-text-editor")?.innerText || ""
+  ).trim();
+  const isFormulaMode =
+    inputText.startsWith("=") ||
+    !!ctx.formulaCache.rangestart ||
+    !!ctx.formulaCache.rangedrag_column_start ||
+    !!ctx.formulaCache.rangedrag_row_start;
+
   if (
-    ctx.luckysheetCellUpdate.length > 0
+    ctx.luckysheetCellUpdate.length > 0 &&
+    !isFormulaMode
     // || $(event.target).hasClass("formulaInputFocus")
   ) {
     return;

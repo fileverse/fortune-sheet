@@ -450,6 +450,19 @@ const InputBox: React.FC = () => {
         ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
       if (!currentSelection) return;
 
+      // luckysheet_select_save is synced from rangeDrag; mouse.ts already calls
+      // rangeSetValue. A second call here lacked spanToReplace / stale index.
+      const isMouseFormulaRangeDrag =
+        !!ctx.formulaCache.func_selectedrange &&
+        (ctx.formulaCache.rangestart ||
+          ctx.formulaCache.rangedrag_column_start ||
+          ctx.formulaCache.rangedrag_row_start);
+      if (isMouseFormulaRangeDrag) {
+        // eslint-disable-next-line no-console
+        console.log("[FS-RANGE] InputBox: skip (mouse formula drag active)");
+        return;
+      }
+
       const isInsertionPoint = israngeseleciton(ctx);
       const lastRangeIndex = getLastFormulaRangeIndex(refs.cellInput.current);
 
@@ -482,6 +495,15 @@ const InputBox: React.FC = () => {
 
       // Mark that range/reference content was inserted by keyboard range selection.
       ctx.formulaCache.rangeSelectionActive = true;
+
+      // eslint-disable-next-line no-console
+      console.log("[FS-RANGE] caller InputBox.tsx useEffect(luckysheet_select_save)", {
+        isInsertionPoint,
+        lastRangeIndex,
+        row: currentSelection.row,
+        col: currentSelection.column,
+        rangechangeindexBefore: ctx.formulaCache.rangechangeindex,
+      });
 
       rangeSetValue?.(
         ctx,

@@ -576,6 +576,12 @@ export function handleCellAreaMouseDown(
         };
       }
 
+      ctx.formulaCache.rangestart = true;
+      ctx.formulaCache.rangedrag_column_start = false;
+      ctx.formulaCache.rangedrag_row_start = false;
+
+      // eslint-disable-next-line no-console
+      console.log("[FS-RANGE] caller mouse.ts ~579 (formula mousedown path)");
       rangeSetValue(
         ctx,
         cellInput,
@@ -585,10 +591,6 @@ export function handleCellAreaMouseDown(
         },
         fxInput
       );
-
-      ctx.formulaCache.rangestart = true;
-      ctx.formulaCache.rangedrag_column_start = false;
-      ctx.formulaCache.rangedrag_row_start = false;
 
       ctx.formulaCache.selectingRangeIndex = ctx.formulaCache.rangechangeindex!;
       if (
@@ -4720,6 +4722,8 @@ export function handleRowHeaderMouseDown(
         ctx.formulaCache.rangedrag_row_start ||
         israngeseleciton(ctx)
       ) {
+        // eslint-disable-next-line no-console
+        console.log("[FS-RANGE] caller mouse.ts ~4723 (range drag row)");
         rangeSetValue(
           ctx,
           cellInput,
@@ -5162,6 +5166,8 @@ export function handleColumnHeaderMouseDown(
         ctx.formulaCache.rangedrag_row_start ||
         israngeseleciton(ctx)
       ) {
+        // eslint-disable-next-line no-console
+        console.log("[FS-RANGE] caller mouse.ts ~5165 (range drag column)");
         rangeSetValue(
           ctx,
           cellInput,

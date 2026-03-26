@@ -3341,6 +3341,12 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
   const anchorElement = anchor as HTMLElement;
   const parentElement = anchor.parentNode as HTMLElement;
 
+  const getCurrentSlotTextBeforeCaret = (editor: HTMLElement, caretOffset: number) => {
+    const textBefore = editor.innerText.slice(0, caretOffset);
+    const parts = textBefore.split(/[=,(+\-*/&<>]/);
+    return _.trim(parts[parts.length - 1] || "");
+  };
+
   const allowRangeInsertionAtCaret = () => {
     // If range selection flow is already active, allow insertion/replacement.
     if (
@@ -3384,6 +3390,14 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
     preCaretRange.selectNodeContents(editor);
     preCaretRange.setEnd(caretRange.endContainer, caretRange.endOffset);
     const caretOffset = preCaretRange.toString().length;
+    const slotTextBeforeCaret = getCurrentSlotTextBeforeCaret(editor, caretOffset);
+
+    // If the current argument slot already contains a partial manual ref/range
+    // token like `A`, `A1:`, or `A1:A`, do not allow starting a new selection.
+    if (slotTextBeforeCaret.length > 0 && !iscelldata(slotTextBeforeCaret)) {
+      return false;
+    }
+
     const textAfter = editor.innerText.slice(caretOffset);
     const remaining = textAfter.replace(/^\s+/, "");
 
@@ -3583,11 +3597,18 @@ export function maybeRecoverDirtyRangeSelection(ctx: Context): boolean {
   }
 
   const inputText = (editor.innerText || "").trim();
+  const atCaretRangeIndex = getFormulaRangeIndexAtCaret(editor);
 
   // Recover when the caret is back in a fresh, syntactically valid insertion
   // slot (e.g. `=`, between `=,`, after `,`, or after `(`), even if other
   // clean range tokens still exist elsewhere in the formula.
-  if (inputText.startsWith("=") && israngeseleciton(ctx)) {
+  // Do NOT recover while the caret is still inside a dirty managed range token
+  // (e.g. `=A2:A` after deleting the trailing `5` from `=A2:A5`).
+  if (
+    inputText.startsWith("=") &&
+    atCaretRangeIndex === null &&
+    israngeseleciton(ctx)
+  ) {
     ctx.formulaCache.rangeSelectionActive = null;
     return true;
   }

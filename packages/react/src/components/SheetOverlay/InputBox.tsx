@@ -56,6 +56,12 @@ import {
 import { LucideIcon } from "./LucideIcon";
 
 const InputBox: React.FC = () => {
+  type FormulaHistoryEntry = {
+    text: string;
+    caret: number;
+    spanValues: string[];
+  };
+
   const { context, setContext, refs } = useContext(WorkbookContext);
   const inputRef = useRef<HTMLDivElement>(null);
   const lastKeyDownEventRef = useRef<KeyboardEvent>(null);
@@ -81,6 +87,17 @@ const InputBox: React.FC = () => {
   const formulaAnchorCellRef = useRef<[number, number] | null>(null);
   const skipNextAnchorSelectionSyncRef = useRef(false);
   const lastHandledMouseDragSignatureRef = useRef("");
+  const preFormulaSpanValuesRef = useRef<string[] | null>(null);
+  const formulaHistoryRef = useRef<{
+    active: boolean;
+    entries: FormulaHistoryEntry[];
+    index: number;
+  }>({
+    active: false,
+    entries: [],
+    index: -1,
+  });
+  const MAX_FORMULA_HISTORY = 100;
 
   const ZWSP = "\u200B";
   const inputBoxInnerRef = useRef<HTMLDivElement>(null);
@@ -101,6 +118,95 @@ const InputBox: React.FC = () => {
       moveCursorToEnd(el);
     }
   };
+
+  const resetFormulaHistory = useCallback(() => {
+    formulaHistoryRef.current = {
+      active: false,
+      entries: [],
+      index: -1,
+    };
+    preFormulaSpanValuesRef.current = null;
+  }, []);
+
+  const pushFormulaHistoryEntry = useCallback((entry: FormulaHistoryEntry) => {
+    const history = formulaHistoryRef.current;
+    const current = history.entries[history.index];
+
+    // When formula-argument spans exist, treat each span as the atomic unit.
+    // That prevents undo/redo from stepping on caret-only changes.
+    if (
+      current &&
+      current.spanValues.length > 0 &&
+      entry.spanValues.length > 0 &&
+      _.isEqual(current.spanValues, entry.spanValues)
+    ) {
+      return;
+    }
+
+    // Fallback for cases where spans don't exist yet (e.g. right after typing "=").
+    if (
+      current &&
+      current.spanValues.length === 0 &&
+      entry.spanValues.length === 0 &&
+      current.text === entry.text &&
+      current.caret === entry.caret
+    ) {
+      return;
+    }
+
+    const nextEntries = history.entries.slice(0, history.index + 1);
+    nextEntries.push(entry);
+    if (nextEntries.length > MAX_FORMULA_HISTORY) {
+      nextEntries.shift();
+    }
+
+    history.entries = nextEntries;
+    history.index = nextEntries.length - 1;
+    history.active = true;
+  }, []);
+
+  const applyFormulaHistoryEntry = useCallback(
+    (entry: FormulaHistoryEntry) => {
+      const editor = inputRef.current;
+      if (!editor) return;
+
+      const safeText = escapeScriptTag(entry.text || "");
+      const html = safeText.startsWith("=")
+        ? functionHTMLGenerate(safeText)
+        : escapeHTMLTag(safeText);
+      editor.innerHTML = html;
+      if (refs.fxInput.current) {
+        refs.fxInput.current.innerHTML = html;
+      }
+      setCursorPosition(editor, Math.min(entry.caret, entry.text.length));
+
+      setContext((draftCtx) => {
+        if (!refs.cellInput.current) return;
+        handleFormulaInput(
+          draftCtx,
+          refs.fxInput.current,
+          refs.cellInput.current,
+          0
+        );
+      });
+    },
+    [refs.cellInput, refs.fxInput, setContext]
+  );
+
+  const handleFormulaHistoryUndoRedo = useCallback(
+    (isRedo: boolean) => {
+      const history = formulaHistoryRef.current;
+      if (!history.active || history.entries.length === 0) return false;
+
+      const nextIndex = isRedo ? history.index + 1 : history.index - 1;
+      if (nextIndex < 0 || nextIndex >= history.entries.length) return true;
+
+      history.index = nextIndex;
+      applyFormulaHistoryEntry(history.entries[nextIndex]);
+      return true;
+    },
+    [applyFormulaHistoryEntry]
+  );
 
   const handleShowFormulaHint = () => {
     localStorage.setItem("formulaMore", String(showFormulaHint));
@@ -216,8 +322,9 @@ const InputBox: React.FC = () => {
       if (inputRef.current) {
         inputRef.current.innerHTML = "";
       }
+      resetFormulaHistory();
     }
-  }, [context.luckysheetCellUpdate]);
+  }, [context.luckysheetCellUpdate, resetFormulaHistory]);
 
   // Reset cached formula anchor when formula edit session ends.
   useEffect(() => {
@@ -550,6 +657,11 @@ const InputBox: React.FC = () => {
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
       preText.current = inputRef.current!.innerText;
+      preFormulaSpanValuesRef.current = Array.from(
+        inputRef.current?.querySelectorAll(
+          "span.fortune-formula-functionrange-cell"
+        ) ?? []
+      ).map((el) => el.textContent ?? "");
       const currentInputText = inputRef.current?.innerText?.trim() || "";
 
       if (
@@ -621,7 +733,23 @@ const InputBox: React.FC = () => {
       //   return;
       // }
 
-      if (e.metaKey && context.luckysheetCellUpdate.length > 0) {
+      if ((e.metaKey || e.ctrlKey) && context.luckysheetCellUpdate.length > 0) {
+        if (e.code === "KeyZ" || e.code === "KeyY") {
+          const shouldUseFormulaHistory =
+            currentInputText.startsWith("=") || formulaHistoryRef.current.active;
+          if (shouldUseFormulaHistory) {
+            const handledByFormulaHistory = handleFormulaHistoryUndoRedo(
+              e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey)
+            );
+            if (handledByFormulaHistory) {
+              e.preventDefault();
+            }
+          }
+          // Keep native undo/redo in contenteditable, but don't bubble to
+          // workbook-level canvas shortcuts.
+          e.stopPropagation();
+          return;
+        }
         if (e.code === "KeyB") {
           handleBold(context, inputRef.current!);
           stopPropagation(e);
@@ -838,6 +966,33 @@ const InputBox: React.FC = () => {
       const kcode = e.keyCode;
       if (!kcode) return;
 
+      const currentText = inputRef.current?.innerText || "";
+      if (currentText.startsWith("=")) {
+        const caret = getCursorPosition(inputRef.current!);
+        const spanValues = Array.from(
+          inputRef.current?.querySelectorAll(
+            "span.fortune-formula-functionrange-cell"
+          ) ?? []
+        ).map((el) => el.textContent ?? "");
+        if (!formulaHistoryRef.current.active) {
+          // Seed from the pre-keypress state so undo can also remove the first "=".
+          const seedText = preText.current || "";
+          pushFormulaHistoryEntry({
+            text: seedText,
+            caret: Math.min(caret, seedText.length),
+            spanValues:
+              preFormulaSpanValuesRef.current ?? spanValues ?? ([] as string[]),
+          });
+        }
+        pushFormulaHistoryEntry({
+          text: currentText,
+          caret,
+          spanValues,
+        });
+      } else if (formulaHistoryRef.current.active) {
+        resetFormulaHistory();
+      }
+
       if (
         !(
           (
@@ -894,7 +1049,13 @@ const InputBox: React.FC = () => {
         });
       }
     },
-    [refs.cellInput, refs.fxInput, setContext]
+    [
+      refs.cellInput,
+      refs.fxInput,
+      setContext,
+      pushFormulaHistoryEntry,
+      resetFormulaHistory,
+    ]
   );
 
   const onPaste = useCallback(

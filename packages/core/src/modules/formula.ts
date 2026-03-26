@@ -2816,7 +2816,7 @@ export function getFormulaRangeIndexAtCaret(
 }
 
 function hasCommaOrAnotherRefAfterRangeCell(cell: HTMLElement): boolean {
-  let n: ChildNode | null = cell.nextSibling;
+  let n: Node | null = cell.nextSibling;
   while (n) {
     if (n.nodeType === Node.ELEMENT_NODE) {
       const e = n as HTMLElement;
@@ -2827,6 +2827,21 @@ function hasCommaOrAnotherRefAfterRangeCell(cell: HTMLElement): boolean {
     n = n.nextSibling;
   }
   return false;
+}
+
+export function markRangeSelectionDirty(ctx: Context) {
+  ctx.formulaCache.rangeSelectionActive = false;
+
+  // Clear formula-range UI/state immediately when the inserted range token
+  // was manually edited, so stale blue overlays don't linger.
+  ctx.formulaRangeHighlight = [];
+  ctx.formulaRangeSelect = undefined;
+  ctx.formulaCache.selectingRangeIndex = -1;
+  ctx.formulaCache.func_selectedrange = undefined;
+  ctx.formulaCache.rangestart = false;
+  ctx.formulaCache.rangedrag_column_start = false;
+  ctx.formulaCache.rangedrag_row_start = false;
+  ctx.formulaCache.rangechangeindex = undefined;
 }
 
 /**
@@ -2899,15 +2914,16 @@ export function handleFormulaInput(
 ) {
   if (!$editor) return;
   try {
+    const isBackspaceOrDelete = kcode === 8 || kcode === 46;
+    const isAlphaNumeric =
+      (kcode >= 48 && kcode <= 57) || // 0-9
+      (kcode >= 65 && kcode <= 90) || // A-Z
+      (kcode >= 97 && kcode <= 122); // a-z
+
     // If a keyboard/mouse-inserted range token is currently being edited
     // and the user types characters (or backspace/delete), mark it as
     // manually modified so we can block further range navigation.
     if (ctx.formulaCache.rangeSelectionActive === true) {
-      const isBackspaceOrDelete = kcode === 8 || kcode === 46;
-      const isAlphaNumeric =
-        (kcode >= 48 && kcode <= 57) || // 0-9
-        (kcode >= 65 && kcode <= 90) || // A-Z
-        (kcode >= 97 && kcode <= 122); // a-z
       if (isBackspaceOrDelete || isAlphaNumeric) {
         markRangeSelectionDirty(ctx);
       }
@@ -2996,19 +3012,6 @@ export function handleFormulaInput(
       } else {
         $copyTo.innerHTML = escapeHTMLTag(value);
       }
-    }
-
-    // If the user deleted the keyboard/mouse-inserted range token(s)
-    // entirely (so no `fortune-formula-functionrange-cell` spans remain),
-    // clear the dirtiness flag to allow range selection again.
-    // This covers cases like: `=A1` -> backspace until `=` or `=SUM(`.
-    const stillHasRangeToken =
-      $editor.querySelector("span.fortune-formula-functionrange-cell") != null;
-    if (
-      !stillHasRangeToken &&
-      ctx.formulaCache.rangeSelectionActive === false
-    ) {
-      ctx.formulaCache.rangeSelectionActive = null;
     }
   } catch (_error) {
     console.log(_error);
@@ -3363,6 +3366,19 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
       return true;
     }
 
+    const inputText = editor.innerText.trim();
+    // Do not allow starting formula reference mode from empty/plain text.
+    // After manual deletes, the editor may no longer contain a real formula.
+    if (!inputText.startsWith("=")) {
+      return false;
+    }
+
+    // Still typing a manual identifier/token right after "=" (e.g. "=A",
+    // "=SUM", "=foo"). This is not yet a valid reference-selection slot.
+    if (/^=\s*[A-Za-z_][A-Za-z0-9_]*$/.test(inputText)) {
+      return false;
+    }
+
     const caretRange = currSelection.getRangeAt(0).cloneRange();
     const preCaretRange = document.createRange();
     preCaretRange.selectNodeContents(editor);
@@ -3540,6 +3556,10 @@ export function isFormulaReferenceInputMode(ctx: Context): boolean {
     return true;
   }
 
+  if (!inputText.startsWith("=")) {
+    return false;
+  }
+
   // While user is still typing a function/identifier right after "="
   // (e.g. "=SUM" or "=kjnskfv"), do not treat it as range-reference mode.
   // Range-reference mode should start at insertion points such as "(" or ",".
@@ -3550,19 +3570,29 @@ export function isFormulaReferenceInputMode(ctx: Context): boolean {
   return israngeseleciton(ctx);
 }
 
-export function markRangeSelectionDirty(ctx: Context) {
-  ctx.formulaCache.rangeSelectionActive = false;
+export function maybeRecoverDirtyRangeSelection(ctx: Context): boolean {
+  if (ctx.formulaCache.rangeSelectionActive !== false) {
+    return false;
+  }
 
-  // Clear formula-range UI/state immediately when the inserted range token
-  // was manually edited, so stale blue overlays don't linger.
-  ctx.formulaRangeHighlight = [];
-  ctx.formulaRangeSelect = undefined;
-  ctx.formulaCache.selectingRangeIndex = -1;
-  ctx.formulaCache.func_selectedrange = undefined;
-  ctx.formulaCache.rangestart = false;
-  ctx.formulaCache.rangedrag_column_start = false;
-  ctx.formulaCache.rangedrag_row_start = false;
-  ctx.formulaCache.rangechangeindex = undefined;
+  const editor = document.getElementById(
+    "luckysheet-rich-text-editor"
+  ) as HTMLDivElement | null;
+  if (!editor) {
+    return false;
+  }
+
+  const inputText = (editor.innerText || "").trim();
+
+  // Recover when the caret is back in a fresh, syntactically valid insertion
+  // slot (e.g. `=`, between `=,`, after `,`, or after `(`), even if other
+  // clean range tokens still exist elsewhere in the formula.
+  if (inputText.startsWith("=") && israngeseleciton(ctx)) {
+    ctx.formulaCache.rangeSelectionActive = null;
+    return true;
+  }
+
+  return false;
 }
 
 export function functionStrChange(

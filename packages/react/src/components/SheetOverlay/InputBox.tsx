@@ -38,7 +38,7 @@ import React, {
   useLayoutEffect,
   useState,
 } from "react";
-import _, { set } from "lodash";
+import _ from "lodash";
 import { Tooltip } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import ContentEditable from "./ContentEditable";

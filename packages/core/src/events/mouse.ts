@@ -6,6 +6,7 @@ import {
   cancelPaintModel,
   functionHTMLGenerate,
   israngeseleciton,
+  maybeRecoverDirtyRangeSelection,
   rangeHightlightselected,
   rangeSetValue,
   onCommentBoxMove,
@@ -362,16 +363,15 @@ export function handleCellAreaMouseDown(
 
   // 公式相关
   if (ctx.luckysheetCellUpdate.length > 0) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(
-      `<div>${
-        document.getElementById("luckysheet-rich-text-editor")?.innerHTML
-      }</div>`,
-      "text/html"
-    );
-    const spans = doc.querySelectorAll("span");
-    const firstSpan = spans[0];
-    const lastSpan = spans[spans.length - 1];
+    // const parser = new DOMParser();
+    // const doc = parser.parseFromString(
+    //   `<div>${
+    //     document.getElementById("luckysheet-rich-text-editor")?.innerHTML
+    //   }</div>`,
+    //   "text/html"
+    // );
+    // const spans = doc.querySelectorAll("span");
+    // const firstSpan = spans[0];
 
     if (
       ctx.formulaCache.rangestart ||
@@ -2183,7 +2183,7 @@ export function mouseRender(
   } else if (ctx.formulaCache.rangestart) {
     if (
       ctx.formulaCache.rangeSelectionActive === false &&
-      !israngeseleciton(ctx)
+      !maybeRecoverDirtyRangeSelection(ctx)
     ) {
       // Close the formula input like `Enter` would when the last
       // programmatically inserted range token was manually modified.
@@ -2209,7 +2209,7 @@ export function mouseRender(
   } else if (ctx.formulaCache.rangedrag_row_start) {
     if (
       ctx.formulaCache.rangeSelectionActive === false &&
-      !israngeseleciton(ctx)
+      !maybeRecoverDirtyRangeSelection(ctx)
     ) {
       if (ctx.luckysheetCellUpdate.length > 0) {
         updateCell(
@@ -2233,7 +2233,7 @@ export function mouseRender(
   } else if (ctx.formulaCache.rangedrag_column_start) {
     if (
       ctx.formulaCache.rangeSelectionActive === false &&
-      !israngeseleciton(ctx)
+      !maybeRecoverDirtyRangeSelection(ctx)
     ) {
       if (ctx.luckysheetCellUpdate.length > 0) {
         updateCell(

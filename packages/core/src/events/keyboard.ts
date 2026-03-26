@@ -5,6 +5,7 @@ import { updateCell, cancelNormalSelected } from "../modules/cell";
 import {
   handleFormulaInput,
   israngeseleciton,
+  maybeRecoverDirtyRangeSelection,
   markRangeSelectionDirty,
 } from "../modules/formula";
 import {
@@ -172,7 +173,7 @@ function handleControlPlusArrowKey(
   // Keep Cmd/Ctrl+Arrow navigation consistent with Arrow/Shift+Arrow guards.
   if (
     ctx.formulaCache.rangeSelectionActive === false &&
-    !israngeseleciton(ctx)
+    !maybeRecoverDirtyRangeSelection(ctx)
   ) {
     return;
   }
@@ -571,7 +572,7 @@ function handleShiftWithArrowKey(ctx: Context, e: KeyboardEvent) {
   // block further range navigation.
   if (
     ctx.formulaCache.rangeSelectionActive === false &&
-    !israngeseleciton(ctx)
+    !maybeRecoverDirtyRangeSelection(ctx)
   ) {
     return;
   }
@@ -631,7 +632,7 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
   // was manually modified.
   if (
     ctx.formulaCache.rangeSelectionActive === false &&
-    !israngeseleciton(ctx)
+    !maybeRecoverDirtyRangeSelection(ctx)
   ) {
     return;
   }
@@ -651,28 +652,8 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
     // $("#luckysheet-singleRange-dialog").is(":visible") ||
     // $("#luckysheet-multiRange-dialog").is(":visible")
   ) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(
-      `<div>${
-        document.getElementById("luckysheet-rich-text-editor")?.innerHTML
-      }</div>`,
-      "text/html"
-    );
-    const spans = doc.querySelectorAll("span");
-    const lastSpan = spans[spans.length - 1];
-    const notFunctionInit = !document
-      .getElementById("luckysheet-rich-text-editor")
-      ?.innerText.includes("(");
-
-    // handling for inputbox active arrow navigation for cell reference input for functions like SUM(A1:A10)
-    if (
-      false
-      // lastSpan?.innerText.includes(")") ||
-      // lastSpan?.innerText.includes('"') ||
-      // notFunctionInit
-    ) {
-      return;
-    }
+    // Legacy guard intentionally disabled; formula-mode gating now happens via
+    // `isLegacyFormulaRangeMode` / `israngeseleciton`.
   }
 
   const moveCount = hideCRCount(ctx, e.key);

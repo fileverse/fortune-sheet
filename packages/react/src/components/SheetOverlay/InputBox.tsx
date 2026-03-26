@@ -736,7 +736,8 @@ const InputBox: React.FC = () => {
       if ((e.metaKey || e.ctrlKey) && context.luckysheetCellUpdate.length > 0) {
         if (e.code === "KeyZ" || e.code === "KeyY") {
           const shouldUseFormulaHistory =
-            currentInputText.startsWith("=") || formulaHistoryRef.current.active;
+            currentInputText.startsWith("=") ||
+            formulaHistoryRef.current.active;
           if (shouldUseFormulaHistory) {
             const handledByFormulaHistory = handleFormulaHistoryUndoRedo(
               e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey)

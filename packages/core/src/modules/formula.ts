@@ -3341,7 +3341,10 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
   const anchorElement = anchor as HTMLElement;
   const parentElement = anchor.parentNode as HTMLElement;
 
-  const getCurrentSlotTextBeforeCaret = (editor: HTMLElement, caretOffset: number) => {
+  const getCurrentSlotTextBeforeCaret = (
+    editor: HTMLElement,
+    caretOffset: number
+  ) => {
     const textBefore = editor.innerText.slice(0, caretOffset);
     const parts = textBefore.split(/[=,(+\-*/&<>]/);
     return _.trim(parts[parts.length - 1] || "");
@@ -3390,7 +3393,10 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
     preCaretRange.selectNodeContents(editor);
     preCaretRange.setEnd(caretRange.endContainer, caretRange.endOffset);
     const caretOffset = preCaretRange.toString().length;
-    const slotTextBeforeCaret = getCurrentSlotTextBeforeCaret(editor, caretOffset);
+    const slotTextBeforeCaret = getCurrentSlotTextBeforeCaret(
+      editor,
+      caretOffset
+    );
 
     // If the current argument slot already contains a partial manual ref/range
     // token like `A`, `A1:`, or `A1:A`, do not allow starting a new selection.

@@ -569,7 +569,6 @@ function activeFormulaInput(
   ctx.formulaCache.rangedrag_row_start = false;
   ctx.formulaCache.rangechangeindex = 0;
   // eslint-disable-next-line no-console
-  console.log("[FS-RANGE] caller toolbar.ts activeFormulaInput → rangeSetValue");
   rangeSetValue(ctx, cellInput, { row: rowh, column: columnh }, fxInput);
   ctx.formulaCache.func_selectedrange = {
     left: col_pre,

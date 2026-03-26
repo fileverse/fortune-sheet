@@ -581,7 +581,6 @@ export function handleCellAreaMouseDown(
       ctx.formulaCache.rangedrag_row_start = false;
 
       // eslint-disable-next-line no-console
-      console.log("[FS-RANGE] caller mouse.ts ~579 (formula mousedown path)");
       rangeSetValue(
         ctx,
         cellInput,
@@ -591,6 +590,8 @@ export function handleCellAreaMouseDown(
         },
         fxInput
       );
+
+      rangeHightlightselected(ctx, cellInput);
 
       ctx.formulaCache.selectingRangeIndex = ctx.formulaCache.rangechangeindex!;
       if (
@@ -4723,7 +4724,6 @@ export function handleRowHeaderMouseDown(
         israngeseleciton(ctx)
       ) {
         // eslint-disable-next-line no-console
-        console.log("[FS-RANGE] caller mouse.ts ~4723 (range drag row)");
         rangeSetValue(
           ctx,
           cellInput,
@@ -4733,6 +4733,7 @@ export function handleRowHeaderMouseDown(
           },
           fxInput
         );
+        rangeHightlightselected(ctx, cellInput);
       }
       // else if (
       //   $("#luckysheet-ifFormulaGenerator-multiRange-dialog").is(":visible")
@@ -5167,7 +5168,6 @@ export function handleColumnHeaderMouseDown(
         israngeseleciton(ctx)
       ) {
         // eslint-disable-next-line no-console
-        console.log("[FS-RANGE] caller mouse.ts ~5165 (range drag column)");
         rangeSetValue(
           ctx,
           cellInput,
@@ -5177,6 +5177,7 @@ export function handleColumnHeaderMouseDown(
           },
           fxInput
         );
+        rangeHightlightselected(ctx, cellInput);
       }
       // else if (
       //   $("#luckysheet-ifFormulaGenerator-multiRange-dialog").is(":visible")

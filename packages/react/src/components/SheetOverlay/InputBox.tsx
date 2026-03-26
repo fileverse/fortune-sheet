@@ -23,10 +23,11 @@ import {
   handleStrikeThrough,
   getRangeRectsByCharacterOffset,
   rangeSetValue,
-  getLastFormulaRangeIndex,
+  getFormulaRangeIndexForKeyboardSync,
   createFormulaRangeSelect,
   seletedHighlistByindex,
   isFormulaReferenceInputMode,
+  rangeHightlightselected,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -444,7 +445,8 @@ const InputBox: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!context.luckysheet_select_save?.[0] || !refs.cellInput.current) return;
+    const cellInputEl = refs.cellInput.current;
+    if (!context.luckysheet_select_save?.[0] || !cellInputEl) return;
     setContext((ctx) => {
       const currentSelection =
         ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
@@ -458,13 +460,13 @@ const InputBox: React.FC = () => {
           ctx.formulaCache.rangedrag_column_start ||
           ctx.formulaCache.rangedrag_row_start);
       if (isMouseFormulaRangeDrag) {
-        // eslint-disable-next-line no-console
-        console.log("[FS-RANGE] InputBox: skip (mouse formula drag active)");
         return;
       }
 
-      const isInsertionPoint = israngeseleciton(ctx);
-      const lastRangeIndex = getLastFormulaRangeIndex(refs.cellInput.current);
+      // Sets formulaCache.rangeSetValueTo for APPEND insertion point.
+      israngeseleciton(ctx);
+      const keyboardSyncRangeIndex =
+        getFormulaRangeIndexForKeyboardSync(cellInputEl);
 
       if (skipNextAnchorSelectionSyncRef.current && formulaAnchorCellRef.current) {
         const [anchorRow, anchorCol] = formulaAnchorCellRef.current;
@@ -482,32 +484,25 @@ const InputBox: React.FC = () => {
       // Selection changes should update references only in formula mode.
       if (!isFormulaMode) return;
 
-      // Keyboard range navigation should replace the active range token unless
-      // the caret is at an insertion point like "(" or ",".
-      if (!isInsertionPoint && refs.cellInput.current) {
-        if (lastRangeIndex !== null) {
-          ctx.formulaCache.rangechangeindex = lastRangeIndex;
-          ctx.formulaCache.rangestart = true;
-          ctx.formulaCache.rangedrag_column_start = false;
-          ctx.formulaCache.rangedrag_row_start = false;
-        }
+      // Point rangechangeindex at the ref under/near the caret — not always the
+      // last span (e.g. `=,A4` with caret between `=` and `,` must not replace A4).
+      if (keyboardSyncRangeIndex !== null) {
+        ctx.formulaCache.rangechangeindex = keyboardSyncRangeIndex;
+        ctx.formulaCache.rangestart = true;
+        ctx.formulaCache.rangedrag_column_start = false;
+        ctx.formulaCache.rangedrag_row_start = false;
+      } else {
+        ctx.formulaCache.rangechangeindex = undefined;
+        ctx.formulaCache.rangestart = false;
       }
 
       // Mark that range/reference content was inserted by keyboard range selection.
       ctx.formulaCache.rangeSelectionActive = true;
 
-      // eslint-disable-next-line no-console
-      console.log("[FS-RANGE] caller InputBox.tsx useEffect(luckysheet_select_save)", {
-        isInsertionPoint,
-        lastRangeIndex,
-        row: currentSelection.row,
-        col: currentSelection.column,
-        rangechangeindexBefore: ctx.formulaCache.rangechangeindex,
-      });
 
       rangeSetValue?.(
         ctx,
-        refs.cellInput.current!,
+        cellInputEl,
         {
           row: currentSelection.row,
           column: currentSelection.column,
@@ -515,13 +510,15 @@ const InputBox: React.FC = () => {
         refs.fxInput.current!
       );
 
+      rangeHightlightselected(ctx, cellInputEl);
+
       // Mirror mouse behavior: show blue dotted formula-range selection
       // for keyboard-driven reference selection as well.
       if (!_.isNil(ctx.formulaCache.rangechangeindex)) {
         ctx.formulaCache.selectingRangeIndex = ctx.formulaCache.rangechangeindex;
         createRangeHightlight(
           ctx,
-          refs.cellInput.current!.innerHTML,
+          cellInputEl.innerHTML,
           ctx.formulaCache.rangechangeindex
         );
 
@@ -877,7 +874,20 @@ const InputBox: React.FC = () => {
       // setInputHTML(html);
       // console.log("onChange", __);
       const e = lastKeyDownEventRef.current;
-      if (!e) return;
+      if (!e) {
+        const cellEl = refs.cellInput.current;
+        if (
+          cellEl &&
+          (cellEl.innerText?.trim().startsWith("=") ||
+            cellEl.textContent?.trim().startsWith("="))
+        ) {
+          setContext((draftCtx) => {
+            if (!isAllowEdit(draftCtx, draftCtx.luckysheet_select_save)) return;
+            rangeHightlightselected(draftCtx, cellEl);
+          });
+        }
+        return;
+      }
       const kcode = e.keyCode;
       if (!kcode) return;
 

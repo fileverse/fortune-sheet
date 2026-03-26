@@ -692,6 +692,9 @@ export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
     default:
       break;
   }
+
+  // Keep the formula caret anchored while arrow keys drive sheet selection.
+  e.preventDefault();
 }
 
 export async function handleGlobalKeyDown(

@@ -2155,11 +2155,6 @@ export function createRangeHightlight(
 }
 
 export function moveCursorToEnd(editableDiv: HTMLDivElement) {
-  console.log("[FS-RANGE] moveCursorToEnd", {
-    tag: editableDiv?.nodeName,
-    id: (editableDiv as HTMLElement)?.id,
-    hasEl: !!editableDiv,
-  });
   editableDiv?.focus(); // Ensure the element is focused
 
   const range = document.createRange();
@@ -2182,14 +2177,6 @@ export function setCaretPosition(
   pos: number,
   parentTextDom?: HTMLElement
 ) {
-  console.log("[FS-RANGE] setCaretPosition:try", {
-    tag: textDom?.nodeName,
-    className: textDom?.className,
-    children,
-    pos,
-    childCount: textDom?.childNodes?.length,
-    hasParentArg: !!parentTextDom,
-  });
   try {
     const el = textDom;
     const range = document.createRange();
@@ -2202,9 +2189,6 @@ export function setCaretPosition(
     );
     if (innerSpan && mainSpan) {
       textContent += innerSpan.textContent;
-      console.log("[FS-RANGE] setCaretPosition:rewrite el.innerHTML from mainSpan", {
-        textContentLen: textContent.length,
-      });
       el.innerHTML = textContent;
     }
 
@@ -2213,8 +2197,7 @@ export function setCaretPosition(
     sel?.removeAllRanges();
     sel?.addRange(range);
     el.focus();
-  } catch (err) {
-    console.error("[FS-RANGE] setCaretPosition:catch → moveCursorToEnd", err);
+  } catch {
     moveCursorToEnd(parentTextDom as HTMLDivElement);
   }
 }
@@ -2428,21 +2411,22 @@ function helpFunctionExe(
   }
 
   const $prev = currSelection;
-  const $span = $editer.querySelectorAll("span");
-  const currentIndex = _.indexOf(
-    currSelection.parentNode?.childNodes,
-    currSelection
-  );
+  const $span = Array.from($editer.querySelectorAll("span"));
+  const selectionSpan =
+    currSelection.nodeType === Node.ELEMENT_NODE
+      ? (currSelection as Element).closest("span")
+      : currSelection.parentElement?.closest("span");
+  const currentIndex = selectionSpan ? $span.indexOf(selectionSpan) : -1;
   let i = currentIndex;
 
-  if ($prev == null) {
+  if ($prev == null || currentIndex < 0 || !$span[currentIndex]) {
     return null;
   }
 
   let funcName = null;
   let paramindex = null;
 
-  if ($span[i].classList.contains("luckysheet-formula-text-func")) {
+  if ($span[i]?.classList?.contains("luckysheet-formula-text-func")) {
     funcName = $span[i].textContent;
   } else {
     let $cur = null;
@@ -2453,7 +2437,7 @@ function helpFunctionExe(
       $cur = $span[i];
 
       if (
-        $cur.classList.contains("luckysheet-formula-text-func") ||
+        $cur?.classList?.contains("luckysheet-formula-text-func") ||
         _.trim($cur.textContent || "").toUpperCase() in
           ctx.formulaCache.functionlistMap
       ) {
@@ -2471,14 +2455,14 @@ function helpFunctionExe(
           }
 
           $cur = $span[a];
-          if ($cur.classList.contains("luckysheet-formula-text-rpar")) {
+          if ($cur?.classList?.contains("luckysheet-formula-text-rpar")) {
             exceptIndex = [i, a];
             funcName = null;
             endstate = false;
             break;
           }
 
-          if ($cur.classList.contains("luckysheet-formula-text-comma")) {
+          if ($cur?.classList?.contains("luckysheet-formula-text-comma")) {
             paramindex += 1;
           }
         }
@@ -2524,6 +2508,7 @@ export function rangeHightlightselected(ctx: Context, $editor: HTMLDivElement) {
     const funcName = helpFunctionExe($editor, currSelection, ctx);
     ctx.functionHint = funcName?.toUpperCase();
     ctx.functionCandidates = [];
+    ctx.defaultCandidates = [];
   }
   // return;
   // }
@@ -2807,6 +2792,100 @@ export function getLastFormulaRangeIndex(
 
   const rangeIndex = parseInt(indexStr, 10);
   return Number.isNaN(rangeIndex) ? null : rangeIndex;
+}
+
+/** Range cell that contains the caret, if any (inside #luckysheet-rich-text-editor tree). */
+export function getFormulaRangeIndexAtCaret(
+  $editor: HTMLDivElement
+): number | null {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return null;
+  const { anchorNode } = sel;
+  if (!anchorNode) return null;
+  const el =
+    anchorNode.nodeType === Node.ELEMENT_NODE
+      ? (anchorNode as Element)
+      : anchorNode.parentElement;
+  if (!el) return null;
+  const cell = el.closest(".fortune-formula-functionrange-cell");
+  if (!cell || !$editor.contains(cell)) return null;
+  const ri = cell.getAttribute("rangeindex");
+  if (!ri) return null;
+  const n = parseInt(ri, 10);
+  return Number.isNaN(n) ? null : n;
+}
+
+function hasCommaOrAnotherRefAfterRangeCell(cell: HTMLElement): boolean {
+  let n: ChildNode | null = cell.nextSibling;
+  while (n) {
+    if (n.nodeType === Node.ELEMENT_NODE) {
+      const e = n as HTMLElement;
+      if (e.classList?.contains("luckysheet-formula-text-comma")) return true;
+      if (e.classList?.contains("fortune-formula-functionrange-cell")) return true;
+    }
+    n = n.nextSibling;
+  }
+  return false;
+}
+
+/**
+ * Which `rangeindex` keyboard selection sync should update: caret's cell if any;
+ * else the last range cell when the caret is editing that ref — not when the caret
+ * is before it (`=,A4` between `=` and `,`) or **past** it into a following comma /
+ * next argument (`=SUM(A1,` after the comma must not replace `A1`).
+ */
+export function getFormulaRangeIndexForKeyboardSync(
+  $editor: HTMLDivElement
+): number | null {
+  const atCaret = getFormulaRangeIndexAtCaret($editor);
+  if (atCaret !== null) return atCaret;
+
+  const lastIdx = getLastFormulaRangeIndex($editor);
+  if (lastIdx === null) return null;
+
+  const cell = $editor.querySelector(
+    `span.fortune-formula-functionrange-cell[rangeindex="${lastIdx}"]`
+  ) as HTMLElement | null;
+  if (!cell) return null;
+
+  const sel = window.getSelection();
+  if (!sel?.anchorNode) return lastIdx;
+
+  const caretRange = document.createRange();
+  try {
+    caretRange.setStart(sel.anchorNode, sel.anchorOffset);
+    caretRange.collapse(true);
+  } catch {
+    return lastIdx;
+  }
+
+  const cellRange = document.createRange();
+  try {
+    cellRange.selectNodeContents(cell);
+  } catch {
+    return lastIdx;
+  }
+
+  if (caretRange.compareBoundaryPoints(Range.START_TO_START, cellRange) < 0) {
+    return null;
+  }
+
+  const afterCell = document.createRange();
+  try {
+    afterCell.setStartAfter(cell);
+    afterCell.collapse(true);
+  } catch {
+    return lastIdx;
+  }
+
+  if (caretRange.compareBoundaryPoints(Range.START_TO_START, afterCell) >= 0) {
+    if (hasCommaOrAnotherRefAfterRangeCell(cell)) {
+      return null;
+    }
+    return lastIdx;
+  }
+
+  return lastIdx;
 }
 
 export function handleFormulaInput(
@@ -3154,6 +3233,85 @@ function functionStrChange_range(
   return "";
 }
 
+/**
+ * Sets `formulaCache.rangeSetValueTo` to the DOM node after which `rangeSetValue`
+ * should insert the next ref (`insertBefore(newEle, ref.nextSibling)`).
+ * Used when delimiter heuristics fail but keyboard range flow is active.
+ */
+function setRangeSetValueToFromCaretPosition(
+  ctx: Context,
+  editor: HTMLElement,
+  sel: globalThis.Selection
+): boolean {
+  if (sel.rangeCount === 0 || !sel.anchorNode) return false;
+  if (!editor.contains(sel.anchorNode)) return false;
+
+  const range = sel.getRangeAt(0).cloneRange();
+  range.collapse(true);
+  const { startContainer, startOffset } = range;
+
+  if (startContainer.nodeType === Node.TEXT_NODE) {
+    if (startOffset === 0) {
+      const textParent = (startContainer as Text).parentElement;
+      // Caret in an empty text node between span siblings (e.g. between `=` and `,`).
+      if (textParent === editor) {
+        const prev = startContainer.previousSibling;
+        if (prev) {
+          ctx.formulaCache.rangeSetValueTo = prev;
+          return true;
+        }
+        return false;
+      }
+      let el: HTMLElement | null = textParent;
+      while (el && el !== editor) {
+        if (el.previousSibling) {
+          ctx.formulaCache.rangeSetValueTo = el.previousSibling;
+          return true;
+        }
+        el = el.parentElement;
+      }
+      return false;
+    }
+    const p = (startContainer as Text).parentElement;
+    if (p && editor.contains(p)) {
+      ctx.formulaCache.rangeSetValueTo = p;
+      return true;
+    }
+    return false;
+  }
+
+  if (startContainer.nodeType === Node.ELEMENT_NODE && startContainer === editor) {
+    if (startOffset > 0) {
+      const prev = startContainer.childNodes[startOffset - 1];
+      if (prev) {
+        ctx.formulaCache.rangeSetValueTo = prev;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  if (startContainer.nodeType === Node.ELEMENT_NODE) {
+    if (startOffset > 0) {
+      const prev = startContainer.childNodes[startOffset - 1];
+      if (prev) {
+        ctx.formulaCache.rangeSetValueTo = prev;
+        return true;
+      }
+    }
+    let el: HTMLElement | null = startContainer as HTMLElement;
+    while (el && el !== editor) {
+      if (el.previousSibling) {
+        ctx.formulaCache.rangeSetValueTo = el.previousSibling;
+        return true;
+      }
+      el = el.parentElement;
+    }
+  }
+
+  return false;
+}
+
 export function israngeseleciton(ctx: Context, istooltip?: boolean) {
   if (istooltip == null) {
     istooltip = false;
@@ -3161,16 +3319,14 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
 
   const currSelection = window.getSelection();
   if (currSelection == null) {
-    console.log("[FS-RANGE] israngeseleciton → false (no window selection)");
     return false;
   }
   let anchor = currSelection.anchorNode;
-  if (!anchor?.textContent) {
-    console.log("[FS-RANGE] israngeseleciton → false (anchor no textContent)", {
-      anchorNode: anchor?.nodeName,
-    });
+  if (!anchor) {
     return false;
   }
+  // Do not require non-empty text: caret may sit in an empty text node between
+  // `(` and `,` (first empty argument).
   const { anchorOffset } = currSelection;
   const anchorElement = anchor as HTMLElement;
   const parentElement = anchor.parentNode as HTMLElement;
@@ -3183,7 +3339,6 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
       ctx.formulaCache.rangedrag_row_start ||
       ctx.formulaCache.rangeSelectionActive === true
     ) {
-      console.log("[FS-RANGE] allowRangeInsertionAtCaret → true (drag/range flags)");
       return true;
     }
 
@@ -3196,10 +3351,6 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
       ) as HTMLElement | null) ||
       (document.getElementById("luckysheet-rich-text-editor") as HTMLElement | null);
     if (!editor || currSelection.rangeCount === 0) {
-      console.log("[FS-RANGE] allowRangeInsertionAtCaret → true (no editor or rangeCount)", {
-        hasEditor: !!editor,
-        rangeCount: currSelection.rangeCount,
-      });
       return true;
     }
 
@@ -3213,46 +3364,33 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
 
     // No content to the right in current argument slot -> can insert range.
     if (remaining.length === 0) {
-      console.log("[FS-RANGE] allowRangeInsertionAtCaret → true (slot empty to right)", {
-        caretOffset,
-      });
       return true;
     }
 
     const first = remaining[0];
     // Next token starts with a delimiter/operator => still an empty slot.
     if (first === "," || first === ")" || first === "&" || first in operatorjson) {
-      console.log("[FS-RANGE] allowRangeInsertionAtCaret → true (delimiter next)", {
-        first,
-        caretOffset,
-        remainingPreview: remaining.slice(0, 20),
-      });
       return true;
     }
 
     // There is already manual content in this slot (e.g. "=A1" with caret
     // moved back after "="). Do not allow starting a new range selection.
-    console.log("[FS-RANGE] allowRangeInsertionAtCaret → false (manual token in slot)", {
-      first,
-      remainingPreview: remaining.slice(0, 20),
-    });
     return false;
   };
   if (
     anchor?.parentNode?.nodeName.toLowerCase() === "span" &&
     anchorOffset !== 0
   ) {
-    let txt = _.trim(anchor.textContent);
+    let txt = _.trim(anchor.textContent ?? "");
     let lasttxt = "";
 
     if (txt.length === 0 && anchor.parentNode.previousSibling) {
       const ahr = anchor.parentNode.previousSibling;
       txt = _.trim(ahr.textContent || "");
-      lasttxt = txt.substring(txt.length - 1, 1);
-      ctx.formulaCache.rangeSetValueTo = anchor.parentNode;
+      lasttxt = txt.slice(-1);
     } else {
-      lasttxt = txt.substring(anchorOffset - 1, 1);
-      ctx.formulaCache.rangeSetValueTo = anchor.parentNode;
+      lasttxt =
+        anchorOffset > 0 ? txt.charAt(anchorOffset - 1) : "";
     }
 
     if (
@@ -3264,33 +3402,35 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
           lasttxt in operatorjson ||
           lasttxt === "&"))
     ) {
-      const r = allowRangeInsertionAtCaret();
-      console.log("[FS-RANGE] israngeseleciton branch span parent, offset≠0", {
-        result: r,
-        lasttxt,
-        anchorOffset,
-      });
-      return r;
+      ctx.formulaCache.rangeSetValueTo = anchor.parentNode;
+      return allowRangeInsertionAtCaret();
     }
   } else if (
     anchorElement.id === "luckysheet-rich-text-editor" ||
     anchorElement.id === "luckysheet-functionbox-cell"
   ) {
-    let txt = _.trim(_.last(anchorElement.querySelectorAll("span"))?.innerText);
-
-    ctx.formulaCache.rangeSetValueTo = _.last(
-      anchorElement.querySelectorAll("span")
-    );
-
-    if (txt.length === 0 && anchorElement.querySelectorAll("span").length > 1) {
-      const ahr = anchorElement.querySelectorAll("span");
-      txt = _.trim(ahr[ahr.length - 2].innerText);
-
-      txt = _.trim(ahr[ahr.length - 2].innerText);
-      ctx.formulaCache.rangeSetValueTo = ahr;
+    const editorEl = anchorElement as HTMLElement;
+    // Caret on the editor element (between span children): resolve from offset first.
+    // Do not assign rangeSetValueTo from _.last(span) unless legacy heuristic matches,
+    // or a stale A3-style ref causes `=,C4A3` inserts after the comma.
+    if (
+      currSelection.rangeCount > 0 &&
+      setRangeSetValueToFromCaretPosition(ctx, editorEl, currSelection) &&
+      allowRangeInsertionAtCaret()
+    ) {
+      return true;
     }
 
-    const lasttxt = txt.substring(txt.length - 1, 1);
+    const spans = editorEl.querySelectorAll("span");
+    let txt = _.trim(_.last(spans)?.innerText);
+    let refSpan: Element | undefined = _.last(spans);
+
+    if (txt.length === 0 && spans.length > 1) {
+      txt = _.trim(spans[spans.length - 2].innerText);
+      refSpan = spans[spans.length - 2];
+    }
+
+    const lasttxt = txt.slice(-1);
 
     if (
       (istooltip && (lasttxt === "(" || lasttxt === ",")) ||
@@ -3301,13 +3441,8 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
           lasttxt in operatorjson ||
           lasttxt === "&"))
     ) {
-      const r = allowRangeInsertionAtCaret();
-      console.log("[FS-RANGE] israngeseleciton branch anchor=editor div", {
-        result: r,
-        lasttxt,
-        rangeSetValueToIsLastSpan: true,
-      });
-      return r;
+      ctx.formulaCache.rangeSetValueTo = refSpan;
+      return allowRangeInsertionAtCaret();
     }
   } else if (
     parentElement.id === "luckysheet-rich-text-editor" ||
@@ -3318,18 +3453,14 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
       anchor = anchor.parentNode;
     }
     if (!anchor) {
-      console.log("[FS-RANGE] israngeseleciton → false (anchor null after offset 0)");
       return false;
     }
     if (anchor.previousSibling?.textContent == null) {
-      console.log("[FS-RANGE] israngeseleciton → false (no prev sibling text)");
       return false;
     }
     if (anchor.previousSibling) {
       const txt = _.trim(anchor.previousSibling.textContent);
-      const lasttxt = txt.substring(txt.length - 1, 1);
-
-      ctx.formulaCache.rangeSetValueTo = anchor.previousSibling;
+      const lasttxt = txt.slice(-1);
 
       if (
         (istooltip && (lasttxt === "(" || lasttxt === ",")) ||
@@ -3340,17 +3471,36 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
             lasttxt in operatorjson ||
             lasttxt === "&"))
       ) {
-        const r = allowRangeInsertionAtCaret();
-        console.log("[FS-RANGE] israngeseleciton branch prevSibling", {
-          result: r,
-          lasttxt,
-        });
-        return r;
+        ctx.formulaCache.rangeSetValueTo = anchor.previousSibling;
+        return allowRangeInsertionAtCaret();
       }
     }
   }
 
-  console.log("[FS-RANGE] israngeseleciton → false (no branch matched)");
+  if (
+    !istooltip &&
+    (ctx.formulaCache.rangestart ||
+      ctx.formulaCache.rangedrag_column_start ||
+      ctx.formulaCache.rangedrag_row_start ||
+      ctx.formulaCache.rangeSelectionActive === true)
+  ) {
+    const editor =
+      (document.getElementById(
+        "luckysheet-rich-text-editor"
+      ) as HTMLElement | null) ||
+      (document.getElementById(
+        "luckysheet-functionbox-cell"
+      ) as HTMLElement | null);
+    if (
+      editor &&
+      currSelection.rangeCount > 0 &&
+      setRangeSetValueToFromCaretPosition(ctx, editor, currSelection) &&
+      allowRangeInsertionAtCaret()
+    ) {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -3564,18 +3714,6 @@ export function rangeSetValue(
   selected: any,
   fxInput?: HTMLDivElement | null
 ) {
-  const _stack = new Error().stack?.split("\n").slice(1, 12).join("\n");
-  console.log("[FS-RANGE] rangeSetValue:enter", {
-    stack: _stack,
-    activeElementId: document.activeElement?.id,
-    rangestart: ctx.formulaCache.rangestart,
-    rangedrag_col: ctx.formulaCache.rangedrag_column_start,
-    rangedrag_row: ctx.formulaCache.rangedrag_row_start,
-    rangechangeindex: ctx.formulaCache.rangechangeindex,
-    selectedRow: selected?.row,
-    selectedCol: selected?.column,
-  });
-
   const parser = new DOMParser();
   const doc = parser.parseFromString(
     `<div>${cellInput.innerHTML}</div>`,
@@ -3594,13 +3732,16 @@ export function rangeSetValue(
     isLetterNumberPattern(lastSpan?.innerText) &&
     !isManagedRangeSpan
   ) {
-    console.log("[FS-RANGE] rangeSetValue:removeLastSpan (plain letter+number tail)", {
-      lastSpanText: lastSpan?.innerText,
-    });
     const htmlR = removeLastSpan(cellInput.innerHTML);
     cellInput!.innerHTML = `${htmlR}`;
     cellInput.focus();
-    israngeseleciton(ctx);
+    // Replacing innerHTML drops all nodes and usually breaks getSelection().
+    // israngeseleciton() here often pointed rangeSetValueTo one slot too far
+    // (e.g. after `,`). Multi-cell text like A1:A4 never matches
+    // isLetterNumberPattern, so only plain single-cell tails hit this path.
+    const kids = cellInput.childNodes;
+    ctx.formulaCache.rangeSetValueTo =
+      kids.length > 0 ? kids[kids.length - 1] : undefined;
   }
 
   let $editor = cellInput;
@@ -3635,21 +3776,13 @@ export function rangeSetValue(
   const activeRangeFlow =
     ctx.formulaCache.rangestart ||
     ctx.formulaCache.rangedrag_column_start ||
-    ctx.formulaCache.rangedrag_row_start;
+    ctx.formulaCache.rangedrag_row_start ||
+    ctx.formulaCache.rangeSelectionActive === true;
   const spanToReplace = !_.isNil(ctx.formulaCache.rangechangeindex)
     ? ($editor.querySelector(
         `span[rangeindex='${ctx.formulaCache.rangechangeindex}']`
       ) as HTMLSpanElement | null)
     : null;
-
-  console.log("[FS-RANGE] rangeSetValue:branch-pick", {
-    activeRangeFlow,
-    hasSpanToReplace: !!spanToReplace,
-    rangeText: range,
-    rangeSetValueToTag: (ctx.formulaCache.rangeSetValueTo as HTMLElement)
-      ?.nodeName,
-    editorPreview: ($editor.innerText || "").slice(0, 80),
-  });
 
   if (activeRangeFlow && spanToReplace) {
     //   if (
@@ -3758,22 +3891,10 @@ export function rangeSetValue(
     // const $span = $editor
     //   .find(`span[rangeindex='${formulaCache.rangechangeindex}']`)
     //   .html(range);
-    console.log("[FS-RANGE] rangeSetValue:REPLACE span", {
-      rangeindex: ctx.formulaCache.rangechangeindex,
-      range,
-    });
     spanToReplace.innerHTML = range;
     setCaretPosition(ctx, spanToReplace, 0, range.length);
     //   }
   } else {
-    console.log("[FS-RANGE] rangeSetValue:APPEND new token", {
-      reason:
-        !activeRangeFlow
-          ? "no activeRangeFlow"
-          : !spanToReplace
-            ? "no spanToReplace"
-            : "unknown",
-    });
     const function_str = `<span class="fortune-formula-functionrange-cell" rangeindex="${functionHTMLIndex}" dir="auto" style="color:${colors[functionHTMLIndex]};">${range}</span>`;
     const newEle = parseElement(function_str);
     let refEle = ctx.formulaCache.rangeSetValueTo;
@@ -3792,22 +3913,13 @@ export function rangeSetValue(
           "luckysheet-formula-text-color"
         )
       ) {
-        console.log("[FS-RANGE] rangeSetValue:DOM leftPar parent appendChild");
         document
           .getElementsByClassName("luckysheet-formula-text-lpar")?.[0]
           .parentNode?.appendChild(newEle);
       } else {
-        console.log(
-          "[FS-RANGE] rangeSetValue:DOM insertBefore(refEle.nextSibling)",
-          { refClass: (refEle as HTMLElement)?.className }
-        );
         refEle.parentNode.insertBefore(newEle, refEle.nextSibling);
       }
     } else {
-      console.log("[FS-RANGE] rangeSetValue:DOM $editor.appendChild END", {
-        hasRefEle: !!refEle,
-        hasRefParent: !!(refEle && refEle.parentNode),
-      });
       $editor.appendChild(newEle);
     }
     ctx.formulaCache.rangechangeindex = functionHTMLIndex;
@@ -3820,10 +3932,6 @@ export function rangeSetValue(
   }
 
   if ($copyTo) $copyTo.innerHTML = $editor.innerHTML;
-  console.log("[FS-RANGE] rangeSetValue:exit", {
-    rangechangeindexAfter: ctx.formulaCache.rangechangeindex,
-    editorPreview: ($editor.innerText || "").slice(0, 100),
-  });
 }
 
 export function onFormulaRangeDragEnd(ctx: Context) {
@@ -4000,7 +4108,6 @@ export function rangeDrag(
   //   );
   //   $("#luckysheet-ifFormulaGenerator-multiRange-dialog input").val(range);
   // } else {
-  console.log("[FS-RANGE] caller formula.rangeDrag → rangeSetValue");
   rangeSetValue(
     ctx,
     cellInput,
@@ -4129,7 +4236,6 @@ export function rangeDragColumn(
   //   columnseleted
   // );
 
-  console.log("[FS-RANGE] caller formula.rangeDragColumn → rangeSetValue");
   rangeSetValue(
     ctx,
     cellInput,
@@ -4242,7 +4348,6 @@ export function rangeDragRow(
   //   col_index,
   // ]);
 
-  console.log("[FS-RANGE] caller formula.rangeDragRow → rangeSetValue");
   rangeSetValue(
     ctx,
     cellInput,

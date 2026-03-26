@@ -188,10 +188,10 @@ function handleControlPlusArrowKey(
   // if (ctx.luckysheetCellUpdate.length > 0) return;
 
   const idx = getSheetIndex(ctx, ctx.currentSheetId);
-  // if (_.isNil(idx)) return;
+  if (_.isNil(idx)) return;
 
   const file = ctx.luckysheetfile[idx];
-  // if (!file || !file.row || !file.column) return;
+  if (!file || _.isNil(file.row) || _.isNil(file.column)) return;
   const maxRow = file.row;
   const maxCol = file.column;
   let last;
@@ -213,7 +213,7 @@ function handleControlPlusArrowKey(
 
   const sheetData = file.data;
   if (!sheetData) return;
-  let selectedLimit;
+  let selectedLimit: number;
 
   switch (e.key) {
     case "ArrowUp":

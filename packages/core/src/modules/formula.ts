@@ -2821,7 +2821,8 @@ function hasCommaOrAnotherRefAfterRangeCell(cell: HTMLElement): boolean {
     if (n.nodeType === Node.ELEMENT_NODE) {
       const e = n as HTMLElement;
       if (e.classList?.contains("luckysheet-formula-text-comma")) return true;
-      if (e.classList?.contains("fortune-formula-functionrange-cell")) return true;
+      if (e.classList?.contains("fortune-formula-functionrange-cell"))
+        return true;
     }
     n = n.nextSibling;
   }
@@ -3003,7 +3004,10 @@ export function handleFormulaInput(
     // This covers cases like: `=A1` -> backspace until `=` or `=SUM(`.
     const stillHasRangeToken =
       $editor.querySelector("span.fortune-formula-functionrange-cell") != null;
-    if (!stillHasRangeToken && ctx.formulaCache.rangeSelectionActive === false) {
+    if (
+      !stillHasRangeToken &&
+      ctx.formulaCache.rangeSelectionActive === false
+    ) {
       ctx.formulaCache.rangeSelectionActive = null;
     }
   } catch (_error) {
@@ -3280,7 +3284,10 @@ function setRangeSetValueToFromCaretPosition(
     return false;
   }
 
-  if (startContainer.nodeType === Node.ELEMENT_NODE && startContainer === editor) {
+  if (
+    startContainer.nodeType === Node.ELEMENT_NODE &&
+    startContainer === editor
+  ) {
     if (startOffset > 0) {
       const prev = startContainer.childNodes[startOffset - 1];
       if (prev) {
@@ -3349,7 +3356,9 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
       (parentElement.closest?.(
         "#luckysheet-rich-text-editor, #luckysheet-functionbox-cell"
       ) as HTMLElement | null) ||
-      (document.getElementById("luckysheet-rich-text-editor") as HTMLElement | null);
+      (document.getElementById(
+        "luckysheet-rich-text-editor"
+      ) as HTMLElement | null);
     if (!editor || currSelection.rangeCount === 0) {
       return true;
     }
@@ -3369,7 +3378,12 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
 
     const first = remaining[0];
     // Next token starts with a delimiter/operator => still an empty slot.
-    if (first === "," || first === ")" || first === "&" || first in operatorjson) {
+    if (
+      first === "," ||
+      first === ")" ||
+      first === "&" ||
+      first in operatorjson
+    ) {
       return true;
     }
 
@@ -3389,8 +3403,7 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
       txt = _.trim(ahr.textContent || "");
       lasttxt = txt.slice(-1);
     } else {
-      lasttxt =
-        anchorOffset > 0 ? txt.charAt(anchorOffset - 1) : "";
+      lasttxt = anchorOffset > 0 ? txt.charAt(anchorOffset - 1) : "";
     }
 
     if (
@@ -3725,7 +3738,8 @@ export function rangeSetValue(
   // fortune-formula-functionrange-cell — that removes the live reference we are
   // updating during drag (→ hasSpanToReplace false, broken APPEND, rangeindex leak).
   const isManagedRangeSpan =
-    lastSpan?.classList?.contains("fortune-formula-functionrange-cell") ?? false;
+    lastSpan?.classList?.contains("fortune-formula-functionrange-cell") ??
+    false;
 
   if (
     lastSpan &&

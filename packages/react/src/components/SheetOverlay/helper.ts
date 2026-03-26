@@ -28,6 +28,77 @@ export function getCursorPosition(editableDiv: HTMLDivElement): number {
   return preRange.toString().length; // caret offset in characters
 }
 
+export function setCursorPosition(
+  editableDiv: HTMLDivElement,
+  targetOffset: number
+) {
+  editableDiv.focus();
+
+  const selection = window.getSelection();
+  if (!selection) return;
+
+  const range = document.createRange();
+  const walker = document.createTreeWalker(editableDiv, NodeFilter.SHOW_TEXT);
+  let remaining = Math.max(0, targetOffset);
+  let node = walker.nextNode();
+
+  while (node) {
+    const textLength = node.textContent?.length ?? 0;
+    if (remaining <= textLength) {
+      range.setStart(node, remaining);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return;
+    }
+    remaining -= textLength;
+    node = walker.nextNode();
+  }
+
+  range.selectNodeContents(editableDiv);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+export function buildFormulaSuggestionText(
+  editableDiv: HTMLDivElement,
+  formulaName: string
+) {
+  const fullText = editableDiv.innerText || "";
+  const selection = window.getSelection();
+  const selectionInEditor =
+    !!selection?.rangeCount &&
+    editableDiv.contains(selection.getRangeAt(0).startContainer);
+  const caretOffset = selectionInEditor
+    ? getCursorPosition(editableDiv)
+    : fullText.length;
+
+  const safeCaretOffset = Math.max(0, Math.min(caretOffset, fullText.length));
+  const beforeCaret = fullText.slice(0, safeCaretOffset);
+  const afterCaret = fullText.slice(safeCaretOffset);
+
+  let replaceStart = safeCaretOffset;
+  const tokenMatch = beforeCaret.match(/[A-Za-z_][A-Za-z0-9_]*$/);
+  if (tokenMatch) {
+    const token = tokenMatch[0];
+    const tokenStart = safeCaretOffset - token.length;
+    const charBeforeToken = tokenStart > 0 ? beforeCaret[tokenStart - 1] : "";
+    if (tokenStart === 0 || /[\s=(,+\-*/&^<>]$/.test(charBeforeToken)) {
+      replaceStart = tokenStart;
+    }
+  }
+
+  const shouldAddOpeningParen = !afterCaret.startsWith("(");
+  const insertedText = `${formulaName}${shouldAddOpeningParen ? "(" : ""}`;
+  const nextText = fullText.slice(0, replaceStart) + insertedText + afterCaret;
+
+  return {
+    text: nextText,
+    caretOffset: replaceStart + insertedText.length,
+  };
+}
+
 export function isLetterNumberPattern(str: string): boolean {
   const regex = /^[a-zA-Z]+\d+$/;
   return regex.test(str);

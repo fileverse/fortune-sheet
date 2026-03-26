@@ -12,6 +12,7 @@ import {
   valueShowEs,
   isShowHidenCR,
   escapeHTMLTag,
+  functionHTMLGenerate,
   isAllowEdit,
 } from "@fileverse-dev/fortune-core";
 import React, {
@@ -35,7 +36,8 @@ import { LucideIcon } from "../../components/SheetOverlay/LucideIcon";
 import {
   countCommasBeforeCursor,
   isLetterNumberPattern,
-  moveCursorToEnd,
+  setCursorPosition,
+  buildFormulaSuggestionText,
 } from "../../components/SheetOverlay/helper";
 
 const FxEditor: React.FC = () => {
@@ -134,14 +136,26 @@ const FxEditor: React.FC = () => {
   );
   const insertSelectedFormula = useCallback(
     (formulaName: string) => {
-      const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
-      refs.fxInput.current!.innerHTML = ht;
-      const cellEditor = document.getElementById("luckysheet-rich-text-editor");
-      if (cellEditor) {
-        cellEditor.innerHTML = ht;
-      }
+      const fxEditor = refs.fxInput.current;
+      if (!fxEditor) return;
 
-      moveCursorToEnd(refs.fxInput.current!);
+      const cellEditor = document.getElementById(
+        "luckysheet-rich-text-editor"
+      ) as HTMLDivElement | null;
+      const { text, caretOffset } = buildFormulaSuggestionText(
+        fxEditor,
+        formulaName
+      );
+      const safeText = escapeScriptTag(text);
+      const html = safeText.startsWith("=")
+        ? functionHTMLGenerate(safeText)
+        : escapeHTMLTag(safeText);
+
+      fxEditor.innerHTML = html;
+      if (cellEditor) {
+        cellEditor.innerHTML = html;
+      }
+      setCursorPosition(fxEditor, caretOffset);
       setContext((draftCtx) => {
         draftCtx.functionCandidates = [];
         draftCtx.defaultCandidates = [];

@@ -15,8 +15,8 @@ import {
   israngeseleciton,
   escapeHTMLTag,
   isAllowEdit,
-  getrangeseleciton,
   indexToColumnChar,
+  functionHTMLGenerate,
   handleBold,
   handleItalic,
   handleUnderline,
@@ -48,6 +48,8 @@ import usePrevious from "../../hooks/usePrevious";
 import {
   moveCursorToEnd,
   getCursorPosition,
+  setCursorPosition,
+  buildFormulaSuggestionText,
   isLetterNumberPattern,
   countCommasBeforeCursor,
 } from "./helper";
@@ -305,83 +307,26 @@ const InputBox: React.FC = () => {
 
   const insertSelectedFormula = useCallback(
     (formulaName: string) => {
-      if (/^=[a-zA-Z]+$/.test(inputRef.current!.innerText)) {
-        const ht = `<span dir="auto" class="luckysheet-formula-text-color">=</span><span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span><span dir="auto" class="luckysheet-formula-text-lpar">(</span>`;
-        inputRef.current!.innerHTML = ht;
-        const fxEditor = document.getElementById("luckysheet-functionbox-cell");
-        if (fxEditor) {
-          fxEditor.innerHTML = ht;
-        }
-        moveCursorToEnd(inputRef.current!);
-        setContext((draftCtx) => {
-          draftCtx.functionCandidates = [];
-          draftCtx.defaultCandidates = [];
-          draftCtx.functionHint = formulaName;
-        });
-        return;
-      }
-
-      const textEditor = document.getElementById("luckysheet-rich-text-editor");
+      const textEditor = inputRef.current;
       if (!textEditor) return;
 
-      textEditor.focus();
+      const fxEditor = document.getElementById(
+        "luckysheet-functionbox-cell"
+      ) as HTMLDivElement | null;
+      const { text, caretOffset } = buildFormulaSuggestionText(
+        textEditor,
+        formulaName
+      );
+      const safeText = escapeScriptTag(text);
+      const html = safeText.startsWith("=")
+        ? functionHTMLGenerate(safeText)
+        : escapeHTMLTag(safeText);
 
-      let selection = window.getSelection();
-      let range = selection?.rangeCount ? selection.getRangeAt(0) : null;
-
-      // If no selection or selection is outside the editor, reset to end of editor
-      if (!selection || !range || !textEditor.contains(range.startContainer)) {
-        range = document.createRange();
-        range.selectNodeContents(textEditor);
-        range.collapse(false); // place caret at end
-        selection = window.getSelection();
-        selection?.removeAllRanges();
-        selection?.addRange(range);
+      textEditor.innerHTML = html;
+      if (fxEditor) {
+        fxEditor.innerHTML = html;
       }
-
-      // Delete the partially typed formula name if needed
-      const searchTxt = getrangeseleciton()?.textContent || "";
-      const deleteCount = searchTxt === "=" ? 0 : searchTxt.length;
-
-      if (
-        deleteCount > 0 &&
-        range.startContainer.nodeType === Node.TEXT_NODE &&
-        textEditor.contains(range.startContainer)
-      ) {
-        const startOffset = Math.max(range.startOffset - deleteCount, 0);
-        const endOffset = range.startOffset;
-        range.setStart(range.startContainer, startOffset);
-        range.setEnd(range.startContainer, endOffset);
-        range.deleteContents();
-      }
-
-      // Clean up existing formula spans if any
-      textEditor
-        .querySelectorAll(
-          ".luckysheet-formula-text-func, .luckysheet-formula-text-lpar"
-        )
-        .forEach((el) => el.remove());
-
-      // Create new nodes to insert
-      const funcNode = new DOMParser().parseFromString(
-        `<span dir="auto" class="luckysheet-formula-text-func">${formulaName}</span>`,
-        "text/html"
-      ).body.firstChild;
-
-      const parNode = new DOMParser().parseFromString(
-        `<span dir="auto" class="luckysheet-formula-text-lpar">(</span>`,
-        "text/html"
-      ).body.firstChild;
-
-      // Safely insert nodes at the current range
-      if (range && parNode && funcNode) {
-        range.insertNode(funcNode);
-        range.collapse(false);
-        range.insertNode(parNode);
-        range.collapse(false);
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-      }
+      setCursorPosition(textEditor, caretOffset);
 
       // Clear formula UI state
       setContext((draftCtx) => {
@@ -468,7 +413,10 @@ const InputBox: React.FC = () => {
       const keyboardSyncRangeIndex =
         getFormulaRangeIndexForKeyboardSync(cellInputEl);
 
-      if (skipNextAnchorSelectionSyncRef.current && formulaAnchorCellRef.current) {
+      if (
+        skipNextAnchorSelectionSyncRef.current &&
+        formulaAnchorCellRef.current
+      ) {
         const [anchorRow, anchorCol] = formulaAnchorCellRef.current;
         const isAnchorSelection =
           currentSelection.row_focus === anchorRow &&
@@ -499,7 +447,6 @@ const InputBox: React.FC = () => {
       // Mark that range/reference content was inserted by keyboard range selection.
       ctx.formulaCache.rangeSelectionActive = true;
 
-
       rangeSetValue?.(
         ctx,
         cellInputEl,
@@ -515,7 +462,8 @@ const InputBox: React.FC = () => {
       // Mirror mouse behavior: show blue dotted formula-range selection
       // for keyboard-driven reference selection as well.
       if (!_.isNil(ctx.formulaCache.rangechangeindex)) {
-        ctx.formulaCache.selectingRangeIndex = ctx.formulaCache.rangechangeindex;
+        ctx.formulaCache.selectingRangeIndex =
+          ctx.formulaCache.rangechangeindex;
         createRangeHightlight(
           ctx,
           cellInputEl.innerHTML,
@@ -565,7 +513,9 @@ const InputBox: React.FC = () => {
   // aligned to the dragged cell/range.
   useEffect(() => {
     if (!formulaMouseDragSignature) return;
-    if (lastHandledMouseDragSignatureRef.current === formulaMouseDragSignature) {
+    if (
+      lastHandledMouseDragSignatureRef.current === formulaMouseDragSignature
+    ) {
       return;
     }
     if (!refs.cellInput.current) return;
@@ -712,10 +662,7 @@ const InputBox: React.FC = () => {
         }
       }
 
-      if (
-        isArrowKey &&
-        isFormulaReferenceInputMode(context)
-      ) {
+      if (isArrowKey && isFormulaReferenceInputMode(context)) {
         // Let global keyboard handlers move selected cells while formula range
         // updates are performed via `rangeSetValue` in the selection effect.
         allowListNavigation = false;

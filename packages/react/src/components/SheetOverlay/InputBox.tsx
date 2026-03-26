@@ -24,9 +24,12 @@ import {
   getRangeRectsByCharacterOffset,
   rangeSetValue,
   getFormulaRangeIndexForKeyboardSync,
+  getFormulaRangeIndexAtCaret,
   createFormulaRangeSelect,
   seletedHighlistByindex,
   isFormulaReferenceInputMode,
+  isCaretAtValidFormulaRangeInsertionPoint,
+  markRangeSelectionDirty,
   rangeHightlightselected,
 } from "@fileverse-dev/fortune-core";
 import React, {
@@ -506,14 +509,14 @@ const InputBox: React.FC = () => {
 
       // luckysheet_select_save is synced from rangeDrag; mouse.ts already calls
       // rangeSetValue. A second call here lacked spanToReplace / stale index.
-      const isMouseFormulaRangeDrag =
-        !!ctx.formulaCache.func_selectedrange &&
-        (ctx.formulaCache.rangestart ||
-          ctx.formulaCache.rangedrag_column_start ||
-          ctx.formulaCache.rangedrag_row_start);
-      if (isMouseFormulaRangeDrag) {
-        return;
-      }
+      // const isMouseFormulaRangeDrag =
+      //   !!ctx.formulaCache.func_selectedrange &&
+      //   (ctx.formulaCache.rangestart ||
+      //     ctx.formulaCache.rangedrag_column_start ||
+      //     ctx.formulaCache.rangedrag_row_start);
+      // if (isMouseFormulaRangeDrag) {
+      //   return;
+      // }
 
       // Sets formulaCache.rangeSetValueTo for APPEND insertion point.
       israngeseleciton(ctx);
@@ -1331,6 +1334,22 @@ const InputBox: React.FC = () => {
               );
               setCommaCount(currentCommaCount);
             }
+
+            const editor = inputRef.current;
+            if (!editor) return;
+
+            setContext((draftCtx) => {
+              if (draftCtx.formulaCache.rangeSelectionActive !== true) return;
+
+              const clickedInsideManagedRange =
+                getFormulaRangeIndexAtCaret(editor) !== null;
+              const atValidInsertionPoint =
+                isCaretAtValidFormulaRangeInsertionPoint(editor);
+
+              if (clickedInsideManagedRange || !atValidInsertionPoint) {
+                markRangeSelectionDirty(draftCtx);
+              }
+            });
           }}
           innerRef={(e) => {
             inputRef.current = e;

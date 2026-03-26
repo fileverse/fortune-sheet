@@ -3803,6 +3803,16 @@ export function handleOverlayMouseUp(
     } else {
       handleFormulaInput(ctx, fxInput, cellInput!, 0, undefined, false);
     }
+
+    // Formula drag mouseup should not fall through into the normal sheet
+    // mouseup finalization flow, which is meant for committing/ending a
+    // regular cell selection/edit session.
+    ctx.luckysheet_select_status = false;
+    ctx.luckysheet_scroll_status = false;
+    ctx.luckysheet_rows_selected_status = false;
+    ctx.luckysheet_cols_selected_status = false;
+    e.preventDefault();
+    return;
   }
   // if (
   //   luckysheetConfigsetting &&

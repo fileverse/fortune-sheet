@@ -8,6 +8,9 @@ import {
   escapeScriptTag,
   moveHighlightCell,
   handleFormulaInput,
+  getFormulaRangeIndexAtCaret,
+  isCaretAtValidFormulaRangeInsertionPoint,
+  markRangeSelectionDirty,
   rangeHightlightselected,
   valueShowEs,
   isShowHidenCR,
@@ -581,10 +584,22 @@ const FxEditor: React.FC = () => {
           <ContentEditable
             onMouseUp={() => {
               handleHideShowHint();
-              const currentCommaCount = countCommasBeforeCursor(
-                refs.fxInput?.current!
-              );
+              const editor = refs.fxInput?.current!;
+              const currentCommaCount = countCommasBeforeCursor(editor);
               setCommaCount(currentCommaCount);
+
+              setContext((draftCtx) => {
+                if (draftCtx.formulaCache.rangeSelectionActive !== true) return;
+
+                const clickedInsideManagedRange =
+                  getFormulaRangeIndexAtCaret(editor) !== null;
+                const atValidInsertionPoint =
+                  isCaretAtValidFormulaRangeInsertionPoint(editor);
+
+                if (clickedInsideManagedRange || !atValidInsertionPoint) {
+                  markRangeSelectionDirty(draftCtx);
+                }
+              });
             }}
             innerRef={(e) => {
               refs.fxInput.current = e;

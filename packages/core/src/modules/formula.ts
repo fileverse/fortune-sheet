@@ -2815,6 +2815,66 @@ export function getFormulaRangeIndexAtCaret(
   return Number.isNaN(n) ? null : n;
 }
 
+function getCurrentFormulaSlotTextBeforeCaret(
+  editor: HTMLElement,
+  caretOffset: number
+) {
+  const textBefore = editor.innerText.slice(0, caretOffset);
+  const parts = textBefore.split(/[=,(+\-*/&<>]/);
+  return _.trim(parts[parts.length - 1] || "");
+}
+
+export function isCaretAtValidFormulaRangeInsertionPoint(
+  editor: HTMLElement | null
+): boolean {
+  const currSelection = window.getSelection();
+  if (!editor || !currSelection || currSelection.rangeCount === 0) {
+    return false;
+  }
+
+  const { anchorNode } = currSelection;
+  if (anchorNode && !editor.contains(anchorNode)) {
+    return false;
+  }
+
+  const inputText = editor.innerText.trim();
+  if (!inputText.startsWith("=")) {
+    return false;
+  }
+
+  if (/^=\s*[A-Za-z_][A-Za-z0-9_]*$/.test(inputText)) {
+    return false;
+  }
+
+  const caretRange = currSelection.getRangeAt(0).cloneRange();
+  const preCaretRange = document.createRange();
+  preCaretRange.selectNodeContents(editor);
+  preCaretRange.setEnd(caretRange.endContainer, caretRange.endOffset);
+  const caretOffset = preCaretRange.toString().length;
+  const slotTextBeforeCaret = getCurrentFormulaSlotTextBeforeCaret(
+    editor,
+    caretOffset
+  );
+
+  if (slotTextBeforeCaret.length > 0 && !iscelldata(slotTextBeforeCaret)) {
+    return false;
+  }
+
+  const textAfter = editor.innerText.slice(caretOffset);
+  const remaining = textAfter.replace(/^\s+/, "");
+  if (remaining.length === 0) {
+    return true;
+  }
+
+  const first = remaining[0];
+  return (
+    first === "," ||
+    first === ")" ||
+    first === "&" ||
+    first in operatorjson
+  );
+}
+
 function hasCommaOrAnotherRefAfterRangeCell(cell: HTMLElement): boolean {
   let n: Node | null = cell.nextSibling;
   while (n) {
@@ -3341,15 +3401,6 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
   const anchorElement = anchor as HTMLElement;
   const parentElement = anchor.parentNode as HTMLElement;
 
-  const getCurrentSlotTextBeforeCaret = (
-    editor: HTMLElement,
-    caretOffset: number
-  ) => {
-    const textBefore = editor.innerText.slice(0, caretOffset);
-    const parts = textBefore.split(/[=,(+\-*/&<>]/);
-    return _.trim(parts[parts.length - 1] || "");
-  };
-
   const allowRangeInsertionAtCaret = () => {
     // If range selection flow is already active, allow insertion/replacement.
     if (
@@ -3371,61 +3422,8 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
       (document.getElementById(
         "luckysheet-rich-text-editor"
       ) as HTMLElement | null);
-    if (!editor || currSelection.rangeCount === 0) {
-      return true;
-    }
 
-    const inputText = editor.innerText.trim();
-    // Do not allow starting formula reference mode from empty/plain text.
-    // After manual deletes, the editor may no longer contain a real formula.
-    if (!inputText.startsWith("=")) {
-      return false;
-    }
-
-    // Still typing a manual identifier/token right after "=" (e.g. "=A",
-    // "=SUM", "=foo"). This is not yet a valid reference-selection slot.
-    if (/^=\s*[A-Za-z_][A-Za-z0-9_]*$/.test(inputText)) {
-      return false;
-    }
-
-    const caretRange = currSelection.getRangeAt(0).cloneRange();
-    const preCaretRange = document.createRange();
-    preCaretRange.selectNodeContents(editor);
-    preCaretRange.setEnd(caretRange.endContainer, caretRange.endOffset);
-    const caretOffset = preCaretRange.toString().length;
-    const slotTextBeforeCaret = getCurrentSlotTextBeforeCaret(
-      editor,
-      caretOffset
-    );
-
-    // If the current argument slot already contains a partial manual ref/range
-    // token like `A`, `A1:`, or `A1:A`, do not allow starting a new selection.
-    if (slotTextBeforeCaret.length > 0 && !iscelldata(slotTextBeforeCaret)) {
-      return false;
-    }
-
-    const textAfter = editor.innerText.slice(caretOffset);
-    const remaining = textAfter.replace(/^\s+/, "");
-
-    // No content to the right in current argument slot -> can insert range.
-    if (remaining.length === 0) {
-      return true;
-    }
-
-    const first = remaining[0];
-    // Next token starts with a delimiter/operator => still an empty slot.
-    if (
-      first === "," ||
-      first === ")" ||
-      first === "&" ||
-      first in operatorjson
-    ) {
-      return true;
-    }
-
-    // There is already manual content in this slot (e.g. "=A1" with caret
-    // moved back after "="). Do not allow starting a new range selection.
-    return false;
+    return isCaretAtValidFormulaRangeInsertionPoint(editor);
   };
   if (
     anchor?.parentNode?.nodeName.toLowerCase() === "span" &&

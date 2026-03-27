@@ -48,7 +48,7 @@ import Menu from "./Menu";
 import "tippy.js/dist/tippy.css";
 // import ConditionalFormat from "../ConditionFormat";
 import SVGIcon from "../SVGIcon";
-import { LucideIcon as LocalLucidIcon } from "../../components/SheetOverlay/LucideIcon";
+import { LucideIcon as LocalLucidIcon } from "../SheetOverlay/LucideIcon";
 
 const ContextMenu: React.FC = () => {
   const { showDialog } = useDialog();

@@ -25,12 +25,14 @@ import {
   rangeSetValue,
   getFormulaRangeIndexForKeyboardSync,
   getFormulaRangeIndexAtCaret,
+  getFormulaEditorOwner,
   createFormulaRangeSelect,
   seletedHighlistByindex,
   isFormulaReferenceInputMode,
   isCaretAtValidFormulaRangeInsertionPoint,
   markRangeSelectionDirty,
   rangeHightlightselected,
+  setFormulaEditorOwner,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -135,8 +137,6 @@ const InputBox: React.FC = () => {
     const history = formulaHistoryRef.current;
     const current = history.entries[history.index];
 
-    // When formula-argument spans exist, treat each span as the atomic unit.
-    // That prevents undo/redo from stepping on caret-only changes.
     if (
       current &&
       current.spanValues.length > 0 &&
@@ -146,7 +146,6 @@ const InputBox: React.FC = () => {
       return;
     }
 
-    // Fallback for cases where spans don't exist yet (e.g. right after typing "=").
     if (
       current &&
       current.spanValues.length === 0 &&
@@ -507,6 +506,13 @@ const InputBox: React.FC = () => {
         ctx.luckysheet_select_save?.[ctx.luckysheet_select_save.length - 1];
       if (!currentSelection) return;
 
+      // When the Fx editor owns the active formula session, core mouse handling
+      // already updates both editors. Running InputBox sync here would insert the
+      // same reference a second time (e.g. `=A1A1`).
+      if (getFormulaEditorOwner(ctx) === "fx") {
+        return;
+      }
+
       // luckysheet_select_save is synced from rangeDrag; mouse.ts already calls
       // rangeSetValue. A second call here lacked spanToReplace / stale index.
       // const isMouseFormulaRangeDrag =
@@ -658,6 +664,9 @@ const InputBox: React.FC = () => {
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
+      setContext((draftCtx) => {
+        setFormulaEditorOwner(draftCtx, "cell");
+      });
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
       preText.current = inputRef.current!.innerText;
       preFormulaSpanValuesRef.current = Array.from(
@@ -714,9 +723,8 @@ const InputBox: React.FC = () => {
                 column_focus: anchorCol,
               },
             ];
-            // Reference before comma is complete; clear active formula
-            // range overlay/highlight and reset range-selection state.
-            draftCtx.formulaRangeHighlight = [];
+            // Reference before comma is complete; clear the active range-select
+            // overlay, but keep completed referenced-cell highlights visible.
             draftCtx.formulaRangeSelect = undefined;
             draftCtx.formulaCache.selectingRangeIndex = -1;
             draftCtx.formulaCache.func_selectedrange = undefined;
@@ -724,6 +732,12 @@ const InputBox: React.FC = () => {
             draftCtx.formulaCache.rangestart = false;
             draftCtx.formulaCache.rangedrag_column_start = false;
             draftCtx.formulaCache.rangedrag_row_start = false;
+            createRangeHightlight(
+              draftCtx,
+              refs.cellInput.current?.innerHTML ||
+                refs.fxInput.current?.innerHTML ||
+                ""
+            );
             moveHighlightCell(draftCtx, "down", 0, "rangeOfSelect");
           });
         }, 0);
@@ -1328,6 +1342,9 @@ const InputBox: React.FC = () => {
           }}
           onMouseUp={() => {
             handleHideShowHint();
+            setContext((draftCtx) => {
+              setFormulaEditorOwner(draftCtx, "cell");
+            });
             if (!isComposingRef.current) {
               const currentCommaCount = countCommasBeforeCursor(
                 inputRef?.current!

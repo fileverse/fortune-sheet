@@ -9,6 +9,7 @@ import {
   maybeRecoverDirtyRangeSelection,
   rangeHightlightselected,
   rangeSetValue,
+  getFormulaEditorOwner,
   onCommentBoxMove,
   onCommentBoxMoveEnd,
   onCommentBoxResize,
@@ -3798,7 +3799,7 @@ export function handleOverlayMouseUp(
     ctx.formulaCache.rangedrag_column_start ||
     ctx.formulaCache.rangedrag_row_start
   ) {
-    if (document.activeElement?.id === "luckysheet-functionbox-cell") {
+    if (getFormulaEditorOwner(ctx) === "fx") {
       handleFormulaInput(ctx, cellInput!, fxInput!, 0, undefined, false);
     } else {
       handleFormulaInput(ctx, fxInput, cellInput!, 0, undefined, false);

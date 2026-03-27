@@ -12,6 +12,7 @@ import {
   isCaretAtValidFormulaRangeInsertionPoint,
   markRangeSelectionDirty,
   rangeHightlightselected,
+  setFormulaEditorOwner,
   valueShowEs,
   isShowHidenCR,
   escapeHTMLTag,
@@ -23,6 +24,7 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useMemo,
 } from "react";
@@ -31,17 +33,17 @@ import _ from "lodash";
 import WorkbookContext from "../../context";
 import ContentEditable from "../SheetOverlay/ContentEditable";
 import NameBox from "./NameBox";
-import FormulaSearch from "../../components/SheetOverlay/FormulaSearch";
-import FormulaHint from "../../components/SheetOverlay/FormulaHint";
+import FormulaSearch from "../SheetOverlay/FormulaSearch";
+import FormulaHint from "../SheetOverlay/FormulaHint";
 import usePrevious from "../../hooks/usePrevious";
-import { LucideIcon } from "../../components/SheetOverlay/LucideIcon";
+import { LucideIcon } from "../SheetOverlay/LucideIcon";
 
 import {
   countCommasBeforeCursor,
   isLetterNumberPattern,
   setCursorPosition,
   buildFormulaSuggestionText,
-} from "../../components/SheetOverlay/helper";
+} from "../SheetOverlay/helper";
 
 const FxEditor: React.FC = () => {
   const hideFormulaHintLocal = localStorage.getItem("formulaMore") === "true";
@@ -54,6 +56,7 @@ const FxEditor: React.FC = () => {
   const [isHidenRC, setIsHidenRC] = useState<boolean>(false);
   const firstSelection = context.luckysheet_select_save?.[0];
   const prevFirstSelection = usePrevious(firstSelection);
+  const prevCellUpdate = usePrevious<any[]>(context.luckysheetCellUpdate);
   const prevSheetId = usePrevious(context.currentSheetId);
   const recentText = useRef("");
 
@@ -65,6 +68,9 @@ const FxEditor: React.FC = () => {
   useEffect(() => {
     // 当选中行列是处于隐藏状态的话则不允许编辑
     setIsHidenRC(isShowHidenCR(context));
+    if (context.luckysheetCellUpdate.length > 0) {
+      return;
+    }
     if (
       _.isEqual(prevFirstSelection, firstSelection) &&
       context.currentSheetId === prevSheetId
@@ -98,6 +104,65 @@ const FxEditor: React.FC = () => {
     context.luckysheetfile,
     context.currentSheetId,
     context.luckysheet_select_save,
+    context.luckysheetCellUpdate.length,
+  ]);
+
+  useLayoutEffect(() => {
+    const fxInput = refs.fxInput.current;
+    if (context.luckysheetCellUpdate.length === 0 || !fxInput) {
+      return;
+    }
+
+    if (refs.globalCache.doNotUpdateCell) {
+      delete refs.globalCache.doNotUpdateCell;
+      return;
+    }
+
+    if (
+      _.isEqual(prevCellUpdate, context.luckysheetCellUpdate) &&
+      prevSheetId === context.currentSheetId
+    ) {
+      return;
+    }
+
+    const [rowIndex, colIndex] = context.luckysheetCellUpdate;
+    if (_.isNil(rowIndex) || _.isNil(colIndex)) {
+      return;
+    }
+
+    const flowdata = getFlowdata(context);
+    if (!flowdata) {
+      return;
+    }
+    const cell = flowdata?.[rowIndex]?.[colIndex];
+    let value = "";
+
+    if (cell && !refs.globalCache.overwriteCell) {
+      if (isInlineStringCell(cell)) {
+        value = getInlineStringNoStyle(rowIndex, colIndex, flowdata);
+      } else if (cell.f) {
+        value = getCellValue(rowIndex, colIndex, flowdata, "f");
+      } else {
+        value = valueShowEs(rowIndex, colIndex, flowdata);
+      }
+    }
+
+    refs.globalCache.overwriteCell = false;
+    if (!refs.globalCache.ignoreWriteCell && value) {
+      fxInput.innerHTML = escapeHTMLTag(escapeScriptTag(value));
+    } else if (!refs.globalCache.ignoreWriteCell) {
+      const valueD = getCellValue(rowIndex, colIndex, flowdata, "f");
+      fxInput.innerText = valueD;
+    }
+    refs.globalCache.ignoreWriteCell = false;
+  }, [
+    context.luckysheetCellUpdate,
+    context.luckysheetfile,
+    context.currentSheetId,
+    prevCellUpdate,
+    prevSheetId,
+    refs.fxInput,
+    refs.globalCache,
   ]);
 
   const onFocus = useCallback(() => {
@@ -110,6 +175,7 @@ const FxEditor: React.FC = () => {
       isAllowEdit(context, context.luckysheet_select_save)
     ) {
       setContext((draftCtx) => {
+        setFormulaEditorOwner(draftCtx, "fx");
         const last =
           draftCtx.luckysheet_select_save![
             draftCtx.luckysheet_select_save!.length - 1
@@ -123,6 +189,9 @@ const FxEditor: React.FC = () => {
         // formula.rangeResizeTo = $("#luckysheet-functionbox-cell");
       });
     }
+    setContext((draftCtx) => {
+      setFormulaEditorOwner(draftCtx, "fx");
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     context.config,
@@ -210,11 +279,14 @@ const FxEditor: React.FC = () => {
       if (context.allowEdit === false) {
         return;
       }
+      setContext((draftCtx) => {
+        setFormulaEditorOwner(draftCtx, "fx");
+      });
       const currentCommaCount = countCommasBeforeCursor(refs.fxInput?.current!);
       setCommaCount(currentCommaCount);
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
-      const { key } = e;
       recentText.current = refs.fxInput.current!.innerText;
+      const { key } = e;
       if (key === "ArrowLeft" || key === "ArrowRight") {
         e.stopPropagation();
       }
@@ -584,6 +656,9 @@ const FxEditor: React.FC = () => {
           <ContentEditable
             onMouseUp={() => {
               handleHideShowHint();
+              setContext((draftCtx) => {
+                setFormulaEditorOwner(draftCtx, "fx");
+              });
               const editor = refs.fxInput?.current!;
               const currentCommaCount = countCommasBeforeCursor(editor);
               setCommaCount(currentCommaCount);

@@ -774,6 +774,7 @@ export function cancelNormalSelected(ctx: Context) {
   ctx.formulaCache.rangedrag_column_start = false;
   ctx.formulaCache.rangedrag_row_start = false;
   ctx.formulaCache.rangeSelectionActive = null;
+  ctx.formulaCache.formulaEditorOwner = null;
 }
 
 // formula.updatecell

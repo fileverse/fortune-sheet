@@ -10,6 +10,8 @@ import {
   indexToColumnChar,
   getSheetIdByName,
   escapeHTMLTag,
+  isLetterNumberPattern,
+  removeLastSpan,
 } from "../utils";
 import {
   getcellFormula,
@@ -28,8 +30,6 @@ import {
   setCellError,
   spillSortResult,
 } from ".";
-
-import { isLetterNumberPattern, removeLastSpan } from "../utils/index";
 
 let functionHTMLIndex = 0;
 let rangeIndexes: number[] = [];
@@ -102,6 +102,10 @@ export class FormulaCache {
   // - false: user manually modified the inserted range token(s)
   rangeSelectionActive?: boolean | null;
 
+  // Persistent owner of the current formula edit session. Unlike
+  // document.activeElement, this survives canvas clicks during range picking.
+  formulaEditorOwner?: "cell" | "fx" | null;
+
   functionRangeIndex?: number[];
 
   functionlistMap: any;
@@ -115,6 +119,7 @@ export class FormulaCache {
     this.data_parm_index = 0;
     this.selectingRangeIndex = -1;
     this.rangeSelectionActive = null;
+    this.formulaEditorOwner = null;
     this.functionlistMap = {};
     this.execFunctionGlobalData = {};
     this.cellTextToIndexList = {};
@@ -2815,6 +2820,30 @@ export function getFormulaRangeIndexAtCaret(
   return Number.isNaN(n) ? null : n;
 }
 
+export function setFormulaEditorOwner(
+  ctx: Context,
+  owner: "cell" | "fx" | null
+) {
+  ctx.formulaCache.formulaEditorOwner = owner;
+}
+
+export function getFormulaEditorOwner(ctx: Context): "cell" | "fx" | null {
+  const cachedOwner = ctx.formulaCache.formulaEditorOwner;
+  if (cachedOwner === "cell" || cachedOwner === "fx") {
+    return cachedOwner;
+  }
+
+  if (document.activeElement?.id === "luckysheet-functionbox-cell") {
+    return "fx";
+  }
+
+  if (document.activeElement?.id === "luckysheet-rich-text-editor") {
+    return "cell";
+  }
+
+  return null;
+}
+
 function getCurrentFormulaSlotTextBeforeCaret(
   editor: HTMLElement,
   caretOffset: number
@@ -2868,10 +2897,7 @@ export function isCaretAtValidFormulaRangeInsertionPoint(
 
   const first = remaining[0];
   return (
-    first === "," ||
-    first === ")" ||
-    first === "&" ||
-    first in operatorjson
+    first === "," || first === ")" || first === "&" || first in operatorjson
   );
 }
 
@@ -3815,7 +3841,7 @@ export function rangeSetValue(
 
   let $editor = cellInput;
   let $copyTo = fxInput;
-  if (document.activeElement?.id === "luckysheet-functionbox-cell") {
+  if (getFormulaEditorOwner(ctx) === "fx") {
     $editor = fxInput!;
     $copyTo = cellInput;
   }

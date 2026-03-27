@@ -104,6 +104,73 @@ export function isLetterNumberPattern(str: string): boolean {
   return regex.test(str);
 }
 
+/** Same rule as InputBox/Fx onChange: show function list while typing a name after `=`. */
+export function shouldShowFormulaFunctionList(
+  editor: HTMLDivElement | null
+): boolean {
+  if (!editor) return false;
+  if (!editor.innerText?.includes("=")) return false;
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(
+    `<div>${editor.innerHTML}</div>`,
+    "text/html"
+  );
+  const spans = doc.querySelectorAll("span");
+  const lastSpan = spans[spans.length - 1];
+  const lastText = lastSpan?.innerText ?? "";
+  return /^=?[A-Za-z]*$/.test(lastText);
+}
+
+const FORMULA_FUNC_CLASS = "luckysheet-formula-text-func";
+const FORMULA_LPAR_CLASS = "luckysheet-formula-text-lpar";
+
+/**
+ * When the caret sits on a function name span or its opening-paren span, return
+ * that function's name (uppercase). Used so nested formulas like `SUM(MIN(`
+ * show the inner function's hint when the caret is inside `MIN` / `MIN(`.
+ *
+ * Rules (match generated formula HTML):
+ * - Caret inside/outside a `luckysheet-formula-text-func` span whose immediate
+ *   next element sibling is `luckysheet-formula-text-lpar` → that function.
+ * - Caret inside a `luckysheet-formula-text-lpar` span whose immediate previous
+ *   element sibling is `luckysheet-formula-text-func` → that function.
+ */
+export function getFunctionNameFromFormulaCaretSpans(
+  editor: HTMLDivElement | null
+): string | null {
+  if (!editor) return null;
+
+  const sel = window.getSelection();
+  if (!sel?.rangeCount) return null;
+
+  const range = sel.getRangeAt(0);
+  if (!editor.contains(range.startContainer)) return null;
+
+  let n: Node | null = range.startContainer;
+  while (n && n !== editor) {
+    if (n.nodeType === Node.ELEMENT_NODE) {
+      const elem = n as Element;
+      if (elem.classList.contains(FORMULA_FUNC_CLASS)) {
+        const next = elem.nextElementSibling;
+        if (next?.classList.contains(FORMULA_LPAR_CLASS)) {
+          const name = elem.textContent?.trim();
+          return name ? name.toUpperCase() : null;
+        }
+      }
+      if (elem.classList.contains(FORMULA_LPAR_CLASS)) {
+        const prev = elem.previousElementSibling;
+        if (prev?.classList.contains(FORMULA_FUNC_CLASS)) {
+          const name = prev.textContent?.trim();
+          return name ? name.toUpperCase() : null;
+        }
+      }
+    }
+    n = n.parentNode;
+  }
+
+  return null;
+}
+
 export function removeLastSpan(htmlString: string) {
   // Create a temporary container
   const container = document.createElement("div");

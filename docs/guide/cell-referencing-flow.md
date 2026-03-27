@@ -385,6 +385,8 @@ Most likely place to revisit:
 - **FxEditor**: set owner to **`"fx"`** on **`onKeyDown`** and **`onMouseUp`**; **`onFocus`** on the Fx bar still starts/continues edit session and sets owner (Fx focus is less often stolen than cell overlay during range pick).
 - **InputBox selection→formula sync effect**: when **`getFormulaEditorOwner(ctx) === "fx"`**, skip the effect that would call `rangeSetValue` from cell selection changes — core already updates both editors when the Fx bar owns the session, and a second pass caused duplicate refs.
 
+- **Formula list + expand (`FormulaSearch` / `FormulaHint`)**: **`InputBox`** only mounts that UI when **`luckysheetCellUpdate`** is active **and** **`getFormulaEditorOwner(context) === "cell"`**; **`FxEditor`** only when **`=== "fx"`**. So at most one editor shows suggestion list + help chrome; while the cache says **`fx`**, picking a range on the sheet (focus leaves editors) still keeps **`fx`** as owner so the formula bar chrome can remain the one that’s shown.
+
 **Core usage (examples)**
 
 - **`rangeSetValue`** (or related paths) use **`getFormulaEditorOwner(ctx)`** to choose which DOM node receives updates when both editors exist.
@@ -442,9 +444,14 @@ Most likely place to revisit:
 
 **UI consumption**
 
-- **InputBox** / **FxEditor** compute  
-  **`functionName = context.functionHint || getFunctionNameFromInput()`**  
-  so **`functionHint`** wins when core has set it from the caret; **`getFunctionNameFromInput()`** parses `=NAME(` or `.luckysheet-formula-text-func` as a fallback.
+- **InputBox** / **FxEditor** compute **`functionName`** for **`FormulaHint`** (expand help) in order:
+  1. **`getFunctionNameFromFormulaCaretSpans(editor)`** — if the caret is on **`luckysheet-formula-text-func`** with next sibling **`luckysheet-formula-text-lpar`**, or on **`luckysheet-formula-text-lpar`** with previous sibling **`luckysheet-formula-text-func`**, use that function (nested calls, e.g. `SUM(MIN(` → **MIN** when the caret is on `MIN` / `(`).
+  2. **`context.functionHint`** from **`rangeHightlightselected`** / core.
+  3. **`getFunctionNameFromInput()`** — regex `=NAME(` or first **`.luckysheet-formula-text-func`** in the editor (legacy fallback).
+
+- While a cell edit session is active, **`useRerenderOnFormulaCaret`** listens to **`selectionchange`** so the hint updates when only the caret moves (no React state change otherwise).
+
+- **Fx bar (`FxEditor`)** mirrors **InputBox** for the expand/list experience: same **`functionName`** resolution, **`!showSearchHint`** gating, **`shouldShowFormulaFunctionList`** after insert, **`F10`** to toggle the hint panel, **`Tooltip`** on the collapsed chip, the same outer render guard **`functionCandidates | functionHint | defaultCandidates | fn`**, and **`onChange`** with no **`lastKeyDownEvent`** still runs **`rangeHightlightselected`** on the Fx or cell editor (whichever has the caret / formula) so **`functionHint`** stays aligned for the help card.
 
 **Cleared**
 
@@ -452,8 +459,9 @@ Most likely place to revisit:
 
 ### 20. Formula hint UI: list vs expanded help (reference)
 
-- **Suggestion list** (`FormulaSearch`, `showSearchHint`): driven by typing after `=` with a **letters-only** tail pattern in React — not the same gate as **`functionHint`**.
-- **Large help card** (`FormulaHint`): shown when **`showFormulaHint && fn`** where **`fn`** comes from **`functionName`** above.
+- **Suggestion list** (`FormulaSearch`, `showSearchHint`): driven by **`shouldShowFormulaFunctionList(editor)`** (same letters-only tail rule as `onChange`). After **Enter / click** picks a function, **`insertSelectedFormula`** updates `innerHTML` without a native `input` event, so it must call **`setShowSearchHint(shouldShowFormulaFunctionList(...))`** immediately or the list flag stays true and blocks **`FormulaHint`** until the next keystroke.
+- **Large help card** (`FormulaHint`): shown when **`showFormulaHint && fn && !showSearchHint`** — the expand/help UI is hidden while the function **list** is visible so they do not overlap.
+- **Small “show more” chip** (when hints are collapsed): same **`!showSearchHint`** guard.
 - **Expanded body** inside `FormulaHint`: **`showFunctionBody`**, defaulting from **`localStorage["formula-expand"]`**, toggled by the header/chevron in **`FormulaHint/index.tsx`**.
 
 ## Final expected behaviors

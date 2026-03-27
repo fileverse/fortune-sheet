@@ -51,13 +51,16 @@ import FormulaSearch from "./FormulaSearch";
 import FormulaHint from "./FormulaHint";
 import usePrevious from "../../hooks/usePrevious";
 import { useFormulaEditorHistory } from "../../hooks/useFormulaEditorHistory";
+import { useRerenderOnFormulaCaret } from "../../hooks/useRerenderOnFormulaCaret";
 import {
   moveCursorToEnd,
   getCursorPosition,
   setCursorPosition,
   buildFormulaSuggestionText,
+  getFunctionNameFromFormulaCaretSpans,
   isLetterNumberPattern,
   countCommasBeforeCursor,
+  shouldShowFormulaFunctionList,
 } from "./helper";
 import { LucideIcon } from "./LucideIcon";
 
@@ -348,11 +351,15 @@ const InputBox: React.FC = () => {
       }
       setCursorPosition(textEditor, caretOffset);
 
+      // Programmatic innerHTML does not fire contenteditable `input`; sync list
+      // visibility so FormulaHint is not stuck hidden behind stale `showSearchHint`.
+      setShowSearchHint(shouldShowFormulaFunctionList(textEditor));
+
       // Clear formula UI state
       setContext((draftCtx) => {
         draftCtx.functionCandidates = [];
         draftCtx.defaultCandidates = [];
-        draftCtx.functionHint = formulaName;
+        draftCtx.functionHint = (formulaName || "").toUpperCase();
       });
     },
     [setContext]
@@ -703,6 +710,24 @@ const InputBox: React.FC = () => {
         e.key === "ArrowRight";
 
       if (e.key === "Delete" || e.key === "Backspace") {
+        const anchor = formulaAnchorCellRef.current;
+        if (anchor != null) {
+          const [anchorRow, anchorCol] = anchor;
+          skipNextAnchorSelectionSyncRef.current = true;
+          setTimeout(() => {
+            setContext((draftCtx) => {
+              draftCtx.luckysheetCellUpdate = [anchorRow, anchorCol];
+              draftCtx.luckysheet_select_save = [
+                {
+                  row: [anchorRow, anchorRow],
+                  column: [anchorCol, anchorCol],
+                  row_focus: anchorRow,
+                  column_focus: anchorCol,
+                },
+              ];
+            });
+          }, 0);
+        }
         if (isComposingRef.current) requestAnimationFrame(ensureNotEmpty);
         if (
           getCursorPosition(inputRef?.current!) ===
@@ -858,14 +883,9 @@ const InputBox: React.FC = () => {
       if (context.isFlvReadOnly) return;
       handleHideShowHint();
 
-      if (
-        inputRef?.current?.innerText.includes("=") &&
-        /^=?[A-Za-z]*$/.test(getLastInputSpanText())
-      ) {
-        setShowSearchHint(true);
-      } else {
-        setShowSearchHint(false);
-      }
+      setShowSearchHint(
+        shouldShowFormulaFunctionList(inputRef?.current ?? null)
+      );
 
       if (!isComposingRef.current) {
         const currentCommaCount = countCommasBeforeCursor(inputRef?.current!);
@@ -1143,6 +1163,8 @@ const InputBox: React.FC = () => {
     return activeCell || cell;
   };
 
+  useRerenderOnFormulaCaret(inputRef, context.luckysheetCellUpdate.length > 0);
+
   // Helper function to extract function name from input text
   const getFunctionNameFromInput = useCallback(() => {
     const inputText = inputRef?.current?.innerText || "";
@@ -1167,13 +1189,21 @@ const InputBox: React.FC = () => {
     return null;
   }, []);
 
-  // Get function name from context.functionHint (current cursor position) or from input text
-  const functionName = context.functionHint || getFunctionNameFromInput();
+  // Prefer caret-on-span detection for nested calls (e.g. SUM(MIN( → MIN)), then core hint, then text parse.
+  const functionName =
+    getFunctionNameFromFormulaCaretSpans(inputRef.current) ??
+    context.functionHint ??
+    getFunctionNameFromInput();
 
   // Get function object using the detected function name
   const fn = functionName
     ? context.formulaCache.functionlistMap[functionName]
     : null;
+
+  const showCellFormulaChrome =
+    context.luckysheetCellUpdate.length > 0 &&
+    getFormulaEditorOwner(context) === "cell";
+
   const inputBoxBaseSelection =
     isInputBoxActive && firstSelectionActiveCell
       ? firstSelectionActiveCell
@@ -1304,73 +1334,74 @@ const InputBox: React.FC = () => {
       {(context.functionCandidates.length > 0 ||
         context.functionHint ||
         context.defaultCandidates.length > 0 ||
-        fn) && (
-        <>
-          {showSearchHint && (
-            <FormulaSearch
-              onMouseMove={(e) => {
-                if (document.getElementById("luckysheet-formula-search-c")) {
-                  // apply hovered state on the function item
-                  const hoveredItem = (e.target as HTMLElement).closest(
-                    ".luckysheet-formula-search-item"
-                  ) as HTMLElement | null;
-                  if (!hoveredItem) return;
+        fn) &&
+        showCellFormulaChrome && (
+          <>
+            {showSearchHint && (
+              <FormulaSearch
+                onMouseMove={(e) => {
+                  if (document.getElementById("luckysheet-formula-search-c")) {
+                    // apply hovered state on the function item
+                    const hoveredItem = (e.target as HTMLElement).closest(
+                      ".luckysheet-formula-search-item"
+                    ) as HTMLElement | null;
+                    if (!hoveredItem) return;
 
-                  clearSearchItemActiveClass();
-                  hoveredItem.classList.add(
-                    "luckysheet-formula-search-item-active"
-                  );
-                }
-                e.preventDefault();
-              }}
-              onMouseDown={(e) => {
-                selectActiveFormulaOnClick(e);
-              }}
-            />
-          )}
-          <div className="cell-hint">
-            {showFormulaHint && fn && (
-              <FormulaHint
-                handleShowFormulaHint={handleShowFormulaHint}
-                showFormulaHint={showFormulaHint}
-                commaCount={commaCount}
-                functionName={functionName}
+                    clearSearchItemActiveClass();
+                    hoveredItem.classList.add(
+                      "luckysheet-formula-search-item-active"
+                    );
+                  }
+                  e.preventDefault();
+                }}
+                onMouseDown={(e) => {
+                  selectActiveFormulaOnClick(e);
+                }}
               />
             )}
-            {!showFormulaHint && fn && (
-              <Tooltip
-                text="Turn on formula suggestions (F10)"
-                placement="top"
-                defaultOpen
-                style={{
-                  position: "absolute",
-                  top: "-50px",
-                  left: "-130px",
-                  width: "210px",
-                }}
-              >
-                <div
-                  className="luckysheet-hin absolute show-more-btn"
-                  onClick={() => {
-                    handleShowFormulaHint();
+            <div className="cell-hint">
+              {showFormulaHint && fn && !showSearchHint && (
+                <FormulaHint
+                  handleShowFormulaHint={handleShowFormulaHint}
+                  showFormulaHint={showFormulaHint}
+                  commaCount={commaCount}
+                  functionName={functionName}
+                />
+              )}
+              {!showFormulaHint && fn && !showSearchHint && (
+                <Tooltip
+                  text="Turn on formula suggestions (F10)"
+                  placement="top"
+                  defaultOpen
+                  style={{
+                    position: "absolute",
+                    top: "-50px",
+                    left: "-130px",
+                    width: "210px",
                   }}
                 >
-                  <LucideIcon
-                    name="DSheetTextDisabled"
-                    fill="black"
-                    style={{
-                      width: "14px",
-                      height: "14px",
-                      margin: "auto",
-                      marginTop: "1px",
+                  <div
+                    className="luckysheet-hin absolute show-more-btn"
+                    onClick={() => {
+                      handleShowFormulaHint();
                     }}
-                  />
-                </div>
-              </Tooltip>
-            )}
-          </div>
-        </>
-      )}
+                  >
+                    <LucideIcon
+                      name="DSheetTextDisabled"
+                      fill="black"
+                      style={{
+                        width: "14px",
+                        height: "14px",
+                        margin: "auto",
+                        marginTop: "1px",
+                      }}
+                    />
+                  </div>
+                </Tooltip>
+              )}
+            </div>
+          </>
+        )}
     </div>
   );
 };

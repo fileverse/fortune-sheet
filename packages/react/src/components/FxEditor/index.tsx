@@ -12,6 +12,7 @@ import {
   isCaretAtValidFormulaRangeInsertionPoint,
   markRangeSelectionDirty,
   rangeHightlightselected,
+  getFormulaEditorOwner,
   setFormulaEditorOwner,
   valueShowEs,
   isShowHidenCR,
@@ -30,6 +31,7 @@ import React, {
 } from "react";
 import "./index.css";
 import _ from "lodash";
+import { Tooltip } from "@fileverse/ui";
 import WorkbookContext from "../../context";
 import ContentEditable from "../SheetOverlay/ContentEditable";
 import NameBox from "./NameBox";
@@ -37,14 +39,17 @@ import FormulaSearch from "../SheetOverlay/FormulaSearch";
 import FormulaHint from "../SheetOverlay/FormulaHint";
 import usePrevious from "../../hooks/usePrevious";
 import { useFormulaEditorHistory } from "../../hooks/useFormulaEditorHistory";
+import { useRerenderOnFormulaCaret } from "../../hooks/useRerenderOnFormulaCaret";
 import { LucideIcon } from "../SheetOverlay/LucideIcon";
 
 import {
   countCommasBeforeCursor,
   getCursorPosition,
+  getFunctionNameFromFormulaCaretSpans,
   isLetterNumberPattern,
   setCursorPosition,
   buildFormulaSuggestionText,
+  shouldShowFormulaFunctionList,
 } from "../SheetOverlay/helper";
 
 const FxEditor: React.FC = () => {
@@ -80,6 +85,17 @@ const FxEditor: React.FC = () => {
     localStorage.setItem("formulaMore", String(showFormulaHint));
     setShowFormulaHint(!showFormulaHint);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "F10") {
+        event.preventDefault();
+        handleShowFormulaHint();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showFormulaHint]);
 
   useEffect(() => {
     // 当选中行列是处于隐藏状态的话则不允许编辑
@@ -250,13 +266,14 @@ const FxEditor: React.FC = () => {
         cellEditor.innerHTML = html;
       }
       setCursorPosition(fxEditor, caretOffset);
+      setShowSearchHint(shouldShowFormulaFunctionList(fxEditor));
       setContext((draftCtx) => {
         draftCtx.functionCandidates = [];
         draftCtx.defaultCandidates = [];
-        draftCtx.functionHint = formulaName;
+        draftCtx.functionHint = (formulaName || "").toUpperCase();
       });
     },
-    [setContext]
+    [refs.fxInput, setContext]
   );
 
   const clearSearchItemActiveClass = useCallback(() => {
@@ -554,19 +571,38 @@ const FxEditor: React.FC = () => {
   const onChange = useCallback(() => {
     if (context.isFlvReadOnly) return;
     handleHideShowHint();
-    if (
-      refs.fxInput?.current?.innerText.includes("=") &&
-      /^=?[A-Za-z]*$/.test(getLastInputSpanText())
-    ) {
-      setShowSearchHint(true);
-    } else {
-      setShowSearchHint(false);
-    }
+    setShowSearchHint(
+      shouldShowFormulaFunctionList(refs.fxInput?.current ?? null)
+    );
 
     const currentCommaCount = countCommasBeforeCursor(refs.fxInput?.current!);
     setCommaCount(currentCommaCount);
     const e = lastKeyDownEventRef.current;
-    if (!e) return;
+    if (!e) {
+      const fx = refs.fxInput.current;
+      const cell = refs.cellInput.current;
+      const isFormula = (el: HTMLDivElement | null) =>
+        !!(
+          el?.innerText?.trim().startsWith("=") ||
+          el?.textContent?.trim().startsWith("=")
+        );
+      const sel = window.getSelection();
+      let editor: HTMLDivElement | null = null;
+      if (sel?.rangeCount) {
+        const node = sel.getRangeAt(0).startContainer;
+        if (fx?.contains(node) && isFormula(fx)) editor = fx;
+        else if (cell?.contains(node) && isFormula(cell)) editor = cell;
+      }
+      if (!editor && isFormula(fx)) editor = fx;
+      else if (!editor && isFormula(cell)) editor = cell;
+      if (editor) {
+        setContext((draftCtx) => {
+          if (!isAllowEdit(draftCtx, draftCtx.luckysheet_select_save)) return;
+          rangeHightlightselected(draftCtx, editor!);
+        });
+      }
+      return;
+    }
     const kcode = e.keyCode;
     if (!kcode) return;
 
@@ -608,6 +644,11 @@ const FxEditor: React.FC = () => {
     setContext,
   ]);
 
+  useRerenderOnFormulaCaret(
+    refs.fxInput,
+    context.luckysheetCellUpdate.length > 0
+  );
+
   // Helper function to extract function name from input text
   const getFunctionNameFromInput = useCallback(() => {
     const inputText = refs.fxInput?.current?.innerText || "";
@@ -632,13 +673,19 @@ const FxEditor: React.FC = () => {
     return null;
   }, []);
 
-  // Get function name from context.functionHint (current cursor position) or from input text
-  const functionName = context.functionHint || getFunctionNameFromInput();
+  const functionName =
+    getFunctionNameFromFormulaCaretSpans(refs.fxInput.current) ??
+    context.functionHint ??
+    getFunctionNameFromInput();
 
   // Get function object using the detected function name
   const fn = functionName
     ? context.formulaCache.functionlistMap[functionName]
     : null;
+
+  const showFxFormulaChrome =
+    context.luckysheetCellUpdate.length > 0 &&
+    getFormulaEditorOwner(context) === "fx";
 
   const allowEdit = useMemo(() => {
     if (context.allowEdit === false) {
@@ -745,60 +792,82 @@ const FxEditor: React.FC = () => {
             tabIndex={0}
             allowEdit={allowEdit && !context.isFlvReadOnly}
           />
-          {showSearchHint && (
-            <FormulaSearch
-              // @ts-ignore
-              from="fx"
-              onMouseMove={(e) => {
-                if (document.getElementById("luckysheet-formula-search-c")) {
-                  // apply hovered state on the function item
-                  const hoveredItem = (e.target as HTMLElement).closest(
-                    ".luckysheet-formula-search-item"
-                  ) as HTMLElement | null;
-                  if (!hoveredItem) return;
+          {(context.functionCandidates.length > 0 ||
+            context.functionHint ||
+            context.defaultCandidates.length > 0 ||
+            fn) &&
+            showFxFormulaChrome && (
+              <>
+                {showSearchHint && (
+                  <FormulaSearch
+                    // @ts-ignore
+                    from="fx"
+                    onMouseMove={(e) => {
+                      if (
+                        document.getElementById("luckysheet-formula-search-c")
+                      ) {
+                        // apply hovered state on the function item
+                        const hoveredItem = (e.target as HTMLElement).closest(
+                          ".luckysheet-formula-search-item"
+                        ) as HTMLElement | null;
+                        if (!hoveredItem) return;
 
-                  clearSearchItemActiveClass();
-                  hoveredItem.classList.add(
-                    "luckysheet-formula-search-item-active"
-                  );
-                }
-                e.preventDefault();
-              }}
-              onMouseDown={(e) => {
-                selectActiveFormulaOnClick(e);
-              }}
-            />
-          )}
+                        clearSearchItemActiveClass();
+                        hoveredItem.classList.add(
+                          "luckysheet-formula-search-item-active"
+                        );
+                      }
+                      e.preventDefault();
+                    }}
+                    onMouseDown={(e) => {
+                      selectActiveFormulaOnClick(e);
+                    }}
+                  />
+                )}
 
-          <div className="fx-hint">
-            {showFormulaHint && fn && (
-              <FormulaHint
-                handleShowFormulaHint={handleShowFormulaHint}
-                showFormulaHint={showFormulaHint}
-                commaCount={commaCount}
-                functionName={functionName}
-              />
+                <div className="fx-hint">
+                  {showFormulaHint && fn && !showSearchHint && (
+                    <FormulaHint
+                      handleShowFormulaHint={handleShowFormulaHint}
+                      showFormulaHint={showFormulaHint}
+                      commaCount={commaCount}
+                      functionName={functionName}
+                    />
+                  )}
+                  {!showFormulaHint && fn && !showSearchHint && (
+                    <Tooltip
+                      text="Turn on formula suggestions (F10)"
+                      placement="top"
+                      defaultOpen
+                      style={{
+                        position: "absolute",
+                        top: "-50px",
+                        left: "-130px",
+                        width: "210px",
+                      }}
+                    >
+                      <div
+                        className="luckysheet-hin absolute show-more-btn"
+                        onClick={() => {
+                          handleShowFormulaHint();
+                        }}
+                      >
+                        <LucideIcon
+                          name="DSheetTextDisabled"
+                          fill="black"
+                          style={{
+                            width: "14px",
+                            height: "14px",
+                            margin: "auto",
+                            marginTop: "1px",
+                          }}
+                        />
+                      </div>
+                    </Tooltip>
+                  )}
+                </div>
+              </>
             )}
-            {!showFormulaHint && fn && (
-              <div
-                className="luckysheet-hin absolute show-more-btn"
-                onClick={() => {
-                  handleShowFormulaHint();
-                }}
-              >
-                <LucideIcon
-                  name="DSheetTextDisabled"
-                  fill="black"
-                  style={{
-                    width: "14px",
-                    height: "14px",
-                    margin: "auto",
-                    marginTop: "1px",
-                  }}
-                />
-              </div>
-            )}
-          </div>
 
           {/* {focused && (
           <>

@@ -620,11 +620,7 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
     // value to be split across rows or show literal " characters.
     // Only treat as a single quoted value when the content contains \n (the
     // wrapping reason) and has no \t (which would indicate multi-column data).
-    if (
-      data.startsWith('"') &&
-      data.endsWith('"') &&
-      data.length > 1
-    ) {
+    if (data.startsWith('"') && data.endsWith('"') && data.length > 1) {
       const inner = data.slice(1, -1);
       if (inner.includes("\n") && !inner.includes("\t")) {
         dataChe.push([inner.replace(/""/g, '"')]);

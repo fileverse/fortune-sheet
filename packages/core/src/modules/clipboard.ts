@@ -11,7 +11,9 @@ export default class clipboard {
       const isSingleCell = str.includes("fortune-copy-action-span");
       const htmlStr = isSingleCell ? str.replace(/<br\s*\/?>/gi, "\n") : str;
       const htmlBlob = new Blob([htmlStr], { type: "text/html" });
-      const plainText = str.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "");
+      const plainText = str
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<[^>]*>/g, "");
       const textBlob = new Blob(
         [plainText.includes("\n") ? `"${plainText}"` : plainText],
         { type: "text/plain" }

@@ -2113,7 +2113,9 @@ export function copy(ctx: Context) {
       innerContent = getInlineStringHTML(r, c, flowdata!);
     } else {
       const displayValue =
-        getCellValue(r, c, flowdata!, "m") ?? getCellValue(r, c, flowdata!) ?? "";
+        getCellValue(r, c, flowdata!, "m") ??
+        getCellValue(r, c, flowdata!) ??
+        "";
       // escapeHTMLTag turns <br /> into &lt;br /&gt; — restore them as actual <br> tags
       innerContent = escapeHTMLTag(String(displayValue)).replace(
         /&lt;br\s*\/?&gt;/g,

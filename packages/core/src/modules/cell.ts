@@ -1725,7 +1725,9 @@ export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
             : "";
         // Convert newlines to <br> so apps that don't honour white-space:pre-wrap
         // (e.g. Google Sheets clipboard parser) still see proper line breaks.
-        const segmentText = strObj.v.replace(/\r\n/g, "<br>").replace(/\n/g, "<br>");
+        const segmentText = strObj.v
+          .replace(/\r\n/g, "<br>")
+          .replace(/\n/g, "<br>");
         value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${segmentText}</span>`;
       }
     }

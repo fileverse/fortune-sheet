@@ -6,9 +6,11 @@ import {
   getdatabyselection,
   getDataBySelectionNoCopy,
   getStyleByCell,
+  getInlineStringHTML,
   mergeBorder,
   mergeMoveMain,
 } from "./cell";
+import { isInlineStringCell } from "./inline-string";
 import { delFunctionGroup } from "./formula";
 import clipboard from "./clipboard";
 import { getBorderInfoCompute } from "./border";
@@ -20,6 +22,7 @@ import {
 } from "../utils";
 import { hasPartMC } from "./validation";
 import { update } from "./format";
+import { locale } from "../locale";
 // @ts-ignore
 // import SSF from "./ssf";
 import { CFSplitRange } from "./ConditionFormat";
@@ -27,6 +30,7 @@ import { clearCellError } from "./error-state-helpers";
 
 export const selectionCache = {
   isPasteAction: false,
+  isPasteValuesOnly: false,
 };
 
 export function scrollToHighlightCell(ctx: Context, r: number, c: number) {
@@ -2074,15 +2078,60 @@ export function copy(ctx: Context) {
     HasMC,
   };
 
-  let cpdata = rangeValueToHtml(
-    ctx,
-    ctx.currentSheetId,
-    ctx.luckysheet_select_save
-  );
-  cpdata =
-    cpdata === null
-      ? cpdata
-      : cpdata.replace('<td style="', '<td style="white-space: pre-line;"');
+  let cpdata: string | null;
+
+  const sel = ctx.luckysheet_select_save;
+  const isSingleCell =
+    sel?.length === 1 &&
+    sel[0].row[0] === sel[0].row[1] &&
+    sel[0].column[0] === sel[0].column[1];
+
+  if (isSingleCell) {
+    const r = sel![0].row[0];
+    const c = sel![0].column[0];
+    const { fontarray } = locale(ctx);
+    const defaultStyle: Record<string, string> = {
+      color: "#000000",
+      fontFamily: fontarray[0] ?? "Arial",
+      fontSize: "11pt",
+      fontWeight: "400",
+      fontStyle: "normal",
+      textAlign: "left",
+      whiteSpace: "pre-wrap",
+      backgroundColor: "transparent",
+    };
+    const styleObj = getStyleByCell(ctx, flowdata!, r, c);
+    const mergedStyle = { ...defaultStyle, ...styleObj };
+    const styleStr = _.map(
+      mergedStyle,
+      (v, key) => `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`
+    ).join("");
+    const cell = flowdata![r]?.[c];
+    let innerContent: string;
+    if (cell && isInlineStringCell(cell)) {
+      // Rich text cell: preserve per-segment formatting (bold, italic, color, etc.)
+      innerContent = getInlineStringHTML(r, c, flowdata!);
+    } else {
+      const displayValue =
+        getCellValue(r, c, flowdata!, "m") ?? getCellValue(r, c, flowdata!) ?? "";
+      // escapeHTMLTag turns <br /> into &lt;br /&gt; — restore them as actual <br> tags
+      innerContent = escapeHTMLTag(String(displayValue)).replace(
+        /&lt;br\s*\/?&gt;/g,
+        "<br>"
+      );
+    }
+    cpdata = `<span data-type="fortune-copy-action-span" style="${styleStr}">${innerContent}</span>`;
+  } else {
+    cpdata = rangeValueToHtml(
+      ctx,
+      ctx.currentSheetId,
+      ctx.luckysheet_select_save
+    );
+    cpdata =
+      cpdata === null
+        ? cpdata
+        : cpdata.replace('<td style="', '<td style="white-space: pre-line;"');
+  }
 
   if (cpdata) {
     ctx.iscopyself = true;

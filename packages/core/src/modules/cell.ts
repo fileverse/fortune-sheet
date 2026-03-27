@@ -30,6 +30,7 @@ import {
 } from "./inline-string";
 import { isRealNull, isRealNum, valueIsError } from "./validation";
 import { getCellTextInfo } from "./text";
+import { locale } from "../locale";
 import { spillSortResult } from "./sort";
 
 // TODO put these in context ref
@@ -1638,7 +1639,6 @@ export function getStyleByCell(
   const cell = d?.[r]?.[c];
   if (!cell) return {};
 
-  const isInline = isInlineStringCell(cell);
   if ("bg" in cell) {
     const value = normalizedCellAttr(cell, "bg");
     if (checksCF?.cellColor) {
@@ -1671,7 +1671,11 @@ export function getStyleByCell(
 
   if ("ff" in cell) {
     const value = normalizedCellAttr(cell, "ff");
-    style.fontFamily = value;
+    const { fontarray } = locale(ctx);
+    const ffIndex = parseInt(value, 10);
+    style.fontFamily = Number.isNaN(ffIndex)
+      ? value
+      : fontarray[ffIndex] ?? value;
   }
 
   if ("vt" in cell) {
@@ -1682,9 +1686,7 @@ export function getStyleByCell(
       style.alignItems = "flex-end";
     }
   }
-  if (!isInline) {
-    style = _.assign(style, getFontStyleByCell(cell, checksAF, checksCF));
-  }
+  style = _.assign(style, getFontStyleByCell(cell, checksAF, checksCF));
 
   return style;
 }
@@ -1698,6 +1700,11 @@ export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
       const strObj = strings[i];
       if (strObj.v) {
         const style = getFontStyleByCell(strObj);
+        // Explicitly set font-weight:normal for non-bold segments so that apps
+        // like Google Sheets don't inherit bold from an adjacent sibling span.
+        if (!style.fontWeight) {
+          style.fontWeight = "normal";
+        }
         const { link } = strObj as any;
         if (link?.linkType && link?.linkAddress) {
           style.color = style.color || "rgb(0, 0, 255)";
@@ -1716,7 +1723,10 @@ export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
                 "&#39;"
               )}'`
             : "";
-        value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${strObj.v}</span>`;
+        // Convert newlines to <br> so apps that don't honour white-space:pre-wrap
+        // (e.g. Google Sheets clipboard parser) still see proper line breaks.
+        const segmentText = strObj.v.replace(/\r\n/g, "<br>").replace(/\n/g, "<br>");
+        value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${segmentText}</span>`;
       }
     }
     return value;

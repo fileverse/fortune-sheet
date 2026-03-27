@@ -724,6 +724,19 @@ const InputBox: React.FC = () => {
     [context.luckysheetCellUpdate]
   );
 
+  const onCopy = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>) => {
+      if (_.isEmpty(context.luckysheetCellUpdate)) return;
+      // In cell edit mode: suppress browser HTML copy, write plain text only
+      e.preventDefault();
+      const sel = window.getSelection();
+      const text =
+        sel && !sel.isCollapsed ? sel.toString() : e.currentTarget.innerText;
+      navigator.clipboard?.writeText(text).catch(() => {});
+    },
+    [context.luckysheetCellUpdate]
+  );
+
   const cfg = context.config || {};
   const rowReadOnly: Record<number, number> = cfg.rowReadOnly || {};
   const colReadOnly: Record<number, number> = cfg.colReadOnly || {};
@@ -1002,6 +1015,7 @@ const InputBox: React.FC = () => {
           onChange={onChange}
           onKeyDown={onKeyDown}
           onPaste={onPaste}
+          onCopy={onCopy}
           allowEdit={edit ? !isHidenRC : edit}
         />
         {linkSelectionHighlightRects.length > 0 && (

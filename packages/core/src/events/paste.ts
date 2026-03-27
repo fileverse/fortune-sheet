@@ -612,16 +612,35 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
     // }
   } else {
     data = data.replace(/\r/g, "");
-    const dataChe = [];
-    const che = data.split("\n");
-    const colchelen = che[0].split("\t").length;
+    const dataChe: any[][] = [];
 
-    for (let i = 0; i < che.length; i += 1) {
-      if (che[i].split("\t").length < colchelen) {
-        continue;
+    // Detect a CSV-quoted single-cell multiline value written by fortune-sheet's
+    // clipboard writer: `"line1\nline2"`.  The quotes were added solely to make
+    // Excel treat the newlines as in-cell line breaks; they must NOT cause the
+    // value to be split across rows or show literal " characters.
+    // Only treat as a single quoted value when the content contains \n (the
+    // wrapping reason) and has no \t (which would indicate multi-column data).
+    if (
+      data.startsWith('"') &&
+      data.endsWith('"') &&
+      data.length > 1
+    ) {
+      const inner = data.slice(1, -1);
+      if (inner.includes("\n") && !inner.includes("\t")) {
+        dataChe.push([inner.replace(/""/g, '"')]);
       }
+    }
 
-      dataChe.push(che[i].split("\t"));
+    if (dataChe.length === 0) {
+      const che = data.split("\n");
+      const colchelen = che[0].split("\t").length;
+
+      for (let i = 0; i < che.length; i += 1) {
+        if (che[i].split("\t").length < colchelen) {
+          continue;
+        }
+        dataChe.push(che[i].split("\t"));
+      }
     }
 
     const d = getFlowdata(ctx); // 取数据
@@ -1466,7 +1485,8 @@ function pasteHandlerOfCutPaste(
 
 function pasteHandlerOfCopyPaste(
   ctx: Context,
-  copyRange: Context["luckysheet_copy_save"]
+  copyRange: Context["luckysheet_copy_save"],
+  valuesOnly = false
 ) {
   // if (
   //   !checkProtectionLockedRangeList(
@@ -1541,6 +1561,31 @@ function pasteHandlerOfCopyPaste(
   }
 
   const copyData = _.cloneDeep(arr);
+
+  if (valuesOnly) {
+    for (let i = 0; i < copyData.length; i += 1) {
+      for (let j = 0; j < copyData[i].length; j += 1) {
+        const cell = copyData[i][j];
+        if (!cell) continue;
+        // Replace formula with its computed value
+        delete cell.f;
+        delete cell.spl;
+        // Strip all cell styling
+        delete cell.bl;
+        delete cell.it;
+        delete cell.ff;
+        delete cell.fs;
+        delete cell.fc;
+        delete cell.ht;
+        delete cell.vt;
+        delete cell.tb;
+        delete cell.cl;
+        delete cell.un;
+        delete cell.tr;
+        delete cell.bg;
+      }
+    }
+  }
 
   // 多重选择选择区域 单元格如果有函数 则只取值 不取函数
   if (copyRange.copyRange.length > 1) {
@@ -2146,6 +2191,8 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     ctx.luckysheetCellUpdate = [];
     // $("#luckysheet-rich-text-editor").blur();
     selectionCache.isPasteAction = false;
+    const pasteValuesOnly = selectionCache.isPasteValuesOnly;
+    selectionCache.isPasteValuesOnly = false;
 
     let { clipboardData } = e;
     if (!clipboardData) {
@@ -2163,9 +2210,24 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     let txtdata =
       clipboardData.getData("text/html") || clipboardData.getData("text/plain");
 
+    // Paste values only: for external (non-fortune-sheet) content, use plain text to strip formatting
+    if (
+      pasteValuesOnly &&
+      txtdata.indexOf("fortune-copy-action-table") === -1 &&
+      txtdata.indexOf("fortune-copy-action-span") === -1
+    ) {
+      txtdata = clipboardData.getData("text/plain");
+    }
+
     // 如果标示是qksheet复制的内容，判断剪贴板内容是否是当前页面复制的内容
     let isEqual = true;
     if (
+      txtdata.indexOf("fortune-copy-action-span") > -1 &&
+      ctx.luckysheet_copy_save?.copyRange != null &&
+      ctx.luckysheet_copy_save.copyRange.length === 1
+    ) {
+      // single-cell span — no table to parse, isEqual stays true
+    } else if (
       txtdata.indexOf("fortune-copy-action-table") > -1 &&
       ctx.luckysheet_copy_save?.copyRange != null &&
       ctx.luckysheet_copy_save.copyRange.length > 0
@@ -2262,7 +2324,8 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     }
 
     if (
-      txtdata.indexOf("fortune-copy-action-table") > -1 &&
+      (txtdata.indexOf("fortune-copy-action-table") > -1 ||
+        txtdata.indexOf("fortune-copy-action-span") > -1) &&
       ctx.luckysheet_copy_save?.copyRange != null &&
       ctx.luckysheet_copy_save.copyRange.length > 0 &&
       isEqual
@@ -2274,7 +2337,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
         ctx.luckysheet_selection_range = [];
         // selection.clearcopy(e);
       } else {
-        pasteHandlerOfCopyPaste(ctx, ctx.luckysheet_copy_save);
+        pasteHandlerOfCopyPaste(ctx, ctx.luckysheet_copy_save, pasteValuesOnly);
       }
       resizePastedCellsToContent(ctx);
     } else if (txtdata.indexOf("fortune-copy-action-image") > -1) {
@@ -2377,7 +2440,8 @@ export function handlePasteByClick(
   }
 
   if (
-    data.indexOf("fortune-copy-action-table") > -1 &&
+    (data.indexOf("fortune-copy-action-table") > -1 ||
+      data.indexOf("fortune-copy-action-span") > -1) &&
     ctx.luckysheet_copy_save?.copyRange != null &&
     ctx.luckysheet_copy_save.copyRange.length > 0
   ) {

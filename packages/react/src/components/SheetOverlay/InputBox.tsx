@@ -952,7 +952,12 @@ const InputBox: React.FC = () => {
         });
       }
     },
-    [refs.cellInput, refs.fxInput, setContext, appendFormulaHistoryFromPrimaryEditor]
+    [
+      refs.cellInput,
+      refs.fxInput,
+      setContext,
+      appendFormulaHistoryFromPrimaryEditor,
+    ]
   );
 
   const onPaste = useCallback(

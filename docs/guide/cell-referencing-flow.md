@@ -1,6 +1,6 @@
 # Cell Referencing Flow
 
-This document captures the full implementation context for the recent formula-editing, cell-referencing, keyboard-selection, suggestion-insertion, and undo-related fixes.
+This document captures the full implementation context for formula editing: cell referencing, keyboard/mouse selection, the Fx bar vs in-cell editor, suggestion insertion, undo/redo, **`functionHint`**, and **formula editor ownership** caching.
 
 It is meant to be reused later as context for future work on formula input behavior.
 
@@ -27,13 +27,17 @@ Key expected behavior:
 
 ## Files involved
 
-- `packages/core/src/modules/formula.ts`
+- `packages/core/src/modules/formula.ts` (range logic, `rangeSetValue`, `rangeHightlightselected`, `getFormulaEditorOwner`, `setFormulaEditorOwner`, `helpFunctionExe`, …)
+- `packages/core/src/modules/cell.ts` (`cancelNormalSelected` clears owner + `functionHint`)
 - `packages/core/src/events/keyboard.ts`
-- `packages/core/src/events/mouse.ts`
+- `packages/core/src/events/mouse.ts` (formula mouseup / range drag; respects cached editor owner)
 - `packages/core/src/modules/toolbar.ts`
 - `packages/react/src/components/SheetOverlay/InputBox.tsx`
 - `packages/react/src/components/FxEditor/index.tsx`
+- `packages/react/src/hooks/useFormulaEditorHistory.ts` (shared formula undo/redo stack)
 - `packages/react/src/components/SheetOverlay/helper.ts`
+- `packages/react/src/components/FormulaSearch/index.tsx` (sets `functionHint` on confirm)
+- `packages/react/src/components/Workbook/api.ts` (API paths that insert `=FUNCTION(` set `functionHint`)
 
 ## Implementation flow
 
@@ -219,21 +223,21 @@ Intent:
 
 - Keep formula suggestion insertion cursor-based and driven by core formatting instead of manual editor span manipulation.
 
-### 11. Restore native undo/redo in formula editors
+### 11. Undo/redo in formula editors (workbook vs editor)
 
 Problem:
 
-- `Cmd/Ctrl+Z` inside the formula editor could be captured by the workbook-level global shortcut handler.
-- That prevented normal contenteditable undo from working reliably while typing.
+- `Cmd/Ctrl+Z` inside a formula editor could be captured by the **workbook-level** shortcut handler, so sheet undo ran instead of (or in addition to) editing formula text.
 
-Fix:
+Fix (layered):
 
-- Stop propagation for `Cmd/Ctrl+Z` in the formula editor key handlers.
-- Do not call `preventDefault()`, so native editor undo/redo still works.
+- **Stop propagation** for `Cmd/Ctrl+Z` / related chords in **cell** and **Fx** formula key handlers so workbook handlers do not run for those keys during an edit session.
+- **Custom formula history** (see **§18**): while the formula starts with `=` or the custom stack is active, **undo/redo** is handled by the shared hook; **`preventDefault()`** when a history step is applied so it does not stack with native contenteditable undo.
+- Outside that formula-history path, behavior follows the same key-handler rules as before (avoid stealing shortcuts from non-formula editing where applicable).
 
 Effect:
 
-- Undo/redo while typing in the input editors stays local to the editor instead of immediately triggering workbook undo.
+- Formula text undo is predictable in both **in-cell** and **Fx bar** editors; workbook undo is not triggered by the same shortcut during formula editing.
 
 ## Formula selection sync in React
 
@@ -357,6 +361,101 @@ Most likely place to revisit:
 - `packages/core/src/modules/formula.ts`
 - specifically `israngeseleciton()` / `allowRangeInsertionAtCaret()`
 
+### 17. Formula editor ownership cache (`cell` vs `fx`)
+
+**Problem**
+
+- Core and React sometimes need to know whether the **in-cell** contenteditable (`#luckysheet-rich-text-editor`) or the **formula bar** (`#luckysheet-functionbox-cell`) is the “source of truth” for the current formula edit (e.g. where to send `rangeSetValue` output, or whether to skip a duplicate React sync).
+- Relying only on **`document.activeElement`** is unreliable: focus can move to the canvas or the other editor during range clicks/drags, so the wrong editor could be updated or the same reference inserted twice (e.g. `=A1A1`).
+
+**Design**
+
+- Store an explicit owner on context: **`ctx.formulaCache.formulaEditorOwner`** with values **`"cell"` | `"fx"` | `null`** (see `FormulaCache` in `formula.ts`).
+- **`setFormulaEditorOwner(ctx, owner)`** — assign owner.
+- **`getFormulaEditorOwner(ctx)`** — returns cached `"cell"` / `"fx"` when set; otherwise falls back to `activeElement` id checks (`luckysheet-functionbox-cell` → `fx`, `luckysheet-rich-text-editor` → `cell`).
+
+**Where it is cleared**
+
+- **`cancelNormalSelected`** in `cell.ts` sets **`formulaEditorOwner = null`** (along with `functionHint` and edit session teardown).
+
+**React: when owner is set (important for stability)**
+
+- **Do not rely on `onFocus` alone** for the in-cell editor to set owner: focus can jump during canvas interaction and flip owner at the wrong time.
+- **InputBox**: set owner to **`"cell"`** on **`onKeyDown`** and **`onMouseUp`** on the cell editor (after real user interaction).
+- **FxEditor**: set owner to **`"fx"`** on **`onKeyDown`** and **`onMouseUp`**; **`onFocus`** on the Fx bar still starts/continues edit session and sets owner (Fx focus is less often stolen than cell overlay during range pick).
+- **InputBox selection→formula sync effect**: when **`getFormulaEditorOwner(ctx) === "fx"`**, skip the effect that would call `rangeSetValue` from cell selection changes — core already updates both editors when the Fx bar owns the session, and a second pass caused duplicate refs.
+
+**Core usage (examples)**
+
+- **`rangeSetValue`** (or related paths) use **`getFormulaEditorOwner(ctx)`** to choose which DOM node receives updates when both editors exist.
+- **Mouse** formula-drag / `mouseup` handling uses **`getFormulaEditorOwner(ctx) === "fx"`** instead of only `activeElement` for deciding Fx-specific behavior.
+
+**Regression to watch**
+
+- Any new code that branches on “which formula editor is active” should prefer **`getFormulaEditorOwner(ctx)`** over raw **`document.activeElement`** unless there is a deliberate reason not to.
+
+### 18. Custom formula undo/redo for cell editor and Fx bar
+
+**Goal**
+
+- **`Cmd/Ctrl+Z` / `Cmd+Shift+Z` / `Ctrl+Y`** should undo **formula text** while editing, with a **consistent stack** whether the user types in the **cell overlay** or the **Fx bar**.
+- Shortcuts must **`stopPropagation()`** so the workbook-level undo handler does not run at the same time.
+- When the custom stack handles a step, **`preventDefault()`** is used so the browser does not also apply native contenteditable undo on top.
+
+**Implementation**
+
+- Shared hook: **`packages/react/src/hooks/useFormulaEditorHistory.ts`**
+  - Tracks entries: `{ text, caret, spanValues }` (including span snapshot for `fortune-formula-functionrange-cell` deduping).
+  - Seeds the first snapshot from **pre-keypress** state so undo can remove the initial `=`.
+  - **`primary`**: **`"cell"`** (caret + history on `inputRef`) vs **`"fx"`** (caret + history on `refs.fxInput`).
+  - On apply: writes HTML to **both** editors, places caret on the **primary** editor, then calls **`handleFormulaInput`** with the same argument order as that editor’s **`onChange`**:
+    - Cell primary: `handleFormulaInput(ctx, fxInput, cellInput, 0)`
+    - Fx primary: `handleFormulaInput(ctx, cellInput, fxInput, 0)`
+
+**Lifecycle**
+
+- **`capturePreFormulaState()`** — call at start of **`onKeyDown`** (after recording the key event), same idea as before: captures `innerText` + range span texts before the key mutates the DOM.
+- **`appendFormulaHistoryFromPrimaryEditor(getCaret)`** — call from **`onChange`** when a key event is present (same gating as existing `handleFormulaInput` triggers).
+- **`resetFormulaHistory()`** when **`luckysheetCellUpdate`** becomes empty (edit session ends) — both **InputBox** and **FxEditor** reset their respective stacks.
+
+**Note**
+
+- Cell and Fx maintain **separate stacks** (typing only in one surface fills that surface’s history). That matches independent interaction patterns and avoids cross-contamination.
+
+### 19. `context.functionHint` — what it is and where it is set
+
+**Role**
+
+- **`functionHint`** is the **uppercase function name** for the **formula help / `FormulaHint` panel** (argument list, expand view, etc.), keyed into **`formulaCache.functionlistMap`**.
+
+**Primary calculation (core)**
+
+- **`rangeHightlightselected(ctx, $editor)`** in **`formula.ts`** updates **`ctx.functionHint`** from the caret and generated formula HTML:
+  - Uses **`helpFunctionExe($editor, currSelection, ctx)`** to walk **spans** (e.g. `luckysheet-formula-text-func`) and infer which function the caret is inside.
+  - If the token at the caret is **only letters** (typing a function name), **`functionHint` is set to `null`** and **`searchFunction`** fills **`functionCandidates`** for the **suggestion list** instead.
+  - Otherwise **`functionHint = funcName?.toUpperCase()`** and list candidates are cleared.
+
+**Explicit assignments (React)**
+
+- Picking a function from **FormulaSearch** or **Workbook API** insert paths sets **`ctx.functionHint`** to the chosen name.
+- **InputBox** / **FxEditor** **`insertSelectedFormula`** sets **`draftCtx.functionHint = formulaName`** when accepting a suggestion from the inline list.
+
+**UI consumption**
+
+- **InputBox** / **FxEditor** compute  
+  **`functionName = context.functionHint || getFunctionNameFromInput()`**  
+  so **`functionHint`** wins when core has set it from the caret; **`getFunctionNameFromInput()`** parses `=NAME(` or `.luckysheet-formula-text-func` as a fallback.
+
+**Cleared**
+
+- **`cancelNormalSelected`** sets **`functionHint = null`**.
+
+### 20. Formula hint UI: list vs expanded help (reference)
+
+- **Suggestion list** (`FormulaSearch`, `showSearchHint`): driven by typing after `=` with a **letters-only** tail pattern in React — not the same gate as **`functionHint`**.
+- **Large help card** (`FormulaHint`): shown when **`showFormulaHint && fn`** where **`fn`** comes from **`functionName`** above.
+- **Expanded body** inside `FormulaHint`: **`showFunctionBody`**, defaulting from **`localStorage["formula-expand"]`**, toggled by the header/chevron in **`FormulaHint/index.tsx`**.
+
 ## Final expected behaviors
 
 - `=,A4` with caret between `=` and `,` inserts before `A4`
@@ -376,7 +475,7 @@ Most likely place to revisit:
 - Do not recreate formula editor HTML and then trust the old selection without restoring/deriving the caret.
 - Do not strip managed `fortune-formula-functionrange-cell` spans during live editing.
 - Do not normalize formula text in ways that remove commas or rewrite argument structure.
-- When adding editor keyboard shortcuts, be careful not to steal native contenteditable undo/redo.
+- When adding editor keyboard shortcuts, coordinate with **formula history** and **`stopPropagation`** so workbook undo/redo does not fight formula undo; prefer **`getFormulaEditorOwner(ctx)`** over **`document.activeElement`** for editor targeting.
 - Do not add parallel React-side selection engines for modified arrow range navigation when core already owns that behavior.
 - Do not add broad sticky dirty flags unless there is a very clear missing case that valid insertion-point checks cannot already cover.
 
@@ -393,4 +492,5 @@ Most likely place to revisit:
 - type random text, delete back to plain empty/non-formula text -> ensure mouse/keyboard reference insertion is blocked
 - test incomplete tail cases such as `=E4:F` and document actual current behavior before changing it
 - accept formula suggestion via Enter/Tab/click at different caret positions
-- type in the input editor and verify `Cmd/Ctrl+Z` undoes editor text changes
+- type in the **cell** editor and **Fx bar**; verify `Cmd/Ctrl+Z` steps through **formula** history (and does not trigger sheet undo)
+- with **Fx bar** owning the session (`=` then click cells), verify **no** duplicate refs (`=A1A1`) and second click still extends formula instead of exiting edit mode incorrectly

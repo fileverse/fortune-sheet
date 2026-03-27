@@ -50,6 +50,7 @@ import ContentEditable from "./ContentEditable";
 import FormulaSearch from "./FormulaSearch";
 import FormulaHint from "./FormulaHint";
 import usePrevious from "../../hooks/usePrevious";
+import { useFormulaEditorHistory } from "../../hooks/useFormulaEditorHistory";
 import {
   moveCursorToEnd,
   getCursorPosition,
@@ -61,12 +62,6 @@ import {
 import { LucideIcon } from "./LucideIcon";
 
 const InputBox: React.FC = () => {
-  type FormulaHistoryEntry = {
-    text: string;
-    caret: number;
-    spanValues: string[];
-  };
-
   const { context, setContext, refs } = useContext(WorkbookContext);
   const inputRef = useRef<HTMLDivElement>(null);
   const lastKeyDownEventRef = useRef<KeyboardEvent>(null);
@@ -87,22 +82,24 @@ const InputBox: React.FC = () => {
   const [showSearchHint, setShowSearchHint] = useState(false);
   const row_index = firstSelection?.row_focus!;
   const col_index = firstSelection?.column_focus!;
-  const preText = useRef("");
   const isComposingRef = useRef(false);
   const formulaAnchorCellRef = useRef<[number, number] | null>(null);
   const skipNextAnchorSelectionSyncRef = useRef(false);
   const lastHandledMouseDragSignatureRef = useRef("");
-  const preFormulaSpanValuesRef = useRef<string[] | null>(null);
-  const formulaHistoryRef = useRef<{
-    active: boolean;
-    entries: FormulaHistoryEntry[];
-    index: number;
-  }>({
-    active: false,
-    entries: [],
-    index: -1,
-  });
-  const MAX_FORMULA_HISTORY = 100;
+  const {
+    formulaHistoryRef,
+    preTextRef,
+    resetFormulaHistory,
+    handleFormulaHistoryUndoRedo,
+    capturePreFormulaState,
+    appendFormulaHistoryFromPrimaryEditor,
+  } = useFormulaEditorHistory(
+    inputRef,
+    refs.cellInput,
+    refs.fxInput,
+    setContext,
+    "cell"
+  );
 
   const ZWSP = "\u200B";
   const inputBoxInnerRef = useRef<HTMLDivElement>(null);
@@ -123,92 +120,6 @@ const InputBox: React.FC = () => {
       moveCursorToEnd(el);
     }
   };
-
-  const resetFormulaHistory = useCallback(() => {
-    formulaHistoryRef.current = {
-      active: false,
-      entries: [],
-      index: -1,
-    };
-    preFormulaSpanValuesRef.current = null;
-  }, []);
-
-  const pushFormulaHistoryEntry = useCallback((entry: FormulaHistoryEntry) => {
-    const history = formulaHistoryRef.current;
-    const current = history.entries[history.index];
-
-    if (
-      current &&
-      current.spanValues.length > 0 &&
-      entry.spanValues.length > 0 &&
-      _.isEqual(current.spanValues, entry.spanValues)
-    ) {
-      return;
-    }
-
-    if (
-      current &&
-      current.spanValues.length === 0 &&
-      entry.spanValues.length === 0 &&
-      current.text === entry.text &&
-      current.caret === entry.caret
-    ) {
-      return;
-    }
-
-    const nextEntries = history.entries.slice(0, history.index + 1);
-    nextEntries.push(entry);
-    if (nextEntries.length > MAX_FORMULA_HISTORY) {
-      nextEntries.shift();
-    }
-
-    history.entries = nextEntries;
-    history.index = nextEntries.length - 1;
-    history.active = true;
-  }, []);
-
-  const applyFormulaHistoryEntry = useCallback(
-    (entry: FormulaHistoryEntry) => {
-      const editor = inputRef.current;
-      if (!editor) return;
-
-      const safeText = escapeScriptTag(entry.text || "");
-      const html = safeText.startsWith("=")
-        ? functionHTMLGenerate(safeText)
-        : escapeHTMLTag(safeText);
-      editor.innerHTML = html;
-      if (refs.fxInput.current) {
-        refs.fxInput.current.innerHTML = html;
-      }
-      setCursorPosition(editor, Math.min(entry.caret, entry.text.length));
-
-      setContext((draftCtx) => {
-        if (!refs.cellInput.current) return;
-        handleFormulaInput(
-          draftCtx,
-          refs.fxInput.current,
-          refs.cellInput.current,
-          0
-        );
-      });
-    },
-    [refs.cellInput, refs.fxInput, setContext]
-  );
-
-  const handleFormulaHistoryUndoRedo = useCallback(
-    (isRedo: boolean) => {
-      const history = formulaHistoryRef.current;
-      if (!history.active || history.entries.length === 0) return false;
-
-      const nextIndex = isRedo ? history.index + 1 : history.index - 1;
-      if (nextIndex < 0 || nextIndex >= history.entries.length) return true;
-
-      history.index = nextIndex;
-      applyFormulaHistoryEntry(history.entries[nextIndex]);
-      return true;
-    },
-    [applyFormulaHistoryEntry]
-  );
 
   const handleShowFormulaHint = () => {
     localStorage.setItem("formulaMore", String(showFormulaHint));
@@ -477,7 +388,7 @@ const InputBox: React.FC = () => {
       if (isComposingRef.current || !inputRef.current) return;
       // @ts-expect-error later
       if (e.target.className.includes("sign-fortune")) return;
-      preText.current = inputRef.current!.innerText;
+      preTextRef.current = inputRef.current!.innerText;
       const formulaName = getActiveFormula()?.querySelector(
         ".luckysheet-formula-search-func"
       )?.textContent;
@@ -668,12 +579,7 @@ const InputBox: React.FC = () => {
         setFormulaEditorOwner(draftCtx, "cell");
       });
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
-      preText.current = inputRef.current!.innerText;
-      preFormulaSpanValuesRef.current = Array.from(
-        inputRef.current?.querySelectorAll(
-          "span.fortune-formula-functionrange-cell"
-        ) ?? []
-      ).map((el) => el.textContent ?? "");
+      capturePreFormulaState();
       const currentInputText = inputRef.current?.innerText?.trim() || "";
 
       if (
@@ -913,8 +819,10 @@ const InputBox: React.FC = () => {
       // }
     },
     [
+      capturePreFormulaState,
       clearSearchItemActiveClass,
       context.luckysheetCellUpdate.length,
+      handleFormulaHistoryUndoRedo,
       selectActiveFormula,
       setContext,
       firstSelection,
@@ -984,32 +892,9 @@ const InputBox: React.FC = () => {
       const kcode = e.keyCode;
       if (!kcode) return;
 
-      const currentText = inputRef.current?.innerText || "";
-      if (currentText.startsWith("=")) {
-        const caret = getCursorPosition(inputRef.current!);
-        const spanValues = Array.from(
-          inputRef.current?.querySelectorAll(
-            "span.fortune-formula-functionrange-cell"
-          ) ?? []
-        ).map((el) => el.textContent ?? "");
-        if (!formulaHistoryRef.current.active) {
-          // Seed from the pre-keypress state so undo can also remove the first "=".
-          const seedText = preText.current || "";
-          pushFormulaHistoryEntry({
-            text: seedText,
-            caret: Math.min(caret, seedText.length),
-            spanValues:
-              preFormulaSpanValuesRef.current ?? spanValues ?? ([] as string[]),
-          });
-        }
-        pushFormulaHistoryEntry({
-          text: currentText,
-          caret,
-          spanValues,
-        });
-      } else if (formulaHistoryRef.current.active) {
-        resetFormulaHistory();
-      }
+      appendFormulaHistoryFromPrimaryEditor(() =>
+        getCursorPosition(inputRef.current!)
+      );
 
       if (
         !(
@@ -1050,7 +935,7 @@ const InputBox: React.FC = () => {
             refs.fxInput.current,
             refs.cellInput.current!,
             kcode,
-            preText.current
+            preTextRef.current
           );
           // clearSearchItemActiveClass();
           // formula.functionInputHanddler(
@@ -1067,13 +952,7 @@ const InputBox: React.FC = () => {
         });
       }
     },
-    [
-      refs.cellInput,
-      refs.fxInput,
-      setContext,
-      pushFormulaHistoryEntry,
-      resetFormulaHistory,
-    ]
+    [refs.cellInput, refs.fxInput, setContext, appendFormulaHistoryFromPrimaryEditor]
   );
 
   const onPaste = useCallback(

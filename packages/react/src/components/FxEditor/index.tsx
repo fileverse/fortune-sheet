@@ -36,10 +36,12 @@ import NameBox from "./NameBox";
 import FormulaSearch from "../SheetOverlay/FormulaSearch";
 import FormulaHint from "../SheetOverlay/FormulaHint";
 import usePrevious from "../../hooks/usePrevious";
+import { useFormulaEditorHistory } from "../../hooks/useFormulaEditorHistory";
 import { LucideIcon } from "../SheetOverlay/LucideIcon";
 
 import {
   countCommasBeforeCursor,
+  getCursorPosition,
   isLetterNumberPattern,
   setCursorPosition,
   buildFormulaSuggestionText,
@@ -52,6 +54,20 @@ const FxEditor: React.FC = () => {
   const [commaCount, setCommaCount] = useState(0);
   const { context, setContext, refs } = useContext(WorkbookContext);
   const lastKeyDownEventRef = useRef<KeyboardEvent>(null);
+  const {
+    formulaHistoryRef,
+    preTextRef,
+    resetFormulaHistory,
+    handleFormulaHistoryUndoRedo,
+    capturePreFormulaState,
+    appendFormulaHistoryFromPrimaryEditor,
+  } = useFormulaEditorHistory(
+    refs.fxInput,
+    refs.cellInput,
+    refs.fxInput,
+    setContext,
+    "fx"
+  );
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const [isHidenRC, setIsHidenRC] = useState<boolean>(false);
   const firstSelection = context.luckysheet_select_save?.[0];
@@ -165,6 +181,12 @@ const FxEditor: React.FC = () => {
     refs.globalCache,
   ]);
 
+  useEffect(() => {
+    if (_.isEmpty(context.luckysheetCellUpdate)) {
+      resetFormulaHistory();
+    }
+  }, [context.luckysheetCellUpdate, resetFormulaHistory]);
+
   const onFocus = useCallback(() => {
     if (context.allowEdit === false) {
       return;
@@ -259,6 +281,7 @@ const FxEditor: React.FC = () => {
     (e: React.MouseEvent) => {
       // @ts-expect-error later
       if (e.target.className.includes("sign-fortune")) return;
+      preTextRef.current = refs.fxInput?.current!.innerText;
       recentText.current = refs.fxInput?.current!.innerText;
       const formulaName = getActiveFormula()?.querySelector(
         ".luckysheet-formula-search-func"
@@ -285,10 +308,31 @@ const FxEditor: React.FC = () => {
       const currentCommaCount = countCommasBeforeCursor(refs.fxInput?.current!);
       setCommaCount(currentCommaCount);
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
+      capturePreFormulaState();
       recentText.current = refs.fxInput.current!.innerText;
       const { key } = e;
+      const currentInputText = refs.fxInput.current?.innerText?.trim() || "";
+
       if (key === "ArrowLeft" || key === "ArrowRight") {
         e.stopPropagation();
+      }
+
+      if ((e.metaKey || e.ctrlKey) && context.luckysheetCellUpdate.length > 0) {
+        if (e.code === "KeyZ" || e.code === "KeyY") {
+          const shouldUseFormulaHistory =
+            currentInputText.startsWith("=") ||
+            formulaHistoryRef.current.active;
+          if (shouldUseFormulaHistory) {
+            const handledByFormulaHistory = handleFormulaHistoryUndoRedo(
+              e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey)
+            );
+            if (handledByFormulaHistory) {
+              e.preventDefault();
+            }
+          }
+          e.stopPropagation();
+          return;
+        }
       }
 
       if (
@@ -475,8 +519,10 @@ const FxEditor: React.FC = () => {
       });
     },
     [
+      capturePreFormulaState,
       context.allowEdit,
       context.luckysheetCellUpdate.length,
+      handleFormulaHistoryUndoRedo,
       refs.fxInput,
       setContext,
     ]
@@ -524,6 +570,10 @@ const FxEditor: React.FC = () => {
     const kcode = e.keyCode;
     if (!kcode) return;
 
+    appendFormulaHistoryFromPrimaryEditor(() =>
+      getCursorPosition(refs.fxInput.current!)
+    );
+
     if (
       !(
         (kcode >= 112 && kcode <= 123) ||
@@ -550,7 +600,13 @@ const FxEditor: React.FC = () => {
         );
       });
     }
-  }, [refs.cellInput, refs.fxInput, setContext]);
+  }, [
+    appendFormulaHistoryFromPrimaryEditor,
+    context.isFlvReadOnly,
+    refs.cellInput,
+    refs.fxInput,
+    setContext,
+  ]);
 
   // Helper function to extract function name from input text
   const getFunctionNameFromInput = useCallback(() => {

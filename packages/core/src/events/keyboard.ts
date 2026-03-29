@@ -8,6 +8,7 @@ import {
   maybeRecoverDirtyRangeSelection,
   markRangeSelectionDirty,
 } from "../modules/formula";
+import { isInlineStringCell } from "../modules/inline-string";
 import {
   copy,
   deleteSelectedCellText,
@@ -89,12 +90,10 @@ export function handleGlobalEnter(
         column_focus: lastCellUpdate[1],
       },
     ];
-    moveHighlightCell(
-      ctx,
-      "down",
-      hideCRCount(ctx, "ArrowDown"),
-      "rangeOfSelect"
-    );
+    const rowStep = e.shiftKey
+      ? -hideCRCount(ctx, "ArrowUp")
+      : hideCRCount(ctx, "ArrowDown");
+    moveHighlightCell(ctx, "down", rowStep, "rangeOfSelect");
     // }
 
     // // 若有参数弹出框，隐藏
@@ -127,6 +126,20 @@ export function handleGlobalEnter(
   }
 }
 
+/** Non-empty for Ctrl/Cmd+Arrow "jump to edge" scans (includes inlineStr / formulas). */
+function cellCountsForDataEdge(cell: any): boolean {
+  if (cell == null) return false;
+  if (!_.isPlainObject(cell)) return !_.isNil(cell);
+  if (cell.f != null && String(cell.f) !== "") return true;
+  if (!_.isNil(cell.v)) return true;
+  if (isInlineStringCell(cell)) {
+    return (cell.ct?.s ?? []).some(
+      (seg: { v?: string }) => seg?.v != null && String(seg.v).length > 0
+    );
+  }
+  return false;
+}
+
 function moveToEdge(
   sheetData: CellMatrix,
   key: string,
@@ -151,10 +164,12 @@ function moveToEdge(
   let c = colDelta === 0 ? curr : selectedLimit;
 
   while (r >= 0 && c >= 0 && (colDelta === 0 ? r : c) < maxRowCol - 1) {
+    const here = sheetData?.[r]?.[c];
+    const behind = sheetData?.[r - rowDelta]?.[c - colDelta];
+    const ahead = sheetData?.[r + rowDelta]?.[c + colDelta];
     if (
-      !_.isNil(sheetData?.[r]?.[c]?.v) &&
-      (_.isNil(sheetData?.[r - rowDelta]?.[c - colDelta]?.v) ||
-        _.isNil(sheetData?.[r + rowDelta]?.[c + colDelta]?.v))
+      cellCountsForDataEdge(here) &&
+      (!cellCountsForDataEdge(behind) || !cellCountsForDataEdge(ahead))
     ) {
       break;
     } else {
@@ -170,13 +185,9 @@ function handleControlPlusArrowKey(
   e: KeyboardEvent,
   shiftPressed: boolean
 ) {
-  // Keep Cmd/Ctrl+Arrow navigation consistent with Arrow/Shift+Arrow guards.
-  if (
-    ctx.formulaCache.rangeSelectionActive === false &&
-    !maybeRecoverDirtyRangeSelection(ctx)
-  ) {
-    return;
-  }
+  // Do not gate jump-to-edge on formula range "dirty" state — that flag is for
+  // plain Arrow/Shift+Arrow while editing range tokens, and it was blocking
+  // Cmd/Ctrl+Arrow and Cmd/Ctrl+Shift+Arrow entirely.
   const isFormulaRefMode = isLegacyFormulaRangeMode(ctx);
   if (isFormulaRefMode) {
     ctx.formulaCache.rangeSelectionActive = true;

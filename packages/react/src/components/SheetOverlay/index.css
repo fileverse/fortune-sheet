@@ -336,9 +336,9 @@
   overflow: hidden;
   white-space: pre-wrap;
   outline: none;
-  -webkit-box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
-  -moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-  box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
+  /* -webkit-box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
+  -moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); */
+  /* box-shadow: 0 2px 5px rgb(0 0 0 / 40%); */
   word-wrap: break-word;
   background-color: rgb(255, 255, 255);
   font-size: 13px;

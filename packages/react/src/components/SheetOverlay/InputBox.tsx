@@ -766,6 +766,7 @@ const InputBox: React.FC = () => {
         // formula.setfreezonFuc(event);
         e.preventDefault();
       } else if (
+        !(e.metaKey || e.ctrlKey) &&
         e.key === "ArrowUp" &&
         context.luckysheetCellUpdate.length > 0 &&
         allowListNavigation
@@ -800,6 +801,7 @@ const InputBox: React.FC = () => {
         }
         e.preventDefault();
       } else if (
+        !(e.metaKey || e.ctrlKey) &&
         e.key === "ArrowDown" &&
         context.luckysheetCellUpdate.length > 0 &&
         allowListNavigation

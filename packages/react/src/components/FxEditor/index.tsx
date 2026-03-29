@@ -368,7 +368,11 @@ const FxEditor: React.FC = () => {
         return;
       }
 
-      if (e.key === "ArrowUp" && context.luckysheetCellUpdate.length > 0) {
+      if (
+        !(e.metaKey || e.ctrlKey) &&
+        e.key === "ArrowUp" &&
+        context.luckysheetCellUpdate.length > 0
+      ) {
         if (document.getElementById("luckysheet-formula-search-c")) {
           const formulaSearchContainer = document.getElementById(
             "luckysheet-formula-search-c"
@@ -399,6 +403,7 @@ const FxEditor: React.FC = () => {
         }
         e.preventDefault();
       } else if (
+        !(e.metaKey || e.ctrlKey) &&
         e.key === "ArrowDown" &&
         context.luckysheetCellUpdate.length > 0
       ) {

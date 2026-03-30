@@ -348,7 +348,8 @@ const FxEditor: React.FC = () => {
               markRangeSelectionDirty(draftCtx);
             });
           }, 0);
-        }}
+        }
+      }
       if (context.allowEdit === false) {
         return;
       }

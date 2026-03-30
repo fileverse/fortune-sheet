@@ -240,6 +240,41 @@ function isPlainTextCellOrFxEdit(
   return true;
 }
 
+/** Type-to-edit on a non-formula cell (or formula bar plain text); not F2 / double-click. */
+function isDirectPlainTextCellEdit(
+  ctx: Context,
+  cache: GlobalCache | undefined,
+  cellInput: HTMLDivElement,
+  fxInput: HTMLDivElement | null | undefined
+): boolean {
+  return (
+    cache?.enteredEditByTyping === true &&
+    ctx.luckysheetCellUpdate.length > 0 &&
+    isPlainTextCellOrFxEdit(ctx, cellInput, fxInput)
+  );
+}
+
+function commitDirectPlainCellEdit(
+  ctx: Context,
+  cache: GlobalCache | undefined,
+  cellInput: HTMLDivElement,
+  canvas?: CanvasRenderingContext2D
+) {
+  if (ctx.luckysheetCellUpdate.length === 0) return;
+  updateCell(
+    ctx,
+    ctx.luckysheetCellUpdate[0],
+    ctx.luckysheetCellUpdate[1],
+    cellInput,
+    undefined,
+    canvas
+  );
+  if (cache) {
+    cache.enteredEditByTyping = false;
+    clearTypeOverPending(cache);
+  }
+}
+
 function handleControlPlusArrowKey(
   ctx: Context,
   e: KeyboardEvent,
@@ -393,7 +428,8 @@ export function handleWithCtrlOrMetaKey(
   cellInput: HTMLDivElement,
   fxInput: HTMLDivElement | null | undefined,
   handleUndo: () => void,
-  handleRedo: () => void
+  handleRedo: () => void,
+  canvas?: CanvasRenderingContext2D
 ) {
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
@@ -403,9 +439,13 @@ export function handleWithCtrlOrMetaKey(
     ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) &&
     isPlainTextCellOrFxEdit(ctx, cellInput, fxInput)
   ) {
-    // Do not run spreadsheet jump-to-edge / extend-selection; preserve native
-    // contenteditable behavior (Google Docs–style line/paragraph navigation).
-    return;
+    if (isDirectPlainTextCellEdit(ctx, cache, cellInput, fxInput)) {
+      commitDirectPlainCellEdit(ctx, cache, cellInput, canvas);
+      // Fall through: run jump-to-edge / extend-selection on the grid.
+    } else {
+      // F2 / double-click plain text: keep native contenteditable caret behavior.
+      return;
+    }
   }
 
   if (e.shiftKey) {
@@ -990,7 +1030,8 @@ export async function handleGlobalKeyDown(
         cellInput,
         fxInput,
         handleUndo,
-        handleRedo
+        handleRedo,
+        canvas
       );
       return;
     }
@@ -1001,6 +1042,9 @@ export async function handleGlobalKeyDown(
         kstr === "ArrowLeft" ||
         kstr === "ArrowRight")
     ) {
+      if (isDirectPlainTextCellEdit(ctx, cache, cellInput, fxInput)) {
+        commitDirectPlainCellEdit(ctx, cache, cellInput, canvas);
+      }
       handleShiftWithArrowKey(ctx, e);
     } else if (kstr === "Escape") {
       ctx.contextMenu = {};

@@ -459,7 +459,24 @@ const FxEditor: React.FC = () => {
         }, 0);
       }
 
-      if (key === "ArrowLeft" || key === "ArrowRight") {
+      // Block bubbling so in-editor Left/Right still run `rangeHightlightselected`
+      // below — except for type-to-edit plain text, where core must see
+      // Shift/Cmd/Ctrl + Arrow (including Cmd+Shift+Arrow) to commit and move the grid.
+      const isArrowKey =
+        key === "ArrowUp" ||
+        key === "ArrowDown" ||
+        key === "ArrowLeft" ||
+        key === "ArrowRight";
+      const isDirectPlainTypeEdit =
+        context.luckysheetCellUpdate.length > 0 &&
+        refs.globalCache?.enteredEditByTyping === true &&
+        !currentInputText.startsWith("=");
+      const sheetArrowShortcut =
+        isArrowKey && (e.metaKey || e.ctrlKey || e.shiftKey);
+      if (
+        (key === "ArrowLeft" || key === "ArrowRight") &&
+        !(isDirectPlainTypeEdit && sheetArrowShortcut)
+      ) {
         e.stopPropagation();
       }
 

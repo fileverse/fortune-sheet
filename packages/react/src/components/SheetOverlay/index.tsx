@@ -52,6 +52,21 @@ import DropDownList from "../DataVerification/DropdownList";
 import IframeBoxs from "../IFrameBoxs/iFrameBoxs";
 import ErrorBoxes from "../ErrorState";
 
+/** Subtle fill + dotted border for formula range overlay (`#rrggbb` from core `colors`). */
+function formulaRangeHighlightHcStyle(hex: string) {
+  const h = hex.replace("#", "");
+  if (h.length !== 6) {
+    return { backgroundColor: hex, borderColor: hex } as const;
+  }
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return {
+    backgroundColor: `rgba(${r},${g},${b},0.08)`,
+    borderColor: hex,
+  } as const;
+}
+
 const SheetOverlay: React.FC = () => {
   const { context, setContext, settings, refs } = useContext(WorkbookContext);
   const { info, rightclick } = locale(context);
@@ -487,16 +502,8 @@ const SheetOverlay: React.FC = () => {
                 ))}
                 <div
                   className="fortune-selection-copy-hc"
-                  style={{ backgroundColor }}
+                  style={formulaRangeHighlightHcStyle(backgroundColor)}
                 />
-                {["lt", "rt", "lb", "rb"].map((d) => (
-                  <div
-                    key={d}
-                    data-type={d}
-                    className={`fortune-selection-highlight-${d} luckysheet-highlight`}
-                    style={{ backgroundColor }}
-                  />
-                ))}
               </div>
             );
           })}

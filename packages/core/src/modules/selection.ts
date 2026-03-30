@@ -1636,9 +1636,8 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${
-              sheet.config.columnlen[c.toString()]
-            }px"></colgroup>`;
+            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
+              }px"></colgroup>`;
           }
         }
 
@@ -1913,33 +1912,26 @@ export function rangeValueToHtml(
         );
         column = replaceHtml(column, { style, span, cellData });
 
-        if (_.isNil(c_value)) {
-          c_value = getCellValue(r, c, d);
-        }
-        // if (
-        //   _.isNil(c_value) &&
-        //   d[r][c] &&
-        //   d[r][c].ct &&
-        //   d[r][c].ct.t === "inlineStr"
-        // ) {
-        //   c_value = d[r][c].ct.s
-        //     .map((val) => {
-        //       const font = $("<font></font>");
-        //       val.fs && font.css("font-size", val.fs);
-        //       val.bl && font.css("font-weight", val.border);
-        //       val.it && font.css("font-style", val.italic);
-        //       val.cl === 1 && font.css("text-decoration", "underline");
-        //       font.text(val.v);
-        //       return font[0].outerHTML;
-        //     })
-        //     .join("");
-        // }
+        let cellHtml = "";
 
-        if (_.isNil(c_value)) {
-          c_value = "";
+        if (cell && isInlineStringCell(cell)) {
+          cellHtml = getInlineStringHTML(r, c, d);
+        } else {
+          if (_.isNil(c_value)) {
+            c_value = getCellValue(r, c, d);
+          }
+
+          if (_.isNil(c_value)) {
+            c_value = "";
+          }
+
+          cellHtml = escapeHTMLTag(String(c_value)).replace(
+            /&lt;br\s*\/?&gt;/g,
+            "<br>"
+          );
         }
 
-        column += escapeHTMLTag(c_value);
+        column += cellHtml;
       } else {
         let style = "";
 
@@ -1984,9 +1976,8 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${
-              sheet.config.columnlen[c.toString()]
-            }px"></colgroup>`;
+            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
+              }px"></colgroup>`;
           }
         }
 

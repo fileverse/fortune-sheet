@@ -1636,8 +1636,9 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
-              }px"></colgroup>`;
+            colgroup += `<colgroup width="${
+              sheet.config.columnlen[c.toString()]
+            }px"></colgroup>`;
           }
         }
 
@@ -1915,7 +1916,10 @@ export function rangeValueToHtml(
         let cellHtml = "";
 
         if (cell && isInlineStringCell(cell)) {
-          cellHtml = getInlineStringHTML(r, c, d);
+          cellHtml = getInlineStringHTML(r, c, d, {
+            useSemanticMarkup: true,
+            inheritedStyle: styleObj,
+          });
         } else {
           if (_.isNil(c_value)) {
             c_value = getCellValue(r, c, d);
@@ -1976,8 +1980,9 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
-              }px"></colgroup>`;
+            colgroup += `<colgroup width="${
+              sheet.config.columnlen[c.toString()]
+            }px"></colgroup>`;
           }
         }
 
@@ -2100,7 +2105,10 @@ export function copy(ctx: Context) {
     let innerContent: string;
     if (cell && isInlineStringCell(cell)) {
       // Rich text cell: preserve per-segment formatting (bold, italic, color, etc.)
-      innerContent = getInlineStringHTML(r, c, flowdata!);
+      innerContent = getInlineStringHTML(r, c, flowdata!, {
+        useSemanticMarkup: true,
+        inheritedStyle: mergedStyle,
+      });
     } else {
       const displayValue =
         getCellValue(r, c, flowdata!, "m") ??
@@ -2112,7 +2120,15 @@ export function copy(ctx: Context) {
         "<br>"
       );
     }
-    cpdata = `<span data-type="fortune-copy-action-span" style="${styleStr}">${innerContent}</span>`;
+
+    const hasMultilineContent = /<br\s*\/?>|[\r\n]/i.test(innerContent);
+    const cellData = encodeURIComponent(
+      JSON.stringify({ ...(cell ?? {}), _srcRow: r, _srcCol: c })
+    );
+
+    cpdata = hasMultilineContent
+      ? `<table data-type="fortune-copy-action-table"><tr><td style="white-space: pre-line;${styleStr}" data-fortune-cell="${cellData}"><span data-type="fortune-copy-action-span" data-sheets-root="1" style="${styleStr}">${innerContent}</span></td></tr></table>`
+      : `<span data-type="fortune-copy-action-span" data-sheets-root="1" style="${styleStr}">${innerContent}</span>`;
   } else {
     cpdata = rangeValueToHtml(
       ctx,

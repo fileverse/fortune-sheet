@@ -1691,7 +1691,60 @@ export function getStyleByCell(
   return style;
 }
 
-export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
+function normalizeInlineStringClipboardStyle(style: Record<string, any>) {
+  const normalizedStyle = { ...style };
+  const decorations = new Set<string>();
+
+  if (typeof normalizedStyle.textDecoration === "string") {
+    normalizedStyle.textDecoration
+      .split(/\s+/)
+      .filter(Boolean)
+      .forEach((decoration: string) => decorations.add(decoration));
+  }
+
+  if (normalizedStyle.borderBottom) {
+    decorations.add("underline");
+    normalizedStyle.textDecorationSkipInk = "none";
+    delete normalizedStyle.borderBottom;
+  }
+
+  if (decorations.size > 0) {
+    normalizedStyle.textDecoration = Array.from(decorations).join(" ");
+  }
+
+  return normalizedStyle;
+}
+
+function buildClipboardCompatibleInlineRuns(text: string, styleAttr: string) {
+  const normalizedText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const segments = normalizedText.split("\n");
+
+  return segments
+    .map((segment, index) => {
+      let html = "";
+
+      if (segment.length > 0) {
+        html += `<span style='${styleAttr}'>${segment}</span>`;
+      }
+
+      if (index < segments.length - 1) {
+        html += `<span style='${styleAttr}'><br></span>`;
+      }
+
+      return html;
+    })
+    .join("");
+}
+
+export function getInlineStringHTML(
+  r: number,
+  c: number,
+  data: CellMatrix,
+  options?: {
+    useSemanticMarkup?: boolean;
+    inheritedStyle?: Record<string, string>;
+  }
+) {
   const ct = getCellValue(r, c, data, "ct");
   if (isInlineStringCT(ct)) {
     const strings = ct.s;
@@ -1699,7 +1752,13 @@ export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
     for (let i = 0; i < strings.length; i += 1) {
       const strObj = strings[i];
       if (strObj.v) {
-        const style = getFontStyleByCell(strObj);
+        const baseStyle = {
+          ...(options?.useSemanticMarkup ? options.inheritedStyle ?? {} : {}),
+          ...getFontStyleByCell(strObj),
+        };
+        const style = options?.useSemanticMarkup
+          ? normalizeInlineStringClipboardStyle(baseStyle)
+          : baseStyle;
         // Explicitly set font-weight:normal for non-bold segments so that apps
         // like Google Sheets don't inherit bold from an adjacent sibling span.
         if (!style.fontWeight) {
@@ -1708,13 +1767,21 @@ export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
         const { link } = strObj as any;
         if (link?.linkType && link?.linkAddress) {
           style.color = style.color || "rgb(0, 0, 255)";
-          style.borderBottom = style.borderBottom || "1px solid rgb(0, 0, 255)";
+          if (options?.useSemanticMarkup) {
+            style.textDecoration = style.textDecoration
+              ? `${style.textDecoration} underline`
+              : "underline";
+            style.textDecorationSkipInk = "none";
+          } else {
+            style.borderBottom =
+              style.borderBottom || "1px solid rgb(0, 0, 255)";
+          }
         }
         const styleStr = _.map(style, (v, key) => {
           return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
         }).join("");
         const dataAttrs =
-          link?.linkType && link?.linkAddress
+          !options?.useSemanticMarkup && link?.linkType && link?.linkAddress
             ? ` data-link-type='${String(link.linkType).replace(
                 /'/g,
                 "&#39;"
@@ -1723,12 +1790,17 @@ export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
                 "&#39;"
               )}'`
             : "";
-        // Convert newlines to <br> so apps that don't honour white-space:pre-wrap
-        // (e.g. Google Sheets clipboard parser) still see proper line breaks.
-        const segmentText = strObj.v
-          .replace(/\r\n/g, "<br>")
-          .replace(/\n/g, "<br>");
-        value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${segmentText}</span>`;
+
+        if (options?.useSemanticMarkup) {
+          value += buildClipboardCompatibleInlineRuns(strObj.v, styleStr);
+        } else {
+          // Convert newlines to <br> so apps that don't honour white-space:pre-wrap
+          // (e.g. Google Sheets clipboard parser) still see proper line breaks.
+          const segmentText = strObj.v
+            .replace(/\r\n/g, "<br>")
+            .replace(/\n/g, "<br>");
+          value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${segmentText}</span>`;
+        }
       }
     }
     return value;

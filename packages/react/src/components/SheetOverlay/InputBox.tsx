@@ -725,6 +725,7 @@ const InputBox: React.FC = () => {
                   column_focus: anchorCol,
                 },
               ];
+              markRangeSelectionDirty(draftCtx);
             });
           }, 0);
         }

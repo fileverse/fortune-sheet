@@ -1,13 +1,19 @@
 import _ from "lodash";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { LucideIcon, Tooltip } from "@fileverse/ui";
 import { UNFilter } from "./constant";
 import WorkbookContext from "../../../context";
 import "./index.css";
 
-const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
-  props
-) => {
+const FormulaSearch: React.FC<
+  React.HTMLAttributes<HTMLDivElement> & { from?: string }
+> = ({ from, ...divProps }) => {
   const {
     context,
     settings: { isAuthorized },
@@ -43,40 +49,72 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
     : context.functionCandidates.filter((item) => item.t !== 20);
 
   const firstSelection = context.luckysheet_select_save?.[0];
+  const cellHeightPx =
+    firstSelection?.height_move != null
+      ? Number(firstSelection.height_move)
+      : 24;
+  /** Default below cell; 0 covered the active cell until layout ran. */
+  const belowCellTop = cellHeightPx + 4;
+
   const hintRef = useRef<HTMLDivElement>(null);
-  const [top, setTop] = useState(0);
-  const calcuatePopUpPlacement = () => {
-    if (
-      !firstSelection?.top?.toString() ||
-      !firstSelection.height_move?.toString() ||
-      !hintRef.current
-    )
+  const [top, setTop] = useState(belowCellTop);
+
+  const applyPlacement = useCallback(() => {
+    if (firstSelection?.top == null || firstSelection.height_move == null) {
+      setTop(belowCellTop);
       return;
-    const hintHeight = 360;
-    const inputBoxTop =
-      parseInt(
-        document.getElementById("luckysheet-input-box")?.style.top || "0",
-        10
-      ) - 85;
-    const inputBottom = inputBoxTop + firstSelection.height_move;
-    const availableBelow = window.innerHeight - inputBottom;
-    const hintAbove = hintHeight > availableBelow;
-    const selectionHeight = firstSelection?.height_move || 0;
-    const divOffset = hintRef.current?.offsetHeight || 0;
-    let topV = hintAbove
-      ? selectionHeight - (divOffset + 80)
-      : selectionHeight + 4;
-    const el = document.getElementsByClassName("fx-hint")?.[0];
-    // @ts-ignore
-    if (el && el?.style?.display !== "none") {
+    }
+
+    const fromFx = from === "fx";
+    const cellH = Number(firstSelection.height_move) || cellHeightPx;
+
+    if (fromFx) {
+      setTop(25);
+      return;
+    }
+
+    const innerEl = hintRef.current;
+    const popupHeight = Math.min(innerEl?.offsetHeight || 360, 360);
+    const inputBox = document.getElementById("luckysheet-input-box");
+    const rect = inputBox?.getBoundingClientRect();
+    if (!rect) {
+      setTop(cellH + 4);
+      return;
+    }
+
+    const cellBottomViewport = rect.top + cellH;
+    const availableBelow = window.innerHeight - cellBottomViewport - 12;
+    const preferBelow = popupHeight <= availableBelow;
+
+    let topV = preferBelow ? cellH + 4 : -(popupHeight + 8);
+
+    const fxHint = document.getElementsByClassName("fx-hint")?.[0] as
+      | HTMLElement
+      | undefined;
+    if (fxHint && fxHint.style.display !== "none") {
       topV = 25;
     }
     setTop(topV);
-  };
+  }, [
+    belowCellTop,
+    cellHeightPx,
+    firstSelection?.height_move,
+    firstSelection?.top,
+    from,
+  ]);
 
-  useEffect(() => {
-    calcuatePopUpPlacement();
-  });
+  useLayoutEffect(() => {
+    applyPlacement();
+    const id = requestAnimationFrame(applyPlacement);
+    return () => {
+      cancelAnimationFrame(id);
+    };
+  }, [
+    applyPlacement,
+    context.defaultCandidates?.length,
+    context.functionCandidates?.length,
+    context.functionHint,
+  ]);
 
   if (
     _.isEmpty(context.functionCandidates) &&
@@ -87,8 +125,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
   return (
     <div
       className={`flex color-border-default border flex-col luckysheet-formula-search-c-p custom-scroll ${
-        // @ts-ignore
-        props?.from === "fx" ? "fx-search" : "cell-search"
+        from === "fx" ? "fx-search" : "cell-search"
       }`}
       id="luckysheet-formula-search-c-p"
       style={{
@@ -96,7 +133,7 @@ const FormulaSearch: React.FC<React.HTMLAttributes<HTMLDivElement>> = (
       }}
     >
       <div
-        {...props}
+        {...divProps}
         ref={hintRef}
         id="luckysheet-formula-search-c"
         className="luckysheet-formula-search-c"

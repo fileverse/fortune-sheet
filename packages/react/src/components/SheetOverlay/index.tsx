@@ -23,6 +23,7 @@ import {
   getCellHyperlink,
   showLinkCard,
   isAllowEdit,
+  israngeseleciton,
   Context,
   GlobalCache,
   onCellsMoveStart,
@@ -76,6 +77,17 @@ const SheetOverlay: React.FC = () => {
             refs.canvas.current!.getContext("2d")!
           );
 
+          // After picking a cell reference from the formula bar, do not move
+          // focus to the in-cell editor — that breaks the next reference click
+          // (rangeSetValue / caret logic assume the active formula editor).
+          const keepFormulaBarFocused =
+            draftCtx.luckysheetCellUpdate.length > 0 &&
+            draftCtx.formulaCache.formulaEditorOwner === "fx" &&
+            (draftCtx.formulaCache.rangestart ||
+              draftCtx.formulaCache.rangedrag_column_start ||
+              draftCtx.formulaCache.rangedrag_row_start ||
+              israngeseleciton(draftCtx));
+
           if (
             !_.isEmpty(draftCtx.luckysheet_select_save?.[0]) &&
             refs.cellInput.current
@@ -88,7 +100,11 @@ const SheetOverlay: React.FC = () => {
               });
             } else {
               setTimeout(() => {
-                refs.cellInput.current?.focus();
+                if (keepFormulaBarFocused && refs.fxInput.current) {
+                  refs.fxInput.current.focus({ preventScroll: true });
+                } else {
+                  refs.cellInput.current?.focus();
+                }
               });
             }
           }

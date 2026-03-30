@@ -14,6 +14,7 @@ import {
   rangeHightlightselected,
   getFormulaEditorOwner,
   setFormulaEditorOwner,
+  createRangeHightlight,
   valueShowEs,
   isShowHidenCR,
   escapeHTMLTag,
@@ -80,6 +81,7 @@ const FxEditor: React.FC = () => {
   const prevCellUpdate = usePrevious<any[]>(context.luckysheetCellUpdate);
   const prevSheetId = usePrevious(context.currentSheetId);
   const recentText = useRef("");
+  const formulaAnchorCellRef = useRef<[number, number] | null>(null);
 
   const handleShowFormulaHint = () => {
     localStorage.setItem("formulaMore", String(showFormulaHint));
@@ -203,6 +205,17 @@ const FxEditor: React.FC = () => {
     }
   }, [context.luckysheetCellUpdate, resetFormulaHistory]);
 
+  useEffect(() => {
+    if (_.isEmpty(context.luckysheetCellUpdate) || !refs.fxInput.current) {
+      formulaAnchorCellRef.current = null;
+      return;
+    }
+    const inputText = refs.fxInput.current.innerText?.trim() || "";
+    if (!inputText.startsWith("=")) {
+      formulaAnchorCellRef.current = null;
+    }
+  }, [context.luckysheetCellUpdate, refs.fxInput]);
+
   const onFocus = useCallback(() => {
     if (context.allowEdit === false) {
       return;
@@ -316,6 +329,26 @@ const FxEditor: React.FC = () => {
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const anchor = formulaAnchorCellRef.current;
+        if (anchor != null) {
+          const [anchorRow, anchorCol] = anchor;
+          // skipNextAnchorSelectionSyncRef.current = true;
+          setTimeout(() => {
+            setContext((draftCtx) => {
+              draftCtx.luckysheetCellUpdate = [anchorRow, anchorCol];
+              draftCtx.luckysheet_select_save = [
+                {
+                  row: [anchorRow, anchorRow],
+                  column: [anchorCol, anchorCol],
+                  row_focus: anchorRow,
+                  column_focus: anchorCol,
+                },
+              ];
+              markRangeSelectionDirty(draftCtx);
+            });
+          }, 0);
+        }}
       if (context.allowEdit === false) {
         return;
       }
@@ -329,6 +362,65 @@ const FxEditor: React.FC = () => {
       recentText.current = refs.fxInput.current!.innerText;
       const { key } = e;
       const currentInputText = refs.fxInput.current?.innerText?.trim() || "";
+
+      if (
+        (key === "=" || currentInputText.startsWith("=")) &&
+        context.luckysheetCellUpdate.length === 2 &&
+        formulaAnchorCellRef.current == null
+      ) {
+        setContext((draftCtx) => {
+          draftCtx.formulaCache.rangeSelectionActive = null;
+        });
+        formulaAnchorCellRef.current = [
+          context.luckysheetCellUpdate[0],
+          context.luckysheetCellUpdate[1],
+        ];
+      }
+
+      if (key === "(" && currentInputText.startsWith("=")) {
+        setContext((draftCtx) => {
+          draftCtx.formulaCache.rangeSelectionActive = null;
+        });
+      }
+
+      if (
+        key === "," &&
+        context.luckysheetCellUpdate.length > 0 &&
+        currentInputText.startsWith("=") &&
+        formulaAnchorCellRef.current
+      ) {
+        setContext((draftCtx) => {
+          draftCtx.formulaCache.rangeSelectionActive = null;
+        });
+        const [anchorRow, anchorCol] = formulaAnchorCellRef.current;
+        setTimeout(() => {
+          setContext((draftCtx) => {
+            draftCtx.luckysheetCellUpdate = [anchorRow, anchorCol];
+            draftCtx.luckysheet_select_save = [
+              {
+                row: [anchorRow, anchorRow],
+                column: [anchorCol, anchorCol],
+                row_focus: anchorRow,
+                column_focus: anchorCol,
+              },
+            ];
+            draftCtx.formulaRangeSelect = undefined;
+            draftCtx.formulaCache.selectingRangeIndex = -1;
+            draftCtx.formulaCache.func_selectedrange = undefined;
+            draftCtx.formulaCache.rangechangeindex = undefined;
+            draftCtx.formulaCache.rangestart = false;
+            draftCtx.formulaCache.rangedrag_column_start = false;
+            draftCtx.formulaCache.rangedrag_row_start = false;
+            createRangeHightlight(
+              draftCtx,
+              refs.fxInput.current?.innerHTML ||
+                refs.cellInput.current?.innerHTML ||
+                ""
+            );
+            moveHighlightCell(draftCtx, "down", 0, "rangeOfSelect");
+          });
+        }, 0);
+      }
 
       if (key === "ArrowLeft" || key === "ArrowRight") {
         e.stopPropagation();
@@ -543,8 +635,9 @@ const FxEditor: React.FC = () => {
     [
       capturePreFormulaState,
       context.allowEdit,
-      context.luckysheetCellUpdate.length,
+      context.luckysheetCellUpdate,
       handleFormulaHistoryUndoRedo,
+      refs.cellInput,
       refs.fxInput,
       setContext,
     ]
@@ -575,6 +668,20 @@ const FxEditor: React.FC = () => {
 
   const onChange = useCallback(() => {
     if (context.isFlvReadOnly) return;
+    const fxEl = refs.fxInput.current;
+    if (
+      fxEl &&
+      context.luckysheetCellUpdate.length === 2 &&
+      formulaAnchorCellRef.current == null
+    ) {
+      const t = fxEl.innerText?.trim() || "";
+      if (t.startsWith("=")) {
+        formulaAnchorCellRef.current = [
+          context.luckysheetCellUpdate[0],
+          context.luckysheetCellUpdate[1],
+        ];
+      }
+    }
     handleHideShowHint();
     setShowSearchHint(
       shouldShowFormulaFunctionList(refs.fxInput?.current ?? null)
@@ -644,6 +751,7 @@ const FxEditor: React.FC = () => {
   }, [
     appendFormulaHistoryFromPrimaryEditor,
     context.isFlvReadOnly,
+    context.luckysheetCellUpdate,
     refs.cellInput,
     refs.fxInput,
     setContext,
@@ -739,7 +847,14 @@ const FxEditor: React.FC = () => {
 
   return (
     <div>
-      <div className="fortune-fx-editor" ref={divRef}>
+      <div
+        className={
+          showFxFormulaChrome
+            ? "fortune-fx-editor fortune-fx-editor--formula-owner"
+            : "fortune-fx-editor"
+        }
+        ref={divRef}
+      >
         <NameBox />
         <div
           className="fortune-fx-icon"

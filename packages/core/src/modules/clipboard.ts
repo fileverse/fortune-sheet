@@ -4,12 +4,7 @@ export default class clipboard {
     // The legacy execCommand("copy") approach serializes computed DOM styles
     // (Tailwind --tw-* vars, box-sizing, scrollbar-*, etc.) onto every element.
     if (typeof navigator?.clipboard?.write === "function") {
-      // For single-cell copies, replace <br> with actual newline characters in
-      // the HTML so that external apps (e.g. Google Sheets) don't split the
-      // content into multiple rows. The span already carries white-space:pre-wrap
-      // so \n renders identically to <br>.
-      const isSingleCell = str.includes("fortune-copy-action-span");
-      const htmlStr = isSingleCell ? str.replace(/<br\s*\/?>/gi, "\n") : str;
+      const htmlStr = str;
       const htmlBlob = new Blob([htmlStr], { type: "text/html" });
       const plainText = str
         .replace(/<br\s*\/?>/gi, "\n")

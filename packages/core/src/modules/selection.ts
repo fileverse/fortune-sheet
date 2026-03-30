@@ -2097,7 +2097,6 @@ export function copy(ctx: Context) {
       fontWeight: "400",
       fontStyle: "normal",
       textAlign: "left",
-      whiteSpace: "pre-wrap",
       backgroundColor: "transparent",
     };
     const styleObj = getStyleByCell(ctx, flowdata!, r, c);

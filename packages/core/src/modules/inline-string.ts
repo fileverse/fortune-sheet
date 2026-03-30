@@ -457,8 +457,28 @@ export function updateInlineStringFormat(
         let mid = "";
         let right = "";
         const s1 = 0;
-        const s2 = startOffset;
-        const s3 = endOffset;
+        // startOffset/endOffset are character positions within the specific
+        // startContainer text node, but content is span.innerHTML which may
+        // include <br> tags (and other elements) before that text node when
+        // the cell has multiple lines. Compute the absolute HTML offset by
+        // summing the innerHTML contributions of all preceding sibling nodes.
+        let htmlPre = 0;
+        if (
+          startContainer.nodeType === Node.TEXT_NODE &&
+          span.childNodes.length > 1
+        ) {
+          for (let i = 0; i < span.childNodes.length; i += 1) {
+            const child = span.childNodes[i];
+            if (child === startContainer) break;
+            if (child.nodeType === Node.TEXT_NODE) {
+              htmlPre += (child.textContent || "").length;
+            } else if (child.nodeType === Node.ELEMENT_NODE) {
+              htmlPre += (child as HTMLElement).outerHTML.length;
+            }
+          }
+        }
+        const s2 = htmlPre + startOffset;
+        const s3 = htmlPre + endOffset;
         const s4 = content.length;
         left = content.substring(s1, s2);
         mid = content.substring(s2, s3);

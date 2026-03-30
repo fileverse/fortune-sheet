@@ -381,6 +381,8 @@ export function handleCellAreaMouseDown(
       israngeseleciton(ctx)
     ) {
       // 公式选区
+      const formulaEditorForCmdComma =
+        getFormulaEditorOwner(ctx) === "fx" && fxInput ? fxInput : cellInput;
       let rowseleted = [row_index, row_index_ed];
       let columnseleted = [col_index, col_index_ed];
 
@@ -491,18 +493,20 @@ export function handleCellAreaMouseDown(
 
         ctx.formulaCache.func_selectedrange = last;
       } else if (
-        e.ctrlKey &&
-        _.last(cellInput.querySelectorAll("span"))?.innerText !== ","
+        (e.ctrlKey || e.metaKey) &&
+        _.last(formulaEditorForCmdComma.querySelectorAll("span"))?.innerText !==
+          ","
       ) {
-        // 按住ctrl 选择选区时  先处理上一个选区
-        let vText = cellInput.innerText;
+        // Hold Ctrl/Cmd while clicking cells to append comma-separated refs (second+ click).
+        let didCmdCommaFormulaHtml = false;
+        let vText = formulaEditorForCmdComma.innerText;
 
         if (vText[vText.length - 1] === ")") {
           vText = vText.substring(0, vText.length - 1); // 先删除最后侧的圆括号)
         }
 
         if (vText.length > 0) {
-          const lastWord = vText.substring(vText.length - 1, 1);
+          const lastWord = vText.slice(-1);
           if (lastWord !== "," && lastWord !== "=" && lastWord !== "(") {
             vText += ",";
           }
@@ -531,21 +535,30 @@ export function handleCellAreaMouseDown(
 
           /* 在显示前重新 + 右侧的圆括号) */
           cellInput.innerHTML = vText;
+          if (fxInput) fxInput.innerHTML = vText;
 
           cancelFunctionrangeSelected(ctx);
           createRangeHightlight(ctx, vText);
+          didCmdCommaFormulaHtml = true;
         }
 
         ctx.formulaCache.rangestart = false;
         ctx.formulaCache.rangedrag_column_start = false;
         ctx.formulaCache.rangedrag_row_start = false;
 
-        if (fxInput) fxInput.innerHTML = vText;
-
-        rangeHightlightselected(ctx, cellInput);
+        rangeHightlightselected(ctx, formulaEditorForCmdComma);
 
         // 再进行 选区的选择
         israngeseleciton(ctx);
+        if (didCmdCommaFormulaHtml) {
+          // After a comma (or refreshed formula HTML), the next ref must be a new range
+          // span, not replace the previous one. israngeseleciton may not run when the
+          // selection is on the sheet; last-child is the delimiter after which to insert.
+          ctx.formulaCache.rangechangeindex = undefined;
+          const ch = formulaEditorForCmdComma.childNodes;
+          ctx.formulaCache.rangeSetValueTo =
+            ch.length > 0 ? ch[ch.length - 1] : undefined;
+        }
         ctx.formulaCache.func_selectedrange = {
           left,
           width,

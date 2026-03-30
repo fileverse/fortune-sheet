@@ -754,6 +754,7 @@ const InputBox: React.FC = () => {
         e.key === "ArrowDown" ||
         e.key === "ArrowLeft" ||
         e.key === "ArrowRight";
+      const isInPlaceEditMode = refs.globalCache?.enteredEditByTyping !== true;
 
       if (e.key === "Delete" || e.key === "Backspace") {
         const anchor = formulaAnchorCellRef.current;
@@ -823,7 +824,8 @@ const InputBox: React.FC = () => {
         !(e.metaKey || e.ctrlKey) &&
         e.key === "ArrowUp" &&
         context.luckysheetCellUpdate.length > 0 &&
-        allowListNavigation
+        allowListNavigation &&
+        !(e.shiftKey && isInPlaceEditMode)
       ) {
         if (document.getElementById("luckysheet-formula-search-c")) {
           const formulaSearchContainer = document.getElementById(
@@ -858,7 +860,8 @@ const InputBox: React.FC = () => {
         !(e.metaKey || e.ctrlKey) &&
         e.key === "ArrowDown" &&
         context.luckysheetCellUpdate.length > 0 &&
-        allowListNavigation
+        allowListNavigation &&
+        !(e.shiftKey && isInPlaceEditMode)
       ) {
         if (document.getElementById("luckysheet-formula-search-c")) {
           const formulaSearchContainer = document.getElementById(

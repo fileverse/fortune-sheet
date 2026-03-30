@@ -580,6 +580,7 @@ export function handleCellAreaMouseDown(
       ctx.formulaCache.rangestart = true;
       ctx.formulaCache.rangedrag_column_start = false;
       ctx.formulaCache.rangedrag_row_start = false;
+      ctx.formulaCache.rangeSelectionActive = true;
 
       // eslint-disable-next-line no-console
       rangeSetValue(
@@ -4763,6 +4764,7 @@ export function handleRowHeaderMouseDown(
       ctx.formulaCache.rangedrag_row_start = true;
       ctx.formulaCache.rangestart = false;
       ctx.formulaCache.rangedrag_column_start = false;
+      ctx.formulaCache.rangeSelectionActive = true;
 
       ctx.formulaCache.selectingRangeIndex = ctx.formulaCache.rangechangeindex!;
       if (
@@ -5207,6 +5209,7 @@ export function handleColumnHeaderMouseDown(
       ctx.formulaCache.rangedrag_column_start = true;
       ctx.formulaCache.rangestart = false;
       ctx.formulaCache.rangedrag_row_start = false;
+      ctx.formulaCache.rangeSelectionActive = true;
 
       ctx.formulaCache.selectingRangeIndex = ctx.formulaCache.rangechangeindex!;
       if (

@@ -777,6 +777,7 @@ const InputBox: React.FC = () => {
               const el = refs.cellInput.current;
               if (el && el.innerText.trim().startsWith("=")) {
                 createRangeHightlight(draftCtx, el.innerHTML);
+                rangeHightlightselected(draftCtx, el);
               }
             });
           }, 0);
@@ -1016,6 +1017,14 @@ const InputBox: React.FC = () => {
             kcode,
             preTextRef.current
           );
+          const cellEl = refs.cellInput.current;
+          if (
+            cellEl &&
+            (cellEl.innerText?.trim().startsWith("=") ||
+              cellEl.textContent?.trim().startsWith("="))
+          ) {
+            rangeHightlightselected(draftCtx, cellEl);
+          }
           // clearSearchItemActiveClass();
           // formula.functionInputHanddler(
           //   $("#luckysheet-functionbox-cell"),

@@ -2844,6 +2844,25 @@ export function getFormulaEditorOwner(ctx: Context): "cell" | "fx" | null {
   return null;
 }
 
+function getActiveFormulaEditorElement(ctx: Context): HTMLDivElement | null {
+  const cellEditor = document.getElementById(
+    "luckysheet-rich-text-editor"
+  ) as HTMLDivElement | null;
+  const fxEditor = document.getElementById(
+    "luckysheet-functionbox-cell"
+  ) as HTMLDivElement | null;
+  const owner = getFormulaEditorOwner(ctx);
+
+  if (owner === "fx") return fxEditor ?? cellEditor;
+  if (owner === "cell") return cellEditor ?? fxEditor;
+
+  const activeId = document.activeElement?.id;
+  if (activeId === "luckysheet-functionbox-cell") return fxEditor ?? cellEditor;
+  if (activeId === "luckysheet-rich-text-editor") return cellEditor ?? fxEditor;
+
+  return cellEditor ?? fxEditor;
+}
+
 function getCurrentFormulaSlotTextBeforeCaret(
   editor: HTMLElement,
   caretOffset: number
@@ -3646,9 +3665,7 @@ export function israngeseleciton(ctx: Context, istooltip?: boolean) {
 // "formula reference selection" flow (i.e., where range tokens should be
 // inserted/updated by keyboard/mouse navigation).
 export function isFormulaReferenceInputMode(ctx: Context): boolean {
-  const editor = document.getElementById(
-    "luckysheet-rich-text-editor"
-  ) as HTMLDivElement | null;
+  const editor = getActiveFormulaEditorElement(ctx);
   const inputText = (editor?.innerText || "").trim();
 
   const refFlowActive =
@@ -3684,9 +3701,7 @@ export function maybeRecoverDirtyRangeSelection(ctx: Context): boolean {
     return false;
   }
 
-  const editor = document.getElementById(
-    "luckysheet-rich-text-editor"
-  ) as HTMLDivElement | null;
+  const editor = getActiveFormulaEditorElement(ctx);
   if (!editor) {
     return false;
   }

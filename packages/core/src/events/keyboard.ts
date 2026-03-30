@@ -1112,27 +1112,13 @@ export async function handleGlobalKeyDown(
         cache.pendingTypeOverCell = [row_index, col_index];
         setFormulaEditorOwner(ctx, "cell");
 
-        // Plain cells: first key replaces the value (type-over). Cells that already
-        // have a formula (e.g. =A1): keep the formula and append the key so users can
-        // add +, ranges, etc. without losing the reference. Treat like F2 for arrows.
-        if (existingFormula != null) {
-          cache.enteredEditByTyping = false;
-        } else {
-          cache.enteredEditByTyping = true;
-        }
+        // First key replaces the cell content (type-over), same as Excel/Sheets — including
+        // when the cell currently holds a formula. Use F2 / double-click to edit in place.
+        cache.enteredEditByTyping = true;
 
         cellInput.focus();
         const initial = getTypeOverInitialContent(e);
-        if (existingFormula != null) {
-          const nextText =
-            initial !== undefined
-              ? `${existingFormula}${initial}`
-              : existingFormula;
-          cellInput.textContent = nextText;
-          if (fxInput) fxInput.textContent = nextText;
-          handleFormulaInput(ctx, fxInput, cellInput, kcode);
-          e.preventDefault();
-        } else if (initial !== undefined) {
+        if (initial !== undefined) {
           cellInput.textContent = initial;
           if (fxInput) fxInput.textContent = initial;
           handleFormulaInput(ctx, fxInput, cellInput, kcode);

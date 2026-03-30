@@ -196,24 +196,21 @@ const InputBox: React.FC = () => {
       const pending = refs.globalCache.pendingTypeOverCell;
       // One-shot: skip hydrating from stored cell only for the first layout after
       // type-to-edit opened the editor; clear pending so later effect runs exit above.
-      if (
-        pending &&
-        pending[0] === ur &&
-        pending[1] === uc
-      ) {
+      if (pending && pending[0] === ur && pending[1] === uc) {
         refs.globalCache.overwriteCell = false;
         if (inputRef.current) {
           setCellEditorIsFormula(
             inputRef.current.innerText.trim().startsWith("=")
           );
         }
-        if (!refs.globalCache.doNotFocus) {
-          setTimeout(() => {
-            moveToEnd(inputRef.current!);
-          });
-        }
+        // Do not move the caret here. Type-to-edit already ran handleFormulaInput in
+        // keyboard.ts (caret + first character). moveToEnd on every layout rerun was
+        // jumping the caret to the end when editing mid-formula after luckysheetfile
+        // or selection updates.
         delete refs.globalCache.doNotFocus;
-        delete refs.globalCache.pendingTypeOverCell;
+        // Do not clear pendingTypeOverCell here: React 18 Strict Mode runs this layout
+        // effect twice; clearing early lets the second pass hydrate from the sheet and
+        // wipe the keystroke from keyboard.ts. Cleared in useEffect after commit.
         return;
       }
       const flowdata = getFlowdata(context);
@@ -236,8 +233,10 @@ const InputBox: React.FC = () => {
         }
       }
       refs.globalCache.overwriteCell = false;
+      let wroteEditorFromStoredCell = false;
       if (!refs.globalCache.ignoreWriteCell && inputRef.current && value) {
         inputRef.current!.innerHTML = escapeHTMLTag(escapeScriptTag(value));
+        wroteEditorFromStoredCell = true;
       } else if (
         !refs.globalCache.ignoreWriteCell &&
         inputRef.current &&
@@ -247,6 +246,7 @@ const InputBox: React.FC = () => {
         // @ts-ignore
         const valueD = getCellValue(row_index, col_index, flowdata, "f");
         inputRef.current.innerText = valueD;
+        wroteEditorFromStoredCell = true;
       }
       refs.globalCache.ignoreWriteCell = false;
       if (inputRef.current) {
@@ -254,7 +254,7 @@ const InputBox: React.FC = () => {
           inputRef.current.innerText.trim().startsWith("=")
         );
       }
-      if (!refs.globalCache.doNotFocus) {
+      if (wroteEditorFromStoredCell && !refs.globalCache.doNotFocus) {
         setTimeout(() => {
           moveToEnd(inputRef.current!);
         });
@@ -279,6 +279,14 @@ const InputBox: React.FC = () => {
       resetFormulaHistory();
     }
   }, [context.luckysheetCellUpdate, resetFormulaHistory, refs.globalCache]);
+
+  // Clear type-to-edit flag after all useLayoutEffect runs in this commit (including
+  // React Strict Mode's second layout pass). Clearing inside layout let the second
+  // pass re-hydrate from the sheet and wipe the first keystroke.
+  useEffect(() => {
+    if (_.isEmpty(context.luckysheetCellUpdate)) return;
+    delete refs.globalCache.pendingTypeOverCell;
+  }, [context.luckysheetCellUpdate, refs.globalCache]);
 
   // Reset cached formula anchor when formula edit session ends.
   useEffect(() => {

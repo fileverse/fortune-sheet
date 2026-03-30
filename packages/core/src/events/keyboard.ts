@@ -7,6 +7,7 @@ import {
   israngeseleciton,
   maybeRecoverDirtyRangeSelection,
   markRangeSelectionDirty,
+  setFormulaEditorOwner,
 } from "../modules/formula";
 import { isInlineStringCell } from "../modules/inline-string";
 import {
@@ -35,6 +36,7 @@ import { CellMatrix, GlobalCache } from "../types";
 import { getNowDateTime, getSheetIndex, isAllowEdit } from "../utils";
 import { handleCopy } from "./copy";
 import { jfrefreshgrid } from "../modules/refresh";
+import { moveToEnd } from "../modules/cursor";
 
 function clearTypeOverPending(cache: GlobalCache) {
   delete cache.pendingTypeOverCell;
@@ -981,12 +983,7 @@ export async function handleGlobalKeyDown(
         (inlineText.trim().startsWith("=") || fxText.trim().startsWith("="));
       const enteredByTyping = cache.enteredEditByTyping === true;
 
-      if (
-        isEditing &&
-        !isFormulaEdit &&
-        enteredByTyping &&
-        !e.shiftKey
-      ) {
+      if (isEditing && !isFormulaEdit && enteredByTyping && !e.shiftKey) {
         updateCell(
           ctx,
           ctx.luckysheetCellUpdate[0],
@@ -1039,6 +1036,7 @@ export async function handleGlobalKeyDown(
         cache.overwriteCell = true;
         cache.enteredEditByTyping = true;
         cache.pendingTypeOverCell = [row_index, col_index];
+        setFormulaEditorOwner(ctx, "cell");
 
         cellInput.focus();
         const initial = getTypeOverInitialContent(e);
@@ -1052,6 +1050,13 @@ export async function handleGlobalKeyDown(
           if (fxInput) fxInput.textContent = "";
           handleFormulaInput(ctx, fxInput, cellInput, kcode);
         }
+
+        // After focus + handleFormulaInput, caret can sit before the first character.
+        // Only adjust the in-cell editor: moveToEnd() calls focus() and would steal
+        // focus to the formula bar if applied to fxInput.
+        queueMicrotask(() => {
+          moveToEnd(cellInput);
+        });
 
         // if (kstr === "Backspace") {
         //   $("#luckysheet-rich-text-editor").html("<br/>");

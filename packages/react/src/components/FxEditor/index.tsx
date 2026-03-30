@@ -165,14 +165,10 @@ const FxEditor: React.FC = () => {
     }
 
     const pending = refs.globalCache.pendingTypeOverCell;
-    if (
-      pending &&
-      pending[0] === rowIndex &&
-      pending[1] === colIndex
-    ) {
+    if (pending && pending[0] === rowIndex && pending[1] === colIndex) {
       refs.globalCache.overwriteCell = false;
       refs.globalCache.ignoreWriteCell = false;
-      delete refs.globalCache.pendingTypeOverCell;
+      // pendingTypeOverCell cleared in InputBox useEffect after commit (Strict Mode safe).
       return;
     }
 

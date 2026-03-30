@@ -257,8 +257,22 @@ const FxEditor: React.FC = () => {
           }
         }
 
-        draftCtx.luckysheetCellUpdate = [row_index, col_index];
-        refs.globalCache.doNotFocus = true;
+        // draftCtx.luckysheetCellUpdate = [row_index, col_index];
+        // refs.globalCache.doNotFocus = true;
+        const currentUpdate = draftCtx.luckysheetCellUpdate || [];
+        const alreadyEditingSameCell =
+          currentUpdate.length === 2 &&
+          currentUpdate[0] === row_index &&
+          currentUpdate[1] === col_index;
+
+        if (!alreadyEditingSameCell) {
+          // Preserve mouse-placed caret on first FX focus-open. Without this,
+          // the follow-up FX sync effect can rewrite innerHTML and clear the
+          // click position (especially for formula text starting with "=").
+          refs.globalCache.doNotUpdateCell = true;
+          draftCtx.luckysheetCellUpdate = [row_index, col_index];
+          refs.globalCache.doNotFocus = true;
+        }
         // formula.rangeResizeTo = $("#luckysheet-functionbox-cell");
       });
     }

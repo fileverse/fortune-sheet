@@ -10,7 +10,7 @@ import {
 
 export const TEXT_COLORS = [
   { name: "Light Gray", value: "228, 232, 237" },
-  { name: "White", value: "249, 249, 249" },
+  { name: "White", value: "219, 233, 236" },
   { name: "Pink", value: "244, 217, 227" },
   { name: "Peach", value: "247, 229, 207" },
   { name: "Blue", value: "217, 234, 244" },

@@ -129,6 +129,7 @@ const ConditionalFormat: React.FC<{
                   { text: "between", value: "[]" },
                   { text: "equal", value: "=" },
                   { text: "textContains", value: "()" },
+                  { text: "empty", value: "" },
                   {
                     text: "occurrenceDate",
                     value: conditionformat.yesterday,

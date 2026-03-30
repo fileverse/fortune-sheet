@@ -1616,7 +1616,8 @@ export function rangeValueToHtml(
       const c = colIndexArr[j];
 
       // eslint-disable-next-line no-template-curly-in-string
-      let column = '<td ${span} style="${style}">';
+      let column =
+        '<td ${span} style="${style}" data-fortune-cell="${cellData}">';
 
       const cell = d[r]?.[c];
       if (cell != null) {
@@ -1903,7 +1904,10 @@ export function rangeValueToHtml(
           }
         }
 
-        column = replaceHtml(column, { style, span });
+        const cellData = encodeURIComponent(
+          JSON.stringify({ ...cell, _srcRow: r, _srcCol: c })
+        );
+        column = replaceHtml(column, { style, span, cellData });
 
         if (_.isNil(c_value)) {
           c_value = getCellValue(r, c, d);
@@ -1994,7 +1998,7 @@ export function rangeValueToHtml(
           }
         }
 
-        column = replaceHtml(column, { style, span: "" });
+        column = replaceHtml(column, { style, span: "", cellData: "" });
         column += "";
       }
 

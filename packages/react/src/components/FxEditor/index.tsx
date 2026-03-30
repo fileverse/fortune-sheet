@@ -164,14 +164,26 @@ const FxEditor: React.FC = () => {
       return;
     }
 
+    const pending = refs.globalCache.pendingTypeOverCell;
+    if (
+      pending &&
+      pending[0] === rowIndex &&
+      pending[1] === colIndex
+    ) {
+      refs.globalCache.overwriteCell = false;
+      refs.globalCache.ignoreWriteCell = false;
+      return;
+    }
+
     const flowdata = getFlowdata(context);
     if (!flowdata) {
       return;
     }
     const cell = flowdata?.[rowIndex]?.[colIndex];
     let value = "";
+    const overwrite = refs.globalCache.overwriteCell;
 
-    if (cell && !refs.globalCache.overwriteCell) {
+    if (cell && !overwrite) {
       if (isInlineStringCell(cell)) {
         value = getInlineStringNoStyle(rowIndex, colIndex, flowdata);
       } else if (cell.f) {
@@ -184,7 +196,7 @@ const FxEditor: React.FC = () => {
     refs.globalCache.overwriteCell = false;
     if (!refs.globalCache.ignoreWriteCell && value) {
       fxInput.innerHTML = escapeHTMLTag(escapeScriptTag(value));
-    } else if (!refs.globalCache.ignoreWriteCell) {
+    } else if (!refs.globalCache.ignoreWriteCell && !overwrite) {
       const valueD = getCellValue(rowIndex, colIndex, flowdata, "f");
       fxInput.innerText = valueD;
     }
@@ -201,9 +213,10 @@ const FxEditor: React.FC = () => {
 
   useEffect(() => {
     if (_.isEmpty(context.luckysheetCellUpdate)) {
+      delete refs.globalCache.pendingTypeOverCell;
       resetFormulaHistory();
     }
-  }, [context.luckysheetCellUpdate, resetFormulaHistory]);
+  }, [context.luckysheetCellUpdate, resetFormulaHistory, refs.globalCache]);
 
   useEffect(() => {
     if (_.isEmpty(context.luckysheetCellUpdate) || !refs.fxInput.current) {

@@ -36,6 +36,19 @@ import { getNowDateTime, getSheetIndex, isAllowEdit } from "../utils";
 import { handleCopy } from "./copy";
 import { jfrefreshgrid } from "../modules/refresh";
 
+function clearTypeOverPending(cache: GlobalCache) {
+  delete cache.pendingTypeOverCell;
+}
+
+/** Content to place in the editor when opening via a keypress; `""` = clear. `undefined` = let IME / default handle. */
+function getTypeOverInitialContent(e: KeyboardEvent): string | undefined {
+  if (e.keyCode === 229) return undefined;
+  if (e.ctrlKey || e.metaKey || e.altKey) return undefined;
+  if (e.key === "Backspace" || e.key === "Delete") return "";
+  if (e.key.length === 1) return e.key;
+  return undefined;
+}
+
 function isLegacyFormulaRangeMode(ctx: Context): boolean {
   return (
     !!ctx.formulaCache.rangestart ||
@@ -50,6 +63,7 @@ export function handleGlobalEnter(
   ctx: Context,
   cellInput: HTMLDivElement,
   e: KeyboardEvent,
+  cache: GlobalCache,
   canvas?: CanvasRenderingContext2D
 ) {
   // const flowdata = getFlowdata(ctx);
@@ -82,6 +96,8 @@ export function handleGlobalEnter(
       undefined,
       canvas
     );
+    cache.enteredEditByTyping = false;
+    clearTypeOverPending(cache);
     ctx.luckysheet_select_save = [
       {
         row: [lastCellUpdate[0], lastCellUpdate[0]],
@@ -120,6 +136,8 @@ export function handleGlobalEnter(
       const col_index = last.column_focus;
 
       ctx.luckysheetCellUpdate = [row_index, col_index];
+      cache.enteredEditByTyping = false;
+      clearTypeOverPending(cache);
       // luckysheetupdateCell(row_index, col_index, ctx.flowdata);
       e.preventDefault();
     }
@@ -356,6 +374,8 @@ export function handleWithCtrlOrMetaKey(
       const col_index = last.column_focus!;
       updateCell(ctx, row_index, col_index, cellInput);
       ctx.luckysheetCellUpdate = [row_index, col_index];
+      cache.enteredEditByTyping = false;
+      clearTypeOverPending(cache);
 
       cache.ignoreWriteCell = true;
       const value = getNowDateTime(2);
@@ -842,7 +862,7 @@ export async function handleGlobalKeyDown(
 
   if (kstr === "Enter") {
     if (!allowEdit) return;
-    handleGlobalEnter(ctx, cellInput, e, canvas);
+    handleGlobalEnter(ctx, cellInput, e, cache, canvas);
   } else if (kstr === "Tab") {
     if (ctx.luckysheetCellUpdate.length > 0) {
       updateCell(
@@ -853,6 +873,8 @@ export async function handleGlobalKeyDown(
         undefined,
         canvas
       );
+      cache.enteredEditByTyping = false;
+      clearTypeOverPending(cache);
     }
     if (e.shiftKey) {
       moveHighlightCell(
@@ -883,12 +905,16 @@ export async function handleGlobalKeyDown(
     const row_index = last.row_focus;
     const col_index = last.column_focus;
 
+    cache.enteredEditByTyping = false;
+    clearTypeOverPending(cache);
     ctx.luckysheetCellUpdate = [row_index, col_index];
     e.preventDefault();
   } else if (kstr === "F4" && ctx.luckysheetCellUpdate.length > 0) {
     // TODO formula.setfreezonFuc(event);
     e.preventDefault();
   } else if (kstr === "Escape" && ctx.luckysheetCellUpdate.length > 0) {
+    cache.enteredEditByTyping = false;
+    clearTypeOverPending(cache);
     cancelNormalSelected(ctx);
     moveHighlightCell(ctx, "down", 0, "rangeOfSelect");
     e.preventDefault();
@@ -947,7 +973,35 @@ export async function handleGlobalKeyDown(
       kstr === "ArrowLeft" ||
       kstr === "ArrowRight"
     ) {
-      handleArrowKey(ctx, e);
+      const isEditing = ctx.luckysheetCellUpdate.length > 0;
+      const inlineText = cellInput?.innerText ?? "";
+      const fxText = fxInput?.innerText ?? "";
+      const isFormulaEdit =
+        isEditing &&
+        (inlineText.trim().startsWith("=") || fxText.trim().startsWith("="));
+      const enteredByTyping = cache.enteredEditByTyping === true;
+
+      if (
+        isEditing &&
+        !isFormulaEdit &&
+        enteredByTyping &&
+        !e.shiftKey
+      ) {
+        updateCell(
+          ctx,
+          ctx.luckysheetCellUpdate[0],
+          ctx.luckysheetCellUpdate[1],
+          cellInput,
+          undefined,
+          canvas
+        );
+        cache.enteredEditByTyping = false;
+        clearTypeOverPending(cache);
+        handleArrowKey(ctx, e);
+        e.preventDefault();
+      } else {
+        handleArrowKey(ctx, e);
+      }
     } else if (
       !(
         (kcode >= 112 && kcode <= 123) ||
@@ -979,14 +1033,29 @@ export async function handleGlobalKeyDown(
 
         const row_index = last.row_focus;
         const col_index = last.column_focus;
+        if (_.isNil(row_index) || _.isNil(col_index)) return;
 
         ctx.luckysheetCellUpdate = [row_index, col_index];
         cache.overwriteCell = true;
+        cache.enteredEditByTyping = true;
+        cache.pendingTypeOverCell = [row_index, col_index];
+
+        cellInput.focus();
+        const initial = getTypeOverInitialContent(e);
+        if (initial !== undefined) {
+          cellInput.textContent = initial;
+          if (fxInput) fxInput.textContent = initial;
+          handleFormulaInput(ctx, fxInput, cellInput, kcode);
+          e.preventDefault();
+        } else {
+          cellInput.textContent = "";
+          if (fxInput) fxInput.textContent = "";
+          handleFormulaInput(ctx, fxInput, cellInput, kcode);
+        }
 
         // if (kstr === "Backspace") {
         //   $("#luckysheet-rich-text-editor").html("<br/>");
         // }
-        handleFormulaInput(ctx, fxInput, cellInput, kcode);
         // formula.functionInputHanddler(
         //   $("#luckysheet-functionbox-cell"),
         //   $("#luckysheet-rich-text-editor"),

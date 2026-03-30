@@ -80,6 +80,8 @@ const InputBox: React.FC = () => {
     {}
   );
   const [commaCount, setCommaCount] = useState(0);
+  /** When true, in-cell editor shows left alignment for formulas (=...) even if the cell style is center/right. */
+  const [cellEditorIsFormula, setCellEditorIsFormula] = useState(false);
   const hideFormulaHintLocal = localStorage.getItem("formulaMore") === "true";
   const [showFormulaHint, setShowFormulaHint] = useState(!hideFormulaHintLocal);
   const [showSearchHint, setShowSearchHint] = useState(false);
@@ -150,7 +152,7 @@ const InputBox: React.FC = () => {
         firstSelectionActiveCell.row_focus!,
         firstSelectionActiveCell.column_focus!
       );
-      if (inputRef.current?.innerText.charAt(0) === "=") {
+      if (cellEditorIsFormula) {
         style = { ...style, textAlign: "left" };
       }
       return style;
@@ -163,6 +165,7 @@ const InputBox: React.FC = () => {
     context.luckysheetCellUpdate,
     context?.luckysheetCellUpdate?.length,
     firstSelectionActiveCell,
+    cellEditorIsFormula,
   ]);
 
   useLayoutEffect(() => {
@@ -180,6 +183,27 @@ const InputBox: React.FC = () => {
         delete refs.globalCache.doNotUpdateCell;
         return;
       }
+      const [ur, uc] = context.luckysheetCellUpdate;
+      const pending = refs.globalCache.pendingTypeOverCell;
+      if (
+        pending &&
+        pending[0] === ur &&
+        pending[1] === uc
+      ) {
+        refs.globalCache.overwriteCell = false;
+        if (inputRef.current) {
+          setCellEditorIsFormula(
+            inputRef.current.innerText.trim().startsWith("=")
+          );
+        }
+        if (!refs.globalCache.doNotFocus) {
+          setTimeout(() => {
+            moveToEnd(inputRef.current!);
+          });
+        }
+        delete refs.globalCache.doNotFocus;
+        return;
+      }
       if (
         _.isEqual(prevCellUpdate, context.luckysheetCellUpdate) &&
         prevSheetId === context.currentSheetId
@@ -189,8 +213,9 @@ const InputBox: React.FC = () => {
       }
       const flowdata = getFlowdata(context);
       const cell = flowdata?.[row_index]?.[col_index];
+      const overwrite = refs.globalCache.overwriteCell;
       let value = "";
-      if (cell && !refs.globalCache.overwriteCell) {
+      if (cell && !overwrite) {
         if (isInlineStringCell(cell)) {
           value = getInlineStringHTML(row_index, col_index, flowdata);
         } else if (cell.f) {
@@ -211,13 +236,19 @@ const InputBox: React.FC = () => {
       } else if (
         !refs.globalCache.ignoreWriteCell &&
         inputRef.current &&
-        !value
+        !value &&
+        !overwrite
       ) {
         // @ts-ignore
         const valueD = getCellValue(row_index, col_index, flowdata, "f");
         inputRef.current.innerText = valueD;
       }
       refs.globalCache.ignoreWriteCell = false;
+      if (inputRef.current) {
+        setCellEditorIsFormula(
+          inputRef.current.innerText.trim().startsWith("=")
+        );
+      }
       if (!refs.globalCache.doNotFocus) {
         setTimeout(() => {
           moveToEnd(inputRef.current!);
@@ -238,9 +269,11 @@ const InputBox: React.FC = () => {
       if (inputRef.current) {
         inputRef.current.innerHTML = "";
       }
+      delete refs.globalCache.pendingTypeOverCell;
+      setCellEditorIsFormula(false);
       resetFormulaHistory();
     }
-  }, [context.luckysheetCellUpdate, resetFormulaHistory]);
+  }, [context.luckysheetCellUpdate, resetFormulaHistory, refs.globalCache]);
 
   // Reset cached formula anchor when formula edit session ends.
   useEffect(() => {
@@ -885,6 +918,9 @@ const InputBox: React.FC = () => {
     (__: any, isBlur?: boolean) => {
       if (context.isFlvReadOnly) return;
       handleHideShowHint();
+
+      const editorText = inputRef.current?.innerText?.trim() ?? "";
+      setCellEditorIsFormula(editorText.startsWith("="));
 
       setShowSearchHint(
         shouldShowFormulaFunctionList(inputRef?.current ?? null)

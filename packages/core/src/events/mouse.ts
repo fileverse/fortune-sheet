@@ -1437,6 +1437,8 @@ export function handleCellAreaDoubleClick(
     col_index = column_focus;
   }
 
+  globalCache.enteredEditByTyping = false;
+  delete globalCache.pendingTypeOverCell;
   luckysheetUpdateCell(ctx, row_index, col_index);
   // }
 }

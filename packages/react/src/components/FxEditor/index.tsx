@@ -172,6 +172,7 @@ const FxEditor: React.FC = () => {
     ) {
       refs.globalCache.overwriteCell = false;
       refs.globalCache.ignoreWriteCell = false;
+      delete refs.globalCache.pendingTypeOverCell;
       return;
     }
 

@@ -183,8 +183,19 @@ const InputBox: React.FC = () => {
         delete refs.globalCache.doNotUpdateCell;
         return;
       }
+      // Same cell as last applied layout pass: never re-hydrate from sheet or move
+      // the caret (avoids jump-to-end on every luckysheetfile/selection-driven rerun).
+      if (
+        _.isEqual(prevCellUpdate, context.luckysheetCellUpdate) &&
+        prevSheetId === context.currentSheetId
+      ) {
+        return;
+      }
+
       const [ur, uc] = context.luckysheetCellUpdate;
       const pending = refs.globalCache.pendingTypeOverCell;
+      // One-shot: skip hydrating from stored cell only for the first layout after
+      // type-to-edit opened the editor; clear pending so later effect runs exit above.
       if (
         pending &&
         pending[0] === ur &&
@@ -202,13 +213,7 @@ const InputBox: React.FC = () => {
           });
         }
         delete refs.globalCache.doNotFocus;
-        return;
-      }
-      if (
-        _.isEqual(prevCellUpdate, context.luckysheetCellUpdate) &&
-        prevSheetId === context.currentSheetId
-      ) {
-        // data change by a collabrative update should not trigger this effect
+        delete refs.globalCache.pendingTypeOverCell;
         return;
       }
       const flowdata = getFlowdata(context);
@@ -759,6 +764,12 @@ const InputBox: React.FC = () => {
                 },
               ];
               markRangeSelectionDirty(draftCtx);
+              // markRangeSelectionDirty clears formulaRangeHighlight; rebuild from the
+              // live editor so argument highlights return after handleFormulaInput ran.
+              const el = refs.cellInput.current;
+              if (el && el.innerText.trim().startsWith("=")) {
+                createRangeHightlight(draftCtx, el.innerHTML);
+              }
             });
           }, 0);
         }
@@ -887,6 +898,7 @@ const InputBox: React.FC = () => {
       selectActiveFormula,
       setContext,
       firstSelection,
+      refs.cellInput,
     ]
   );
 

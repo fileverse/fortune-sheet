@@ -3075,10 +3075,9 @@ export function handleFormulaInput(
       if (refreshRangeSelect) {
         cancelFunctionrangeSelected(ctx);
 
-        if (kcode !== 46) {
-          // delete不执行此函数
-          createRangeHightlight(ctx, value);
-        }
+        // Always refresh range overlays from the current formula HTML. Skipping on
+        // Delete left highlights empty after markRangeSelectionDirty() clears them.
+        createRangeHightlight(ctx, value);
 
         ctx.formulaCache.rangestart = false;
         ctx.formulaCache.rangedrag_column_start = false;

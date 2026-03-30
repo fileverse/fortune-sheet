@@ -8,6 +8,7 @@ import {
   maybeRecoverDirtyRangeSelection,
   markRangeSelectionDirty,
   setFormulaEditorOwner,
+  getFormulaEditorOwner,
   suppressFormulaRangeSelectionForInitialEdit,
 } from "../modules/formula";
 import { isInlineStringCell } from "../modules/inline-string";
@@ -212,6 +213,33 @@ function moveToEdge(
   return colDelta === 0 ? r : c;
 }
 
+/** In-cell / FX edit of non-formula text: let the browser handle Cmd/Ctrl (+Shift) + Arrow (line/paragraph caret), not sheet jump-to-edge. */
+function isPlainTextCellOrFxEdit(
+  ctx: Context,
+  cellInput: HTMLDivElement,
+  fxInput: HTMLDivElement | null | undefined
+): boolean {
+  if (ctx.luckysheetCellUpdate.length === 0) return false;
+  const cellT = (cellInput?.innerText ?? "").trim();
+  const fxT = (fxInput?.innerText ?? "").trim();
+  const owner = getFormulaEditorOwner(ctx);
+  if (owner === "fx" && fxInput) {
+    return !fxT.startsWith("=");
+  }
+  if (owner === "cell") {
+    return !cellT.startsWith("=");
+  }
+  const aid = document.activeElement?.id;
+  if (aid === "luckysheet-functionbox-cell" && fxInput) {
+    return !fxT.startsWith("=");
+  }
+  if (aid === "luckysheet-rich-text-editor") {
+    return !cellT.startsWith("=");
+  }
+  if (cellT.startsWith("=") || fxT.startsWith("=")) return false;
+  return true;
+}
+
 function handleControlPlusArrowKey(
   ctx: Context,
   e: KeyboardEvent,
@@ -369,6 +397,16 @@ export function handleWithCtrlOrMetaKey(
 ) {
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
+
+  if (
+    (e.ctrlKey || e.metaKey) &&
+    ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) &&
+    isPlainTextCellOrFxEdit(ctx, cellInput, fxInput)
+  ) {
+    // Do not run spreadsheet jump-to-edge / extend-selection; preserve native
+    // contenteditable behavior (Google Docs–style line/paragraph navigation).
+    return;
+  }
 
   if (e.shiftKey) {
     ctx.luckysheet_shiftpositon = _.cloneDeep(
@@ -1087,7 +1125,9 @@ export async function handleGlobalKeyDown(
         const initial = getTypeOverInitialContent(e);
         if (existingFormula != null) {
           const nextText =
-            initial !== undefined ? `${existingFormula}${initial}` : existingFormula;
+            initial !== undefined
+              ? `${existingFormula}${initial}`
+              : existingFormula;
           cellInput.textContent = nextText;
           if (fxInput) fxInput.textContent = nextText;
           handleFormulaInput(ctx, fxInput, cellInput, kcode);

@@ -20,6 +20,7 @@ import {
   escapeHTMLTag,
   functionHTMLGenerate,
   isAllowEdit,
+  suppressFormulaRangeSelectionForInitialEdit,
 } from "@fileverse-dev/fortune-core";
 import React, {
   useContext,
@@ -244,6 +245,17 @@ const FxEditor: React.FC = () => {
 
         const row_index = last.row_focus;
         const col_index = last.column_focus;
+
+        if (!_.isNil(row_index) && !_.isNil(col_index)) {
+          const flowdata = getFlowdata(draftCtx);
+          const cellAt = flowdata?.[row_index]?.[col_index] as
+            | { f?: string }
+            | null
+            | undefined;
+          if (cellAt?.f != null && String(cellAt.f).trim() !== "") {
+            suppressFormulaRangeSelectionForInitialEdit(draftCtx);
+          }
+        }
 
         draftCtx.luckysheetCellUpdate = [row_index, col_index];
         refs.globalCache.doNotFocus = true;

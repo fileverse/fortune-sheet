@@ -2853,6 +2853,47 @@ function getCurrentFormulaSlotTextBeforeCaret(
   return _.trim(parts[parts.length - 1] || "");
 }
 
+/**
+ * True when the formula text looks like a truncated A1-style range: LHS has a row
+ * number but RHS after ":" is only column letters (e.g. =A1:A after deleting the
+ * row digit from A2). Those states should not allow range recovery / keyboard ref nav.
+ */
+export function hasIncompleteTruncatedCellRangeSyntax(
+  formulaText: string
+): boolean {
+  const t = formulaText.replace(/\s/g, "");
+  if (!t.startsWith("=")) return false;
+  if (/[A-Za-z]+\d+:[A-Za-z]+$/i.test(t)) return true;
+  if (/[A-Za-z]+\d+:\s*$/i.test(t)) return true;
+  return false;
+}
+
+/**
+ * True when the formula is only "=" plus a single cell or range token (no parentheses,
+ * so no function call). Same UX as =A1: do not use arrow keys to drive sheet refs until
+ * the user changes the formula shape (e.g. adds a function).
+ */
+export function isBareCellOrRangeOnlyFormula(formulaText: string): boolean {
+  const t = formulaText.trim();
+  if (!t.startsWith("=")) return false;
+  const body = t.slice(1).trim();
+  if (!body) return false;
+  if (body.includes("(") || body.includes(")")) return false;
+  return iscelldata(body);
+}
+
+/**
+ * When opening in-cell / FX edit on a cell that already stores a formula (`cell.f`),
+ * disable sheet-driven range selection until the caret reaches a fresh insertion slot
+ * (comma, open paren, operator, etc.) or the user starts an active range drag.
+ */
+export function suppressFormulaRangeSelectionForInitialEdit(ctx: Context) {
+  ctx.formulaCache.rangeSelectionActive = false;
+  ctx.formulaCache.rangestart = false;
+  ctx.formulaCache.rangedrag_column_start = false;
+  ctx.formulaCache.rangedrag_row_start = false;
+}
+
 export function isCaretAtValidFormulaRangeInsertionPoint(
   editor: HTMLElement | null
 ): boolean {
@@ -2871,7 +2912,15 @@ export function isCaretAtValidFormulaRangeInsertionPoint(
     return false;
   }
 
+  if (hasIncompleteTruncatedCellRangeSyntax(inputText)) {
+    return false;
+  }
+
   if (/^=\s*[A-Za-z_][A-Za-z0-9_]*$/.test(inputText)) {
+    return false;
+  }
+
+  if (isBareCellOrRangeOnlyFormula(inputText)) {
     return false;
   }
 
@@ -2892,7 +2941,24 @@ export function isCaretAtValidFormulaRangeInsertionPoint(
   const textAfter = editor.innerText.slice(caretOffset);
   const remaining = textAfter.replace(/^\s+/, "");
   if (remaining.length === 0) {
-    return true;
+    const atCaret = getFormulaRangeIndexAtCaret(editor as HTMLDivElement);
+    if (atCaret !== null) {
+      return true;
+    }
+    const textBefore = editor.innerText.slice(0, caretOffset).trimEnd();
+    const lastCh = textBefore.slice(-1);
+    if (!lastCh) {
+      return false;
+    }
+    if (lastCh === ")") {
+      return false;
+    }
+    // At end-of-formula: only after `=`, `,`, `(`, or an infix operator is it valid to start
+    // or extend refs via keyboard/mouse — same idea as blocking bare `=A1` / `=A1:A2`.
+    if (/^[=,(+\-*/&%^<>]$/.test(lastCh)) {
+      return true;
+    }
+    return false;
   }
 
   const first = remaining[0];
@@ -3584,19 +3650,19 @@ export function isFormulaReferenceInputMode(ctx: Context): boolean {
     "luckysheet-rich-text-editor"
   ) as HTMLDivElement | null;
   const inputText = (editor?.innerText || "").trim();
-  const hasRangeToken =
-    editor?.querySelector("span.fortune-formula-functionrange-cell") != null;
 
-  // If range selection flow is already active in cache (or a range token
-  // already exists in the editor), keep formula-reference mode enabled.
-  if (
+  const refFlowActive =
     !!ctx.formulaCache.rangestart ||
     !!ctx.formulaCache.rangedrag_column_start ||
     !!ctx.formulaCache.rangedrag_row_start ||
-    hasRangeToken ||
-    ctx.formulaCache.rangeSelectionActive === true
-  ) {
+    ctx.formulaCache.rangeSelectionActive === true;
+
+  if (refFlowActive) {
     return true;
+  }
+
+  if (ctx.formulaCache.rangeSelectionActive === false) {
+    return false;
   }
 
   if (!inputText.startsWith("=")) {
@@ -3626,6 +3692,11 @@ export function maybeRecoverDirtyRangeSelection(ctx: Context): boolean {
   }
 
   const inputText = (editor.innerText || "").trim();
+
+  if (hasIncompleteTruncatedCellRangeSyntax(inputText)) {
+    return false;
+  }
+
   const atCaretRangeIndex = getFormulaRangeIndexAtCaret(editor);
 
   // Recover when the caret is back in a fresh, syntactically valid insertion
@@ -3636,6 +3707,7 @@ export function maybeRecoverDirtyRangeSelection(ctx: Context): boolean {
   if (
     inputText.startsWith("=") &&
     atCaretRangeIndex === null &&
+    isCaretAtValidFormulaRangeInsertionPoint(editor) &&
     israngeseleciton(ctx)
   ) {
     ctx.formulaCache.rangeSelectionActive = null;

@@ -8,6 +8,7 @@ import {
   maybeRecoverDirtyRangeSelection,
   markRangeSelectionDirty,
   setFormulaEditorOwner,
+  suppressFormulaRangeSelectionForInitialEdit,
 } from "../modules/formula";
 import { isInlineStringCell } from "../modules/inline-string";
 import {
@@ -136,6 +137,17 @@ export function handleGlobalEnter(
 
       const row_index = last.row_focus;
       const col_index = last.column_focus;
+
+      if (!_.isNil(row_index) && !_.isNil(col_index)) {
+        const flowdata = getFlowdata(ctx);
+        const cellAt = flowdata?.[row_index]?.[col_index] as
+          | { f?: string }
+          | null
+          | undefined;
+        if (cellAt?.f != null && String(cellAt.f).trim() !== "") {
+          suppressFormulaRangeSelectionForInitialEdit(ctx);
+        }
+      }
 
       ctx.luckysheetCellUpdate = [row_index, col_index];
       cache.enteredEditByTyping = false;
@@ -907,6 +919,17 @@ export async function handleGlobalKeyDown(
     const row_index = last.row_focus;
     const col_index = last.column_focus;
 
+    if (!_.isNil(row_index) && !_.isNil(col_index)) {
+      const flowdataF2 = getFlowdata(ctx);
+      const cellF2 = flowdataF2?.[row_index]?.[col_index] as
+        | { f?: string }
+        | null
+        | undefined;
+      if (cellF2?.f != null && String(cellF2.f).trim() !== "") {
+        suppressFormulaRangeSelectionForInitialEdit(ctx);
+      }
+    }
+
     cache.enteredEditByTyping = false;
     clearTypeOverPending(cache);
     ctx.luckysheetCellUpdate = [row_index, col_index];
@@ -1032,15 +1055,44 @@ export async function handleGlobalKeyDown(
         const col_index = last.column_focus;
         if (_.isNil(row_index) || _.isNil(col_index)) return;
 
+        const flowdata = getFlowdata(ctx);
+        const cellAt = flowdata?.[row_index]?.[col_index] as
+          | { f?: string }
+          | null
+          | undefined;
+        const existingFormula =
+          cellAt?.f != null && String(cellAt.f).trim() !== ""
+            ? String(cellAt.f).replace(/[\r\n]/g, "")
+            : null;
+
+        if (existingFormula != null) {
+          suppressFormulaRangeSelectionForInitialEdit(ctx);
+        }
+
         ctx.luckysheetCellUpdate = [row_index, col_index];
         cache.overwriteCell = true;
-        cache.enteredEditByTyping = true;
         cache.pendingTypeOverCell = [row_index, col_index];
         setFormulaEditorOwner(ctx, "cell");
 
+        // Plain cells: first key replaces the value (type-over). Cells that already
+        // have a formula (e.g. =A1): keep the formula and append the key so users can
+        // add +, ranges, etc. without losing the reference. Treat like F2 for arrows.
+        if (existingFormula != null) {
+          cache.enteredEditByTyping = false;
+        } else {
+          cache.enteredEditByTyping = true;
+        }
+
         cellInput.focus();
         const initial = getTypeOverInitialContent(e);
-        if (initial !== undefined) {
+        if (existingFormula != null) {
+          const nextText =
+            initial !== undefined ? `${existingFormula}${initial}` : existingFormula;
+          cellInput.textContent = nextText;
+          if (fxInput) fxInput.textContent = nextText;
+          handleFormulaInput(ctx, fxInput, cellInput, kcode);
+          e.preventDefault();
+        } else if (initial !== undefined) {
           cellInput.textContent = initial;
           if (fxInput) fxInput.textContent = initial;
           handleFormulaInput(ctx, fxInput, cellInput, kcode);

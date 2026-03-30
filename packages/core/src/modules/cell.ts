@@ -21,6 +21,7 @@ import {
   functionHTMLGenerate,
   getcellrange,
   iscelldata,
+  suppressFormulaRangeSelectionForInitialEdit,
 } from "./formula";
 import {
   attrToCssName,
@@ -88,6 +89,35 @@ export function normalizedAttr(
 function newlinesToBr(text: string) {
   if (!text) return "";
   return text.replace(/\r\n|\r|\n/g, "<br />");
+}
+
+/** Append `)` for each unmatched `(` when committing a formula (ignores parens inside "..." string literals, `""` escape). */
+function closeUnclosedParenthesesInFormula(formula: string): string {
+  if (!formula.startsWith("=") || formula.length <= 1) return formula;
+  const body = formula.slice(1);
+  let depth = 0;
+  let inString = false;
+  for (let i = 0; i < body.length; i += 1) {
+    const ch = body[i];
+    if (inString) {
+      if (ch === '"') {
+        if (body[i + 1] === '"') {
+          i += 1;
+        } else {
+          inString = false;
+        }
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      continue;
+    }
+    if (ch === "(") depth += 1;
+    else if (ch === ")") depth = Math.max(0, depth - 1);
+  }
+  if (depth <= 0) return formula;
+  return `${formula}${")".repeat(depth)}`;
 }
 
 export function getCellValue(
@@ -905,6 +935,16 @@ export function updateCell(
 
     // API, we get value from user
     value = value || inputText;
+    if (_.isString(value) && value.startsWith("=") && value.length > 1) {
+      value = closeUnclosedParenthesesInFormula(value);
+    } else if (
+      _.isPlainObject(value) &&
+      _.isString((value as Cell).f) &&
+      (value as Cell).f!.startsWith("=") &&
+      (value as Cell).f!.length > 1
+    ) {
+      (value as Cell).f = closeUnclosedParenthesesInFormula((value as Cell).f!);
+    }
     const shouldClearError = oldValue?.f
       ? oldValue.f !== value
       : oldValue?.v !== value;
@@ -1939,6 +1979,11 @@ export function luckysheetUpdateCell(
   row_index: number,
   col_index: number
 ) {
+  const flowdata = getFlowdata(ctx);
+  const cell = flowdata?.[row_index]?.[col_index] as { f?: string } | null;
+  if (cell?.f != null && String(cell.f).trim() !== "") {
+    suppressFormulaRangeSelectionForInitialEdit(ctx);
+  }
   ctx.luckysheetCellUpdate = [row_index, col_index];
 }
 

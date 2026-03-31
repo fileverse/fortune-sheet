@@ -102,6 +102,10 @@ export class FormulaCache {
   // - false: user manually modified the inserted range token(s)
   rangeSelectionActive?: boolean | null;
 
+  // Keyboard-only gate: when opening an existing formula cell, block keyboard
+  // range navigation until the formula text is manually edited.
+  keyboardRangeSelectionLock?: boolean;
+
   // Persistent owner of the current formula edit session. Unlike
   // document.activeElement, this survives canvas clicks during range picking.
   formulaEditorOwner?: "cell" | "fx" | null;
@@ -2887,6 +2891,29 @@ export function hasIncompleteTruncatedCellRangeSyntax(
   return false;
 }
 
+function isIncompleteTruncatedRangeToken(token: string): boolean {
+  const t = token.replace(/\s/g, "");
+  if (!t) return false;
+  // Covers A1:A and A1:
+  if (/[A-Za-z]+\d+:[A-Za-z]*$/i.test(t)) {
+    return !/[A-Za-z]+\d+:[A-Za-z]+\d+$/i.test(t);
+  }
+  return false;
+}
+
+function isCaretInsideIncompleteTruncatedRangeSyntax(
+  editor: HTMLElement,
+  caretOffset: number
+): boolean {
+  const textBefore = editor.innerText.slice(0, caretOffset);
+  const textAfter = editor.innerText.slice(caretOffset);
+  const tokenSplit = /[=,()+\-*/&<>%^]/;
+  const leftToken = (textBefore.split(tokenSplit).pop() || "").trim();
+  const rightToken = (textAfter.split(tokenSplit)[0] || "").trim();
+  const tokenAtCaret = `${leftToken}${rightToken}`;
+  return isIncompleteTruncatedRangeToken(tokenAtCaret);
+}
+
 /**
  * True when the formula is only "=" plus a single cell or range token (no parentheses,
  * so no function call). Same UX as =A1: do not use arrow keys to drive sheet refs until
@@ -2908,6 +2935,7 @@ export function isBareCellOrRangeOnlyFormula(formulaText: string): boolean {
  */
 export function suppressFormulaRangeSelectionForInitialEdit(ctx: Context) {
   ctx.formulaCache.rangeSelectionActive = false;
+  ctx.formulaCache.keyboardRangeSelectionLock = true;
   ctx.formulaCache.rangestart = false;
   ctx.formulaCache.rangedrag_column_start = false;
   ctx.formulaCache.rangedrag_row_start = false;
@@ -2931,10 +2959,6 @@ export function isCaretAtValidFormulaRangeInsertionPoint(
     return false;
   }
 
-  if (hasIncompleteTruncatedCellRangeSyntax(inputText)) {
-    return false;
-  }
-
   if (/^=\s*[A-Za-z_][A-Za-z0-9_]*$/.test(inputText)) {
     return false;
   }
@@ -2952,6 +2976,13 @@ export function isCaretAtValidFormulaRangeInsertionPoint(
     editor,
     caretOffset
   );
+
+  // Block only when caret is within the broken token itself (e.g. `=A2:A|`),
+  // not when formula contains another incomplete token elsewhere (e.g.
+  // `=SUM(|,B1:B)` where `|` is caret).
+  if (isCaretInsideIncompleteTruncatedRangeSyntax(editor, caretOffset)) {
+    return false;
+  }
 
   if (slotTextBeforeCaret.length > 0 && !iscelldata(slotTextBeforeCaret)) {
     return false;
@@ -3085,6 +3116,10 @@ export function handleFormulaInput(
 ) {
   if (!$editor) return;
   try {
+    if (ctx.formulaCache.keyboardRangeSelectionLock === true) {
+      ctx.formulaCache.keyboardRangeSelectionLock = false;
+    }
+
     const isBackspaceOrDelete = kcode === 8 || kcode === 46;
     const isAlphaNumeric =
       (kcode >= 48 && kcode <= 57) || // 0-9
@@ -3678,10 +3713,6 @@ export function isFormulaReferenceInputMode(ctx: Context): boolean {
     return true;
   }
 
-  if (ctx.formulaCache.rangeSelectionActive === false) {
-    return false;
-  }
-
   if (!inputText.startsWith("=")) {
     return false;
   }
@@ -3690,6 +3721,19 @@ export function isFormulaReferenceInputMode(ctx: Context): boolean {
   // (e.g. "=SUM" or "=kjnskfv"), do not treat it as range-reference mode.
   // Range-reference mode should start at insertion points such as "(" or ",".
   if (/^=\s*[A-Za-z_][A-Za-z0-9_]*$/.test(inputText)) {
+    return false;
+  }
+
+  // Priority: valid caret entry point should reopen reference mode first.
+  // Dirty state blocks only when caret is NOT at a valid insertion slot.
+  if (editor && isCaretAtValidFormulaRangeInsertionPoint(editor)) {
+    if (ctx.formulaCache.rangeSelectionActive === false) {
+      ctx.formulaCache.rangeSelectionActive = null;
+    }
+    return true;
+  }
+
+  if (ctx.formulaCache.rangeSelectionActive === false) {
     return false;
   }
 
@@ -3707,10 +3751,6 @@ export function maybeRecoverDirtyRangeSelection(ctx: Context): boolean {
   }
 
   const inputText = (editor.innerText || "").trim();
-
-  if (hasIncompleteTruncatedCellRangeSyntax(inputText)) {
-    return false;
-  }
 
   const atCaretRangeIndex = getFormulaRangeIndexAtCaret(editor);
 

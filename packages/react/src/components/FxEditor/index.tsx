@@ -382,6 +382,13 @@ const FxEditor: React.FC = () => {
                 },
               ];
               markRangeSelectionDirty(draftCtx);
+              // Keep completed referenced-cell highlights persistent in Fx editor
+              // after delete/backspace, same behavior as in-cell editor.
+              const el = refs.fxInput.current;
+              if (el && el.innerText.trim().startsWith("=")) {
+                createRangeHightlight(draftCtx, el.innerHTML);
+                rangeHightlightselected(draftCtx, el);
+              }
             });
           }, 0);
         }

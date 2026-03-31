@@ -2201,15 +2201,25 @@ function resizePastedCellsToContent(ctx: Context) {
   updateSheetCellSizes(ctx, sheetIdx, rangeCellSize);
 }
 
-function shouldHandleHtmlFragmentAsSingleCell(html: string) {
+function shouldHandleNonTableHtml(html: string) {
   if (!html || html.includes("table")) return false;
+  return /<[a-z]/i.test(html);
+}
 
-  return (
-    html.includes("data-sheets-root") ||
-    (/<(span|div|p)\b/i.test(html) &&
-      (/<br\s*\/?>/i.test(html) ||
-        /style=|font-weight|font-style|text-decoration|color:/i.test(html)))
-  );
+function convertNonTableHtmlToTable(html: string): string {
+  if (/<li[\s>]/i.test(html)) {
+    const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+    const rows: string[] = [];
+    let match: RegExpExecArray | null;
+    // eslint-disable-next-line no-cond-assign
+    while ((match = liRegex.exec(html)) !== null) {
+      rows.push(`<tr><td>${match[1]}</td></tr>`);
+    }
+    if (rows.length > 0) {
+      return `<table>${rows.join("")}</table>`;
+    }
+  }
+  return `<table><tr><td>${html}</td></tr></table>`;
 }
 
 export function handlePaste(ctx: Context, e: ClipboardEvent) {
@@ -2380,20 +2390,16 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     } else if (txtdata.indexOf("fortune-copy-action-image") > -1) {
       // imageCtrl.pasteImgItem();
     } else {
-      const shouldTreatHtmlAsSingleCell =
-        shouldHandleHtmlFragmentAsSingleCell(txtdata);
+      const shouldHandleAsHtml =
+        txtdata.indexOf("table") > -1 || shouldHandleNonTableHtml(txtdata);
 
-      if (txtdata.indexOf("table") > -1 || shouldTreatHtmlAsSingleCell) {
-        handlePastedTable(
-          ctx,
-          txtdata.indexOf("table") > -1
-            ? txtdata
-            : `<table><tr><td>${txtdata}</td></tr></table>`,
-          pasteHandler
-        );
-        if (shouldTreatHtmlAsSingleCell) {
-          resizePastedCellsToContent(ctx);
-        }
+      if (shouldHandleAsHtml) {
+        const hasNativeTable = txtdata.indexOf("table") > -1;
+        const converted = hasNativeTable
+          ? txtdata
+          : convertNonTableHtmlToTable(txtdata);
+        handlePastedTable(ctx, converted, pasteHandler);
+        resizePastedCellsToContent(ctx);
       }
       // 复制的是图片
       else if (

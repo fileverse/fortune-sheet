@@ -53,53 +53,117 @@ const mapFontFamilyToIndex = (ff: string, ctx: Context) => {
   return 0; // default font index
 };
 
+const BLOCK_TAGS = new Set([
+  "p",
+  "div",
+  "li",
+  "tr",
+  "blockquote",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+]);
+
 const getInlineStringSegmentsFromTd = (
   td: HTMLTableCellElement,
   cell: Cell
 ) => {
-  const clone = td.cloneNode(true) as HTMLTableCellElement;
+  const segments: HTMLSpanElement[] = [];
 
-  // Replace all <br> elements with literal newline text so detached DOM
-  // parsing keeps line breaks for Google Sheets / HTML paste, including when
-  // the <br> lives inside a single styled span.
-  Array.from(clone.querySelectorAll("br")).forEach((br) => {
-    br.replaceWith(document.createTextNode("\n"));
-  });
+  function walk(
+    node: Node,
+    css: Record<string, string>,
+    link?: { type: string; address: string }
+  ) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent || "";
+      if (text) {
+        const span = document.createElement("span");
+        const cssText = Object.entries(css)
+          .map(([k, v]) => `${k}:${v}`)
+          .join(";");
+        if (cssText) span.setAttribute("style", cssText);
+        span.textContent = text;
+        if (link) {
+          span.dataset.linkType = link.type;
+          span.dataset.linkAddress = link.address;
+        }
+        segments.push(span);
+      }
+      return;
+    }
 
-  // Insert newline spans between adjacent sibling block elements (<p>, <div>)
-  // so that paragraph boundaries become line breaks in the inlineStr segments.
-  const blocks = Array.from(clone.querySelectorAll("p, div"));
-  for (let i = blocks.length - 1; i > 0; i--) {
-    const prev = blocks[i - 1];
-    const curr = blocks[i];
-    if (
-      prev.parentNode === curr.parentNode &&
-      prev.nextElementSibling === curr
-    ) {
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+    const el = node as HTMLElement;
+    const tag = el.tagName.toLowerCase();
+
+    if (tag === "br") {
+      const span = document.createElement("span");
+      span.textContent = "\n";
+      segments.push(span);
+      return;
+    }
+
+    if (BLOCK_TAGS.has(tag) && segments.length > 0) {
       const nl = document.createElement("span");
       nl.textContent = "\n";
-      curr.parentNode!.insertBefore(nl, curr);
+      segments.push(nl);
     }
+
+    const newCss = { ...css };
+    if (tag === "b" || tag === "strong") newCss["font-weight"] = "bold";
+    if (tag === "i" || tag === "em") newCss["font-style"] = "italic";
+    if (tag === "u") newCss["text-decoration"] = "underline";
+    if (tag === "s" || tag === "strike") {
+      newCss["text-decoration"] = "line-through";
+    }
+
+    if (el.style?.cssText) {
+      Array.from(el.style).forEach((prop) => {
+        if (prop === "font-size") return;
+        const val = el.style.getPropertyValue(prop);
+        if (val) newCss[prop] = val;
+      });
+    }
+
+    let newLink = link;
+    if (tag === "a") {
+      const href = el.getAttribute("href")?.trim() || "";
+      if (/^https?:\/\//i.test(href)) {
+        newLink = { type: "webpage", address: href };
+      }
+    }
+
+    Array.from(el.childNodes).forEach((child) => {
+      walk(child, newCss, newLink);
+    });
   }
 
-  const leafSpans = Array.from(clone.querySelectorAll("span")).filter(
-    (span) => span.querySelector("span") == null
-  ) as HTMLSpanElement[];
+  walk(td, {});
 
-  if (leafSpans.length === 0) return [];
+  if (segments.length === 0) return [];
 
-  return convertSpanToShareString(
-    leafSpans as any,
-    {
-      fc: cell.fc || "#000000",
-      fs: cell.fs || DEFAULT_FONT_SIZE,
-      cl: cell.cl || 0,
-      un: cell.un || 0,
-      bl: cell.bl || 0,
-      it: cell.it || 0,
-      ff: cell.ff || 0,
-    } as Cell
-  );
+  const base = {
+    fc: cell.fc || "#000000",
+    fs: cell.fs || DEFAULT_FONT_SIZE,
+    cl: cell.cl || 0,
+    un: cell.un || 0,
+    bl: cell.bl || 0,
+    it: cell.it || 0,
+    ff: cell.ff || 0,
+  };
+
+  const result = convertSpanToShareString(segments as any, base as Cell);
+
+  return result.map((seg: any) => ({
+    ...base,
+    ...seg,
+    fs: base.fs,
+  }));
 };
 
 function applyBordersAndMerges(
@@ -117,37 +181,37 @@ function applyBordersAndMerges(
   const topBorder =
     td.style.borderTop && !td.style.borderTop.startsWith("0px")
       ? getQKBorder(
-          td.style.borderTopWidth,
-          td.style.borderTopStyle,
-          td.style.borderTopColor
-        )
+        td.style.borderTopWidth,
+        td.style.borderTopStyle,
+        td.style.borderTopColor
+      )
       : null;
 
   const bottomBorder =
     td.style.borderBottom && !td.style.borderBottom.startsWith("0px")
       ? getQKBorder(
-          td.style.borderBottomWidth,
-          td.style.borderBottomStyle,
-          td.style.borderBottomColor
-        )
+        td.style.borderBottomWidth,
+        td.style.borderBottomStyle,
+        td.style.borderBottomColor
+      )
       : null;
 
   const leftBorder =
     td.style.borderLeft && !td.style.borderLeft.startsWith("0px")
       ? getQKBorder(
-          td.style.borderLeftWidth,
-          td.style.borderLeftStyle,
-          td.style.borderLeftColor
-        )
+        td.style.borderLeftWidth,
+        td.style.borderLeftStyle,
+        td.style.borderLeftColor
+      )
       : null;
 
   const rightBorder =
     td.style.borderRight && !td.style.borderRight.startsWith("0px")
       ? getQKBorder(
-          td.style.borderRightWidth,
-          td.style.borderRightStyle,
-          td.style.borderRightColor
-        )
+        td.style.borderRightWidth,
+        td.style.borderRightStyle,
+        td.style.borderRightColor
+      )
       : null;
 
   for (let rowOffset = 0; rowOffset < rowSpanCount; rowOffset++) {
@@ -213,7 +277,10 @@ const detectHyperlink = (td: HTMLTableCellElement) => {
   if (anchor) {
     const href = anchor.getAttribute("href")?.trim() || "";
     const display = anchor.textContent?.trim() || href;
-    if (href && urlRegex.test(href)) return { href, display };
+    const cellText = (td.textContent || "").trim();
+    const anchorText = (anchor.textContent || "").trim();
+    if (href && urlRegex.test(href) && cellText === anchorText)
+      return { href, display };
   } else {
     const raw = (td.textContent || "").trim();
     if (urlRegex.test(raw)) return { href: raw, display: raw };
@@ -316,13 +383,13 @@ const buildCellFromTd = (
     (fontWeight.toString() === "400" ||
       fontWeight === "normal" ||
       _.isEmpty(fontWeight)) &&
-    !_.includes(styles["font-style"], "bold") &&
-    (!styles["font-weight"] || styles["font-weight"] === "400")
+      !_.includes(styles["font-style"], "bold") &&
+      (!styles["font-weight"] || styles["font-weight"] === "400")
       ? 0
       : 1;
   cell.it =
     (td.style.fontStyle === "normal" || _.isEmpty(td.style.fontStyle)) &&
-    !_.includes(styles["font-style"], "italic")
+      !_.includes(styles["font-style"], "italic")
       ? 0
       : 1;
 
@@ -391,12 +458,16 @@ const buildCellFromTd = (
   if ("mso-rotate" in styles) cell.rt = parseFloat(styles["mso-rotate"]);
 
   const inlineSegments = getInlineStringSegmentsFromTd(td, cell);
+  const segmentsText = inlineSegments.map((s: any) => s.v ?? "").join("");
   const shouldUseInlineString =
     normalizedText.length > 0 &&
     inlineSegments.length > 0 &&
+    segmentsText.trim().length > 0 &&
     (isLineBreak ||
       td.querySelector("[data-sheets-root]") != null ||
-      td.querySelector("span[style], b, strong, i, em, u, s, strike") != null);
+      td.querySelector(
+        "span[style], b, strong, i, em, u, s, strike, a[href]"
+      ) != null);
 
   if (shouldUseInlineString) {
     cell.v = normalizedText;

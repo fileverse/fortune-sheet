@@ -612,16 +612,31 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
     // }
   } else {
     data = data.replace(/\r/g, "");
-    const dataChe = [];
-    const che = data.split("\n");
-    const colchelen = che[0].split("\t").length;
+    const dataChe: any[][] = [];
 
-    for (let i = 0; i < che.length; i += 1) {
-      if (che[i].split("\t").length < colchelen) {
-        continue;
+    // Detect a CSV-quoted single-cell multiline value written by fortune-sheet's
+    // clipboard writer: `"line1\nline2"`.  The quotes were added solely to make
+    // Excel treat the newlines as in-cell line breaks; they must NOT cause the
+    // value to be split across rows or show literal " characters.
+    // Only treat as a single quoted value when the content contains \n (the
+    // wrapping reason) and has no \t (which would indicate multi-column data).
+    if (data.startsWith('"') && data.endsWith('"') && data.length > 1) {
+      const inner = data.slice(1, -1);
+      if (inner.includes("\n") && !inner.includes("\t")) {
+        dataChe.push([inner.replace(/""/g, '"')]);
       }
+    }
 
-      dataChe.push(che[i].split("\t"));
+    if (dataChe.length === 0) {
+      const che = data.split("\n");
+      const colchelen = che[0].split("\t").length;
+
+      for (let i = 0; i < che.length; i += 1) {
+        if (che[i].split("\t").length < colchelen) {
+          continue;
+        }
+        dataChe.push(che[i].split("\t"));
+      }
     }
 
     const d = getFlowdata(ctx); // 取数据
@@ -677,6 +692,28 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
       return t.startsWith("http") ? t : `https://${t}`;
     };
 
+    const applyMultilineTextToCell = (cell: Cell, text: string) => {
+      const normalizedText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      const inlineStringSegment: Record<string, any> = { v: normalizedText };
+
+      ["fs", "fc", "ff", "bl", "it", "un", "cl"].forEach((key) => {
+        const typedKey = key as keyof Cell;
+        const currentValue = cell[typedKey];
+        if (currentValue != null) {
+          inlineStringSegment[typedKey] = currentValue;
+        }
+      });
+
+      cell.v = normalizedText;
+      cell.m = normalizedText;
+      cell.ct = {
+        fa: cell.ct?.fa === "@" ? "@" : "General",
+        t: "inlineStr",
+        s: [inlineStringSegment],
+      } as any;
+      cell.tb = "2";
+    };
+
     const changes: any = [];
     for (let r = 0; r < rlen; r += 1) {
       const x = d[r + curR];
@@ -684,12 +721,16 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
         const originCell = x[c + curC];
         let value = dataChe[r][c];
         const originalValueStr = String(value);
+        const normalizedValueStr = originalValueStr
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n");
+        const isMultilineValue = normalizedValueStr.includes("\n");
 
         // Check if the value is a URL first - if so, keep it as string and skip number conversion
-        const url = getUrlFromText(originalValueStr);
+        const url = getUrlFromText(normalizedValueStr);
         const isUrl = url !== null;
 
-        if (!isUrl && isRealNum(value)) {
+        if (!isUrl && !isMultilineValue && isRealNum(value)) {
           // 如果单元格设置了纯文本格式，那么就不要转成数值类型了，防止数值过大自动转成科学计数法
           if (originCell && originCell.ct && originCell.ct.fa === "@") {
             value = String(value);
@@ -699,7 +740,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
         }
 
         if (originCell) {
-          if (!isUrl) {
+          if (!isUrl && isMultilineValue) {
+            applyMultilineTextToCell(originCell, normalizedValueStr);
+          } else if (!isUrl) {
             const generated = genarate(originalValueStr);
             if (generated) {
               const [genM, genCt, genV] = generated;
@@ -780,6 +823,8 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
               fa: "@",
               t: "s",
             };
+          } else if (isMultilineValue) {
+            applyMultilineTextToCell(cell, normalizedValueStr);
           } else {
             // check if hex value to handle hex address
             if (/^0x?[a-fA-F0-9]+$/.test(value)) {
@@ -1466,7 +1511,8 @@ function pasteHandlerOfCutPaste(
 
 function pasteHandlerOfCopyPaste(
   ctx: Context,
-  copyRange: Context["luckysheet_copy_save"]
+  copyRange: Context["luckysheet_copy_save"],
+  valuesOnly = false
 ) {
   // if (
   //   !checkProtectionLockedRangeList(
@@ -1541,6 +1587,31 @@ function pasteHandlerOfCopyPaste(
   }
 
   const copyData = _.cloneDeep(arr);
+
+  if (valuesOnly) {
+    for (let i = 0; i < copyData.length; i += 1) {
+      for (let j = 0; j < copyData[i].length; j += 1) {
+        const cell = copyData[i][j];
+        if (!cell) continue;
+        // Replace formula with its computed value
+        delete cell.f;
+        delete cell.spl;
+        // Strip all cell styling
+        delete cell.bl;
+        delete cell.it;
+        delete cell.ff;
+        delete cell.fs;
+        delete cell.fc;
+        delete cell.ht;
+        delete cell.vt;
+        delete cell.tb;
+        delete cell.cl;
+        delete cell.un;
+        delete cell.tr;
+        delete cell.bg;
+      }
+    }
+  }
 
   // 多重选择选择区域 单元格如果有函数 则只取值 不取函数
   if (copyRange.copyRange.length > 1) {
@@ -2130,6 +2201,17 @@ function resizePastedCellsToContent(ctx: Context) {
   updateSheetCellSizes(ctx, sheetIdx, rangeCellSize);
 }
 
+function shouldHandleHtmlFragmentAsSingleCell(html: string) {
+  if (!html || html.includes("table")) return false;
+
+  return (
+    html.includes("data-sheets-root") ||
+    (/<(span|div|p)\b/i.test(html) &&
+      (/<br\s*\/?>/i.test(html) ||
+        /style=|font-weight|font-style|text-decoration|color:/i.test(html)))
+  );
+}
+
 export function handlePaste(ctx: Context, e: ClipboardEvent) {
   // if (isEditMode()) {
   //   // 此模式下禁用粘贴
@@ -2146,6 +2228,8 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     ctx.luckysheetCellUpdate = [];
     // $("#luckysheet-rich-text-editor").blur();
     selectionCache.isPasteAction = false;
+    const pasteValuesOnly = selectionCache.isPasteValuesOnly;
+    selectionCache.isPasteValuesOnly = false;
 
     let { clipboardData } = e;
     if (!clipboardData) {
@@ -2163,9 +2247,24 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     let txtdata =
       clipboardData.getData("text/html") || clipboardData.getData("text/plain");
 
+    // Paste values only: for external (non-fortune-sheet) content, use plain text to strip formatting
+    if (
+      pasteValuesOnly &&
+      txtdata.indexOf("fortune-copy-action-table") === -1 &&
+      txtdata.indexOf("fortune-copy-action-span") === -1
+    ) {
+      txtdata = clipboardData.getData("text/plain");
+    }
+
     // 如果标示是qksheet复制的内容，判断剪贴板内容是否是当前页面复制的内容
     let isEqual = true;
     if (
+      txtdata.indexOf("fortune-copy-action-span") > -1 &&
+      ctx.luckysheet_copy_save?.copyRange != null &&
+      ctx.luckysheet_copy_save.copyRange.length === 1
+    ) {
+      // single-cell span — no table to parse, isEqual stays true
+    } else if (
       txtdata.indexOf("fortune-copy-action-table") > -1 &&
       ctx.luckysheet_copy_save?.copyRange != null &&
       ctx.luckysheet_copy_save.copyRange.length > 0
@@ -2262,7 +2361,8 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     }
 
     if (
-      txtdata.indexOf("fortune-copy-action-table") > -1 &&
+      (txtdata.indexOf("fortune-copy-action-table") > -1 ||
+        txtdata.indexOf("fortune-copy-action-span") > -1) &&
       ctx.luckysheet_copy_save?.copyRange != null &&
       ctx.luckysheet_copy_save.copyRange.length > 0 &&
       isEqual
@@ -2274,15 +2374,27 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
         ctx.luckysheet_selection_range = [];
         // selection.clearcopy(e);
       } else {
-        pasteHandlerOfCopyPaste(ctx, ctx.luckysheet_copy_save);
+        pasteHandlerOfCopyPaste(ctx, ctx.luckysheet_copy_save, pasteValuesOnly);
       }
       resizePastedCellsToContent(ctx);
     } else if (txtdata.indexOf("fortune-copy-action-image") > -1) {
       // imageCtrl.pasteImgItem();
     } else {
-      if (txtdata.indexOf("table") > -1) {
-        handlePastedTable(ctx, txtdata, pasteHandler);
-        // resizePastedCellsToContent(ctx);
+      const shouldTreatHtmlAsSingleCell = shouldHandleHtmlFragmentAsSingleCell(
+        txtdata
+      );
+
+      if (txtdata.indexOf("table") > -1 || shouldTreatHtmlAsSingleCell) {
+        handlePastedTable(
+          ctx,
+          txtdata.indexOf("table") > -1
+            ? txtdata
+            : `<table><tr><td>${txtdata}</td></tr></table>`,
+          pasteHandler
+        );
+        if (shouldTreatHtmlAsSingleCell) {
+          resizePastedCellsToContent(ctx);
+        }
       }
       // 复制的是图片
       else if (
@@ -2308,7 +2420,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             // Get the cell position
             const last =
               ctx.luckysheet_select_save?.[
-                ctx.luckysheet_select_save.length - 1
+              ctx.luckysheet_select_save.length - 1
               ];
             if (last) {
               const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;
@@ -2377,7 +2489,8 @@ export function handlePasteByClick(
   }
 
   if (
-    data.indexOf("fortune-copy-action-table") > -1 &&
+    (data.indexOf("fortune-copy-action-table") > -1 ||
+      data.indexOf("fortune-copy-action-span") > -1) &&
     ctx.luckysheet_copy_save?.copyRange != null &&
     ctx.luckysheet_copy_save.copyRange.length > 0
   ) {

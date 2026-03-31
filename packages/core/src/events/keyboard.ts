@@ -522,6 +522,15 @@ export function handleWithCtrlOrMetaKey(
       handleRedo();
       e.stopPropagation();
       return;
+    } else if (e.code === "KeyV") {
+      // Ctrl + Shift + V  粘贴仅值
+      if ((ctx.luckysheet_select_save?.length ?? 0) > 1) {
+        return;
+      }
+      selectionCache.isPasteAction = true;
+      selectionCache.isPasteValuesOnly = true;
+      e.stopPropagation();
+      return;
     }
   } else if (
     ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)
@@ -544,9 +553,17 @@ export function handleWithCtrlOrMetaKey(
     deleteSelectedCellFormat(ctx);
     // $("#luckysheet-icon-bold").click();
   } else if (e.code === "KeyC") {
-    // Ctrl + C  复制
-    handleCopy(ctx);
-    // luckysheetactiveCell();
+    if (ctx.luckysheetCellUpdate.length > 0) {
+      // In-cell edit mode: write plain text only, no HTML
+      e.preventDefault();
+      const sel = window.getSelection();
+      const text =
+        sel && !sel.isCollapsed ? sel.toString() : cellInput.innerText;
+      navigator.clipboard?.writeText(text).catch(() => {});
+    } else {
+      // Normal copy: write styled HTML
+      handleCopy(ctx);
+    }
     e.stopPropagation();
     return;
   } else if (e.code === "KeyF") {

@@ -791,8 +791,9 @@ export function applyLinkToSelection(
           cssText
         )}" data-link-type="${escapeHtmlAttr(
           linkType
-        )}" data-link-address="${escapeHtmlAttr(linkAddress)}">${sp.innerHTML
-          }</span>`;
+        )}" data-link-address="${escapeHtmlAttr(linkAddress)}">${
+          sp.innerHTML
+        }</span>`;
       }
     }
     if (eleft !== "") {

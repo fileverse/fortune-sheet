@@ -1064,7 +1064,7 @@ export function updateCell(
                 parseFloat(value as string) /
                 (oldValue.baseCurrencyPrice as number)
               ).toFixed(decemialCount || 2)
-            } ${coin}`;
+              } ${coin}`;
             curv.baseValue = value;
           }
           // FLV crypto denomination --END--
@@ -1186,7 +1186,7 @@ export function updateCell(
         (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice).toFixed(
           decemialCount || 2
         )
-      } ${coin}`;
+        } ${coin}`;
     }
 
     // FLV crypto denomination --END--
@@ -1288,10 +1288,10 @@ export function updateCell(
 
         const textInfo = canvas
           ? getCellTextInfo(d[r][c] as Cell, canvas, ctx, {
-              r,
-              c,
-              cellWidth,
-            })
+            r,
+            c,
+            cellWidth,
+          })
           : null;
 
         let currentRowLen = defaultrowlen;
@@ -1470,9 +1470,8 @@ export function getRangetxt(
     return sheettxt + indexToColumnChar(column0) + (row0 + 1);
   }
 
-  return `${
-    sheettxt + indexToColumnChar(column0) + (row0 + 1)
-  }:${indexToColumnChar(column1)}${row1 + 1}`;
+  return `${sheettxt + indexToColumnChar(column0) + (row0 + 1)
+    }:${indexToColumnChar(column1)}${row1 + 1}`;
 }
 
 // 把string A1:A2转为选区数组
@@ -1692,20 +1691,34 @@ export function getStyleByCell(
 }
 
 function normalizeInlineStringClipboardStyle(style: Record<string, any>) {
-  const normalizedStyle = { ...style };
   const decorations = new Set<string>();
+  const normalizedStyle: Record<string, any> = {
+    color: style.color || "#000000",
+    fontFamily: style.fontFamily || "Arial",
+    fontSize: style.fontSize || "11pt",
+    fontStyle: style.fontStyle || "normal",
+    fontWeight: style.fontWeight || "400",
+  };
 
-  if (typeof normalizedStyle.textDecoration === "string") {
-    normalizedStyle.textDecoration
+  const backgroundColor = style.backgroundColor || style.background;
+  if (
+    backgroundColor &&
+    backgroundColor !== "transparent" &&
+    backgroundColor !== "rgba(0, 0, 0, 0)"
+  ) {
+    normalizedStyle.backgroundColor = backgroundColor;
+  }
+
+  if (typeof style.textDecoration === "string") {
+    style.textDecoration
       .split(/\s+/)
       .filter(Boolean)
       .forEach((decoration: string) => decorations.add(decoration));
   }
 
-  if (normalizedStyle.borderBottom) {
+  if (style.borderBottom) {
     decorations.add("underline");
     normalizedStyle.textDecorationSkipInk = "none";
-    delete normalizedStyle.borderBottom;
   }
 
   if (decorations.size > 0) {
@@ -1759,10 +1772,19 @@ export function getInlineStringHTML(
         const style = options?.useSemanticMarkup
           ? normalizeInlineStringClipboardStyle(baseStyle)
           : baseStyle;
-        // Explicitly set font-weight:normal for non-bold segments so that apps
-        // like Google Sheets don't inherit bold from an adjacent sibling span.
+        // Explicitly set default text styles so Google Sheets preserves
+        // mixed rich-text runs instead of inheriting formatting between spans.
         if (!style.fontWeight) {
-          style.fontWeight = "normal";
+          style.fontWeight = "400";
+        }
+        if (!style.fontStyle) {
+          style.fontStyle = "normal";
+        }
+        if (!style.fontSize) {
+          style.fontSize = "11pt";
+        }
+        if (!style.fontFamily) {
+          style.fontFamily = "Arial";
         }
         const { link } = strObj as any;
         if (link?.linkType && link?.linkAddress) {
@@ -1777,18 +1799,21 @@ export function getInlineStringHTML(
               style.borderBottom || "1px solid rgb(0, 0, 255)";
           }
         }
-        const styleStr = _.map(style, (v, key) => {
-          return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
-        }).join("");
+        const styleStr = _.toPairs(style)
+          .filter(([, v]) => !_.isNil(v) && v !== "" && v !== "undefined")
+          .map(([key, v]) => {
+            return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
+          })
+          .join(" ");
         const dataAttrs =
           !options?.useSemanticMarkup && link?.linkType && link?.linkAddress
             ? ` data-link-type='${String(link.linkType).replace(
-                /'/g,
-                "&#39;"
-              )}' data-link-address='${String(link.linkAddress).replace(
-                /'/g,
-                "&#39;"
-              )}'`
+              /'/g,
+              "&#39;"
+            )}' data-link-address='${String(link.linkAddress).replace(
+              /'/g,
+              "&#39;"
+            )}'`
             : "";
 
         if (options?.useSemanticMarkup) {

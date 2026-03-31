@@ -107,8 +107,14 @@ export function convertCssToStyleList(cssText: string, originCell: Cell) {
       styleList.fc = value;
     }
 
-    if (key === "text-decoration") {
-      styleList.cl = 1;
+    if (key === "text-decoration" || key === "text-decoration-line") {
+      if (value.includes("underline")) {
+        styleList.un = 1;
+      }
+
+      if (value.includes("line-through")) {
+        styleList.cl = 1;
+      }
     }
 
     if (key === "border-bottom") {
@@ -785,9 +791,8 @@ export function applyLinkToSelection(
           cssText
         )}" data-link-type="${escapeHtmlAttr(
           linkType
-        )}" data-link-address="${escapeHtmlAttr(linkAddress)}">${
-          sp.innerHTML
-        }</span>`;
+        )}" data-link-address="${escapeHtmlAttr(linkAddress)}">${sp.innerHTML
+          }</span>`;
       }
     }
     if (eleft !== "") {

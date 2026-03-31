@@ -692,6 +692,28 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
       return t.startsWith("http") ? t : `https://${t}`;
     };
 
+    const applyMultilineTextToCell = (cell: Cell, text: string) => {
+      const normalizedText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      const inlineStringSegment: Record<string, any> = { v: normalizedText };
+
+      ["fs", "fc", "ff", "bl", "it", "un", "cl"].forEach((key) => {
+        const typedKey = key as keyof Cell;
+        const currentValue = cell[typedKey];
+        if (currentValue != null) {
+          inlineStringSegment[typedKey] = currentValue;
+        }
+      });
+
+      cell.v = normalizedText;
+      cell.m = normalizedText;
+      cell.ct = {
+        fa: cell.ct?.fa === "@" ? "@" : "General",
+        t: "inlineStr",
+        s: [inlineStringSegment],
+      } as any;
+      cell.tb = "2";
+    };
+
     const changes: any = [];
     for (let r = 0; r < rlen; r += 1) {
       const x = d[r + curR];
@@ -699,12 +721,16 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
         const originCell = x[c + curC];
         let value = dataChe[r][c];
         const originalValueStr = String(value);
+        const normalizedValueStr = originalValueStr
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n");
+        const isMultilineValue = normalizedValueStr.includes("\n");
 
         // Check if the value is a URL first - if so, keep it as string and skip number conversion
-        const url = getUrlFromText(originalValueStr);
+        const url = getUrlFromText(normalizedValueStr);
         const isUrl = url !== null;
 
-        if (!isUrl && isRealNum(value)) {
+        if (!isUrl && !isMultilineValue && isRealNum(value)) {
           // 如果单元格设置了纯文本格式，那么就不要转成数值类型了，防止数值过大自动转成科学计数法
           if (originCell && originCell.ct && originCell.ct.fa === "@") {
             value = String(value);
@@ -714,7 +740,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
         }
 
         if (originCell) {
-          if (!isUrl) {
+          if (!isUrl && isMultilineValue) {
+            applyMultilineTextToCell(originCell, normalizedValueStr);
+          } else if (!isUrl) {
             const generated = genarate(originalValueStr);
             if (generated) {
               const [genM, genCt, genV] = generated;
@@ -795,6 +823,8 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
               fa: "@",
               t: "s",
             };
+          } else if (isMultilineValue) {
+            applyMultilineTextToCell(cell, normalizedValueStr);
           } else {
             // check if hex value to handle hex address
             if (/^0x?[a-fA-F0-9]+$/.test(value)) {
@@ -2171,6 +2201,17 @@ function resizePastedCellsToContent(ctx: Context) {
   updateSheetCellSizes(ctx, sheetIdx, rangeCellSize);
 }
 
+function shouldHandleHtmlFragmentAsSingleCell(html: string) {
+  if (!html || html.includes("table")) return false;
+
+  return (
+    html.includes("data-sheets-root") ||
+    (/<(span|div|p)\b/i.test(html) &&
+      (/<br\s*\/?>/i.test(html) ||
+        /style=|font-weight|font-style|text-decoration|color:/i.test(html)))
+  );
+}
+
 export function handlePaste(ctx: Context, e: ClipboardEvent) {
   // if (isEditMode()) {
   //   // 此模式下禁用粘贴
@@ -2339,9 +2380,21 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     } else if (txtdata.indexOf("fortune-copy-action-image") > -1) {
       // imageCtrl.pasteImgItem();
     } else {
-      if (txtdata.indexOf("table") > -1) {
-        handlePastedTable(ctx, txtdata, pasteHandler);
-        // resizePastedCellsToContent(ctx);
+      const shouldTreatHtmlAsSingleCell = shouldHandleHtmlFragmentAsSingleCell(
+        txtdata
+      );
+
+      if (txtdata.indexOf("table") > -1 || shouldTreatHtmlAsSingleCell) {
+        handlePastedTable(
+          ctx,
+          txtdata.indexOf("table") > -1
+            ? txtdata
+            : `<table><tr><td>${txtdata}</td></tr></table>`,
+          pasteHandler
+        );
+        if (shouldTreatHtmlAsSingleCell) {
+          resizePastedCellsToContent(ctx);
+        }
       }
       // 复制的是图片
       else if (
@@ -2367,7 +2420,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             // Get the cell position
             const last =
               ctx.luckysheet_select_save?.[
-                ctx.luckysheet_select_save.length - 1
+              ctx.luckysheet_select_save.length - 1
               ];
             if (last) {
               const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;

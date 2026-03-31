@@ -1667,9 +1667,12 @@ export function rangeValueToHtml(
         }
 
         const styleObj = getStyleByCell(ctx, d, r, c);
-        style += _.map(styleObj, (v, key) => {
-          return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
-        }).join("");
+        style += _.toPairs(styleObj)
+          .filter(([, v]) => !_.isNil(v) && v !== "" && v !== "undefined")
+          .map(
+            ([key, v]) => `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`
+          )
+          .join(" ");
 
         if (cell.mc) {
           if ("rs" in cell.mc) {
@@ -2097,10 +2100,10 @@ export function copy(ctx: Context) {
     };
     const styleObj = getStyleByCell(ctx, flowdata!, r, c);
     const mergedStyle = { ...defaultStyle, ...styleObj };
-    const styleStr = _.map(
-      mergedStyle,
-      (v, key) => `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`
-    ).join("");
+    const styleStr = _.toPairs(mergedStyle)
+      .filter(([, v]) => !_.isNil(v) && v !== "" && v !== "undefined")
+      .map(([key, v]) => `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`)
+      .join(" ");
     const cell = flowdata![r]?.[c];
     let innerContent: string;
     if (cell && isInlineStringCell(cell)) {
@@ -2127,7 +2130,7 @@ export function copy(ctx: Context) {
     );
 
     cpdata = hasMultilineContent
-      ? `<table data-type="fortune-copy-action-table"><tr><td style="white-space: pre-line;${styleStr}" data-fortune-cell="${cellData}"><span data-type="fortune-copy-action-span" data-sheets-root="1" style="${styleStr}">${innerContent}</span></td></tr></table>`
+      ? `<table data-type="fortune-copy-action-table"><tr><td style="white-space: pre-line; ${styleStr}" data-fortune-cell="${cellData}"><span data-type="fortune-copy-action-span" data-sheets-root="1" style="${styleStr}">${innerContent}</span></td></tr></table>`
       : `<span data-type="fortune-copy-action-span" data-sheets-root="1" style="${styleStr}">${innerContent}</span>`;
   } else {
     cpdata = rangeValueToHtml(
@@ -2138,7 +2141,7 @@ export function copy(ctx: Context) {
     cpdata =
       cpdata === null
         ? cpdata
-        : cpdata.replace('<td style="', '<td style="white-space: pre-line;"');
+        : cpdata.replace('<td style="', '<td style="white-space: pre-line; ');
   }
 
   if (cpdata) {

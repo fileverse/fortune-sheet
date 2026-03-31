@@ -717,9 +717,15 @@ const InputBox: React.FC = () => {
 
   const onPaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
+      const plainText = e.clipboardData.getData("text/plain");
+
+      e.preventDefault();
+
       if (_.isEmpty(context.luckysheetCellUpdate)) {
-        e.preventDefault();
+        return;
       }
+
+      document.execCommand("insertText", false, plainText);
     },
     [context.luckysheetCellUpdate]
   );

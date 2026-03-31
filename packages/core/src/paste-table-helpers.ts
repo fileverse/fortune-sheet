@@ -7,6 +7,7 @@ import { Cell } from "./types";
 import { getSheetIndex } from "./utils";
 import { setRowHeight, setColumnWidth } from "./api";
 import { adjustFormulaForPaste } from "./events/paste";
+import { convertSpanToShareString } from "./modules/inline-string";
 
 export const DEFAULT_FONT_SIZE = 12;
 
@@ -50,6 +51,55 @@ const mapFontFamilyToIndex = (ff: string, ctx: Context) => {
     });
   if (found != null) return locale_fontjson[found];
   return 0; // default font index
+};
+
+const getInlineStringSegmentsFromTd = (
+  td: HTMLTableCellElement,
+  cell: Cell
+) => {
+  const clone = td.cloneNode(true) as HTMLTableCellElement;
+
+  // Replace all <br> elements with literal newline text so detached DOM
+  // parsing keeps line breaks for Google Sheets / HTML paste, including when
+  // the <br> lives inside a single styled span.
+  Array.from(clone.querySelectorAll("br")).forEach((br) => {
+    br.replaceWith(document.createTextNode("\n"));
+  });
+
+  // Insert newline spans between adjacent sibling block elements (<p>, <div>)
+  // so that paragraph boundaries become line breaks in the inlineStr segments.
+  const blocks = Array.from(clone.querySelectorAll("p, div"));
+  for (let i = blocks.length - 1; i > 0; i--) {
+    const prev = blocks[i - 1];
+    const curr = blocks[i];
+    if (
+      prev.parentNode === curr.parentNode &&
+      prev.nextElementSibling === curr
+    ) {
+      const nl = document.createElement("span");
+      nl.textContent = "\n";
+      curr.parentNode!.insertBefore(nl, curr);
+    }
+  }
+
+  const leafSpans = Array.from(clone.querySelectorAll("span")).filter(
+    (span) => span.querySelector("span") == null
+  ) as HTMLSpanElement[];
+
+  if (leafSpans.length === 0) return [];
+
+  return convertSpanToShareString(
+    leafSpans as any,
+    {
+      fc: cell.fc || "#000000",
+      fs: cell.fs || DEFAULT_FONT_SIZE,
+      cl: cell.cl || 0,
+      un: cell.un || 0,
+      bl: cell.bl || 0,
+      it: cell.it || 0,
+      ff: cell.ff || 0,
+    } as Cell
+  );
 };
 
 function applyBordersAndMerges(
@@ -172,7 +222,7 @@ const detectHyperlink = (td: HTMLTableCellElement) => {
 };
 
 function brToNewline(str: string) {
-  return str.replace(/<br\s*\/?>/gi, "\n");
+  return str.replace(/<br\s*\/?>/gi, "\n").replace(/<\/(div|p|li)>/gi, "\n");
 }
 
 const buildCellFromTd = (
@@ -205,22 +255,35 @@ const buildCellFromTd = (
   }
 
   let cell: Cell = {};
-  const rawText = (td.innerText || td.innerHTML || "").trim();
-  const isLineBreak = rawText.includes("<br />");
+  const rawHtml = td.innerHTML || "";
+  const hasHtmlLineBreak = /<br\s*\/?>|<\/(div|p|li)>/i.test(rawHtml);
+  const domText = td.innerText || td.textContent || "";
+  const htmlText = brToNewline(rawHtml).replace(/<[^>]*>/g, "");
+  const rawText = (
+    hasHtmlLineBreak && !/[\r\n]/.test(domText)
+      ? htmlText
+      : domText || htmlText || rawHtml || ""
+  ).trim();
+  const normalizedText = rawText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const isLineBreak = hasHtmlLineBreak || normalizedText.includes("\n");
 
-  if (!rawText) {
+  if (!normalizedText) {
     cell.v = undefined;
     cell.m = "";
   } else if (isLineBreak) {
-    const value = brToNewline(rawText);
-    cell = { ...cell, ct: { ...cell.ct, t: "inlineStr", s: [{ v: value }] } };
+    cell.v = normalizedText;
+    cell.m = normalizedText;
+    cell = {
+      ...cell,
+      ct: { fa: "General", t: "inlineStr", s: [{ v: normalizedText }] },
+    };
   } else {
     // Store as plain text without auto-detecting date/currency/percentage formats,
     // matching the behaviour of the plain-text paste path in pasteHandler.
-    cell.v = rawText;
-    cell.m = rawText;
+    cell.v = normalizedText;
+    cell.m = normalizedText;
     cell.ct = { fa: "General", t: "g" };
-    if (HEX_REGEX.test(rawText)) {
+    if (HEX_REGEX.test(normalizedText)) {
       cell.ct = { fa: "@", t: "s" };
     }
   }
@@ -264,8 +327,21 @@ const buildCellFromTd = (
       : 1;
 
   // Underline / strike
-  cell.un = !_.includes(styles["text-decoration"], "underline") ? undefined : 1;
-  cell.cl = !_.includes(td.innerHTML, "<s>") ? undefined : 1;
+  const textDecoration = [
+    td.style.textDecoration,
+    // @ts-ignore
+    td.style.textDecorationLine,
+    styles["text-decoration"],
+    styles["text-decoration-line"],
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  cell.un = textDecoration.includes("underline") ? 1 : undefined;
+  cell.cl =
+    textDecoration.includes("line-through") || _.includes(td.innerHTML, "<s>")
+      ? 1
+      : undefined;
 
   // Font family / size / color
   const ff = td.style.fontFamily || styles["font-family"] || "";
@@ -313,6 +389,20 @@ const buildCellFromTd = (
 
   // Rotation
   if ("mso-rotate" in styles) cell.rt = parseFloat(styles["mso-rotate"]);
+
+  const inlineSegments = getInlineStringSegmentsFromTd(td, cell);
+  const shouldUseInlineString =
+    normalizedText.length > 0 &&
+    inlineSegments.length > 0 &&
+    (isLineBreak ||
+      td.querySelector("[data-sheets-root]") != null ||
+      td.querySelector("span[style], b, strong, i, em, u, s, strike") != null);
+
+  if (shouldUseInlineString) {
+    cell.v = normalizedText;
+    cell.m = normalizedText;
+    cell.ct = { fa: "General", t: "inlineStr", s: inlineSegments };
+  }
 
   // Span
   let rowspan = parseInt(td.getAttribute("rowspan") || "1", 10);

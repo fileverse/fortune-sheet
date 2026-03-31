@@ -6,9 +6,11 @@ import {
   getdatabyselection,
   getDataBySelectionNoCopy,
   getStyleByCell,
+  getInlineStringHTML,
   mergeBorder,
   mergeMoveMain,
 } from "./cell";
+import { isInlineStringCell } from "./inline-string";
 import { delFunctionGroup } from "./formula";
 import clipboard from "./clipboard";
 import { getBorderInfoCompute } from "./border";
@@ -20,6 +22,7 @@ import {
 } from "../utils";
 import { hasPartMC } from "./validation";
 import { update } from "./format";
+import { locale } from "../locale";
 // @ts-ignore
 // import SSF from "./ssf";
 import { CFSplitRange } from "./ConditionFormat";
@@ -27,6 +30,7 @@ import { clearCellError } from "./error-state-helpers";
 
 export const selectionCache = {
   isPasteAction: false,
+  isPasteValuesOnly: false,
 };
 
 export function scrollToHighlightCell(ctx: Context, r: number, c: number) {
@@ -1616,7 +1620,8 @@ export function rangeValueToHtml(
       const c = colIndexArr[j];
 
       // eslint-disable-next-line no-template-curly-in-string
-      let column = '<td ${span} style="${style}">';
+      let column =
+        '<td ${span} style="${style}" data-fortune-cell="${cellData}">';
 
       const cell = d[r]?.[c];
       if (cell != null) {
@@ -1662,9 +1667,12 @@ export function rangeValueToHtml(
         }
 
         const styleObj = getStyleByCell(ctx, d, r, c);
-        style += _.map(styleObj, (v, key) => {
-          return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
-        }).join("");
+        style += _.toPairs(styleObj)
+          .filter(([, v]) => !_.isNil(v) && v !== "" && v !== "undefined")
+          .map(
+            ([key, v]) => `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`
+          )
+          .join(" ");
 
         if (cell.mc) {
           if ("rs" in cell.mc) {
@@ -1903,35 +1911,34 @@ export function rangeValueToHtml(
           }
         }
 
-        column = replaceHtml(column, { style, span });
+        const cellData = encodeURIComponent(
+          JSON.stringify({ ...cell, _srcRow: r, _srcCol: c })
+        );
+        column = replaceHtml(column, { style, span, cellData });
 
-        if (_.isNil(c_value)) {
-          c_value = getCellValue(r, c, d);
+        let cellHtml = "";
+
+        if (cell && isInlineStringCell(cell)) {
+          cellHtml = getInlineStringHTML(r, c, d, {
+            useSemanticMarkup: true,
+            inheritedStyle: styleObj,
+          });
+        } else {
+          if (_.isNil(c_value)) {
+            c_value = getCellValue(r, c, d);
+          }
+
+          if (_.isNil(c_value)) {
+            c_value = "";
+          }
+
+          cellHtml = escapeHTMLTag(String(c_value)).replace(
+            /&lt;br\s*\/?&gt;/g,
+            "<br>"
+          );
         }
-        // if (
-        //   _.isNil(c_value) &&
-        //   d[r][c] &&
-        //   d[r][c].ct &&
-        //   d[r][c].ct.t === "inlineStr"
-        // ) {
-        //   c_value = d[r][c].ct.s
-        //     .map((val) => {
-        //       const font = $("<font></font>");
-        //       val.fs && font.css("font-size", val.fs);
-        //       val.bl && font.css("font-weight", val.border);
-        //       val.it && font.css("font-style", val.italic);
-        //       val.cl === 1 && font.css("text-decoration", "underline");
-        //       font.text(val.v);
-        //       return font[0].outerHTML;
-        //     })
-        //     .join("");
-        // }
 
-        if (_.isNil(c_value)) {
-          c_value = "";
-        }
-
-        column += escapeHTMLTag(c_value);
+        column += cellHtml;
       } else {
         let style = "";
 
@@ -1994,7 +2001,7 @@ export function rangeValueToHtml(
           }
         }
 
-        column = replaceHtml(column, { style, span: "" });
+        column = replaceHtml(column, { style, span: "", cellData: "" });
         column += "";
       }
 
@@ -2070,15 +2077,72 @@ export function copy(ctx: Context) {
     HasMC,
   };
 
-  let cpdata = rangeValueToHtml(
-    ctx,
-    ctx.currentSheetId,
-    ctx.luckysheet_select_save
-  );
-  cpdata =
-    cpdata === null
-      ? cpdata
-      : cpdata.replace('<td style="', '<td style="white-space: pre-line;"');
+  let cpdata: string | null;
+
+  const sel = ctx.luckysheet_select_save;
+  const isSingleCell =
+    sel?.length === 1 &&
+    sel[0].row[0] === sel[0].row[1] &&
+    sel[0].column[0] === sel[0].column[1];
+
+  if (isSingleCell) {
+    const r = sel![0].row[0];
+    const c = sel![0].column[0];
+    const { fontarray } = locale(ctx);
+    const defaultStyle: Record<string, string> = {
+      color: "#000000",
+      fontFamily: fontarray[0] ?? "Arial",
+      fontSize: "11pt",
+      fontWeight: "400",
+      fontStyle: "normal",
+      textAlign: "left",
+      backgroundColor: "transparent",
+    };
+    const styleObj = getStyleByCell(ctx, flowdata!, r, c);
+    const mergedStyle = { ...defaultStyle, ...styleObj };
+    const styleStr = _.toPairs(mergedStyle)
+      .filter(([, v]) => !_.isNil(v) && v !== "" && v !== "undefined")
+      .map(([key, v]) => `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`)
+      .join(" ");
+    const cell = flowdata![r]?.[c];
+    let innerContent: string;
+    if (cell && isInlineStringCell(cell)) {
+      // Rich text cell: preserve per-segment formatting (bold, italic, color, etc.)
+      innerContent = getInlineStringHTML(r, c, flowdata!, {
+        useSemanticMarkup: true,
+        inheritedStyle: mergedStyle,
+      });
+    } else {
+      const displayValue =
+        getCellValue(r, c, flowdata!, "m") ??
+        getCellValue(r, c, flowdata!) ??
+        "";
+      // escapeHTMLTag turns <br /> into &lt;br /&gt; — restore them as actual <br> tags
+      innerContent = escapeHTMLTag(String(displayValue)).replace(
+        /&lt;br\s*\/?&gt;/g,
+        "<br>"
+      );
+    }
+
+    const hasMultilineContent = /<br\s*\/?>|[\r\n]/i.test(innerContent);
+    const cellData = encodeURIComponent(
+      JSON.stringify({ ...(cell ?? {}), _srcRow: r, _srcCol: c })
+    );
+
+    cpdata = hasMultilineContent
+      ? `<table data-type="fortune-copy-action-table"><tr><td style="white-space: pre-line; ${styleStr}" data-fortune-cell="${cellData}"><span data-type="fortune-copy-action-span" data-sheets-root="1" style="${styleStr}">${innerContent}</span></td></tr></table>`
+      : `<span data-type="fortune-copy-action-span" data-sheets-root="1" style="${styleStr}">${innerContent}</span>`;
+  } else {
+    cpdata = rangeValueToHtml(
+      ctx,
+      ctx.currentSheetId,
+      ctx.luckysheet_select_save
+    );
+    cpdata =
+      cpdata === null
+        ? cpdata
+        : cpdata.replace('<td style="', '<td style="white-space: pre-line; ');
+  }
 
   if (cpdata) {
     ctx.iscopyself = true;

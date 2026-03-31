@@ -31,6 +31,7 @@ import {
 } from "./inline-string";
 import { isRealNull, isRealNum, valueIsError } from "./validation";
 import { getCellTextInfo } from "./text";
+import { locale } from "../locale";
 import { spillSortResult } from "./sort";
 
 // TODO put these in context ref
@@ -1105,7 +1106,7 @@ export function updateCell(
                 parseFloat(value as string) /
                 (oldValue.baseCurrencyPrice as number)
               ).toFixed(decemialCount || 2)
-            } ${coin}`;
+              } ${coin}`;
             curv.baseValue = value;
           }
           // FLV crypto denomination --END--
@@ -1227,7 +1228,7 @@ export function updateCell(
         (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice).toFixed(
           decemialCount || 2
         )
-      } ${coin}`;
+        } ${coin}`;
     }
 
     // FLV crypto denomination --END--
@@ -1329,10 +1330,10 @@ export function updateCell(
 
         const textInfo = canvas
           ? getCellTextInfo(d[r][c] as Cell, canvas, ctx, {
-              r,
-              c,
-              cellWidth,
-            })
+            r,
+            c,
+            cellWidth,
+          })
           : null;
 
         let currentRowLen = defaultrowlen;
@@ -1511,9 +1512,8 @@ export function getRangetxt(
     return sheettxt + indexToColumnChar(column0) + (row0 + 1);
   }
 
-  return `${
-    sheettxt + indexToColumnChar(column0) + (row0 + 1)
-  }:${indexToColumnChar(column1)}${row1 + 1}`;
+  return `${sheettxt + indexToColumnChar(column0) + (row0 + 1)
+    }:${indexToColumnChar(column1)}${row1 + 1}`;
 }
 
 // 把string A1:A2转为选区数组
@@ -1628,7 +1628,7 @@ export function getFontStyleByCell(
     //   style += "font-family: " + f + ";";
     // }
 
-    if (key === "fs" && valueNum !== 10) {
+    if (key === "fs" && !_.isNil(value)) {
       style.fontSize = `${valueNum}pt`;
     }
 
@@ -1680,7 +1680,6 @@ export function getStyleByCell(
   const cell = d?.[r]?.[c];
   if (!cell) return {};
 
-  const isInline = isInlineStringCell(cell);
   if ("bg" in cell) {
     const value = normalizedCellAttr(cell, "bg");
     if (checksCF?.cellColor) {
@@ -1713,7 +1712,11 @@ export function getStyleByCell(
 
   if ("ff" in cell) {
     const value = normalizedCellAttr(cell, "ff");
-    style.fontFamily = value;
+    const { fontarray } = locale(ctx);
+    const ffIndex = parseInt(value, 10);
+    style.fontFamily = Number.isNaN(ffIndex)
+      ? value
+      : fontarray[ffIndex] ?? value;
   }
 
   if ("vt" in cell) {
@@ -1724,14 +1727,79 @@ export function getStyleByCell(
       style.alignItems = "flex-end";
     }
   }
-  if (!isInline) {
-    style = _.assign(style, getFontStyleByCell(cell, checksAF, checksCF));
-  }
+  style = _.assign(style, getFontStyleByCell(cell, checksAF, checksCF));
 
   return style;
 }
 
-export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
+function normalizeInlineStringClipboardStyle(style: Record<string, any>) {
+  const decorations = new Set<string>();
+  const normalizedStyle: Record<string, any> = {
+    color: style.color || "#000000",
+    fontFamily: style.fontFamily || "Arial",
+    fontSize: style.fontSize || "11pt",
+    fontStyle: style.fontStyle || "normal",
+    fontWeight: style.fontWeight || "400",
+  };
+
+  const backgroundColor = style.backgroundColor || style.background;
+  if (
+    backgroundColor &&
+    backgroundColor !== "transparent" &&
+    backgroundColor !== "rgba(0, 0, 0, 0)"
+  ) {
+    normalizedStyle.backgroundColor = backgroundColor;
+  }
+
+  if (typeof style.textDecoration === "string") {
+    style.textDecoration
+      .split(/\s+/)
+      .filter(Boolean)
+      .forEach((decoration: string) => decorations.add(decoration));
+  }
+
+  if (style.borderBottom) {
+    decorations.add("underline");
+    normalizedStyle.textDecorationSkipInk = "none";
+  }
+
+  if (decorations.size > 0) {
+    normalizedStyle.textDecoration = Array.from(decorations).join(" ");
+  }
+
+  return normalizedStyle;
+}
+
+function buildClipboardCompatibleInlineRuns(text: string, styleAttr: string) {
+  const normalizedText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const segments = normalizedText.split("\n");
+
+  return segments
+    .map((segment, index) => {
+      let html = "";
+
+      if (segment.length > 0) {
+        html += `<span style='${styleAttr}'>${segment}</span>`;
+      }
+
+      if (index < segments.length - 1) {
+        html += `<span style='${styleAttr}'><br></span>`;
+      }
+
+      return html;
+    })
+    .join("");
+}
+
+export function getInlineStringHTML(
+  r: number,
+  c: number,
+  data: CellMatrix,
+  options?: {
+    useSemanticMarkup?: boolean;
+    inheritedStyle?: Record<string, string>;
+  }
+) {
   const ct = getCellValue(r, c, data, "ct");
   if (isInlineStringCT(ct)) {
     const strings = ct.s;
@@ -1739,26 +1807,67 @@ export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
     for (let i = 0; i < strings.length; i += 1) {
       const strObj = strings[i];
       if (strObj.v) {
-        const style = getFontStyleByCell(strObj);
+        const baseStyle = {
+          ...(options?.useSemanticMarkup ? options.inheritedStyle ?? {} : {}),
+          ...getFontStyleByCell(strObj),
+        };
+        const style = options?.useSemanticMarkup
+          ? normalizeInlineStringClipboardStyle(baseStyle)
+          : baseStyle;
+        // Explicitly set default text styles so Google Sheets preserves
+        // mixed rich-text runs instead of inheriting formatting between spans.
+        if (!style.fontWeight) {
+          style.fontWeight = "400";
+        }
+        if (!style.fontStyle) {
+          style.fontStyle = "normal";
+        }
+        if (!style.fontSize) {
+          style.fontSize = "11pt";
+        }
+        if (!style.fontFamily) {
+          style.fontFamily = "Arial";
+        }
         const { link } = strObj as any;
         if (link?.linkType && link?.linkAddress) {
           style.color = style.color || "rgb(0, 0, 255)";
-          style.borderBottom = style.borderBottom || "1px solid rgb(0, 0, 255)";
+          if (options?.useSemanticMarkup) {
+            style.textDecoration = style.textDecoration
+              ? `${style.textDecoration} underline`
+              : "underline";
+            style.textDecorationSkipInk = "none";
+          } else {
+            style.borderBottom =
+              style.borderBottom || "1px solid rgb(0, 0, 255)";
+          }
         }
-        const styleStr = _.map(style, (v, key) => {
-          return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
-        }).join("");
+        const styleStr = _.toPairs(style)
+          .filter(([, v]) => !_.isNil(v) && v !== "" && v !== "undefined")
+          .map(([key, v]) => {
+            return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
+          })
+          .join(" ");
         const dataAttrs =
-          link?.linkType && link?.linkAddress
+          !options?.useSemanticMarkup && link?.linkType && link?.linkAddress
             ? ` data-link-type='${String(link.linkType).replace(
-                /'/g,
-                "&#39;"
-              )}' data-link-address='${String(link.linkAddress).replace(
-                /'/g,
-                "&#39;"
-              )}'`
+              /'/g,
+              "&#39;"
+            )}' data-link-address='${String(link.linkAddress).replace(
+              /'/g,
+              "&#39;"
+            )}'`
             : "";
-        value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${strObj.v}</span>`;
+
+        if (options?.useSemanticMarkup) {
+          value += buildClipboardCompatibleInlineRuns(strObj.v, styleStr);
+        } else {
+          // Convert newlines to <br> so apps that don't honour white-space:pre-wrap
+          // (e.g. Google Sheets clipboard parser) still see proper line breaks.
+          const segmentText = strObj.v
+            .replace(/\r\n/g, "<br>")
+            .replace(/\n/g, "<br>");
+          value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${segmentText}</span>`;
+        }
       }
     }
     return value;

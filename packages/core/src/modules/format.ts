@@ -228,20 +228,24 @@ export function genarate(value: string | number | boolean) {
       ct.t = "d";
 
       const map: Record<string, string> = {
-        "yyyy-MM-dd": "dd/MM/yyyy",
-        "yyyy-MM-dd HH:mm": "dd/MM/yyyy",
-        "yyyy-MM-ddTHH:mm": "dd/MM/yyyy",
-        "yyyy/MM/dd": "dd/MM/yyyy",
-        "yyyy/MM/dd HH:mm": "dd/MM/yyyy",
+        "yyyy-MM-dd": "yyyy-MM-dd",
+        "yyyy-MM-dd HH:mm": "yyyy-MM-dd HH:mm",
+        "yyyy-MM-ddTHH:mm": "yyyy-MM-dd HH:mm",
+        "yyyy/MM/dd": "yyyy/MM/dd",
+        "yyyy/MM/dd HH:mm": "yyyy/MM/dd HH:mm",
         "yyyy.MM.dd": "yyyy.MM.dd",
         "MM/dd/yyyy h:mm AM/PM": "MM/dd/yyyy h:mm AM/PM",
         "MM/dd/yyyy": "MM/dd/yyyy",
         "M/d/yyyy": "M/d/yyyy",
         "MM/dd/yy": "MM/dd/yy",
         "dd/MM/yyyy": "dd/MM/yyyy",
-        "dd-MM-yyyy": "dd/MM/yyyy",
+        "dd-MM-yyyy": "dd-MM-yyyy",
         "dd.MM.yyyy": "dd.MM.yyyy",
-        named: "dd/MM/yyyy",
+        "named-mdy-full": "mmmm d, yyyy",
+        "named-mdy-abbr": "mmm d, yyyy",
+        "named-dmy-full": "d mmmm yyyy",
+        "named-dmy-abbr": "d mmm yyyy",
+        "named-abbr-dashes": "mmm-d-yyyy",
       };
 
       ct.fa = map[df.formatType] || "dd/MM/yyyy";
@@ -265,6 +269,7 @@ export function update(fmt: string, v: any) {
 }
 
 export function is_date(fmt: string, v?: any) {
+  console.log(SSF.is_date(fmt, v), "is_date");
   return SSF.is_date(fmt, v);
 }
 

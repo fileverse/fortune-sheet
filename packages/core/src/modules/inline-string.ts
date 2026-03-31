@@ -107,8 +107,14 @@ export function convertCssToStyleList(cssText: string, originCell: Cell) {
       styleList.fc = value;
     }
 
-    if (key === "text-decoration") {
-      styleList.cl = 1;
+    if (key === "text-decoration" || key === "text-decoration-line") {
+      if (value.includes("underline")) {
+        styleList.un = 1;
+      }
+
+      if (value.includes("line-through")) {
+        styleList.cl = 1;
+      }
     }
 
     if (key === "border-bottom") {
@@ -366,6 +372,15 @@ function extendCssText(origin: string, cover: string, isLimit = true) {
   return newCss;
 }
 
+function escapeHtmlAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 export function updateInlineStringFormat(
   ctx: Context,
   attr: keyof Cell,
@@ -380,6 +395,46 @@ export function updateInlineStringFormat(
   const range = w.getRangeAt(0);
 
   const $textEditor = cellInput;
+
+  // Firefox (and sometimes other browsers) can produce element-based ranges
+  // (e.g. Ctrl+A selects node contents: startContainer/endContainer are the editor DIV
+  // and offsets are child-node indexes, not character indexes). The legacy string-slicing
+  // logic below treats offsets as character positions and can accidentally inject the
+  // editor's own outerHTML into itself. Handle element-based ranges safely first.
+  if (
+    range.startContainer === $textEditor &&
+    range.endContainer === $textEditor &&
+    range.collapsed === false
+  ) {
+    const start = range.startOffset;
+    const end = range.endOffset;
+
+    const children = Array.from($textEditor.childNodes).slice(start, end);
+    children.forEach((node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as HTMLElement;
+        if (el.tagName === "SPAN") {
+          const cssText = getCssText(el.style.cssText, attr, value);
+          el.setAttribute("style", cssText);
+        }
+      } else if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent ?? "";
+        if (text.length === 0) return;
+        const wrapper = document.createElement("span");
+        const cssText = getCssText("", attr, value);
+        wrapper.setAttribute("style", cssText);
+        wrapper.textContent = text;
+        node.parentNode?.replaceChild(wrapper, node);
+      }
+    });
+
+    // Restore selection across the whole editor contents.
+    const newRange = document.createRange();
+    newRange.selectNodeContents($textEditor);
+    w.removeAllRanges();
+    w.addRange(newRange);
+    return;
+  }
 
   if (range.collapsed === true) {
     return;
@@ -408,8 +463,28 @@ export function updateInlineStringFormat(
         let mid = "";
         let right = "";
         const s1 = 0;
-        const s2 = startOffset;
-        const s3 = endOffset;
+        // startOffset/endOffset are character positions within the specific
+        // startContainer text node, but content is span.innerHTML which may
+        // include <br> tags (and other elements) before that text node when
+        // the cell has multiple lines. Compute the absolute HTML offset by
+        // summing the innerHTML contributions of all preceding sibling nodes.
+        let htmlPre = 0;
+        if (
+          startContainer.nodeType === Node.TEXT_NODE &&
+          span.childNodes.length > 1
+        ) {
+          for (let i = 0; i < span.childNodes.length; i += 1) {
+            const child = span.childNodes[i];
+            if (child === startContainer) break;
+            if (child.nodeType === Node.TEXT_NODE) {
+              htmlPre += (child.textContent || "").length;
+            } else if (child.nodeType === Node.ELEMENT_NODE) {
+              htmlPre += (child as HTMLElement).outerHTML.length;
+            }
+          }
+        }
+        const s2 = htmlPre + startOffset;
+        const s3 = htmlPre + endOffset;
         const s4 = content.length;
         left = content.substring(s1, s2);
         mid = content.substring(s2, s3);
@@ -426,7 +501,7 @@ export function updateInlineStringFormat(
               cssText = extendCssText(box.style.cssText, cssText);
             }
           }
-          cont += `<span style='${cssText}'>${left}</span>`;
+          cont += `<span style="${escapeHtmlAttr(cssText)}">${left}</span>`;
         }
 
         if (mid !== "") {
@@ -441,7 +516,7 @@ export function updateInlineStringFormat(
             }
           }
 
-          cont += `<span style='${cssText}'>${mid}</span>`;
+          cont += `<span style="${escapeHtmlAttr(cssText)}">${mid}</span>`;
         }
 
         if (right !== "") {
@@ -454,7 +529,7 @@ export function updateInlineStringFormat(
               cssText = extendCssText(box.style.cssText, cssText);
             }
           }
-          cont += `<span style='${cssText}'>${right}</span>`;
+          cont += `<span style="${escapeHtmlAttr(cssText)}">${right}</span>`;
         }
 
         if (startContainer.parentElement?.tagName === "SPAN") {
@@ -510,38 +585,48 @@ export function updateInlineStringFormat(
         for (let i = 0; i < startSpanIndex; i += 1) {
           const span = spans[i];
           const content = span.innerHTML;
-          cont += `<span style='${span.style.cssText}'>${content}</span>`;
+          cont += `<span style="${escapeHtmlAttr(
+            span.style.cssText
+          )}">${content}</span>`;
         }
         if (sleft !== "") {
-          cont += `<span style='${startSpan!.style.cssText}'>${sleft}</span>`;
+          cont += `<span style="${escapeHtmlAttr(
+            startSpan!.style.cssText
+          )}">${sleft}</span>`;
         }
 
         if (sright !== "") {
           const cssText = getCssText(startSpan!.style.cssText, attr, value);
-          cont += `<span style='${cssText}'>${sright}</span>`;
+          cont += `<span style="${escapeHtmlAttr(cssText)}">${sright}</span>`;
         }
 
         if (startSpanIndex < endSpanIndex) {
           for (let i = startSpanIndex + 1; i < endSpanIndex; i += 1) {
             const span = spans[i];
             const content = span.innerHTML;
-            cont += `<span style='${span.style.cssText}'>${content}</span>`;
+            cont += `<span style="${escapeHtmlAttr(
+              span.style.cssText
+            )}">${content}</span>`;
           }
         }
 
         if (eleft !== "") {
           const cssText = getCssText(endSpan!.style.cssText, attr, value);
-          cont += `<span style='${cssText}'>${eleft}</span>`;
+          cont += `<span style="${escapeHtmlAttr(cssText)}">${eleft}</span>`;
         }
 
         if (eright !== "") {
-          cont += `<span style='${endSpan!.style.cssText}'>${eright}</span>`;
+          cont += `<span style="${escapeHtmlAttr(
+            endSpan!.style.cssText
+          )}">${eright}</span>`;
         }
 
         for (let i = endSpanIndex + 1; i < spans.length; i += 1) {
           const span = spans[i];
           const content = span.innerHTML;
-          cont += `<span style='${span.style.cssText}'>${content}</span>`;
+          cont += `<span style="${escapeHtmlAttr(
+            span.style.cssText
+          )}">${content}</span>`;
         }
 
         $textEditor.innerHTML = cont;
@@ -570,19 +655,11 @@ export function updateInlineStringFormat(
   }
 }
 
-function escapeHtmlAttr(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
 function getLinkDataAttrs(span: HTMLElement): string {
   if (span.dataset?.linkType && span.dataset?.linkAddress) {
-    return ` data-link-type='${escapeHtmlAttr(
+    return ` data-link-type="${escapeHtmlAttr(
       span.dataset.linkType
-    )}' data-link-address='${escapeHtmlAttr(span.dataset.linkAddress)}'`;
+    )}" data-link-address="${escapeHtmlAttr(span.dataset.linkAddress)}"`;
   }
   return "";
 }
@@ -628,7 +705,9 @@ export function applyLinkToSelection(
         ) as HTMLElement | null;
         if (box != null) cssText = extendCssText(box.style.cssText, cssText);
       }
-      cont += `<span style='${cssText}'${dataAttrs}>${left}</span>`;
+      cont += `<span style="${escapeHtmlAttr(
+        cssText
+      )}"${dataAttrs}>${left}</span>`;
     }
     if (mid !== "") {
       let cssText = getLinkStyleCssText(span!.style.cssText);
@@ -638,9 +717,11 @@ export function applyLinkToSelection(
         ) as HTMLElement | null;
         if (box != null) cssText = extendCssText(box.style.cssText, cssText);
       }
-      cont += `<span style='${cssText}' data-link-type='${escapeHtmlAttr(
+      cont += `<span style="${escapeHtmlAttr(
+        cssText
+      )}" data-link-type="${escapeHtmlAttr(
         linkType
-      )}' data-link-address='${escapeHtmlAttr(linkAddress)}'>${mid}</span>`;
+      )}" data-link-address="${escapeHtmlAttr(linkAddress)}">${mid}</span>`;
     }
     if (right !== "") {
       let { cssText } = span!.style;
@@ -650,7 +731,9 @@ export function applyLinkToSelection(
         ) as HTMLElement | null;
         if (box != null) cssText = extendCssText(box.style.cssText, cssText);
       }
-      cont += `<span style='${cssText}'${dataAttrs}>${right}</span>`;
+      cont += `<span style="${escapeHtmlAttr(
+        cssText
+      )}"${dataAttrs}>${right}</span>`;
     }
     if (startContainer.parentElement?.tagName === "SPAN") {
       (span as HTMLElement).outerHTML = cont;
@@ -683,48 +766,53 @@ export function applyLinkToSelection(
     let cont = "";
     for (let i = 0; i < startSpanIndex; i += 1) {
       const sp = spans[i] as HTMLElement;
-      cont += `<span style='${sp.style.cssText}'${getLinkDataAttrs(sp)}>${
-        sp.innerHTML
-      }</span>`;
+      cont += `<span style="${escapeHtmlAttr(
+        sp.style.cssText
+      )}"${getLinkDataAttrs(sp)}>${sp.innerHTML}</span>`;
     }
     if (sleft !== "") {
-      cont += `<span style='${startSpan!.style.cssText}'${getLinkDataAttrs(
-        startSpan!
-      )}>${sleft}</span>`;
+      cont += `<span style="${escapeHtmlAttr(
+        startSpan!.style.cssText
+      )}"${getLinkDataAttrs(startSpan!)}>${sleft}</span>`;
     }
     if (sright !== "") {
       const cssText = getLinkStyleCssText(startSpan!.style.cssText);
-      cont += `<span style='${cssText}' data-link-type='${escapeHtmlAttr(
+      cont += `<span style="${escapeHtmlAttr(
+        cssText
+      )}" data-link-type="${escapeHtmlAttr(
         linkType
-      )}' data-link-address='${escapeHtmlAttr(linkAddress)}'>${sright}</span>`;
+      )}" data-link-address="${escapeHtmlAttr(linkAddress)}">${sright}</span>`;
     }
     if (startSpanIndex < endSpanIndex) {
       for (let i = startSpanIndex + 1; i < endSpanIndex; i += 1) {
         const sp = spans[i];
         const cssText = getLinkStyleCssText(sp.style.cssText);
-        cont += `<span style='${cssText}' data-link-type='${escapeHtmlAttr(
+        cont += `<span style="${escapeHtmlAttr(
+          cssText
+        )}" data-link-type="${escapeHtmlAttr(
           linkType
-        )}' data-link-address='${escapeHtmlAttr(linkAddress)}'>${
-          sp.innerHTML
-        }</span>`;
+        )}" data-link-address="${escapeHtmlAttr(linkAddress)}">${sp.innerHTML
+          }</span>`;
       }
     }
     if (eleft !== "") {
       const cssText = getLinkStyleCssText(endSpan!.style.cssText);
-      cont += `<span style='${cssText}' data-link-type='${escapeHtmlAttr(
+      cont += `<span style="${escapeHtmlAttr(
+        cssText
+      )}" data-link-type="${escapeHtmlAttr(
         linkType
-      )}' data-link-address='${escapeHtmlAttr(linkAddress)}'>${eleft}</span>`;
+      )}" data-link-address="${escapeHtmlAttr(linkAddress)}">${eleft}</span>`;
     }
     if (eright !== "") {
-      cont += `<span style='${endSpan!.style.cssText}'${getLinkDataAttrs(
-        endSpan!
-      )}>${eright}</span>`;
+      cont += `<span style="${escapeHtmlAttr(
+        endSpan!.style.cssText
+      )}"${getLinkDataAttrs(endSpan!)}>${eright}</span>`;
     }
     for (let i = endSpanIndex + 1; i < spans.length; i += 1) {
       const sp = spans[i] as HTMLElement;
-      cont += `<span style='${sp.style.cssText}'${getLinkDataAttrs(sp)}>${
-        sp.innerHTML
-      }</span>`;
+      cont += `<span style="${escapeHtmlAttr(
+        sp.style.cssText
+      )}"${getLinkDataAttrs(sp)}>${sp.innerHTML}</span>`;
     }
     $textEditor.innerHTML = cont;
     spans = $textEditor.querySelectorAll("span");

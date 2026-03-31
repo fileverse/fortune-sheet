@@ -1636,9 +1636,8 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${
-              sheet.config.columnlen[c.toString()]
-            }px"></colgroup>`;
+            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
+              }px"></colgroup>`;
           }
         }
 
@@ -1667,6 +1666,16 @@ export function rangeValueToHtml(
         }
 
         const styleObj = getStyleByCell(ctx, d, r, c);
+        if (styleObj.borderBottom) {
+          const existing = styleObj.textDecoration as string | undefined;
+          const decorations = new Set(
+            existing ? existing.split(/\s+/).filter(Boolean) : []
+          );
+          decorations.add("underline");
+          styleObj.textDecoration = Array.from(decorations).join(" ");
+          styleObj.textDecorationSkipInk = "none";
+          delete styleObj.borderBottom;
+        }
         style += _.toPairs(styleObj)
           .filter(([, v]) => !_.isNil(v) && v !== "" && v !== "undefined")
           .map(
@@ -1983,9 +1992,8 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${
-              sheet.config.columnlen[c.toString()]
-            }px"></colgroup>`;
+            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
+              }px"></colgroup>`;
           }
         }
 
@@ -2101,6 +2109,16 @@ export function copy(ctx: Context) {
     const cell = flowdata![r]?.[c];
     const isRichText = cell != null && isInlineStringCell(cell);
     const styleObj = getStyleByCell(ctx, flowdata!, r, c);
+    if (styleObj.borderBottom) {
+      const existing = styleObj.textDecoration as string | undefined;
+      const decorations = new Set(
+        existing ? existing.split(/\s+/).filter(Boolean) : []
+      );
+      decorations.add("underline");
+      styleObj.textDecoration = Array.from(decorations).join(" ");
+      styleObj.textDecorationSkipInk = "none";
+      delete styleObj.borderBottom;
+    }
     const mergedStyle = { ...defaultStyle, ...styleObj };
     const TEXT_LEVEL_KEYS = new Set([
       "color",

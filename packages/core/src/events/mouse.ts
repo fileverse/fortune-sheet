@@ -6,8 +6,10 @@ import {
   cancelPaintModel,
   functionHTMLGenerate,
   israngeseleciton,
+  maybeRecoverDirtyRangeSelection,
   rangeHightlightselected,
   rangeSetValue,
+  getFormulaEditorOwner,
   onCommentBoxMove,
   onCommentBoxMoveEnd,
   onCommentBoxResize,
@@ -362,28 +364,25 @@ export function handleCellAreaMouseDown(
 
   // 公式相关
   if (ctx.luckysheetCellUpdate.length > 0) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(
-      `<div>${
-        document.getElementById("luckysheet-rich-text-editor")?.innerHTML
-      }</div>`,
-      "text/html"
-    );
-    const spans = doc.querySelectorAll("span");
-    const firstSpan = spans[0];
-    const lastSpan = spans[spans.length - 1];
+    // const parser = new DOMParser();
+    // const doc = parser.parseFromString(
+    //   `<div>${
+    //     document.getElementById("luckysheet-rich-text-editor")?.innerHTML
+    //   }</div>`,
+    //   "text/html"
+    // );
+    // const spans = doc.querySelectorAll("span");
+    // const firstSpan = spans[0];
 
     if (
-      (ctx.formulaCache.rangestart ||
-        ctx.formulaCache.rangedrag_column_start ||
-        ctx.formulaCache.rangedrag_row_start ||
-        israngeseleciton(ctx) ||
-        (firstSpan?.innerText.includes("=") &&
-          !lastSpan?.innerText.includes(")"))) &&
-      lastSpan &&
-      ctx.luckysheetCellUpdate.length === 2
+      ctx.formulaCache.rangestart ||
+      ctx.formulaCache.rangedrag_column_start ||
+      ctx.formulaCache.rangedrag_row_start ||
+      israngeseleciton(ctx)
     ) {
       // 公式选区
+      const formulaEditorForCmdComma =
+        getFormulaEditorOwner(ctx) === "fx" && fxInput ? fxInput : cellInput;
       let rowseleted = [row_index, row_index_ed];
       let columnseleted = [col_index, col_index_ed];
 
@@ -494,18 +493,20 @@ export function handleCellAreaMouseDown(
 
         ctx.formulaCache.func_selectedrange = last;
       } else if (
-        e.ctrlKey &&
-        _.last(cellInput.querySelectorAll("span"))?.innerText !== ","
+        (e.ctrlKey || e.metaKey) &&
+        _.last(formulaEditorForCmdComma.querySelectorAll("span"))?.innerText !==
+          ","
       ) {
-        // 按住ctrl 选择选区时  先处理上一个选区
-        let vText = cellInput.innerText;
+        // Hold Ctrl/Cmd while clicking cells to append comma-separated refs (second+ click).
+        let didCmdCommaFormulaHtml = false;
+        let vText = formulaEditorForCmdComma.innerText;
 
         if (vText[vText.length - 1] === ")") {
           vText = vText.substring(0, vText.length - 1); // 先删除最后侧的圆括号)
         }
 
         if (vText.length > 0) {
-          const lastWord = vText.substring(vText.length - 1, 1);
+          const lastWord = vText.slice(-1);
           if (lastWord !== "," && lastWord !== "=" && lastWord !== "(") {
             vText += ",";
           }
@@ -534,21 +535,30 @@ export function handleCellAreaMouseDown(
 
           /* 在显示前重新 + 右侧的圆括号) */
           cellInput.innerHTML = vText;
+          if (fxInput) fxInput.innerHTML = vText;
 
           cancelFunctionrangeSelected(ctx);
           createRangeHightlight(ctx, vText);
+          didCmdCommaFormulaHtml = true;
         }
 
         ctx.formulaCache.rangestart = false;
         ctx.formulaCache.rangedrag_column_start = false;
         ctx.formulaCache.rangedrag_row_start = false;
 
-        if (fxInput) fxInput.innerHTML = vText;
-
-        rangeHightlightselected(ctx, cellInput);
+        rangeHightlightselected(ctx, formulaEditorForCmdComma);
 
         // 再进行 选区的选择
         israngeseleciton(ctx);
+        if (didCmdCommaFormulaHtml) {
+          // After a comma (or refreshed formula HTML), the next ref must be a new range
+          // span, not replace the previous one. israngeseleciton may not run when the
+          // selection is on the sheet; last-child is the delimiter after which to insert.
+          ctx.formulaCache.rangechangeindex = undefined;
+          const ch = formulaEditorForCmdComma.childNodes;
+          ctx.formulaCache.rangeSetValueTo =
+            ch.length > 0 ? ch[ch.length - 1] : undefined;
+        }
         ctx.formulaCache.func_selectedrange = {
           left,
           width,
@@ -580,6 +590,12 @@ export function handleCellAreaMouseDown(
         };
       }
 
+      ctx.formulaCache.rangestart = true;
+      ctx.formulaCache.rangedrag_column_start = false;
+      ctx.formulaCache.rangedrag_row_start = false;
+      ctx.formulaCache.rangeSelectionActive = true;
+
+      // eslint-disable-next-line no-console
       rangeSetValue(
         ctx,
         cellInput,
@@ -590,9 +606,7 @@ export function handleCellAreaMouseDown(
         fxInput
       );
 
-      ctx.formulaCache.rangestart = true;
-      ctx.formulaCache.rangedrag_column_start = false;
-      ctx.formulaCache.rangedrag_row_start = false;
+      rangeHightlightselected(ctx, cellInput);
 
       ctx.formulaCache.selectingRangeIndex = ctx.formulaCache.rangechangeindex!;
       if (
@@ -1437,6 +1451,8 @@ export function handleCellAreaDoubleClick(
     col_index = column_focus;
   }
 
+  globalCache.enteredEditByTyping = false;
+  delete globalCache.pendingTypeOverCell;
   luckysheetUpdateCell(ctx, row_index, col_index);
   // }
 }
@@ -2182,6 +2198,22 @@ export function mouseRender(
     //   }
     //   $("#luckysheet-dataVerificationRange-dialog input").val(range);
   } else if (ctx.formulaCache.rangestart) {
+    if (
+      ctx.formulaCache.rangeSelectionActive === false &&
+      !maybeRecoverDirtyRangeSelection(ctx)
+    ) {
+      // Close the formula input like `Enter` would when the last
+      // programmatically inserted range token was manually modified.
+      if (ctx.luckysheetCellUpdate.length > 0) {
+        updateCell(
+          ctx,
+          ctx.luckysheetCellUpdate[0],
+          ctx.luckysheetCellUpdate[1],
+          cellInput
+        );
+      }
+      return;
+    }
     rangeDrag(
       ctx,
       e,
@@ -2192,6 +2224,20 @@ export function mouseRender(
       fxInput
     );
   } else if (ctx.formulaCache.rangedrag_row_start) {
+    if (
+      ctx.formulaCache.rangeSelectionActive === false &&
+      !maybeRecoverDirtyRangeSelection(ctx)
+    ) {
+      if (ctx.luckysheetCellUpdate.length > 0) {
+        updateCell(
+          ctx,
+          ctx.luckysheetCellUpdate[0],
+          ctx.luckysheetCellUpdate[1],
+          cellInput
+        );
+      }
+      return;
+    }
     rangeDragRow(
       ctx,
       e,
@@ -2202,6 +2248,20 @@ export function mouseRender(
       fxInput
     );
   } else if (ctx.formulaCache.rangedrag_column_start) {
+    if (
+      ctx.formulaCache.rangeSelectionActive === false &&
+      !maybeRecoverDirtyRangeSelection(ctx)
+    ) {
+      if (ctx.luckysheetCellUpdate.length > 0) {
+        updateCell(
+          ctx,
+          ctx.luckysheetCellUpdate[0],
+          ctx.luckysheetCellUpdate[1],
+          cellInput
+        );
+      }
+      return;
+    }
     rangeDragColumn(
       ctx,
       e,
@@ -3755,11 +3815,21 @@ export function handleOverlayMouseUp(
     ctx.formulaCache.rangedrag_column_start ||
     ctx.formulaCache.rangedrag_row_start
   ) {
-    if (document.activeElement?.id === "luckysheet-functionbox-cell") {
+    if (getFormulaEditorOwner(ctx) === "fx") {
       handleFormulaInput(ctx, cellInput!, fxInput!, 0, undefined, false);
     } else {
       handleFormulaInput(ctx, fxInput, cellInput!, 0, undefined, false);
     }
+
+    // Formula drag mouseup should not fall through into the normal sheet
+    // mouseup finalization flow, which is meant for committing/ending a
+    // regular cell selection/edit session.
+    ctx.luckysheet_select_status = false;
+    ctx.luckysheet_scroll_status = false;
+    ctx.luckysheet_rows_selected_status = false;
+    ctx.luckysheet_cols_selected_status = false;
+    e.preventDefault();
+    return;
   }
   // if (
   //   luckysheetConfigsetting &&
@@ -4680,6 +4750,7 @@ export function handleRowHeaderMouseDown(
         ctx.formulaCache.rangedrag_row_start ||
         israngeseleciton(ctx)
       ) {
+        // eslint-disable-next-line no-console
         rangeSetValue(
           ctx,
           cellInput,
@@ -4689,6 +4760,7 @@ export function handleRowHeaderMouseDown(
           },
           fxInput
         );
+        rangeHightlightselected(ctx, cellInput);
       }
       // else if (
       //   $("#luckysheet-ifFormulaGenerator-multiRange-dialog").is(":visible")
@@ -4705,6 +4777,7 @@ export function handleRowHeaderMouseDown(
       ctx.formulaCache.rangedrag_row_start = true;
       ctx.formulaCache.rangestart = false;
       ctx.formulaCache.rangedrag_column_start = false;
+      ctx.formulaCache.rangeSelectionActive = true;
 
       ctx.formulaCache.selectingRangeIndex = ctx.formulaCache.rangechangeindex!;
       if (
@@ -5122,6 +5195,7 @@ export function handleColumnHeaderMouseDown(
         ctx.formulaCache.rangedrag_row_start ||
         israngeseleciton(ctx)
       ) {
+        // eslint-disable-next-line no-console
         rangeSetValue(
           ctx,
           cellInput,
@@ -5131,6 +5205,7 @@ export function handleColumnHeaderMouseDown(
           },
           fxInput
         );
+        rangeHightlightselected(ctx, cellInput);
       }
       // else if (
       //   $("#luckysheet-ifFormulaGenerator-multiRange-dialog").is(":visible")
@@ -5147,6 +5222,7 @@ export function handleColumnHeaderMouseDown(
       ctx.formulaCache.rangedrag_column_start = true;
       ctx.formulaCache.rangestart = false;
       ctx.formulaCache.rangedrag_row_start = false;
+      ctx.formulaCache.rangeSelectionActive = true;
 
       ctx.formulaCache.selectingRangeIndex = ctx.formulaCache.rangechangeindex!;
       if (

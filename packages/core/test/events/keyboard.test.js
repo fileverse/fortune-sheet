@@ -36,8 +36,9 @@ describe("keyboard", () => {
     const cellInput = document.createElement("div");
     cellInput.innerText = "Hello world";
     const ctx = getContext();
+    const cache = {};
     const keyboardEvent = new KeyboardEvent("Enter", { key: "Enter" });
-    handleGlobalEnter(ctx, cellInput, keyboardEvent);
+    handleGlobalEnter(ctx, cellInput, keyboardEvent, cache);
     expect(getFlowdata(ctx)[0][0].v).toBe("Hello world");
   });
 
@@ -233,16 +234,17 @@ describe("keyboard", () => {
       const cellInput = document.createElement("div");
       cellInput.innerText = `=${item.f1}(A1:B1)`;
       ctx.luckysheetCellUpdate = [0, 2];
-      handleGlobalEnter(ctx, cellInput, keyboardEvent);
+      const cache = {};
+      handleGlobalEnter(ctx, cellInput, keyboardEvent, cache);
       expect(getFlowdata(ctx)[0][2].v).toBe(item.v1);
       cellInput.innerText = `=${item.f2}(A1:C1)`;
       ctx.luckysheetCellUpdate = [0, 3];
-      handleGlobalEnter(ctx, cellInput, keyboardEvent);
+      handleGlobalEnter(ctx, cellInput, keyboardEvent, cache);
       expect(getFlowdata(ctx)[0][3].v).toBe(item.v2);
 
       cellInput.innerText = item.newCell;
       ctx.luckysheetCellUpdate = [0, 1];
-      handleGlobalEnter(ctx, cellInput, keyboardEvent);
+      handleGlobalEnter(ctx, cellInput, keyboardEvent, cache);
       groupValuesRefresh(ctx);
       expect(getFlowdata(ctx)[0][2].v).toBe(item.v3);
       expect(getFlowdata(ctx)[0][3].v).toBe(item.v4);

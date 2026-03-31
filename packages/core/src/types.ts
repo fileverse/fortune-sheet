@@ -302,6 +302,10 @@ export type Freezen = {
 };
 
 export type GlobalCache = {
+  /** True when the current edit session was started by typing into the sheet (not F2 / double-click / Enter-to-edit). */
+  enteredEditByTyping?: boolean;
+  /** When set, in-cell / formula-bar hydration from sheet data is skipped for this cell (type-to-edit replacement). */
+  pendingTypeOverCell?: [number, number];
   verticalScrollLock?: boolean;
   horizontalScrollLock?: boolean;
   overwriteCell?: boolean;

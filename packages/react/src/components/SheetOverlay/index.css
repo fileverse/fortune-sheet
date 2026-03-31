@@ -336,9 +336,9 @@
   overflow: hidden;
   white-space: pre-wrap;
   outline: none;
-  -webkit-box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
-  -moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-  box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
+  /* -webkit-box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
+  -moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); */
+  /* box-shadow: 0 2px 5px rgb(0 0 0 / 40%); */
   word-wrap: break-word;
   background-color: rgb(255, 255, 255);
   font-size: 13px;
@@ -356,7 +356,7 @@
 }
 
 .luckysheet-formula-text-color {
-  color: black;
+  color: darkred;
 }
 
 .luckysheet-formula-text-string {
@@ -801,42 +801,9 @@
 }
 
 .fortune-formula-functionrange-highlight .fortune-selection-copy-hc {
-  border: 2px solid #5e5e5e;
-  opacity: 0.03;
+  border-width: 2px;
+  border-style: dotted;
   z-index: initial;
-}
-
-.fortune-selection-highlight-lt {
-  left: -3px;
-  top: -3px;
-  cursor: se-resize;
-}
-
-.fortune-selection-highlight-rt {
-  right: -3px;
-  top: -3px;
-  cursor: ne-resize;
-}
-
-.fortune-selection-highlight-lb {
-  left: -3px;
-  bottom: -3px;
-  cursor: ne-resize;
-}
-
-.fortune-selection-highlight-rb {
-  right: -3px;
-  bottom: -3px;
-  cursor: se-resize;
-}
-
-.fortune-formula-functionrange-highlight .luckysheet-highlight {
-  position: absolute;
-  z-index: 19;
-  border: 1px solid #fff;
-  background: #0188fb;
-  width: 6px;
-  height: 6px;
 }
 
 .fortune-presence-username {

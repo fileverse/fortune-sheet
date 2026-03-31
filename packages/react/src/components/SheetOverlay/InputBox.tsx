@@ -747,7 +747,6 @@ const InputBox: React.FC = () => {
         setCommaCount(currentCommaCount);
       }
 
-      /* Arrow navigation for cell reference starts here */
       let allowListNavigation = true;
       const isArrowKey =
         e.key === "ArrowUp" ||
@@ -799,7 +798,6 @@ const InputBox: React.FC = () => {
         // updates are performed via `rangeSetValue` in the selection effect.
         allowListNavigation = false;
       }
-      /* Arrow navigation for cell reference ends here */
 
       if (e.key === "Escape" && context.luckysheetCellUpdate.length > 0) {
         setContext((draftCtx) => {

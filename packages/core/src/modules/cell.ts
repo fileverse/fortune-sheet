@@ -1628,7 +1628,7 @@ export function getFontStyleByCell(
     //   style += "font-family: " + f + ";";
     // }
 
-    if (key === "fs" && valueNum !== 10) {
+    if (key === "fs" && !_.isNil(value)) {
       style.fontSize = `${valueNum}pt`;
     }
 

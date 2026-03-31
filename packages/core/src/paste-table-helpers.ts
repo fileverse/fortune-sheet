@@ -6,6 +6,7 @@ import { getQKBorder, saveHyperlink } from "./modules";
 import { Cell } from "./types";
 import { getSheetIndex } from "./utils";
 import { setRowHeight, setColumnWidth } from "./api";
+import { adjustFormulaForPaste } from "./events/paste";
 
 export const DEFAULT_FONT_SIZE = 12;
 
@@ -150,6 +151,8 @@ interface BuiltCellResult {
   rowspan: number;
   colspan: number;
   hyperlink?: { href: string; display: string } | null;
+  srcRow?: number;
+  srcCol?: number;
 }
 
 const HEX_REGEX = /^0x?[a-fA-F0-9]+$/;
@@ -177,6 +180,30 @@ const buildCellFromTd = (
   classStyles: Record<string, string>,
   ctx: Context
 ): BuiltCellResult => {
+  const fortuneCellAttr = td.getAttribute("data-fortune-cell");
+  if (fortuneCellAttr) {
+    try {
+      const { _srcRow, _srcCol, ...parsed } = JSON.parse(
+        decodeURIComponent(fortuneCellAttr)
+      );
+      const cell = parsed as Cell;
+      delete cell.mc;
+      delete cell.hl;
+      const rowspan = parseInt(td.getAttribute("rowspan") || "1", 10);
+      const colspan = parseInt(td.getAttribute("colspan") || "1", 10);
+      return {
+        cell,
+        rowspan: Number.isNaN(rowspan) ? 1 : rowspan,
+        colspan: Number.isNaN(colspan) ? 1 : colspan,
+        hyperlink: detectHyperlink(td),
+        srcRow: _srcRow,
+        srcCol: _srcCol,
+      };
+    } catch {
+      // fall through to CSS parsing if JSON is malformed
+    }
+  }
+
   let cell: Cell = {};
   const rawText = (td.innerText || td.innerHTML || "").trim();
   const isLineBreak = rawText.includes("<br />");
@@ -391,15 +418,26 @@ export function handlePastedTable(
       }
       if (localColIndex === totalColumns) return; // row overflow
 
-      const { cell, rowspan, colspan, hyperlink } = buildCellFromTd(
-        tdElement,
-        classStyleMap,
-        ctx
-      );
+      const { cell, rowspan, colspan, hyperlink, srcRow, srcCol } =
+        buildCellFromTd(tdElement, classStyleMap, ctx);
 
       const anchorCol = ctx.luckysheet_select_save![0].column[0];
       const absoluteRow = anchorRow + localRowIndex;
       const absoluteCol = anchorCol + localColIndex;
+
+      if (cell.f && srcRow != null && srcCol != null) {
+        try {
+          cell.f = adjustFormulaForPaste(
+            cell.f,
+            srcCol,
+            srcRow,
+            absoluteCol,
+            absoluteRow
+          );
+        } catch {
+          // invalid ref — leave formula as-is
+        }
+      }
 
       // Place cell into matrix
       pastedMatrix[localRowIndex][localColIndex] = cell;

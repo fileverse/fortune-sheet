@@ -181,37 +181,37 @@ function applyBordersAndMerges(
   const topBorder =
     td.style.borderTop && !td.style.borderTop.startsWith("0px")
       ? getQKBorder(
-        td.style.borderTopWidth,
-        td.style.borderTopStyle,
-        td.style.borderTopColor
-      )
+          td.style.borderTopWidth,
+          td.style.borderTopStyle,
+          td.style.borderTopColor
+        )
       : null;
 
   const bottomBorder =
     td.style.borderBottom && !td.style.borderBottom.startsWith("0px")
       ? getQKBorder(
-        td.style.borderBottomWidth,
-        td.style.borderBottomStyle,
-        td.style.borderBottomColor
-      )
+          td.style.borderBottomWidth,
+          td.style.borderBottomStyle,
+          td.style.borderBottomColor
+        )
       : null;
 
   const leftBorder =
     td.style.borderLeft && !td.style.borderLeft.startsWith("0px")
       ? getQKBorder(
-        td.style.borderLeftWidth,
-        td.style.borderLeftStyle,
-        td.style.borderLeftColor
-      )
+          td.style.borderLeftWidth,
+          td.style.borderLeftStyle,
+          td.style.borderLeftColor
+        )
       : null;
 
   const rightBorder =
     td.style.borderRight && !td.style.borderRight.startsWith("0px")
       ? getQKBorder(
-        td.style.borderRightWidth,
-        td.style.borderRightStyle,
-        td.style.borderRightColor
-      )
+          td.style.borderRightWidth,
+          td.style.borderRightStyle,
+          td.style.borderRightColor
+        )
       : null;
 
   for (let rowOffset = 0; rowOffset < rowSpanCount; rowOffset++) {
@@ -383,13 +383,13 @@ const buildCellFromTd = (
     (fontWeight.toString() === "400" ||
       fontWeight === "normal" ||
       _.isEmpty(fontWeight)) &&
-      !_.includes(styles["font-style"], "bold") &&
-      (!styles["font-weight"] || styles["font-weight"] === "400")
+    !_.includes(styles["font-style"], "bold") &&
+    (!styles["font-weight"] || styles["font-weight"] === "400")
       ? 0
       : 1;
   cell.it =
     (td.style.fontStyle === "normal" || _.isEmpty(td.style.fontStyle)) &&
-      !_.includes(styles["font-style"], "italic")
+    !_.includes(styles["font-style"], "italic")
       ? 0
       : 1;
 

@@ -1076,7 +1076,7 @@ export function updateCell(
           // from API setCellValue,luckysheet.setCellValue(0, 0, {f: "=sum(D1)", bg:"#0188fb"}),value is an object, so get attribute f as value
           else {
             Object.keys(value).forEach((attr) => {
-              curv![attr as keyof Cell] = value[attr];
+              (curv as Record<string, any>)[attr] = value[attr];
             });
             clearCellError(ctx, r, c);
           }
@@ -1106,7 +1106,7 @@ export function updateCell(
                 parseFloat(value as string) /
                 (oldValue.baseCurrencyPrice as number)
               ).toFixed(decemialCount || 2)
-            } ${coin}`;
+              } ${coin}`;
             curv.baseValue = value;
           }
           // FLV crypto denomination --END--
@@ -1228,7 +1228,7 @@ export function updateCell(
         (parseFloat(value?.v as string) / oldValue?.baseCurrencyPrice).toFixed(
           decemialCount || 2
         )
-      } ${coin}`;
+        } ${coin}`;
     }
 
     // FLV crypto denomination --END--
@@ -1330,10 +1330,10 @@ export function updateCell(
 
         const textInfo = canvas
           ? getCellTextInfo(d[r][c] as Cell, canvas, ctx, {
-              r,
-              c,
-              cellWidth,
-            })
+            r,
+            c,
+            cellWidth,
+          })
           : null;
 
         let currentRowLen = defaultrowlen;
@@ -1512,9 +1512,8 @@ export function getRangetxt(
     return sheettxt + indexToColumnChar(column0) + (row0 + 1);
   }
 
-  return `${
-    sheettxt + indexToColumnChar(column0) + (row0 + 1)
-  }:${indexToColumnChar(column1)}${row1 + 1}`;
+  return `${sheettxt + indexToColumnChar(column0) + (row0 + 1)
+    }:${indexToColumnChar(column1)}${row1 + 1}`;
 }
 
 // 把string A1:A2转为选区数组
@@ -1851,12 +1850,12 @@ export function getInlineStringHTML(
         const dataAttrs =
           !options?.useSemanticMarkup && link?.linkType && link?.linkAddress
             ? ` data-link-type='${String(link.linkType).replace(
-                /'/g,
-                "&#39;"
-              )}' data-link-address='${String(link.linkAddress).replace(
-                /'/g,
-                "&#39;"
-              )}'`
+              /'/g,
+              "&#39;"
+            )}' data-link-address='${String(link.linkAddress).replace(
+              /'/g,
+              "&#39;"
+            )}'`
             : "";
 
         if (options?.useSemanticMarkup) {

@@ -517,7 +517,7 @@ export function handleWithCtrlOrMetaKey(
       const sel = window.getSelection();
       const text =
         sel && !sel.isCollapsed ? sel.toString() : cellInput.innerText;
-      navigator.clipboard?.writeText(text).catch(() => {});
+      navigator.clipboard?.writeText(text).catch(() => { });
     } else {
       // Normal copy: write styled HTML
       handleCopy(ctx);
@@ -708,6 +708,12 @@ export function handleWithCtrlOrMetaKey(
 }
 
 function handleShiftWithArrowKey(ctx: Context, e: KeyboardEvent) {
+  // For pre-existing formulas on first open, block keyboard range navigation
+  // until the user manually edits formula text.
+  if (ctx.formulaCache.keyboardRangeSelectionLock === true) {
+    return;
+  }
+
   // If the user manually modified a keyboard/mouse-inserted range token,
   // block further range navigation.
   if (
@@ -768,6 +774,12 @@ function handleShiftWithArrowKey(ctx: Context, e: KeyboardEvent) {
 }
 
 export function handleArrowKey(ctx: Context, e: KeyboardEvent) {
+  // For pre-existing formulas on first open, block keyboard range navigation
+  // until the user manually edits formula text.
+  if (ctx.formulaCache.keyboardRangeSelectionLock === true) {
+    return;
+  }
+
   // Prevent moving grid selection while the current reference range token
   // was manually modified.
   if (

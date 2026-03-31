@@ -310,8 +310,6 @@ export type GlobalCache = {
   horizontalScrollLock?: boolean;
   overwriteCell?: boolean;
   overwriteCellFirstChar?: string;
-  /** True when current cell was opened for edit by typing (not double-click). Used so arrow keys commit+move only in that case. */
-  enteredEditByTyping?: boolean;
   ignoreWriteCell?: boolean;
   doNotFocus?: boolean;
   doNotUpdateCell?: boolean;

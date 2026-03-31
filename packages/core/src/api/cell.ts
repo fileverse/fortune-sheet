@@ -257,7 +257,7 @@ export function setCellFormat(
 
     cfg.borderInfo.push(borderInfo);
   } else {
-    cellData[attr] = value;
+    (cellData as Record<string, any>)[attr] = value;
   }
 
   targetSheetData[row][column] = cellData;

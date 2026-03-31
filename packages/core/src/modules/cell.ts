@@ -1075,7 +1075,7 @@ export function updateCell(
           // from API setCellValue,luckysheet.setCellValue(0, 0, {f: "=sum(D1)", bg:"#0188fb"}),value is an object, so get attribute f as value
           else {
             Object.keys(value).forEach((attr) => {
-              curv![attr as keyof Cell] = value[attr];
+              (curv as Record<string, any>)[attr] = value[attr];
             });
             clearCellError(ctx, r, c);
           }

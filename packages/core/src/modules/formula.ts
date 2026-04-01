@@ -4828,7 +4828,7 @@ export function functionCopy(
     }
 
     if (i === funcstack.length - 1) {
-      if (iscelldata(_.trim(str)) && !_.trim(str).includes("$")) {
+      if (iscelldata(_.trim(str))) {
         if (mode === "down") {
           function_str += downparam(_.trim(str), step);
         } else if (mode === "up") {
@@ -4847,6 +4847,291 @@ export function functionCopy(
   }
 
   function_str = function_str.replace(/NaN/g, "");
+
+  return function_str;
+}
+
+type MoveReferenceRect = {
+  rowStart: number;
+  rowEnd: number;
+  colStart: number;
+  colEnd: number;
+};
+
+function normalizeSheetName(ref: string) {
+  const unquoted =
+    ref.startsWith("'") && ref.endsWith("'")
+      ? ref.slice(1, -1).replace(/''/g, "'")
+      : ref;
+  return unquoted;
+}
+
+function parseRefToken(token: string) {
+  const m = token.match(/^(\$?)([A-Za-z]+)(\$?)(\d+)$/);
+  if (!m) return null;
+  const colAbs = m[1] === "$";
+  const col = columnCharToIndex(m[2]);
+  const rowAbs = m[3] === "$";
+  const row = parseInt(m[4], 10) - 1;
+  if (Number.isNaN(row) || Number.isNaN(col)) return null;
+  return { colAbs, rowAbs, col, row };
+}
+
+function formatRefToken(parts: {
+  colAbs: boolean;
+  rowAbs: boolean;
+  col: number;
+  row: number;
+}) {
+  return `${parts.colAbs ? "$" : ""}${indexToColumnChar(parts.col)}${
+    parts.rowAbs ? "$" : ""
+  }${parts.row + 1}`;
+}
+
+function moveSingleRefToken(
+  token: string,
+  sourceRect: MoveReferenceRect,
+  targetRowStart: number,
+  targetColStart: number
+) {
+  const parsed = parseRefToken(token);
+  if (!parsed) return token;
+  const inSourceRect =
+    parsed.row >= sourceRect.rowStart &&
+    parsed.row <= sourceRect.rowEnd &&
+    parsed.col >= sourceRect.colStart &&
+    parsed.col <= sourceRect.colEnd;
+
+  if (!inSourceRect) return token;
+
+  return formatRefToken({
+    ...parsed,
+    row: targetRowStart + (parsed.row - sourceRect.rowStart),
+    col: targetColStart + (parsed.col - sourceRect.colStart),
+  });
+}
+
+function moveRangeRefToken(
+  token: string,
+  sourceRect: MoveReferenceRect,
+  targetRowStart: number,
+  targetColStart: number
+) {
+  const parts = token.split(":");
+  if (parts.length === 1) {
+    return moveSingleRefToken(
+      token,
+      sourceRect,
+      targetRowStart,
+      targetColStart
+    );
+  }
+  if (parts.length !== 2) return token;
+
+  const left = moveSingleRefToken(
+    parts[0],
+    sourceRect,
+    targetRowStart,
+    targetColStart
+  );
+  const right = moveSingleRefToken(
+    parts[1],
+    sourceRect,
+    targetRowStart,
+    targetColStart
+  );
+  return `${left}:${right}`;
+}
+
+function moveFormulaReferenceToken(
+  token: string,
+  formulaSheetName: string,
+  movedSheetName: string,
+  sourceRect: MoveReferenceRect,
+  targetRowStart: number,
+  targetColStart: number
+) {
+  const exclamation = token.lastIndexOf("!");
+  let sheetPrefix = "";
+  let rangeToken = token;
+  let refSheetName = formulaSheetName;
+
+  if (exclamation > -1) {
+    sheetPrefix = token.slice(0, exclamation + 1);
+    rangeToken = token.slice(exclamation + 1);
+    refSheetName = normalizeSheetName(sheetPrefix.slice(0, -1));
+  }
+
+  if (refSheetName !== movedSheetName) return token;
+
+  const moved = moveRangeRefToken(
+    rangeToken,
+    sourceRect,
+    targetRowStart,
+    targetColStart
+  );
+  return `${sheetPrefix}${moved}`;
+}
+
+export function functionMoveReference(
+  txt: string,
+  formulaSheetName: string,
+  movedSheetName: string,
+  sourceRect: MoveReferenceRect,
+  targetRowStart: number,
+  targetColStart: number
+) {
+  if (!txt) {
+    return "";
+  }
+  if (txt.substring(0, 1) === "=") {
+    txt = txt.substring(1);
+  }
+
+  const funcstack = txt.split("");
+  let i = 0;
+  let str = "";
+  let function_str = "";
+
+  const matchConfig = {
+    bracket: 0,
+    comma: 0,
+    squote: 0,
+    dquote: 0,
+  };
+
+  while (i < funcstack.length) {
+    const s = funcstack[i];
+
+    if (s === "(" && matchConfig.dquote === 0) {
+      matchConfig.bracket += 1;
+      function_str += str.length > 0 ? `${str}(` : "(";
+      str = "";
+    } else if (s === ")" && matchConfig.dquote === 0) {
+      matchConfig.bracket -= 1;
+      function_str += `${functionMoveReference(
+        str,
+        formulaSheetName,
+        movedSheetName,
+        sourceRect,
+        targetRowStart,
+        targetColStart
+      )})`;
+      str = "";
+    } else if (s === '"' && matchConfig.squote === 0) {
+      if (matchConfig.dquote > 0) {
+        function_str += `${str}"`;
+        matchConfig.dquote -= 1;
+        str = "";
+      } else {
+        matchConfig.dquote += 1;
+        str += '"';
+      }
+    } else if (s === "," && matchConfig.dquote === 0) {
+      function_str += `${functionMoveReference(
+        str,
+        formulaSheetName,
+        movedSheetName,
+        sourceRect,
+        targetRowStart,
+        targetColStart
+      )},`;
+      str = "";
+    } else if (s === "&" && matchConfig.dquote === 0) {
+      if (str.length > 0) {
+        function_str += `${functionMoveReference(
+          str,
+          formulaSheetName,
+          movedSheetName,
+          sourceRect,
+          targetRowStart,
+          targetColStart
+        )}&`;
+        str = "";
+      } else {
+        function_str += "&";
+      }
+    } else if (s in operatorjson && matchConfig.dquote === 0) {
+      let s_next = "";
+      if (i + 1 < funcstack.length) {
+        s_next = funcstack[i + 1];
+      }
+
+      let p = i - 1;
+      let s_pre = null;
+      if (p >= 0) {
+        do {
+          s_pre = funcstack[p];
+          p -= 1;
+        } while (p >= 0 && s_pre === " ");
+      }
+
+      if (s + s_next in operatorjson) {
+        if (str.length > 0) {
+          function_str +=
+            functionMoveReference(
+              str,
+              formulaSheetName,
+              movedSheetName,
+              sourceRect,
+              targetRowStart,
+              targetColStart
+            ) +
+            s +
+            s_next;
+          str = "";
+        } else {
+          function_str += s + s_next;
+        }
+        i += 1;
+      } else if (
+        !/[^0-9]/.test(s_next) &&
+        s === "-" &&
+        (s_pre === "(" ||
+          s_pre == null ||
+          s_pre === "," ||
+          s_pre === " " ||
+          s_pre in operatorjson)
+      ) {
+        str += s;
+      } else {
+        if (str.length > 0) {
+          function_str +=
+            functionMoveReference(
+              str,
+              formulaSheetName,
+              movedSheetName,
+              sourceRect,
+              targetRowStart,
+              targetColStart
+            ) + s;
+          str = "";
+        } else {
+          function_str += s;
+        }
+      }
+    } else {
+      str += s;
+    }
+
+    if (i === funcstack.length - 1) {
+      const t = _.trim(str);
+      if (iscelldata(t)) {
+        function_str += moveFormulaReferenceToken(
+          t,
+          formulaSheetName,
+          movedSheetName,
+          sourceRect,
+          targetRowStart,
+          targetColStart
+        );
+      } else {
+        function_str += t;
+      }
+    }
+
+    i += 1;
+  }
 
   return function_str;
 }

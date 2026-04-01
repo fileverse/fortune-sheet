@@ -1798,6 +1798,7 @@ export function getInlineStringHTML(
   data: CellMatrix,
   options?: {
     useSemanticMarkup?: boolean;
+    isRangeCopy?: boolean;
     inheritedStyle?: Record<string, string>;
   }
 ) {
@@ -1859,17 +1860,19 @@ export function getInlineStringHTML(
               )}'`
             : "";
 
-        //this should be there if it is getting called from other places apart from copy paste
-        //value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${strObj.v}</span>`;
-        if (options?.useSemanticMarkup) {
-          value += buildClipboardCompatibleInlineRuns(strObj.v, styleStr);
+        if (options?.isRangeCopy) {
+          if (options?.useSemanticMarkup) {
+            value += buildClipboardCompatibleInlineRuns(strObj.v, styleStr);
+          } else {
+            // Convert newlines to <br> so apps that don't honour white-space:pre-wrap
+            // (e.g. Google Sheets clipboard parser) still see proper line breaks.
+            const segmentText = strObj.v
+              .replace(/\r\n/g, "<br>")
+              .replace(/\n/g, "<br>");
+            value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${segmentText}</span>`;
+          }
         } else {
-          // Convert newlines to <br> so apps that don't honour white-space:pre-wrap
-          // (e.g. Google Sheets clipboard parser) still see proper line breaks.
-          const segmentText = strObj.v
-            .replace(/\r\n/g, "<br>")
-            .replace(/\n/g, "<br>");
-          value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${segmentText}</span>`;
+          value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${strObj.v}</span>`;
         }
       }
     }

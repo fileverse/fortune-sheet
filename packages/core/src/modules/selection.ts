@@ -1931,6 +1931,7 @@ export function rangeValueToHtml(
         if (cell && isInlineStringCell(cell)) {
           cellHtml = getInlineStringHTML(r, c, d, {
             useSemanticMarkup: true,
+            isRangeCopy: true,
             inheritedStyle: styleObj,
           });
         } else {

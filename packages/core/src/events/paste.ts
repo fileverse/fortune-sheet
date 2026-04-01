@@ -2380,9 +2380,8 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     } else if (txtdata.indexOf("fortune-copy-action-image") > -1) {
       // imageCtrl.pasteImgItem();
     } else {
-      const shouldTreatHtmlAsSingleCell = shouldHandleHtmlFragmentAsSingleCell(
-        txtdata
-      );
+      const shouldTreatHtmlAsSingleCell =
+        shouldHandleHtmlFragmentAsSingleCell(txtdata);
 
       if (txtdata.indexOf("table") > -1 || shouldTreatHtmlAsSingleCell) {
         handlePastedTable(
@@ -2420,7 +2419,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             // Get the cell position
             const last =
               ctx.luckysheet_select_save?.[
-              ctx.luckysheet_select_save.length - 1
+                ctx.luckysheet_select_save.length - 1
               ];
             if (last) {
               const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;

@@ -7,17 +7,68 @@ import {
   colLocationByIndex,
   updateContextWithSheetData,
   api,
+  indexToColumnChar,
+  columnCharToIndex,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../../context";
 
-export function numberToColumnName(num: number): string {
-  let columnName = "";
-  while (num >= 0) {
-    const remainder = num % 26;
-    columnName = String.fromCharCode(65 + remainder) + columnName;
-    num = Math.floor(num / 26) - 1; // Move to the next significant position
+const REF_TOKEN_REGEX =
+  /((?:'(?:[^']|'')+'|[A-Za-z_][A-Za-z0-9_.]*)!)?(\$?)([A-Za-z]+)(\$?)(\d+)(?::(\$?)([A-Za-z]+)(\$?)(\d+))?/g;
+
+function normalizeSheetName(raw?: string) {
+  if (!raw) return "";
+  const noBang = raw.endsWith("!") ? raw.slice(0, -1) : raw;
+  if (noBang.startsWith("'") && noBang.endsWith("'")) {
+    return noBang.slice(1, -1).replace(/''/g, "'");
   }
-  return columnName;
+  return noBang;
+}
+
+function remapFormulaCols(
+  formula: string,
+  formulaSheetName: string,
+  movedSheetName: string,
+  colMap: Record<number, number>
+) {
+  return formula.replace(
+    REF_TOKEN_REGEX,
+    (
+      token,
+      sheetPrefix,
+      colAbs0,
+      col0,
+      rowAbs0,
+      row0,
+      colAbs1,
+      col1,
+      rowAbs1,
+      row1
+    ) => {
+      const refSheet = normalizeSheetName(sheetPrefix) || formulaSheetName;
+      if (refSheet !== movedSheetName) return token;
+
+      const colIdx0 = columnCharToIndex(col0);
+      const mapped0 = colMap[colIdx0];
+      const nextCol0 =
+        mapped0 == null ? col0 : indexToColumnChar(mapped0);
+
+      if (!col1) {
+        return `${sheetPrefix || ""}${colAbs0}${nextCol0}${rowAbs0}${row0}`;
+      }
+
+      const colIdx1 = columnCharToIndex(col1);
+      const mapped1 = colMap[colIdx1];
+      const nextCol1 =
+        mapped1 == null ? col1 : indexToColumnChar(mapped1);
+      return `${
+        sheetPrefix || ""
+      }${colAbs0}${nextCol0}${rowAbs0}${row0}:${colAbs1}${nextCol1}${rowAbs1}${row1}`;
+    }
+  );
+}
+
+export function numberToColumnName(num: number): string {
+  return indexToColumnChar(num);
 }
 
 export const useColumnDragAndDrop = (
@@ -329,75 +380,37 @@ export const useColumnDragAndDrop = (
           d?.forEach((row) => {
             row.forEach((cell) => {
               if (cell) {
-                const otherAffectedCols: any[] = [];
+                const colMap: Record<number, number> = {};
                 if (sourceIndex < targetIndex) {
                   const start =
                     selectedSourceCol?.[selectedSourceCol.length - 1];
                   const last =
                     selectedTargetCol?.[selectedTargetCol.length - 1];
                   for (let c = start + 1; c <= last; c += 1) {
-                    otherAffectedCols.push({
-                      source: numberToColumnName(c),
-                      target: numberToColumnName(c - selectedSourceCol.length),
-                    });
+                    colMap[c] = c - selectedSourceCol.length;
                   }
-                  // to visit back on this logix if need + methond or array is fine.
                   selectedSourceCol.forEach((c: number, index: number) => {
-                    otherAffectedCols.push({
-                      source: numberToColumnName(c),
-                      target: numberToColumnName(selectedTargetCol[index]),
-                    });
+                    colMap[c] = selectedTargetCol[index];
                   });
                 } else if (sourceIndex > targetIndex) {
                   const start = selectedTargetCol?.[0];
                   const last = selectedSourceCol?.[0];
                   for (let c = start; c < last; c += 1) {
-                    otherAffectedCols.push({
-                      source: numberToColumnName(c),
-                      target: numberToColumnName(c + selectedSourceCol.length),
-                    });
+                    colMap[c] = c + selectedSourceCol.length;
                   }
                   selectedSourceCol.forEach((c: number, index: number) => {
-                    otherAffectedCols.push({
-                      source: numberToColumnName(c),
-                      target: numberToColumnName(selectedTargetCol[index]),
-                    });
+                    colMap[c] = selectedTargetCol[index];
                   });
                 }
 
                 if (cell.f) {
-                  let formula = cell.f;
-                  const replacements: any[] = [];
-
-                  // Collect all replacement positions first
-                  otherAffectedCols.forEach((col) => {
-                    const regex = new RegExp(`\\b${col.source}(\\d+)\\b`, "g");
-                    let match;
-
-                    // eslint-disable-next-line no-cond-assign
-                    while ((match = regex.exec(formula)) !== null) {
-                      if (/^\d+$/.test(match[1])) {
-                        replacements.push({
-                          start: match.index,
-                          end: match.index + match[0].length,
-                          original: match[0],
-                          replacement: `${col.target}${match[1]}`,
-                        });
-                      }
-                    }
-                  });
-
-                  // Sort by position (descending) and apply replacements from end to start
-                  replacements?.sort((a, b) => b.start - a.start);
-
-                  replacements?.forEach((rep) => {
-                    formula =
-                      formula.substring(0, rep.start) +
-                      rep.replacement +
-                      formula.substring(rep.end);
-                  });
-
-                  cell.f = formula;
+                  const sheetName = _sheet.name || "";
+                  cell.f = remapFormulaCols(
+                    cell.f,
+                    sheetName,
+                    sheetName,
+                    colMap
+                  );
                 }
               }
             });

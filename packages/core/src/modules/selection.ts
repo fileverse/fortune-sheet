@@ -1636,8 +1636,9 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
-              }px"></colgroup>`;
+            colgroup += `<colgroup width="${
+              sheet.config.columnlen[c.toString()]
+            }px"></colgroup>`;
           }
         }
 
@@ -1993,8 +1994,9 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
-              }px"></colgroup>`;
+            colgroup += `<colgroup width="${
+              sheet.config.columnlen[c.toString()]
+            }px"></colgroup>`;
           }
         }
 

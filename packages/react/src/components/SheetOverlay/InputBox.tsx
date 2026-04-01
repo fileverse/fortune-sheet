@@ -735,22 +735,32 @@ const InputBox: React.FC = () => {
           return;
         }
         if (e.code === "KeyB") {
-          // eslint-disable-next-line no-console
-          console.log("[input-box] Ctrl/Cmd+B in cell editor", {
-            ctrlKey: e.ctrlKey,
-            metaKey: e.metaKey,
-            editing: context.luckysheetCellUpdate.length > 0,
-          });
           handleBold(context, inputRef.current!);
+          appendFormulaHistoryFromPrimaryEditor(
+            () => getCursorPosition(inputRef.current!),
+            { force: true }
+          );
           stopPropagation(e);
         } else if (e.code === "KeyI") {
           handleItalic(context, inputRef.current!);
+          appendFormulaHistoryFromPrimaryEditor(
+            () => getCursorPosition(inputRef.current!),
+            { force: true }
+          );
           stopPropagation(e);
         } else if (e.code === "KeyU") {
           handleUnderline(context, inputRef.current!);
+          appendFormulaHistoryFromPrimaryEditor(
+            () => getCursorPosition(inputRef.current!),
+            { force: true }
+          );
           stopPropagation(e);
         } else if (e.code === "KeyS") {
           handleStrikeThrough(context, inputRef.current!);
+          appendFormulaHistoryFromPrimaryEditor(
+            () => getCursorPosition(inputRef.current!),
+            { force: true }
+          );
           stopPropagation(e);
         }
       }

@@ -24,7 +24,6 @@ import {
   suppressFormulaRangeSelectionForInitialEdit,
 } from "./formula";
 import {
-  attrToCssName,
   convertSpanToShareString,
   isInlineStringCell,
   isInlineStringCT,
@@ -1560,58 +1559,81 @@ export function isAllSelectedCellsInStatus(
     }
     const { endContainer } = range;
     const { startContainer } = range;
-    // @ts-ignore
-    const cssField = _.camelCase(attrToCssName[attr]);
-    const isInlineStyleMatch = (element: HTMLElement | null | undefined) => {
-      if (!element) return false;
-      // @ts-ignore
-      const raw = element.style?.[cssField];
-      const cssValue = String(raw ?? "").toLowerCase().trim();
+    const toElement = (n: Node | null): HTMLElement | null => {
+      if (!n) return null;
+      if (n.nodeType === Node.ELEMENT_NODE) return n as HTMLElement;
+      return n.parentElement;
+    };
+    const startEl = toElement(startContainer);
+    const endEl = toElement(endContainer);
+    const editorRoot =
+      startEl?.closest("#luckysheet-rich-text-editor") ??
+      endEl?.closest("#luckysheet-rich-text-editor") ??
+      (toElement(range.commonAncestorContainer) as HTMLElement | null);
+
+    const isStyleActive = (element: HTMLElement) => {
+      const computed = window.getComputedStyle(element);
+      const fontWeight = (computed.fontWeight || "").toLowerCase();
+      const fontStyle = (computed.fontStyle || "").toLowerCase();
+      const textDecorationLine = // Safari support fallback
+        // @ts-ignore
+        (
+          computed.textDecorationLine ||
+          computed.textDecoration ||
+          ""
+        ).toLowerCase();
+      const borderBottomWidth = (
+        computed.borderBottomWidth || ""
+      ).toLowerCase();
 
       if (status === 1) {
         if (attr === "bl") {
-          if (!cssValue || cssValue === "normal" || cssValue === "400") {
-            return false;
-          }
-          if (cssValue === "bold") return true;
-          const n = Number(cssValue);
+          if (fontWeight === "bold") return true;
+          const n = Number(fontWeight);
           return !Number.isNaN(n) && n >= 600;
         }
         if (attr === "it") {
-          return cssValue === "italic";
+          return fontStyle === "italic" || fontStyle === "oblique";
         }
         if (attr === "cl") {
-          return cssValue.includes("line-through");
+          return textDecorationLine.includes("line-through");
         }
         if (attr === "un") {
-          // underline is represented as borderBottom in rich-text runs.
-          return !_.isEmpty(cssValue);
+          return (
+            textDecorationLine.includes("underline") ||
+            (borderBottomWidth !== "" &&
+              borderBottomWidth !== "0px" &&
+              borderBottomWidth !== "0")
+          );
         }
       }
-
-      return !_.isEmpty(cssValue);
+      return false;
     };
 
-    if (startContainer === endContainer) {
-      return isInlineStyleMatch(startContainer.parentElement);
-    }
-    if (
-      startContainer.parentElement?.tagName === "SPAN" &&
-      endContainer.parentElement?.tagName === "SPAN"
-    ) {
-      const startSpan = startContainer.parentNode as HTMLElement | null;
-      const endSpan = endContainer.parentNode as HTMLElement | null;
-      const allSpans = startSpan?.parentNode?.querySelectorAll("span");
-      if (allSpans) {
-        const startSpanIndex = _.indexOf(allSpans, startSpan);
-        const endSpanIndex = _.indexOf(allSpans, endSpan);
-        const rangeSpans = [];
-        for (let i = startSpanIndex; i <= endSpanIndex; i += 1) {
-          rangeSpans.push(allSpans[i]);
+    const selectedElements: HTMLElement[] = [];
+    if (editorRoot) {
+      const spans = editorRoot.querySelectorAll("span");
+      spans.forEach((span) => {
+        if (
+          span.textContent &&
+          span.textContent.length > 0 &&
+          range.intersectsNode(span)
+        ) {
+          selectedElements.push(span);
         }
-        return _.every(rangeSpans, (s) => isInlineStyleMatch(s as HTMLElement));
-      }
+      });
     }
+
+    if (selectedElements.length === 0) {
+      if (startEl) selectedElements.push(startEl);
+      if (endEl && endEl !== startEl) selectedElements.push(endEl);
+    }
+
+    if (selectedElements.length === 0) {
+      return false;
+    }
+
+    return _.every(selectedElements, (el) => isStyleActive(el));
   }
   /* 获取选区内所有的单元格-扁平后的处理 */
   const cells = getFlattenedRange(ctx);

@@ -1636,9 +1636,8 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${
-              sheet.config.columnlen[c.toString()]
-            }px"></colgroup>`;
+            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
+              }px"></colgroup>`;
           }
         }
 
@@ -1931,7 +1930,7 @@ export function rangeValueToHtml(
         if (cell && isInlineStringCell(cell)) {
           cellHtml = getInlineStringHTML(r, c, d, {
             useSemanticMarkup: true,
-            isRangeCopy: true,
+            isRichText: true,
             inheritedStyle: styleObj,
           });
         } else {
@@ -1994,9 +1993,8 @@ export function rangeValueToHtml(
           ) {
             colgroup += '<colgroup width="72px"></colgroup>';
           } else {
-            colgroup += `<colgroup width="${
-              sheet.config.columnlen[c.toString()]
-            }px"></colgroup>`;
+            colgroup += `<colgroup width="${sheet.config.columnlen[c.toString()]
+              }px"></colgroup>`;
           }
         }
 
@@ -2148,6 +2146,7 @@ export function copy(ctx: Context) {
       innerContent = getInlineStringHTML(r, c, flowdata!, {
         useSemanticMarkup: true,
         inheritedStyle: mergedStyle,
+        isRichText: true,
       });
     } else {
       const displayValue =

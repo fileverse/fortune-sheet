@@ -9,7 +9,7 @@ import { setRowHeight, setColumnWidth } from "./api";
 import { adjustFormulaForPaste } from "./events/paste";
 import { convertSpanToShareString } from "./modules/inline-string";
 
-export const DEFAULT_FONT_SIZE = 12;
+export const DEFAULT_FONT_SIZE = 10;
 
 const parseStylesheetPairs = (styleInner: string) => {
   const patternReg = /{([^}]*)}/g;
@@ -53,53 +53,118 @@ const mapFontFamilyToIndex = (ff: string, ctx: Context) => {
   return 0; // default font index
 };
 
+const BLOCK_TAGS = new Set([
+  "p",
+  "div",
+  "li",
+  "tr",
+  "blockquote",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+]);
+
 const getInlineStringSegmentsFromTd = (
   td: HTMLTableCellElement,
-  cell: Cell
+  cell: Cell,
+  defaultFontSize: number
 ) => {
-  const clone = td.cloneNode(true) as HTMLTableCellElement;
+  const segments: HTMLSpanElement[] = [];
 
-  // Replace all <br> elements with literal newline text so detached DOM
-  // parsing keeps line breaks for Google Sheets / HTML paste, including when
-  // the <br> lives inside a single styled span.
-  Array.from(clone.querySelectorAll("br")).forEach((br) => {
-    br.replaceWith(document.createTextNode("\n"));
-  });
+  function walk(
+    node: Node,
+    css: Record<string, string>,
+    link?: { type: string; address: string }
+  ) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent || "";
+      if (text) {
+        const span = document.createElement("span");
+        const cssText = Object.entries(css)
+          .map(([k, v]) => `${k}:${v}`)
+          .join(";");
+        if (cssText) span.setAttribute("style", cssText);
+        span.textContent = text;
+        if (link) {
+          span.dataset.linkType = link.type;
+          span.dataset.linkAddress = link.address;
+        }
+        segments.push(span);
+      }
+      return;
+    }
 
-  // Insert newline spans between adjacent sibling block elements (<p>, <div>)
-  // so that paragraph boundaries become line breaks in the inlineStr segments.
-  const blocks = Array.from(clone.querySelectorAll("p, div"));
-  for (let i = blocks.length - 1; i > 0; i--) {
-    const prev = blocks[i - 1];
-    const curr = blocks[i];
-    if (
-      prev.parentNode === curr.parentNode &&
-      prev.nextElementSibling === curr
-    ) {
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+    const el = node as HTMLElement;
+    const tag = el.tagName.toLowerCase();
+
+    if (tag === "br") {
+      const span = document.createElement("span");
+      span.textContent = "\n";
+      segments.push(span);
+      return;
+    }
+
+    if (BLOCK_TAGS.has(tag) && segments.length > 0) {
       const nl = document.createElement("span");
       nl.textContent = "\n";
-      curr.parentNode!.insertBefore(nl, curr);
+      segments.push(nl);
     }
+
+    const newCss = { ...css };
+    if (tag === "b" || tag === "strong") newCss["font-weight"] = "bold";
+    if (tag === "i" || tag === "em") newCss["font-style"] = "italic";
+    if (tag === "u") newCss["text-decoration"] = "underline";
+    if (tag === "s" || tag === "strike") {
+      newCss["text-decoration"] = "line-through";
+    }
+
+    if (el.style?.cssText) {
+      Array.from(el.style).forEach((prop) => {
+        if (prop === "font-size") return;
+        const val = el.style.getPropertyValue(prop);
+        if (val) newCss[prop] = val;
+      });
+    }
+
+    let newLink = link;
+    if (tag === "a") {
+      const href = el.getAttribute("href")?.trim() || "";
+      if (/^https?:\/\//i.test(href)) {
+        newLink = { type: "webpage", address: href };
+      }
+    }
+
+    Array.from(el.childNodes).forEach((child) => {
+      walk(child, newCss, newLink);
+    });
   }
 
-  const leafSpans = Array.from(clone.querySelectorAll("span")).filter(
-    (span) => span.querySelector("span") == null
-  ) as HTMLSpanElement[];
+  walk(td, {});
 
-  if (leafSpans.length === 0) return [];
+  if (segments.length === 0) return [];
 
-  return convertSpanToShareString(
-    leafSpans as any,
-    {
-      fc: cell.fc || "#000000",
-      fs: cell.fs || DEFAULT_FONT_SIZE,
-      cl: cell.cl || 0,
-      un: cell.un || 0,
-      bl: cell.bl || 0,
-      it: cell.it || 0,
-      ff: cell.ff || 0,
-    } as Cell
-  );
+  const base = {
+    fc: cell.fc || "#000000",
+    fs: cell.fs || defaultFontSize,
+    cl: cell.cl || 0,
+    un: cell.un || 0,
+    bl: cell.bl || 0,
+    it: cell.it || 0,
+    ff: cell.ff || 0,
+  };
+
+  const result = convertSpanToShareString(segments as any, base as Cell);
+
+  return result.map((seg: any) => ({
+    ...base,
+    ...seg,
+    fs: base.fs,
+  }));
 };
 
 function applyBordersAndMerges(
@@ -213,7 +278,10 @@ const detectHyperlink = (td: HTMLTableCellElement) => {
   if (anchor) {
     const href = anchor.getAttribute("href")?.trim() || "";
     const display = anchor.textContent?.trim() || href;
-    if (href && urlRegex.test(href)) return { href, display };
+    const cellText = (td.textContent || "").trim();
+    const anchorText = (anchor.textContent || "").trim();
+    if (href && urlRegex.test(href) && cellText === anchorText)
+      return { href, display };
   } else {
     const raw = (td.textContent || "").trim();
     if (urlRegex.test(raw)) return { href: raw, display: raw };
@@ -346,10 +414,11 @@ const buildCellFromTd = (
   // Font family / size / color
   const ff = td.style.fontFamily || styles["font-family"] || "";
   cell.ff = mapFontFamilyToIndex(ff, ctx);
+  const ctxDefaultFontSize = ctx.defaultFontSize ?? DEFAULT_FONT_SIZE;
   const fontSize = Math.round(
     styles["font-size"]
       ? parseInt(styles["font-size"].replace("pt", ""), 10)
-      : parseInt(td.style.fontSize || `${DEFAULT_FONT_SIZE}`, 10)
+      : parseInt(td.style.fontSize || `${ctxDefaultFontSize}`, 10)
   );
   cell.fs = fontSize;
   cell.fc = td.style.color || styles.color;
@@ -384,19 +453,27 @@ const buildCellFromTd = (
   if (td?.style?.["overflow-wrap"] === "anywhere") {
     cell.tb = "2";
   } else {
-    cell.tb = "2";
+    cell.tb = "1"; // overflow
   }
 
   // Rotation
   if ("mso-rotate" in styles) cell.rt = parseFloat(styles["mso-rotate"]);
 
-  const inlineSegments = getInlineStringSegmentsFromTd(td, cell);
+  const inlineSegments = getInlineStringSegmentsFromTd(
+    td,
+    cell,
+    ctxDefaultFontSize
+  );
+  const segmentsText = inlineSegments.map((s: any) => s.v ?? "").join("");
   const shouldUseInlineString =
     normalizedText.length > 0 &&
     inlineSegments.length > 0 &&
+    segmentsText.trim().length > 0 &&
     (isLineBreak ||
       td.querySelector("[data-sheets-root]") != null ||
-      td.querySelector("span[style], b, strong, i, em, u, s, strike") != null);
+      td.querySelector(
+        "span[style], b, strong, i, em, u, s, strike, a[href]"
+      ) != null);
 
   if (shouldUseInlineString) {
     cell.v = normalizedText;
@@ -418,7 +495,7 @@ export function handlePastedTable(
   html: string,
   pasteHandler: (context: Context, data: any, borderInfo?: any) => void
 ) {
-  if (!html.includes("table")) return;
+  if (!/<table[\s/>]/i.test(html)) return;
 
   const containerDiv = document.createElement("div");
   containerDiv.innerHTML = html;

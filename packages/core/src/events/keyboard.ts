@@ -300,162 +300,120 @@ function handleControlPlusArrowKey(
   if (!file || _.isNil(file.row) || _.isNil(file.column)) return;
   const maxRow = file.row;
   const maxCol = file.column;
-  if (_.isNil(maxRow) || _.isNil(maxCol)) return;
-
-  const last =
-    ctx.luckysheet_select_save && ctx.luckysheet_select_save.length > 0
-      ? ctx.luckysheet_select_save[ctx.luckysheet_select_save.length - 1]
-      : undefined;
+  let last;
+  if (ctx.luckysheet_select_save && ctx.luckysheet_select_save.length > 0)
+    last = ctx.luckysheet_select_save[ctx.luckysheet_select_save.length - 1];
   if (!last) return;
 
   const currR = last.row_focus;
   const currC = last.column_focus;
   if (_.isNil(currR) || _.isNil(currC)) return;
 
-  const startR = last.row?.[0];
-  const endR = last.row?.[1];
-  const startC = last.column?.[0];
-  const endC = last.column?.[1];
-  if (_.isNil(startR) || _.isNil(endR) || _.isNil(startC) || _.isNil(endC)) {
-    return;
-  }
+  const startR = last.row[0];
+  const endR = last.row[1];
+  const startC = last.column[0];
+  const endC = last.column[1];
 
   const horizontalOffset = currC - endC !== 0 ? currC - endC : currC - startC;
   const verticalOffset = currR - endR !== 0 ? currR - endR : currR - startR;
 
   const sheetData = file.data;
   if (!sheetData) return;
+  let selectedLimit: number;
+
   switch (e.key) {
     case "ArrowUp":
-      {
-        const selectedLimit = moveToEdge(
-          sheetData,
-          e.key,
-          currC,
-          -1,
-          0,
-          startR,
-          endR,
-          startC,
-          endC,
-          maxRow,
-          maxCol
-        );
-        if (shiftPressed) {
-          moveHighlightRange(ctx, "down", verticalOffset, "rangeOfSelect");
-          moveHighlightRange(
-            ctx,
-            "down",
-            selectedLimit - currR,
-            "rangeOfSelect"
-          );
-        } else {
-          moveHighlightCell(
-            ctx,
-            "down",
-            selectedLimit - currR,
-            "rangeOfSelect"
-          );
-        }
+      selectedLimit = moveToEdge(
+        sheetData,
+        e.key,
+        currC,
+        -1,
+        0,
+        startR,
+        endR,
+        startC,
+        endC,
+        maxRow,
+        maxCol
+      );
+      if (shiftPressed) {
+        moveHighlightRange(ctx, "down", verticalOffset, "rangeOfSelect");
+        moveHighlightRange(ctx, "down", selectedLimit - currR, "rangeOfSelect");
+      } else {
+        moveHighlightCell(ctx, "down", selectedLimit - currR, "rangeOfSelect");
       }
       break;
     case "ArrowDown":
-      {
-        const selectedLimit = moveToEdge(
-          sheetData,
-          e.key,
-          currC,
-          1,
-          0,
-          startR,
-          endR,
-          startC,
-          endC,
-          maxRow,
-          maxCol
-        );
-        if (shiftPressed) {
-          moveHighlightRange(ctx, "down", verticalOffset, "rangeOfSelect");
-          moveHighlightRange(
-            ctx,
-            "down",
-            selectedLimit - currR,
-            "rangeOfSelect"
-          );
-        } else {
-          moveHighlightCell(
-            ctx,
-            "down",
-            selectedLimit - currR,
-            "rangeOfSelect"
-          );
-        }
+      selectedLimit = moveToEdge(
+        sheetData,
+        e.key,
+        currC,
+        1,
+        0,
+        startR,
+        endR,
+        startC,
+        endC,
+        maxRow,
+        maxCol
+      );
+      if (shiftPressed) {
+        moveHighlightRange(ctx, "down", verticalOffset, "rangeOfSelect");
+        moveHighlightRange(ctx, "down", selectedLimit - currR, "rangeOfSelect");
+      } else {
+        moveHighlightCell(ctx, "down", selectedLimit - currR, "rangeOfSelect");
       }
       break;
     case "ArrowLeft":
-      {
-        const selectedLimit = moveToEdge(
-          sheetData,
-          e.key,
-          currR,
-          0,
-          -1,
-          startR,
-          endR,
-          startC,
-          endC,
-          maxRow,
-          maxCol
+      selectedLimit = moveToEdge(
+        sheetData,
+        e.key,
+        currR,
+        0,
+        -1,
+        startR,
+        endR,
+        startC,
+        endC,
+        maxRow,
+        maxCol
+      );
+      if (shiftPressed) {
+        moveHighlightRange(ctx, "right", horizontalOffset, "rangeOfSelect");
+        moveHighlightRange(
+          ctx,
+          "right",
+          selectedLimit - currC,
+          "rangeOfSelect"
         );
-        if (shiftPressed) {
-          moveHighlightRange(ctx, "right", horizontalOffset, "rangeOfSelect");
-          moveHighlightRange(
-            ctx,
-            "right",
-            selectedLimit - currC,
-            "rangeOfSelect"
-          );
-        } else {
-          moveHighlightCell(
-            ctx,
-            "right",
-            selectedLimit - currC,
-            "rangeOfSelect"
-          );
-        }
+      } else {
+        moveHighlightCell(ctx, "right", selectedLimit - currC, "rangeOfSelect");
       }
       break;
     case "ArrowRight":
-      {
-        const selectedLimit = moveToEdge(
-          sheetData,
-          e.key,
-          currR,
-          0,
-          1,
-          startR,
-          endR,
-          startC,
-          endC,
-          maxRow,
-          maxCol
+      selectedLimit = moveToEdge(
+        sheetData,
+        e.key,
+        currR,
+        0,
+        1,
+        startR,
+        endR,
+        startC,
+        endC,
+        maxRow,
+        maxCol
+      );
+      if (shiftPressed) {
+        moveHighlightRange(ctx, "right", horizontalOffset, "rangeOfSelect");
+        moveHighlightRange(
+          ctx,
+          "right",
+          selectedLimit - currC,
+          "rangeOfSelect"
         );
-        if (shiftPressed) {
-          moveHighlightRange(ctx, "right", horizontalOffset, "rangeOfSelect");
-          moveHighlightRange(
-            ctx,
-            "right",
-            selectedLimit - currC,
-            "rangeOfSelect"
-          );
-        } else {
-          moveHighlightCell(
-            ctx,
-            "right",
-            selectedLimit - currC,
-            "rangeOfSelect"
-          );
-        }
+      } else {
+        moveHighlightCell(ctx, "right", selectedLimit - currC, "rangeOfSelect");
       }
       break;
     default:
@@ -559,7 +517,7 @@ export function handleWithCtrlOrMetaKey(
       const sel = window.getSelection();
       const text =
         sel && !sel.isCollapsed ? sel.toString() : cellInput.innerText;
-      navigator.clipboard?.writeText(text).catch(() => {});
+      navigator.clipboard?.writeText(text).catch(() => { });
     } else {
       // Normal copy: write styled HTML
       handleCopy(ctx);
@@ -1259,7 +1217,6 @@ export async function handleGlobalKeyDown(
         //   $("#luckysheet-rich-text-editor"),
         //   kcode
         // );
-        e.preventDefault();
       }
     }
   }

@@ -1667,6 +1667,16 @@ export function rangeValueToHtml(
         }
 
         const styleObj = getStyleByCell(ctx, d, r, c);
+        if (styleObj.borderBottom) {
+          const existing = styleObj.textDecoration as string | undefined;
+          const decorations = new Set(
+            existing ? existing.split(/\s+/).filter(Boolean) : []
+          );
+          decorations.add("underline");
+          styleObj.textDecoration = Array.from(decorations).join(" ");
+          styleObj.textDecorationSkipInk = "none";
+          delete styleObj.borderBottom;
+        }
         style += _.toPairs(styleObj)
           .filter(([, v]) => !_.isNil(v) && v !== "" && v !== "undefined")
           .map(
@@ -2098,16 +2108,42 @@ export function copy(ctx: Context) {
       textAlign: "left",
       backgroundColor: "transparent",
     };
+    const cell = flowdata![r]?.[c];
+    const isRichText = cell != null && isInlineStringCell(cell);
     const styleObj = getStyleByCell(ctx, flowdata!, r, c);
+    if (styleObj.borderBottom) {
+      const existing = styleObj.textDecoration as string | undefined;
+      const decorations = new Set(
+        existing ? existing.split(/\s+/).filter(Boolean) : []
+      );
+      decorations.add("underline");
+      styleObj.textDecoration = Array.from(decorations).join(" ");
+      styleObj.textDecorationSkipInk = "none";
+      delete styleObj.borderBottom;
+    }
     const mergedStyle = { ...defaultStyle, ...styleObj };
+    const TEXT_LEVEL_KEYS = new Set([
+      "color",
+      "fontFamily",
+      "fontSize",
+      "fontWeight",
+      "fontStyle",
+      "textDecoration",
+      "textDecorationSkipInk",
+    ]);
     const styleStr = _.toPairs(mergedStyle)
-      .filter(([, v]) => !_.isNil(v) && v !== "" && v !== "undefined")
+      .filter(
+        ([k, v]) =>
+          !_.isNil(v) &&
+          v !== "" &&
+          v !== "undefined" &&
+          !(isRichText && TEXT_LEVEL_KEYS.has(k))
+      )
       .map(([key, v]) => `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`)
       .join(" ");
-    const cell = flowdata![r]?.[c];
     let innerContent: string;
-    if (cell && isInlineStringCell(cell)) {
-      // Rich text cell: preserve per-segment formatting (bold, italic, color, etc.)
+    if (isRichText) {
+      // Rich text cell: inner spans carry all text-level styles per segment
       innerContent = getInlineStringHTML(r, c, flowdata!, {
         useSemanticMarkup: true,
         inheritedStyle: mergedStyle,
@@ -2124,14 +2160,11 @@ export function copy(ctx: Context) {
       );
     }
 
-    const hasMultilineContent = /<br\s*\/?>|[\r\n]/i.test(innerContent);
     const cellData = encodeURIComponent(
       JSON.stringify({ ...(cell ?? {}), _srcRow: r, _srcCol: c })
     );
 
-    cpdata = hasMultilineContent
-      ? `<table data-type="fortune-copy-action-table"><tr><td style="white-space: pre-line; ${styleStr}" data-fortune-cell="${cellData}"><span data-type="fortune-copy-action-span" data-sheets-root="1" style="${styleStr}">${innerContent}</span></td></tr></table>`
-      : `<span data-type="fortune-copy-action-span" data-sheets-root="1" style="${styleStr}">${innerContent}</span>`;
+    cpdata = `<table data-type="fortune-copy-action-table"><tr><td style="white-space: pre-line; ${styleStr}" data-fortune-cell="${cellData}">${innerContent}</td></tr></table>`;
   } else {
     cpdata = rangeValueToHtml(
       ctx,

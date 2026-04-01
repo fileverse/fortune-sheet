@@ -857,6 +857,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
             cell.un = cell.un !== undefined ? cell.un : 1;
           }
 
+          if (cell.tb == null) {
+            cell.tb = "1"; // overflow
+          }
           x[c + curC] = cell;
         }
         changes.push({
@@ -2201,15 +2204,36 @@ function resizePastedCellsToContent(ctx: Context) {
   updateSheetCellSizes(ctx, sheetIdx, rangeCellSize);
 }
 
-function shouldHandleHtmlFragmentAsSingleCell(html: string) {
-  if (!html || html.includes("table")) return false;
+function shouldHandleNonTableHtml(html: string) {
+  if (!html || /<table[\s/>]/i.test(html)) return false;
+  return /<[a-z]/i.test(html);
+}
 
-  return (
-    html.includes("data-sheets-root") ||
-    (/<(span|div|p)\b/i.test(html) &&
-      (/<br\s*\/?>/i.test(html) ||
-        /style=|font-weight|font-style|text-decoration|color:/i.test(html)))
-  );
+function convertNonTableHtmlToTable(html: string): string {
+  const container = document.createElement("div");
+  container.innerHTML = html;
+  const rows: string[] = [];
+
+  // Each <p> element is one line (covers Notion/ProseMirror-style editors)
+  container.querySelectorAll("p").forEach((p) => {
+    if (p.textContent?.trim()) {
+      rows.push(`<tr><td>${p.innerHTML}</td></tr>`);
+    }
+  });
+
+  if (rows.length === 0) {
+    // Fallback: <li> elements whose text is not already in a <p>
+    container.querySelectorAll("li").forEach((li) => {
+      if (!li.querySelector("p") && li.textContent?.trim()) {
+        rows.push(`<tr><td>${li.innerHTML}</td></tr>`);
+      }
+    });
+  }
+
+  if (rows.length > 0) {
+    return `<table>${rows.join("")}</table>`;
+  }
+  return `<table><tr><td>${html}</td></tr></table>`;
 }
 
 export function handlePaste(ctx: Context, e: ClipboardEvent) {
@@ -2380,18 +2404,16 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     } else if (txtdata.indexOf("fortune-copy-action-image") > -1) {
       // imageCtrl.pasteImgItem();
     } else {
-      const shouldTreatHtmlAsSingleCell =
-        shouldHandleHtmlFragmentAsSingleCell(txtdata);
+      const shouldHandleAsHtml =
+        /<table[\s/>]/i.test(txtdata) || shouldHandleNonTableHtml(txtdata);
 
-      if (txtdata.indexOf("table") > -1 || shouldTreatHtmlAsSingleCell) {
-        handlePastedTable(
-          ctx,
-          txtdata.indexOf("table") > -1
-            ? txtdata
-            : `<table><tr><td>${txtdata}</td></tr></table>`,
-          pasteHandler
-        );
-        if (shouldTreatHtmlAsSingleCell) {
+      if (shouldHandleAsHtml) {
+        const hasNativeTable = /<table[\s/>]/i.test(txtdata);
+        const converted = hasNativeTable
+          ? txtdata
+          : convertNonTableHtmlToTable(txtdata);
+        handlePastedTable(ctx, converted, pasteHandler);
+        if (hasNativeTable) {
           resizePastedCellsToContent(ctx);
         }
       }
@@ -2419,7 +2441,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             // Get the cell position
             const last =
               ctx.luckysheet_select_save?.[
-                ctx.luckysheet_select_save.length - 1
+              ctx.luckysheet_select_save.length - 1
               ];
             if (last) {
               const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;

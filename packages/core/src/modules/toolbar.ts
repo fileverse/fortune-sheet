@@ -379,6 +379,12 @@ export function updateFormat(
   foucsStatus: any,
   canvas?: CanvasRenderingContext2D
 ) {
+  // eslint-disable-next-line no-console
+  console.log("[toolbar] updateFormat", {
+    attr,
+    foucsStatus,
+    editing: ctx.luckysheetCellUpdate.length > 0,
+  });
   const allowEdit = isAllowEdit(ctx);
   if (!allowEdit) return;
 
@@ -430,6 +436,8 @@ export function updateFormat(
 }
 
 function toggleAttr(ctx: Context, cellInput: HTMLDivElement, attr: keyof Cell) {
+  // eslint-disable-next-line no-console
+  console.log("[toolbar] toggleAttr", { attr });
   const flowdata = getFlowdata(ctx);
   if (!flowdata) return;
 
@@ -1275,6 +1283,8 @@ export function handleNumberIncrease(ctx: Context, cellInput: HTMLDivElement) {
 }
 
 export function handleBold(ctx: Context, cellInput: HTMLDivElement) {
+  // eslint-disable-next-line no-console
+  console.log("[toolbar] handleBold");
   toggleAttr(ctx, cellInput, "bl");
 }
 

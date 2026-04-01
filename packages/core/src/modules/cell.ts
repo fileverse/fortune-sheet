@@ -1543,6 +1543,12 @@ export function isAllSelectedCellsInStatus(
   attr: keyof Cell,
   status: any
 ) {
+  // eslint-disable-next-line no-console
+  console.log("[cell] isAllSelectedCellsInStatus", {
+    attr,
+    status,
+    editing: !_.isEmpty(ctx.luckysheetCellUpdate),
+  });
   // editing mode
   if (!_.isEmpty(ctx.luckysheetCellUpdate)) {
     const w = window.getSelection();
@@ -1556,11 +1562,38 @@ export function isAllSelectedCellsInStatus(
     const { startContainer } = range;
     // @ts-ignore
     const cssField = _.camelCase(attrToCssName[attr]);
+    const isInlineStyleMatch = (element: HTMLElement | null | undefined) => {
+      if (!element) return false;
+      // @ts-ignore
+      const raw = element.style?.[cssField];
+      const cssValue = String(raw ?? "").toLowerCase().trim();
+
+      if (status === 1) {
+        if (attr === "bl") {
+          if (!cssValue || cssValue === "normal" || cssValue === "400") {
+            return false;
+          }
+          if (cssValue === "bold") return true;
+          const n = Number(cssValue);
+          return !Number.isNaN(n) && n >= 600;
+        }
+        if (attr === "it") {
+          return cssValue === "italic";
+        }
+        if (attr === "cl") {
+          return cssValue.includes("line-through");
+        }
+        if (attr === "un") {
+          // underline is represented as borderBottom in rich-text runs.
+          return !_.isEmpty(cssValue);
+        }
+      }
+
+      return !_.isEmpty(cssValue);
+    };
+
     if (startContainer === endContainer) {
-      return !_.isEmpty(
-        // @ts-ignore
-        startContainer.parentElement?.style[cssField]
-      );
+      return isInlineStyleMatch(startContainer.parentElement);
     }
     if (
       startContainer.parentElement?.tagName === "SPAN" &&
@@ -1576,8 +1609,7 @@ export function isAllSelectedCellsInStatus(
         for (let i = startSpanIndex; i <= endSpanIndex; i += 1) {
           rangeSpans.push(allSpans[i]);
         }
-        // @ts-ignore
-        return _.every(rangeSpans, (s) => !_.isEmpty(s.style[cssField]));
+        return _.every(rangeSpans, (s) => isInlineStyleMatch(s as HTMLElement));
       }
     }
   }

@@ -735,6 +735,12 @@ const InputBox: React.FC = () => {
           return;
         }
         if (e.code === "KeyB") {
+          // eslint-disable-next-line no-console
+          console.log("[input-box] Ctrl/Cmd+B in cell editor", {
+            ctrlKey: e.ctrlKey,
+            metaKey: e.metaKey,
+            editing: context.luckysheetCellUpdate.length > 0,
+          });
           handleBold(context, inputRef.current!);
           stopPropagation(e);
         } else if (e.code === "KeyI") {

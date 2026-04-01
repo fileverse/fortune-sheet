@@ -49,8 +49,7 @@ function remapFormulaCols(
 
       const colIdx0 = columnCharToIndex(col0);
       const mapped0 = colMap[colIdx0];
-      const nextCol0 =
-        mapped0 == null ? col0 : indexToColumnChar(mapped0);
+      const nextCol0 = mapped0 == null ? col0 : indexToColumnChar(mapped0);
 
       if (!col1) {
         return `${sheetPrefix || ""}${colAbs0}${nextCol0}${rowAbs0}${row0}`;
@@ -58,8 +57,7 @@ function remapFormulaCols(
 
       const colIdx1 = columnCharToIndex(col1);
       const mapped1 = colMap[colIdx1];
-      const nextCol1 =
-        mapped1 == null ? col1 : indexToColumnChar(mapped1);
+      const nextCol1 = mapped1 == null ? col1 : indexToColumnChar(mapped1);
       return `${
         sheetPrefix || ""
       }${colAbs0}${nextCol0}${rowAbs0}${row0}:${colAbs1}${nextCol1}${rowAbs1}${row1}`;

@@ -53,6 +53,7 @@ import {
   buildFormulaSuggestionText,
   shouldShowFormulaFunctionList,
 } from "../SheetOverlay/helper";
+import { isFormulaSegmentBoundaryKey } from "../SheetOverlay/formula-segment-boundary";
 
 const FxEditor: React.FC = () => {
   const hideFormulaHintLocal = localStorage.getItem("formulaMore") === "true";
@@ -428,7 +429,7 @@ const FxEditor: React.FC = () => {
       }
 
       if (
-        key === "," &&
+        isFormulaSegmentBoundaryKey(key) &&
         context.luckysheetCellUpdate.length > 0 &&
         currentInputText.startsWith("=") &&
         formulaAnchorCellRef.current

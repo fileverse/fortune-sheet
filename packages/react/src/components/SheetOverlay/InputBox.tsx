@@ -62,6 +62,7 @@ import {
   countCommasBeforeCursor,
   shouldShowFormulaFunctionList,
 } from "./helper";
+import { isFormulaSegmentBoundaryKey } from "./formula-segment-boundary";
 import { LucideIcon } from "./LucideIcon";
 
 const InputBox: React.FC = () => {
@@ -74,6 +75,12 @@ const InputBox: React.FC = () => {
   const [isInputBoxActive, setIsInputBoxActive] = useState(false);
   const [activeCell, setActiveCell] = useState<string>("");
   const [activeRefCell, setActiveRefCell] = useState<string>("");
+  /** Shown only after the sheet scrolls during this edit; hidden again when edit ends. */
+  const [showAddressIndicator, setShowAddressIndicator] = useState(false);
+  const scrollAtEditSessionStartRef = useRef<{
+    left: number;
+    top: number;
+  } | null>(null);
   const [frozenPosition, setFrozenPosition] = useState({ left: 0, top: 0 });
   const firstSelection = context.luckysheet_select_save?.[0];
   const [firstSelectionActiveCell, setFirstSelectionActiveCell] = useState<any>(
@@ -660,12 +667,12 @@ const InputBox: React.FC = () => {
       }
 
       if (
-        e.key === "," &&
+        isFormulaSegmentBoundaryKey(e.key) &&
         context.luckysheetCellUpdate.length > 0 &&
         currentInputText.startsWith("=") &&
         formulaAnchorCellRef.current
       ) {
-        // Moving to next function argument; allow referencing flow again.
+        // Comma / operators: segment done; clear range overlay and return to anchor.
         setContext((draftCtx) => {
           draftCtx.formulaCache.rangeSelectionActive = null;
         });
@@ -682,7 +689,7 @@ const InputBox: React.FC = () => {
                 column_focus: anchorCol,
               },
             ];
-            // Reference before comma is complete; clear the active range-select
+            // Reference before delimiter is complete; clear the active range-select
             // overlay, but keep completed referenced-cell highlights visible.
             draftCtx.formulaRangeSelect = undefined;
             draftCtx.formulaCache.selectingRangeIndex = -1;
@@ -1196,6 +1203,40 @@ const InputBox: React.FC = () => {
     }
   }, [isInputBoxActive]);
 
+  useLayoutEffect(() => {
+    const editing = context.luckysheetCellUpdate.length > 0;
+    if (!editing) {
+      scrollAtEditSessionStartRef.current = null;
+      setShowAddressIndicator(false);
+      return;
+    }
+
+    const prevLen = prevCellUpdate?.length ?? 0;
+    const startedThisCommit = prevLen === 0;
+
+    if (startedThisCommit || scrollAtEditSessionStartRef.current == null) {
+      scrollAtEditSessionStartRef.current = {
+        left: context.scrollLeft,
+        top: context.scrollTop,
+      };
+      setShowAddressIndicator(false);
+      return;
+    }
+
+    const b = scrollAtEditSessionStartRef.current;
+    if (
+      context.scrollLeft !== b.left ||
+      context.scrollTop !== b.top
+    ) {
+      setShowAddressIndicator(true);
+    }
+  }, [
+    context.luckysheetCellUpdate,
+    context.scrollLeft,
+    context.scrollTop,
+    prevCellUpdate,
+  ]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "F10") {
@@ -1307,14 +1348,16 @@ const InputBox: React.FC = () => {
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}
     >
-      {firstSelection && !context.rangeDialog?.show && (
-        <div
-          className="luckysheet-cell-address-indicator"
-          style={getAddressIndicatorPosition()}
-        >
-          {wraperGetCell()}
-        </div>
-      )}
+      {firstSelection &&
+        !context.rangeDialog?.show &&
+        showAddressIndicator && (
+          <div
+            className="luckysheet-cell-address-indicator"
+            style={getAddressIndicatorPosition()}
+          >
+            {wraperGetCell()}
+          </div>
+        )}
       <div
         ref={inputBoxInnerRef}
         className="luckysheet-input-box-inner"

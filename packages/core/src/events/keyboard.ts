@@ -517,7 +517,7 @@ export function handleWithCtrlOrMetaKey(
       const sel = window.getSelection();
       const text =
         sel && !sel.isCollapsed ? sel.toString() : cellInput.innerText;
-      navigator.clipboard?.writeText(text).catch(() => { });
+      navigator.clipboard?.writeText(text).catch(() => {});
     } else {
       // Normal copy: write styled HTML
       handleCopy(ctx);

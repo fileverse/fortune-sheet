@@ -1224,10 +1224,7 @@ const InputBox: React.FC = () => {
     }
 
     const b = scrollAtEditSessionStartRef.current;
-    if (
-      context.scrollLeft !== b.left ||
-      context.scrollTop !== b.top
-    ) {
+    if (context.scrollLeft !== b.left || context.scrollTop !== b.top) {
       setShowAddressIndicator(true);
     }
   }, [
@@ -1348,16 +1345,14 @@ const InputBox: React.FC = () => {
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}
     >
-      {firstSelection &&
-        !context.rangeDialog?.show &&
-        showAddressIndicator && (
-          <div
-            className="luckysheet-cell-address-indicator"
-            style={getAddressIndicatorPosition()}
-          >
-            {wraperGetCell()}
-          </div>
-        )}
+      {firstSelection && !context.rangeDialog?.show && showAddressIndicator && (
+        <div
+          className="luckysheet-cell-address-indicator"
+          style={getAddressIndicatorPosition()}
+        >
+          {wraperGetCell()}
+        </div>
+      )}
       <div
         ref={inputBoxInnerRef}
         className="luckysheet-input-box-inner"

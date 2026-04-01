@@ -7,59 +7,9 @@ import {
   rowLocationByIndex,
   updateContextWithSheetData,
   api,
+  remapFormulaReferencesByMap,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../../context";
-
-const REF_TOKEN_REGEX =
-  /((?:'(?:[^']|'')+'|[A-Za-z_][A-Za-z0-9_.]*)!)?(\$?)([A-Za-z]+)(\$?)(\d+)(?::(\$?)([A-Za-z]+)(\$?)(\d+))?/g;
-
-function normalizeSheetName(raw?: string) {
-  if (!raw) return "";
-  const noBang = raw.endsWith("!") ? raw.slice(0, -1) : raw;
-  if (noBang.startsWith("'") && noBang.endsWith("'")) {
-    return noBang.slice(1, -1).replace(/''/g, "'");
-  }
-  return noBang;
-}
-
-function remapFormulaRows(
-  formula: string,
-  formulaSheetName: string,
-  movedSheetName: string,
-  rowMap: Record<number, number>
-) {
-  return formula.replace(
-    REF_TOKEN_REGEX,
-    (
-      token,
-      sheetPrefix,
-      colAbs0,
-      col0,
-      rowAbs0,
-      row0,
-      colAbs1,
-      col1,
-      rowAbs1,
-      row1
-    ) => {
-      const refSheet = normalizeSheetName(sheetPrefix) || formulaSheetName;
-      if (refSheet !== movedSheetName) return token;
-
-      const mapped0 = rowMap[parseInt(row0, 10) - 1];
-      const nextRow0 = mapped0 == null ? parseInt(row0, 10) : mapped0 + 1;
-
-      if (!row1) {
-        return `${sheetPrefix || ""}${colAbs0}${col0}${rowAbs0}${nextRow0}`;
-      }
-
-      const mapped1 = rowMap[parseInt(row1, 10) - 1];
-      const nextRow1 = mapped1 == null ? parseInt(row1, 10) : mapped1 + 1;
-      return `${
-        sheetPrefix || ""
-      }${colAbs0}${col0}${rowAbs0}${nextRow0}:${colAbs1}${col1}${rowAbs1}${nextRow1}`;
-    }
-  );
-}
 
 export const useRowDragAndDrop = (
   containerRef: RefObject<HTMLDivElement | null>,
@@ -383,11 +333,11 @@ export const useRowDragAndDrop = (
 
                 if (cell.f) {
                   const sheetName = _sheet.name || "";
-                  cell.f = remapFormulaRows(
+                  cell.f = remapFormulaReferencesByMap(
                     cell.f,
                     sheetName,
                     sheetName,
-                    rowMap
+                    { rowMap }
                   );
                 }
               }

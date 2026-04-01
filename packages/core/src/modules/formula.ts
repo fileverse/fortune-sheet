@@ -4866,6 +4866,68 @@ function normalizeSheetName(ref: string) {
   return unquoted;
 }
 
+const MAP_REMAP_REF_REGEX =
+  /((?:'(?:[^']|'')+'|[A-Za-z_][A-Za-z0-9_.]*)!)?(\$?)([A-Za-z]+)(\$?)(\d+)(?::(\$?)([A-Za-z]+)(\$?)(\d+))?/g;
+
+export function remapFormulaReferencesByMap(
+  formula: string,
+  formulaSheetName: string,
+  movedSheetName: string,
+  maps: {
+    rowMap?: Record<number, number>;
+    colMap?: Record<number, number>;
+  }
+) {
+  const { rowMap, colMap } = maps;
+  if (!formula) return formula;
+  return formula.replace(
+    MAP_REMAP_REF_REGEX,
+    (
+      token,
+      sheetPrefix,
+      colAbs0,
+      col0,
+      rowAbs0,
+      row0,
+      colAbs1,
+      col1,
+      rowAbs1,
+      row1
+    ) => {
+      const refSheetName = sheetPrefix
+        ? normalizeSheetName((sheetPrefix as string).slice(0, -1))
+        : formulaSheetName;
+      if (refSheetName !== movedSheetName) return token;
+
+      const remapOne = (colText: string, rowText: string) => {
+        const colIndex = columnCharToIndex(colText);
+        const rowIndex = parseInt(rowText, 10) - 1;
+
+        const nextCol =
+          !Number.isNaN(colIndex) && !_.isNil(colMap?.[colIndex])
+            ? indexToColumnChar(colMap![colIndex]!)
+            : colText;
+        const nextRow =
+          !Number.isNaN(rowIndex) && !_.isNil(rowMap?.[rowIndex])
+            ? String(rowMap![rowIndex]! + 1)
+            : rowText;
+        return { nextCol, nextRow };
+      };
+
+      const head = remapOne(col0, row0);
+      if (_.isNil(col1) || _.isNil(row1)) {
+        return `${sheetPrefix || ""}${colAbs0}${head.nextCol}${rowAbs0}${
+          head.nextRow
+        }`;
+      }
+      const tail = remapOne(col1, row1);
+      return `${sheetPrefix || ""}${colAbs0}${head.nextCol}${rowAbs0}${
+        head.nextRow
+      }:${colAbs1}${tail.nextCol}${rowAbs1}${tail.nextRow}`;
+    }
+  );
+}
+
 function parseRefToken(token: string) {
   const m = token.match(/^(\$?)([A-Za-z]+)(\$?)(\d+)$/);
   if (!m) return null;

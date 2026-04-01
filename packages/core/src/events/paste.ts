@@ -84,7 +84,6 @@ export function adjustFormulaForPaste(
       // cellRef = only group 1 when it's a cell reference (undefined for quoted strings)
 
       if (!cellRef) return m; // Inside quotes → DO NOT modify
-      if (cellRef.startsWith("$")) return m; // Absolute column → DO NOT modify
 
       // Now process your cell reference normally:
       return cellRef.replace(
@@ -2441,7 +2440,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
             // Get the cell position
             const last =
               ctx.luckysheet_select_save?.[
-              ctx.luckysheet_select_save.length - 1
+                ctx.luckysheet_select_save.length - 1
               ];
             if (last) {
               const rowIndex = last.row_focus ?? last.row?.[0] ?? 0;

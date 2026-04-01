@@ -8,62 +8,9 @@ import {
   updateContextWithSheetData,
   api,
   indexToColumnChar,
-  columnCharToIndex,
+  remapFormulaReferencesByMap,
 } from "@fileverse-dev/fortune-core";
 import WorkbookContext from "../../../context";
-
-const REF_TOKEN_REGEX =
-  /((?:'(?:[^']|'')+'|[A-Za-z_][A-Za-z0-9_.]*)!)?(\$?)([A-Za-z]+)(\$?)(\d+)(?::(\$?)([A-Za-z]+)(\$?)(\d+))?/g;
-
-function normalizeSheetName(raw?: string) {
-  if (!raw) return "";
-  const noBang = raw.endsWith("!") ? raw.slice(0, -1) : raw;
-  if (noBang.startsWith("'") && noBang.endsWith("'")) {
-    return noBang.slice(1, -1).replace(/''/g, "'");
-  }
-  return noBang;
-}
-
-function remapFormulaCols(
-  formula: string,
-  formulaSheetName: string,
-  movedSheetName: string,
-  colMap: Record<number, number>
-) {
-  return formula.replace(
-    REF_TOKEN_REGEX,
-    (
-      token,
-      sheetPrefix,
-      colAbs0,
-      col0,
-      rowAbs0,
-      row0,
-      colAbs1,
-      col1,
-      rowAbs1,
-      row1
-    ) => {
-      const refSheet = normalizeSheetName(sheetPrefix) || formulaSheetName;
-      if (refSheet !== movedSheetName) return token;
-
-      const colIdx0 = columnCharToIndex(col0);
-      const mapped0 = colMap[colIdx0];
-      const nextCol0 = mapped0 == null ? col0 : indexToColumnChar(mapped0);
-
-      if (!col1) {
-        return `${sheetPrefix || ""}${colAbs0}${nextCol0}${rowAbs0}${row0}`;
-      }
-
-      const colIdx1 = columnCharToIndex(col1);
-      const mapped1 = colMap[colIdx1];
-      const nextCol1 = mapped1 == null ? col1 : indexToColumnChar(mapped1);
-      return `${
-        sheetPrefix || ""
-      }${colAbs0}${nextCol0}${rowAbs0}${row0}:${colAbs1}${nextCol1}${rowAbs1}${row1}`;
-    }
-  );
-}
 
 export function numberToColumnName(num: number): string {
   return indexToColumnChar(num);
@@ -403,11 +350,11 @@ export const useColumnDragAndDrop = (
 
                 if (cell.f) {
                   const sheetName = _sheet.name || "";
-                  cell.f = remapFormulaCols(
+                  cell.f = remapFormulaReferencesByMap(
                     cell.f,
                     sheetName,
                     sheetName,
-                    colMap
+                    { colMap }
                   );
                 }
               }

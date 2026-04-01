@@ -12,6 +12,7 @@ import {
   isdatetime,
   isRealNull,
   isRealNum,
+  remapFormulaReferencesByMap,
   setCellValue,
 } from "..";
 import { jfrefreshgrid } from "./refresh";
@@ -61,16 +62,19 @@ export function orderbydata(
     return 0;
   };
   const d = (x: any, y: any) => a(y, x);
-  const sortedData = _.clone(data);
-  sortedData.sort(isAsc ? a : d);
+  const sortedWithIndex = data.map((row, i) => ({
+    row,
+    originalIndex: i,
+  }));
+  sortedWithIndex.sort((x, y) => (isAsc ? a(x.row, y.row) : d(x.row, y.row)));
 
-  // calc row offsets
-  const rowOffsets = sortedData.map((r, i) => {
-    const origIndex = _.findIndex(data, (origR) => origR === r);
-    return i - origIndex;
+  const sortedData = sortedWithIndex.map((item) => item.row);
+  const rowMap: Record<number, number> = {};
+  sortedWithIndex.forEach((item, newIndex) => {
+    rowMap[item.originalIndex] = newIndex;
   });
 
-  return { sortedData, rowOffsets };
+  return { sortedData, rowMap };
 }
 
 export function sortDataRange(
@@ -84,7 +88,7 @@ export function sortDataRange(
   stc: number,
   edc: number
 ) {
-  const { sortedData /* rowOffsets */ } = orderbydata(isAsc, index, dataRange);
+  const { sortedData, rowMap } = orderbydata(isAsc, index, dataRange);
 
   for (let r = str; r <= edr; r += 1) {
     for (let c = stc; c <= edc; c += 1) {
@@ -104,6 +108,39 @@ export function sortDataRange(
       sheetData[r][c] = cell;
     }
   }
+
+  // Sort is a row permutation. Remap references to moved rows for formulas
+  // on the current sheet so they keep pointing to the same logical rows.
+  const absoluteRowMap: Record<number, number> = {};
+  Object.keys(rowMap).forEach((k) => {
+    const oldLocal = parseInt(k, 10);
+    absoluteRowMap[str + oldLocal] = str + rowMap[oldLocal];
+  });
+
+  const sheetIdx = getSheetIndex(ctx, ctx.currentSheetId);
+  const sheet = sheetIdx == null ? null : ctx.luckysheetfile[sheetIdx];
+  const sheetName = sheet?.name || "";
+  if (sheetData && sheetName) {
+    for (let r = 0; r < sheetData.length; r += 1) {
+      const row = sheetData[r];
+      if (!row) continue;
+      for (let c = 0; c < row.length; c += 1) {
+        const cell = row[c];
+        if (!cell?.f) continue;
+        cell.f = remapFormulaReferencesByMap(cell.f, sheetName, sheetName, {
+          rowMap: absoluteRowMap,
+        });
+      }
+    }
+  }
+
+  // Keep formula dependency locations aligned with row permutation.
+  sheet?.calcChain?.forEach((item: any) => {
+    const mapped = absoluteRowMap[item.r];
+    if (!_.isNil(mapped)) {
+      item.r = mapped;
+    }
+  });
 
   // let allParam = {};
   // if (ctx.config.rowlen != null) {

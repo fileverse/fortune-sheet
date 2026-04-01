@@ -857,6 +857,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
             cell.un = cell.un !== undefined ? cell.un : 1;
           }
 
+          if (cell.tb == null) {
+            cell.tb = "1"; // overflow
+          }
           x[c + curC] = cell;
         }
         changes.push({
@@ -2202,22 +2205,33 @@ function resizePastedCellsToContent(ctx: Context) {
 }
 
 function shouldHandleNonTableHtml(html: string) {
-  if (!html || html.includes("table")) return false;
+  if (!html || /<table[\s/>]/i.test(html)) return false;
   return /<[a-z]/i.test(html);
 }
 
 function convertNonTableHtmlToTable(html: string): string {
-  if (/<li[\s>]/i.test(html)) {
-    const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
-    const rows: string[] = [];
-    let match: RegExpExecArray | null;
-    // eslint-disable-next-line no-cond-assign
-    while ((match = liRegex.exec(html)) !== null) {
-      rows.push(`<tr><td>${match[1]}</td></tr>`);
+  const container = document.createElement("div");
+  container.innerHTML = html;
+  const rows: string[] = [];
+
+  // Each <p> element is one line (covers Notion/ProseMirror-style editors)
+  container.querySelectorAll("p").forEach((p) => {
+    if (p.textContent?.trim()) {
+      rows.push(`<tr><td>${p.innerHTML}</td></tr>`);
     }
-    if (rows.length > 0) {
-      return `<table>${rows.join("")}</table>`;
-    }
+  });
+
+  if (rows.length === 0) {
+    // Fallback: <li> elements whose text is not already in a <p>
+    container.querySelectorAll("li").forEach((li) => {
+      if (!li.querySelector("p") && li.textContent?.trim()) {
+        rows.push(`<tr><td>${li.innerHTML}</td></tr>`);
+      }
+    });
+  }
+
+  if (rows.length > 0) {
+    return `<table>${rows.join("")}</table>`;
   }
   return `<table><tr><td>${html}</td></tr></table>`;
 }
@@ -2391,15 +2405,17 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
       // imageCtrl.pasteImgItem();
     } else {
       const shouldHandleAsHtml =
-        txtdata.indexOf("table") > -1 || shouldHandleNonTableHtml(txtdata);
+        /<table[\s/>]/i.test(txtdata) || shouldHandleNonTableHtml(txtdata);
 
       if (shouldHandleAsHtml) {
-        const hasNativeTable = txtdata.indexOf("table") > -1;
+        const hasNativeTable = /<table[\s/>]/i.test(txtdata);
         const converted = hasNativeTable
           ? txtdata
           : convertNonTableHtmlToTable(txtdata);
         handlePastedTable(ctx, converted, pasteHandler);
-        resizePastedCellsToContent(ctx);
+        if (hasNativeTable) {
+          resizePastedCellsToContent(ctx);
+        }
       }
       // 复制的是图片
       else if (

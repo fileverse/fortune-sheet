@@ -9,7 +9,7 @@ import { setRowHeight, setColumnWidth } from "./api";
 import { adjustFormulaForPaste } from "./events/paste";
 import { convertSpanToShareString } from "./modules/inline-string";
 
-export const DEFAULT_FONT_SIZE = 12;
+export const DEFAULT_FONT_SIZE = 10;
 
 const parseStylesheetPairs = (styleInner: string) => {
   const patternReg = /{([^}]*)}/g;
@@ -69,7 +69,8 @@ const BLOCK_TAGS = new Set([
 
 const getInlineStringSegmentsFromTd = (
   td: HTMLTableCellElement,
-  cell: Cell
+  cell: Cell,
+  defaultFontSize: number
 ) => {
   const segments: HTMLSpanElement[] = [];
 
@@ -149,7 +150,7 @@ const getInlineStringSegmentsFromTd = (
 
   const base = {
     fc: cell.fc || "#000000",
-    fs: cell.fs || DEFAULT_FONT_SIZE,
+    fs: cell.fs || defaultFontSize,
     cl: cell.cl || 0,
     un: cell.un || 0,
     bl: cell.bl || 0,
@@ -413,10 +414,11 @@ const buildCellFromTd = (
   // Font family / size / color
   const ff = td.style.fontFamily || styles["font-family"] || "";
   cell.ff = mapFontFamilyToIndex(ff, ctx);
+  const ctxDefaultFontSize = ctx.defaultFontSize ?? DEFAULT_FONT_SIZE;
   const fontSize = Math.round(
     styles["font-size"]
       ? parseInt(styles["font-size"].replace("pt", ""), 10)
-      : parseInt(td.style.fontSize || `${DEFAULT_FONT_SIZE}`, 10)
+      : parseInt(td.style.fontSize || `${ctxDefaultFontSize}`, 10)
   );
   cell.fs = fontSize;
   cell.fc = td.style.color || styles.color;
@@ -451,13 +453,17 @@ const buildCellFromTd = (
   if (td?.style?.["overflow-wrap"] === "anywhere") {
     cell.tb = "2";
   } else {
-    cell.tb = "2";
+    cell.tb = "1"; // overflow
   }
 
   // Rotation
   if ("mso-rotate" in styles) cell.rt = parseFloat(styles["mso-rotate"]);
 
-  const inlineSegments = getInlineStringSegmentsFromTd(td, cell);
+  const inlineSegments = getInlineStringSegmentsFromTd(
+    td,
+    cell,
+    ctxDefaultFontSize
+  );
   const segmentsText = inlineSegments.map((s: any) => s.v ?? "").join("");
   const shouldUseInlineString =
     normalizedText.length > 0 &&
@@ -489,7 +495,7 @@ export function handlePastedTable(
   html: string,
   pasteHandler: (context: Context, data: any, borderInfo?: any) => void
 ) {
-  if (!html.includes("table")) return;
+  if (!/<table[\s/>]/i.test(html)) return;
 
   const containerDiv = document.createElement("div");
   containerDiv.innerHTML = html;

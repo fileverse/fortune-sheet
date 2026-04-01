@@ -1930,7 +1930,6 @@ export function rangeValueToHtml(
         if (cell && isInlineStringCell(cell)) {
           cellHtml = getInlineStringHTML(r, c, d, {
             useSemanticMarkup: true,
-            isRichText: true,
             inheritedStyle: styleObj,
           });
         } else {
@@ -2146,7 +2145,6 @@ export function copy(ctx: Context) {
       innerContent = getInlineStringHTML(r, c, flowdata!, {
         useSemanticMarkup: true,
         inheritedStyle: mergedStyle,
-        isRichText: true,
       });
     } else {
       const displayValue =

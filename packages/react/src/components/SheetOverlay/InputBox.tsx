@@ -736,30 +736,26 @@ const InputBox: React.FC = () => {
         }
         if (e.code === "KeyB") {
           handleBold(context, inputRef.current!);
-          appendFormulaHistoryFromPrimaryEditor(
-            () => getCursorPosition(inputRef.current!),
-            { force: true }
+          appendFormulaHistoryFromPrimaryEditor(() =>
+            getCursorPosition(inputRef.current!)
           );
           stopPropagation(e);
         } else if (e.code === "KeyI") {
           handleItalic(context, inputRef.current!);
-          appendFormulaHistoryFromPrimaryEditor(
-            () => getCursorPosition(inputRef.current!),
-            { force: true }
+          appendFormulaHistoryFromPrimaryEditor(() =>
+            getCursorPosition(inputRef.current!)
           );
           stopPropagation(e);
         } else if (e.code === "KeyU") {
           handleUnderline(context, inputRef.current!);
-          appendFormulaHistoryFromPrimaryEditor(
-            () => getCursorPosition(inputRef.current!),
-            { force: true }
+          appendFormulaHistoryFromPrimaryEditor(() =>
+            getCursorPosition(inputRef.current!)
           );
           stopPropagation(e);
         } else if (e.code === "KeyS") {
           handleStrikeThrough(context, inputRef.current!);
-          appendFormulaHistoryFromPrimaryEditor(
-            () => getCursorPosition(inputRef.current!),
-            { force: true }
+          appendFormulaHistoryFromPrimaryEditor(() =>
+            getCursorPosition(inputRef.current!)
           );
           stopPropagation(e);
         }

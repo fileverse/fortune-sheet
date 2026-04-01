@@ -222,8 +222,6 @@ function getClassWithcss(cssText: string, ukey: string) {
 }
 
 function upsetClassWithCss(cssText: string, ukey: string, uvalue: any) {
-  // eslint-disable-next-line no-console
-  console.log("[inline-string] upsetClassWithCss", { ukey, uvalue });
   const cssTextArray = cssText.split(";");
   let newCss = "";
   if (ukey == null || ukey.length === 0) {
@@ -250,8 +248,6 @@ function upsetClassWithCss(cssText: string, ukey: string, uvalue: any) {
 }
 
 function removeClassWidthCss(cssText: string, ukey: string) {
-  // eslint-disable-next-line no-console
-  console.log("[inline-string] removeClassWidthCss", { ukey });
   const cssTextArray = cssText.split(";");
   let newCss = "";
   const oUkey = ukey;
@@ -286,8 +282,6 @@ function removeClassWidthCss(cssText: string, ukey: string) {
 }
 
 function getCssText(cssText: string, attr: keyof Cell, value: any) {
-  // eslint-disable-next-line no-console
-  console.log("[inline-string] getCssText", { attr, value });
   const styleObj: any = {};
   styleObj[attr] = value;
   if (attr === "un") {
@@ -317,8 +311,6 @@ function getCssText(cssText: string, attr: keyof Cell, value: any) {
 }
 
 function extendCssText(origin: string, cover: string, isLimit = true) {
-  // eslint-disable-next-line no-console
-  console.log("[inline-string] extendCssText", { isLimit });
   const originArray = origin.split(";");
   const coverArray = cover.split(";");
   let newCss = "";
@@ -398,8 +390,6 @@ export function updateInlineStringFormat(
   value: any,
   cellInput: HTMLDivElement
 ) {
-  // eslint-disable-next-line no-console
-  console.log("[inline-string] updateInlineStringFormat", { attr, value });
   // let s = ctx.inlineStringEditCache;
   const w = window.getSelection();
   if (!w) return;
@@ -423,12 +413,6 @@ export function updateInlineStringFormat(
     editorText.length > 0 &&
     selectedText === editorText
   ) {
-    // eslint-disable-next-line no-console
-    console.log("[inline-string] full-editor selection fallback", {
-      attr,
-      value,
-      editorTextLength: editorText.length,
-    });
     $textEditor.innerHTML = "";
     const wrapper = document.createElement("span");
     wrapper.setAttribute("style", getCssText("", attr, value));
@@ -457,12 +441,6 @@ export function updateInlineStringFormat(
 
     const children = Array.from($textEditor.childNodes).slice(start, end);
     let hasUnsupportedElementSelection = false;
-    console.debug("[inline-string] format select-all branch", {
-      attr,
-      start,
-      end,
-      selectedChildCount: children.length,
-    });
     children.forEach((node) => {
       if (node.nodeType === Node.ELEMENT_NODE) {
         const el = node as HTMLElement;
@@ -495,10 +473,6 @@ export function updateInlineStringFormat(
     // those into a styled span so select-all formatting always applies.
     if (hasUnsupportedElementSelection) {
       const fullText = $textEditor.innerText ?? $textEditor.textContent ?? "";
-      console.debug("[inline-string] normalized unsupported select-all nodes", {
-        attr,
-        fullTextLength: fullText.length,
-      });
       $textEditor.innerHTML = "";
       const wrapper = document.createElement("span");
       wrapper.setAttribute("style", getCssText("", attr, value));

@@ -496,12 +496,6 @@ export function handleWithCtrlOrMetaKey(
     handleControlPlusArrowKey(ctx, e, false);
   } else if (e.code === "KeyB") {
     // Ctrl + B  加粗
-    // eslint-disable-next-line no-console
-    console.log("[keyboard] Ctrl/Cmd+B detected", {
-      ctrlKey: e.ctrlKey,
-      metaKey: e.metaKey,
-      editing: ctx.luckysheetCellUpdate.length > 0,
-    });
     handleBold(ctx, cellInput);
     // $("#luckysheet-icon-bold").click();
   } else if (e.code === "KeyI") {

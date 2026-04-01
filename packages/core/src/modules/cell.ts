@@ -1859,6 +1859,8 @@ export function getInlineStringHTML(
               )}'`
             : "";
 
+        //this should be there if it is getting called from other places apart from copy paste
+        //value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${strObj.v}</span>`;
         if (options?.useSemanticMarkup) {
           value += buildClipboardCompatibleInlineRuns(strObj.v, styleStr);
         } else {

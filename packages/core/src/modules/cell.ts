@@ -21,7 +21,6 @@ import {
   functionHTMLGenerate,
   getcellrange,
   iscelldata,
-  suppressFormulaRangeSelectionForInitialEdit,
 } from "./formula";
 import {
   attrToCssName,
@@ -31,7 +30,6 @@ import {
 } from "./inline-string";
 import { isRealNull, isRealNum, valueIsError } from "./validation";
 import { getCellTextInfo } from "./text";
-import { locale } from "../locale";
 import { spillSortResult } from "./sort";
 
 // TODO put these in context ref
@@ -90,35 +88,6 @@ export function normalizedAttr(
 function newlinesToBr(text: string) {
   if (!text) return "";
   return text.replace(/\r\n|\r|\n/g, "<br />");
-}
-
-/** Append `)` for each unmatched `(` when committing a formula (ignores parens inside "..." string literals, `""` escape). */
-function closeUnclosedParenthesesInFormula(formula: string): string {
-  if (!formula.startsWith("=") || formula.length <= 1) return formula;
-  const body = formula.slice(1);
-  let depth = 0;
-  let inString = false;
-  for (let i = 0; i < body.length; i += 1) {
-    const ch = body[i];
-    if (inString) {
-      if (ch === '"') {
-        if (body[i + 1] === '"') {
-          i += 1;
-        } else {
-          inString = false;
-        }
-      }
-      continue;
-    }
-    if (ch === '"') {
-      inString = true;
-      continue;
-    }
-    if (ch === "(") depth += 1;
-    else if (ch === ")") depth = Math.max(0, depth - 1);
-  }
-  if (depth <= 0) return formula;
-  return `${formula}${")".repeat(depth)}`;
 }
 
 export function getCellValue(
@@ -804,8 +773,6 @@ export function cancelNormalSelected(ctx: Context) {
   ctx.formulaCache.rangestart = false;
   ctx.formulaCache.rangedrag_column_start = false;
   ctx.formulaCache.rangedrag_row_start = false;
-  ctx.formulaCache.rangeSelectionActive = null;
-  ctx.formulaCache.formulaEditorOwner = null;
 }
 
 // formula.updatecell
@@ -936,16 +903,6 @@ export function updateCell(
 
     // API, we get value from user
     value = value || inputText;
-    if (_.isString(value) && value.startsWith("=") && value.length > 1) {
-      value = closeUnclosedParenthesesInFormula(value);
-    } else if (
-      _.isPlainObject(value) &&
-      _.isString((value as Cell).f) &&
-      (value as Cell).f!.startsWith("=") &&
-      (value as Cell).f!.length > 1
-    ) {
-      (value as Cell).f = closeUnclosedParenthesesInFormula((value as Cell).f!);
-    }
     const shouldClearError = oldValue?.f
       ? oldValue.f !== value
       : oldValue?.v !== value;
@@ -1076,7 +1033,7 @@ export function updateCell(
           // from API setCellValue,luckysheet.setCellValue(0, 0, {f: "=sum(D1)", bg:"#0188fb"}),value is an object, so get attribute f as value
           else {
             Object.keys(value).forEach((attr) => {
-              (curv as Record<string, any>)[attr] = value[attr];
+              curv![attr as keyof Cell] = value[attr];
             });
             clearCellError(ctx, r, c);
           }
@@ -1681,6 +1638,7 @@ export function getStyleByCell(
   const cell = d?.[r]?.[c];
   if (!cell) return {};
 
+  const isInline = isInlineStringCell(cell);
   if ("bg" in cell) {
     const value = normalizedCellAttr(cell, "bg");
     if (checksCF?.cellColor) {
@@ -1713,11 +1671,7 @@ export function getStyleByCell(
 
   if ("ff" in cell) {
     const value = normalizedCellAttr(cell, "ff");
-    const { fontarray } = locale(ctx);
-    const ffIndex = parseInt(value, 10);
-    style.fontFamily = Number.isNaN(ffIndex)
-      ? value
-      : fontarray[ffIndex] ?? value;
+    style.fontFamily = value;
   }
 
   if ("vt" in cell) {
@@ -1728,79 +1682,14 @@ export function getStyleByCell(
       style.alignItems = "flex-end";
     }
   }
-  style = _.assign(style, getFontStyleByCell(cell, checksAF, checksCF));
+  if (!isInline) {
+    style = _.assign(style, getFontStyleByCell(cell, checksAF, checksCF));
+  }
 
   return style;
 }
 
-function normalizeInlineStringClipboardStyle(style: Record<string, any>) {
-  const decorations = new Set<string>();
-  const normalizedStyle: Record<string, any> = {
-    color: style.color || "#000000",
-    fontFamily: style.fontFamily || "Arial",
-    fontSize: style.fontSize || "11pt",
-    fontStyle: style.fontStyle || "normal",
-    fontWeight: style.fontWeight || "400",
-  };
-
-  const backgroundColor = style.backgroundColor || style.background;
-  if (
-    backgroundColor &&
-    backgroundColor !== "transparent" &&
-    backgroundColor !== "rgba(0, 0, 0, 0)"
-  ) {
-    normalizedStyle.backgroundColor = backgroundColor;
-  }
-
-  if (typeof style.textDecoration === "string") {
-    style.textDecoration
-      .split(/\s+/)
-      .filter(Boolean)
-      .forEach((decoration: string) => decorations.add(decoration));
-  }
-
-  if (style.borderBottom) {
-    decorations.add("underline");
-    normalizedStyle.textDecorationSkipInk = "none";
-  }
-
-  if (decorations.size > 0) {
-    normalizedStyle.textDecoration = Array.from(decorations).join(" ");
-  }
-
-  return normalizedStyle;
-}
-
-function buildClipboardCompatibleInlineRuns(text: string, styleAttr: string) {
-  const normalizedText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  const segments = normalizedText.split("\n");
-
-  return segments
-    .map((segment, index) => {
-      let html = "";
-
-      if (segment.length > 0) {
-        html += `<span style='${styleAttr}'>${segment}</span>`;
-      }
-
-      if (index < segments.length - 1) {
-        html += `<span style='${styleAttr}'><br></span>`;
-      }
-
-      return html;
-    })
-    .join("");
-}
-
-export function getInlineStringHTML(
-  r: number,
-  c: number,
-  data: CellMatrix,
-  options?: {
-    useSemanticMarkup?: boolean;
-    inheritedStyle?: Record<string, string>;
-  }
-) {
+export function getInlineStringHTML(r: number, c: number, data: CellMatrix) {
   const ct = getCellValue(r, c, data, "ct");
   if (isInlineStringCT(ct)) {
     const strings = ct.s;
@@ -1808,48 +1697,17 @@ export function getInlineStringHTML(
     for (let i = 0; i < strings.length; i += 1) {
       const strObj = strings[i];
       if (strObj.v) {
-        const baseStyle = {
-          ...(options?.useSemanticMarkup ? options.inheritedStyle ?? {} : {}),
-          ...getFontStyleByCell(strObj),
-        };
-        const style = options?.useSemanticMarkup
-          ? normalizeInlineStringClipboardStyle(baseStyle)
-          : baseStyle;
-        // Explicitly set default text styles so Google Sheets preserves
-        // mixed rich-text runs instead of inheriting formatting between spans.
-        if (!style.fontWeight) {
-          style.fontWeight = "400";
-        }
-        if (!style.fontStyle) {
-          style.fontStyle = "normal";
-        }
-        if (!style.fontSize) {
-          style.fontSize = "11pt";
-        }
-        if (!style.fontFamily) {
-          style.fontFamily = "Arial";
-        }
+        const style = getFontStyleByCell(strObj);
         const { link } = strObj as any;
         if (link?.linkType && link?.linkAddress) {
           style.color = style.color || "rgb(0, 0, 255)";
-          if (options?.useSemanticMarkup) {
-            style.textDecoration = style.textDecoration
-              ? `${style.textDecoration} underline`
-              : "underline";
-            style.textDecorationSkipInk = "none";
-          } else {
-            style.borderBottom =
-              style.borderBottom || "1px solid rgb(0, 0, 255)";
-          }
+          style.borderBottom = style.borderBottom || "1px solid rgb(0, 0, 255)";
         }
-        const styleStr = _.toPairs(style)
-          .filter(([, v]) => !_.isNil(v) && v !== "" && v !== "undefined")
-          .map(([key, v]) => {
-            return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
-          })
-          .join(" ");
+        const styleStr = _.map(style, (v, key) => {
+          return `${_.kebabCase(key)}:${_.isNumber(v) ? `${v}px` : v};`;
+        }).join("");
         const dataAttrs =
-          !options?.useSemanticMarkup && link?.linkType && link?.linkAddress
+          link?.linkType && link?.linkAddress
             ? ` data-link-type='${String(link.linkType).replace(
                 /'/g,
                 "&#39;"
@@ -1858,17 +1716,7 @@ export function getInlineStringHTML(
                 "&#39;"
               )}'`
             : "";
-
-        if (options?.useSemanticMarkup) {
-          value += buildClipboardCompatibleInlineRuns(strObj.v, styleStr);
-        } else {
-          // Convert newlines to <br> so apps that don't honour white-space:pre-wrap
-          // (e.g. Google Sheets clipboard parser) still see proper line breaks.
-          const segmentText = strObj.v
-            .replace(/\r\n/g, "<br>")
-            .replace(/\n/g, "<br>");
-          value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${segmentText}</span>`;
-        }
+        value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${strObj.v}</span>`;
       }
     }
     return value;
@@ -2089,11 +1937,6 @@ export function luckysheetUpdateCell(
   row_index: number,
   col_index: number
 ) {
-  const flowdata = getFlowdata(ctx);
-  const cell = flowdata?.[row_index]?.[col_index] as { f?: string } | null;
-  if (cell?.f != null && String(cell.f).trim() !== "") {
-    suppressFormulaRangeSelectionForInitialEdit(ctx);
-  }
   ctx.luckysheetCellUpdate = [row_index, col_index];
 }
 

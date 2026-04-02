@@ -1,7 +1,9 @@
 module.exports = {
+  // Only TS/JSX here — a stray API.stories.js next to API.stories.tsx duplicates
+  // every story id and breaks indexing (e.g. after mistaken codegen).
   stories: [
     "../stories/**/*.stories.mdx",
-    "../stories/**/*.stories.@(js|jsx|ts|tsx)",
+    "../stories/**/*.stories.@(jsx|ts|tsx)",
   ],
 
   addons: [

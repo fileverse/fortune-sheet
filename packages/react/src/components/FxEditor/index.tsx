@@ -48,6 +48,7 @@ import {
   countCommasBeforeCursor,
   getCursorPosition,
   getFunctionNameFromFormulaCaretSpans,
+  isEditorUndoRedoKeyEvent,
   isLetterNumberPattern,
   setCursorPosition,
   buildFormulaSuggestionText,
@@ -63,12 +64,11 @@ const FxEditor: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
   const lastKeyDownEventRef = useRef<KeyboardEvent>(null);
   const {
-    formulaHistoryRef,
     preTextRef,
     resetFormulaHistory,
     handleFormulaHistoryUndoRedo,
-    capturePreFormulaState,
-    appendFormulaHistoryFromPrimaryEditor,
+    capturePreEditorHistoryState,
+    appendEditorHistoryFromPrimaryEditor,
   } = useFormulaEditorHistory(
     refs.fxInput,
     refs.cellInput,
@@ -403,7 +403,9 @@ const FxEditor: React.FC = () => {
       const currentCommaCount = countCommasBeforeCursor(refs.fxInput?.current!);
       setCommaCount(currentCommaCount);
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
-      capturePreFormulaState();
+      if (!isEditorUndoRedoKeyEvent(e.nativeEvent)) {
+        capturePreEditorHistoryState();
+      }
       recentText.current = refs.fxInput.current!.innerText;
       const { key } = e;
       const currentInputText = refs.fxInput.current?.innerText?.trim() || "";
@@ -490,18 +492,23 @@ const FxEditor: React.FC = () => {
 
       if ((e.metaKey || e.ctrlKey) && context.luckysheetCellUpdate.length > 0) {
         if (e.code === "KeyZ" || e.code === "KeyY") {
-          const shouldUseFormulaHistory =
-            currentInputText.startsWith("=") ||
-            formulaHistoryRef.current.active;
-          if (shouldUseFormulaHistory) {
-            const handledByFormulaHistory = handleFormulaHistoryUndoRedo(
-              e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey)
-            );
-            if (handledByFormulaHistory) {
-              e.preventDefault();
-            }
-          }
+          const isRedo =
+            e.code === "KeyY" || (e.code === "KeyZ" && (e as any).shiftKey);
+          // Always intercept undo/redo in-editor to avoid native browser
+          // history fighting our snapshot stack.
+          e.preventDefault();
           e.stopPropagation();
+
+          const attempt = (triesLeft: number) => {
+            const handled = handleFormulaHistoryUndoRedo(isRedo);
+            if (handled) return;
+            if (triesLeft <= 0) return;
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => attempt(triesLeft - 1));
+            });
+          };
+
+          attempt(2);
           return;
         }
       }
@@ -695,7 +702,7 @@ const FxEditor: React.FC = () => {
       });
     },
     [
-      capturePreFormulaState,
+      capturePreEditorHistoryState,
       context.allowEdit,
       context.luckysheetCellUpdate,
       handleFormulaHistoryUndoRedo,
@@ -777,12 +784,11 @@ const FxEditor: React.FC = () => {
       }
       return;
     }
+    if (isEditorUndoRedoKeyEvent(e)) {
+      return;
+    }
     const kcode = e.keyCode;
     if (!kcode) return;
-
-    appendFormulaHistoryFromPrimaryEditor(() =>
-      getCursorPosition(refs.fxInput.current!)
-    );
 
     if (
       !(
@@ -810,8 +816,14 @@ const FxEditor: React.FC = () => {
         );
       });
     }
+    requestAnimationFrame(() => {
+      if (getFormulaEditorOwner(context) !== "fx") return;
+      appendEditorHistoryFromPrimaryEditor(() =>
+        getCursorPosition(refs.fxInput.current!)
+      );
+    });
   }, [
-    appendFormulaHistoryFromPrimaryEditor,
+    appendEditorHistoryFromPrimaryEditor,
     context.isFlvReadOnly,
     context.luckysheetCellUpdate,
     refs.cellInput,

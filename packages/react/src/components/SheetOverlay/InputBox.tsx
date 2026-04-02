@@ -61,6 +61,7 @@ import {
   isLetterNumberPattern,
   countCommasBeforeCursor,
   shouldShowFormulaFunctionList,
+  isEditorUndoRedoKeyEvent,
 } from "./helper";
 import { isFormulaSegmentBoundaryKey } from "./formula-segment-boundary";
 import { LucideIcon } from "./LucideIcon";
@@ -99,12 +100,11 @@ const InputBox: React.FC = () => {
   const skipNextAnchorSelectionSyncRef = useRef(false);
   const lastHandledMouseDragSignatureRef = useRef("");
   const {
-    formulaHistoryRef,
     preTextRef,
     resetFormulaHistory,
     handleFormulaHistoryUndoRedo,
-    capturePreFormulaState,
-    appendFormulaHistoryFromPrimaryEditor,
+    capturePreEditorHistoryState,
+    appendEditorHistoryFromPrimaryEditor,
   } = useFormulaEditorHistory(
     inputRef,
     refs.cellInput,
@@ -639,7 +639,9 @@ const InputBox: React.FC = () => {
         setFormulaEditorOwner(draftCtx, "cell");
       });
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
-      capturePreFormulaState();
+      if (!isEditorUndoRedoKeyEvent(e.nativeEvent)) {
+        capturePreEditorHistoryState();
+      }
       const currentInputText = inputRef.current?.innerText?.trim() || "";
 
       if (
@@ -718,45 +720,92 @@ const InputBox: React.FC = () => {
 
       if ((e.metaKey || e.ctrlKey) && context.luckysheetCellUpdate.length > 0) {
         if (e.code === "KeyZ" || e.code === "KeyY") {
-          const shouldUseFormulaHistory =
-            currentInputText.startsWith("=") ||
-            formulaHistoryRef.current.active;
-          if (shouldUseFormulaHistory) {
-            const handledByFormulaHistory = handleFormulaHistoryUndoRedo(
-              e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey)
-            );
-            if (handledByFormulaHistory) {
-              e.preventDefault();
-            }
-          }
-          // Keep native undo/redo in contenteditable, but don't bubble to
-          // workbook-level canvas shortcuts.
+          const isRedo = e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey);
+
+          // Always intercept undo/redo in-editor to prevent native
+          // contenteditable history from fighting our snapshot stack.
+          e.preventDefault();
           e.stopPropagation();
+
+          const attempt = (triesLeft: number) => {
+            const handled = handleFormulaHistoryUndoRedo(isRedo);
+            if (handled) return;
+            if (triesLeft <= 0) return;
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => attempt(triesLeft - 1));
+            });
+          };
+
+          attempt(2);
           return;
         }
         if (e.code === "KeyB") {
+          const beforeHtml = inputRef.current?.innerHTML ?? "";
           handleBold(context, inputRef.current!);
-          appendFormulaHistoryFromPrimaryEditor(() =>
-            getCursorPosition(inputRef.current!)
-          );
+          const pushFormattingSnapshot = (triesLeft: number) => {
+            requestAnimationFrame(() => {
+              const afterHtml = inputRef.current?.innerHTML ?? "";
+              if (afterHtml !== beforeHtml || triesLeft <= 0) {
+                appendEditorHistoryFromPrimaryEditor(() =>
+                  getCursorPosition(inputRef.current!)
+                );
+                return;
+              }
+              pushFormattingSnapshot(triesLeft - 1);
+            });
+          };
+          pushFormattingSnapshot(2);
           stopPropagation(e);
         } else if (e.code === "KeyI") {
+          const beforeHtml = inputRef.current?.innerHTML ?? "";
           handleItalic(context, inputRef.current!);
-          appendFormulaHistoryFromPrimaryEditor(() =>
-            getCursorPosition(inputRef.current!)
-          );
+          const pushFormattingSnapshot = (triesLeft: number) => {
+            requestAnimationFrame(() => {
+              const afterHtml = inputRef.current?.innerHTML ?? "";
+              if (afterHtml !== beforeHtml || triesLeft <= 0) {
+                appendEditorHistoryFromPrimaryEditor(() =>
+                  getCursorPosition(inputRef.current!)
+                );
+                return;
+              }
+              pushFormattingSnapshot(triesLeft - 1);
+            });
+          };
+          pushFormattingSnapshot(2);
           stopPropagation(e);
         } else if (e.code === "KeyU") {
+          const beforeHtml = inputRef.current?.innerHTML ?? "";
           handleUnderline(context, inputRef.current!);
-          appendFormulaHistoryFromPrimaryEditor(() =>
-            getCursorPosition(inputRef.current!)
-          );
+          const pushFormattingSnapshot = (triesLeft: number) => {
+            requestAnimationFrame(() => {
+              const afterHtml = inputRef.current?.innerHTML ?? "";
+              if (afterHtml !== beforeHtml || triesLeft <= 0) {
+                appendEditorHistoryFromPrimaryEditor(() =>
+                  getCursorPosition(inputRef.current!)
+                );
+                return;
+              }
+              pushFormattingSnapshot(triesLeft - 1);
+            });
+          };
+          pushFormattingSnapshot(2);
           stopPropagation(e);
         } else if (e.code === "KeyS") {
+          const beforeHtml = inputRef.current?.innerHTML ?? "";
           handleStrikeThrough(context, inputRef.current!);
-          appendFormulaHistoryFromPrimaryEditor(() =>
-            getCursorPosition(inputRef.current!)
-          );
+          const pushFormattingSnapshot = (triesLeft: number) => {
+            requestAnimationFrame(() => {
+              const afterHtml = inputRef.current?.innerHTML ?? "";
+              if (afterHtml !== beforeHtml || triesLeft <= 0) {
+                appendEditorHistoryFromPrimaryEditor(() =>
+                  getCursorPosition(inputRef.current!)
+                );
+                return;
+              }
+              pushFormattingSnapshot(triesLeft - 1);
+            });
+          };
+          pushFormattingSnapshot(2);
           stopPropagation(e);
         }
       }
@@ -922,7 +971,7 @@ const InputBox: React.FC = () => {
       // }
     },
     [
-      capturePreFormulaState,
+      capturePreEditorHistoryState,
       clearSearchItemActiveClass,
       context.luckysheetCellUpdate.length,
       handleFormulaHistoryUndoRedo,
@@ -991,12 +1040,13 @@ const InputBox: React.FC = () => {
         }
         return;
       }
+      // Mac: Cmd+Z sets metaKey, not ctrlKey — without this, onChange runs
+      // handleFormulaInput(90) and corrupts DOM / history (redo + extra char).
+      if (isEditorUndoRedoKeyEvent(e)) {
+        return;
+      }
       const kcode = e.keyCode;
       if (!kcode) return;
-
-      appendFormulaHistoryFromPrimaryEditor(() =>
-        getCursorPosition(inputRef.current!)
-      );
 
       if (
         !(
@@ -1061,12 +1111,20 @@ const InputBox: React.FC = () => {
           // }
         });
       }
+      // Snapshot current editor HTML/caret after all DOM rewrites caused by
+      // this keystroke (plain text, rich text formatting, and formula tokens).
+      requestAnimationFrame(() => {
+        if (getFormulaEditorOwner(context) !== "cell") return;
+        appendEditorHistoryFromPrimaryEditor(() =>
+          getCursorPosition(inputRef.current!)
+        );
+      });
     },
     [
       refs.cellInput,
       refs.fxInput,
       setContext,
-      appendFormulaHistoryFromPrimaryEditor,
+      appendEditorHistoryFromPrimaryEditor,
     ]
   );
 

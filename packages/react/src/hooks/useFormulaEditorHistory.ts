@@ -1,19 +1,14 @@
 import { useCallback, useRef, type RefObject } from "react";
-import _ from "lodash";
+import { type Context, escapeScriptTag } from "@fileverse-dev/fortune-core";
 import {
-  type Context,
-  escapeScriptTag,
-  functionHTMLGenerate,
-  escapeHTMLTag,
-  handleFormulaInput,
-} from "@fileverse-dev/fortune-core";
-import { setCursorPosition } from "../components/SheetOverlay/helper";
+  getCursorPosition,
+  setCursorPosition,
+} from "../components/SheetOverlay/helper";
 import type { SetContextOptions } from "../context";
 
 export type FormulaHistoryEntry = {
-  text: string;
+  html: string;
   caret: number;
-  spanValues: string[];
 };
 
 /** Which editor receives caret placement and drives history snapshots. */
@@ -26,21 +21,34 @@ type SetContext = (
 
 const MAX_FORMULA_HISTORY = 100;
 
+function normalizeEditorHtmlSnapshot(html: string): string {
+  // Treat editor placeholders as "empty" so undo can clear the first char.
+  const stripped = (html ?? "").replace(/\u200B/g, "").trim();
+  if (
+    stripped === "" ||
+    stripped === "<br>" ||
+    stripped === "<div><br></div>" ||
+    stripped === "<div></div>"
+  ) {
+    return "";
+  }
+  return html ?? "";
+}
+
 /**
- * Custom undo/redo stack for formula text in the cell overlay or Fx bar.
- * Keeps both DOM editors in sync on apply; call handleFormulaInput with the
- * same argument order as each editor's onChange (cell: copy→fx, editor→cell;
- * fx: copy→cell, editor→fx).
+ * Custom undo/redo for the cell overlay and Fx bar — **one code path** for
+ * formulas (=…) and plain/rich text (same snapshot shape: text, html, spans).
  */
 export function useFormulaEditorHistory(
   primaryRef: RefObject<HTMLDivElement | null>,
   cellInputRef: RefObject<HTMLDivElement | null>,
   fxInputRef: RefObject<HTMLDivElement | null>,
-  setContext: SetContext,
+  _setContext: SetContext,
   primary: FormulaEditorHistoryPrimary
 ) {
   const preTextRef = useRef("");
-  const preFormulaSpanValuesRef = useRef<string[] | null>(null);
+  const preHtmlRef = useRef("");
+  const preCaretRef = useRef<number>(0);
   const formulaHistoryRef = useRef<{
     active: boolean;
     entries: FormulaHistoryEntry[];
@@ -50,6 +58,8 @@ export function useFormulaEditorHistory(
     entries: [],
     index: -1,
   });
+  /** Skip recording when DOM is updated by undo/redo (avoids truncating redo). */
+  const isApplyingHistoryRef = useRef(false);
 
   const resetFormulaHistory = useCallback(() => {
     formulaHistoryRef.current = {
@@ -57,37 +67,19 @@ export function useFormulaEditorHistory(
       entries: [],
       index: -1,
     };
-    preFormulaSpanValuesRef.current = null;
+    preHtmlRef.current = "";
+    preCaretRef.current = 0;
   }, []);
 
   const pushFormulaHistoryEntry = useCallback((entry: FormulaHistoryEntry) => {
     const history = formulaHistoryRef.current;
     const current = history.entries[history.index];
-
-    if (
-      current &&
-      current.spanValues.length > 0 &&
-      entry.spanValues.length > 0 &&
-      _.isEqual(current.spanValues, entry.spanValues)
-    ) {
-      return;
-    }
-
-    if (
-      current &&
-      current.spanValues.length === 0 &&
-      entry.spanValues.length === 0 &&
-      current.text === entry.text &&
-      current.caret === entry.caret
-    ) {
-      return;
-    }
+    // caret-only changes should not create new undo steps
+    if (current && current.html === entry.html) return;
 
     const nextEntries = history.entries.slice(0, history.index + 1);
     nextEntries.push(entry);
-    if (nextEntries.length > MAX_FORMULA_HISTORY) {
-      nextEntries.shift();
-    }
+    if (nextEntries.length > MAX_FORMULA_HISTORY) nextEntries.shift();
 
     history.entries = nextEntries;
     history.index = nextEntries.length - 1;
@@ -99,10 +91,10 @@ export function useFormulaEditorHistory(
       const primaryEl = primaryRef.current;
       if (!primaryEl) return;
 
-      const safeText = escapeScriptTag(entry.text || "");
-      const html = safeText.startsWith("=")
-        ? functionHTMLGenerate(safeText)
-        : escapeHTMLTag(safeText);
+      isApplyingHistoryRef.current = true;
+
+      // We store and re-apply raw `innerHTML` snapshots.
+      const html = escapeScriptTag(entry.html ?? "");
 
       const cell = cellInputRef.current;
       const fx = fxInputRef.current;
@@ -114,29 +106,19 @@ export function useFormulaEditorHistory(
         cell.innerHTML = html;
       }
 
-      setCursorPosition(primaryEl, Math.min(entry.caret, entry.text.length));
+      // UX: after undo/redo, place caret at end of restored content.
+      const textLen = primaryEl.innerText?.length ?? 0;
+      setCursorPosition(primaryEl, Math.max(0, textLen));
 
-      setContext((draftCtx) => {
-        if (primary === "cell") {
-          if (!cellInputRef.current) return;
-          handleFormulaInput(
-            draftCtx,
-            fxInputRef.current,
-            cellInputRef.current,
-            0
-          );
-        } else {
-          if (!fxInputRef.current) return;
-          handleFormulaInput(
-            draftCtx,
-            cellInputRef.current,
-            fxInputRef.current,
-            0
-          );
-        }
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            isApplyingHistoryRef.current = false;
+          }, 120);
+        });
       });
     },
-    [cellInputRef, fxInputRef, primary, primaryRef, setContext]
+    [cellInputRef, fxInputRef, primary, primaryRef]
   );
 
   const handleFormulaHistoryUndoRedo = useCallback(
@@ -145,66 +127,97 @@ export function useFormulaEditorHistory(
       if (!history.active || history.entries.length === 0) return false;
 
       const nextIndex = isRedo ? history.index + 1 : history.index - 1;
-      if (nextIndex < 0 || nextIndex >= history.entries.length) return true;
-
+      if (nextIndex < 0 || nextIndex >= history.entries.length) {
+        // Fallback: when undo reaches stack start but editor still has visible
+        // content (placeholder/timing edge cases), force one extra undo step to
+        // an empty snapshot and keep redo chain intact.
+        if (!isRedo && nextIndex < 0) {
+          const liveHtml = normalizeEditorHtmlSnapshot(
+            primaryRef.current?.innerHTML ?? ""
+          );
+          if (liveHtml !== "") {
+            history.entries[0] = { html: "", caret: 0 };
+            history.index = 0;
+            applyFormulaHistoryEntry(history.entries[0]);
+            return true;
+          }
+        }
+        return false;
+      }
       history.index = nextIndex;
-      applyFormulaHistoryEntry(history.entries[nextIndex]);
+      const entry = history.entries[nextIndex];
+      applyFormulaHistoryEntry(entry);
       return true;
     },
-    [applyFormulaHistoryEntry]
+    [applyFormulaHistoryEntry, primaryRef]
   );
 
-  /** Call at formula keydown start (after setting editor owner) — captures pre-keypress text. */
-  const capturePreFormulaState = useCallback(() => {
+  /** Call at editor keydown start (formula + plain/rich text). */
+  const capturePreEditorHistoryState = useCallback(() => {
     const el = primaryRef.current;
     if (!el) return;
     preTextRef.current = el.innerText;
-    preFormulaSpanValuesRef.current = Array.from(
-      el.querySelectorAll("span.fortune-formula-functionrange-cell")
-    ).map((node) => node.textContent ?? "");
+    preHtmlRef.current = el.innerHTML;
+    preCaretRef.current = getCursorPosition(el);
   }, [primaryRef]);
 
-  /** Call from onChange when a key event is available; mirrors InputBox formula history. */
-  const appendFormulaHistoryFromPrimaryEditor = useCallback(
+  /**
+   * Call from onChange when a key event is available.
+   * Single path: formula vs non-formula only changes span seeding and when we reset.
+   *
+   * First keystroke in an empty editor: `input` often fires before `innerText`
+   * matches the new character, so seed and "current" snapshots can be identical.
+   * Dedupe would drop the second push → only one stack entry → undo uses
+   * `index === 0`, `nextIndex === -1`, returns "handled" and preventDefault
+   * blocks native undo — the first character never disappears. After seeding,
+   * always `force` the post-edit snapshot so we get two entries even when
+   * snapshots match.
+   */
+  const appendEditorHistoryFromPrimaryEditor = useCallback(
     (getCaret: () => number) => {
+      if (isApplyingHistoryRef.current) return;
+
       const el = primaryRef.current;
       if (!el) return;
 
-      const currentText = el.innerText || "";
-      if (currentText.startsWith("=")) {
-        const caret = getCaret();
-        const spanValues = Array.from(
-          el.querySelectorAll("span.fortune-formula-functionrange-cell")
-        ).map((node) => node.textContent ?? "");
+      const preHtmlSnapshot = normalizeEditorHtmlSnapshot(
+        preHtmlRef.current ?? ""
+      );
+      const snapshotHtml = normalizeEditorHtmlSnapshot(el.innerHTML ?? "");
+      const caret = getCaret();
 
-        if (!formulaHistoryRef.current.active) {
-          const seedText = preTextRef.current || "";
-          pushFormulaHistoryEntry({
-            text: seedText,
-            caret: Math.min(caret, seedText.length),
-            spanValues:
-              preFormulaSpanValuesRef.current ?? spanValues ?? ([] as string[]),
-          });
-        }
+      const history = formulaHistoryRef.current;
+      const wasInactive = !history.active || history.entries.length === 0;
+
+      if (wasInactive) {
+        // Seed with the captured pre-state, then push the post-state.
+        // If pre and post match (can happen on the first character due to
+        // editor placeholder/DOM timing), force a truly empty seed so undo
+        // can clear the first character.
+        const seedHtml =
+          preHtmlSnapshot === snapshotHtml ? "" : preHtmlSnapshot ?? "";
         pushFormulaHistoryEntry({
-          text: currentText,
-          caret,
-          spanValues,
+          html: seedHtml,
+          caret: preCaretRef.current,
         });
-      } else if (formulaHistoryRef.current.active) {
-        resetFormulaHistory();
       }
+
+      pushFormulaHistoryEntry({
+        html: snapshotHtml,
+        caret,
+      });
     },
-    [primaryRef, pushFormulaHistoryEntry, resetFormulaHistory]
+    [primaryRef, pushFormulaHistoryEntry]
   );
 
   return {
     formulaHistoryRef,
     preTextRef,
-    preFormulaSpanValuesRef,
     resetFormulaHistory,
     handleFormulaHistoryUndoRedo,
-    capturePreFormulaState,
-    appendFormulaHistoryFromPrimaryEditor,
+    capturePreEditorHistoryState,
+    appendEditorHistoryFromPrimaryEditor,
+    capturePreFormulaState: capturePreEditorHistoryState,
+    appendFormulaHistoryFromPrimaryEditor: appendEditorHistoryFromPrimaryEditor,
   };
 }

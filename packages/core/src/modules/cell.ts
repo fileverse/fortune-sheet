@@ -804,6 +804,7 @@ export function cancelNormalSelected(ctx: Context) {
   ctx.formulaCache.rangedrag_column_start = false;
   ctx.formulaCache.rangedrag_row_start = false;
   ctx.formulaCache.rangeSelectionActive = null;
+  ctx.formulaCache.keyboardRangeSelectionLock = false;
   ctx.formulaCache.formulaEditorOwner = null;
 }
 

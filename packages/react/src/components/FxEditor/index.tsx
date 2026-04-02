@@ -798,6 +798,17 @@ const FxEditor: React.FC = () => {
       if (editor) {
         setContext((draftCtx) => {
           if (!isAllowEdit(draftCtx, draftCtx.luckysheet_select_save)) return;
+          if (getFormulaEditorOwner(draftCtx) !== "fx") return;
+          if (
+            draftCtx.formulaCache.rangestart ||
+            draftCtx.formulaCache.rangedrag_column_start ||
+            draftCtx.formulaCache.rangedrag_row_start
+          ) {
+            rangeHightlightselected(draftCtx, editor!);
+            return;
+          }
+          draftCtx.formulaCache.selectingRangeIndex = -1;
+          createRangeHightlight(draftCtx, editor!.innerHTML);
           rangeHightlightselected(draftCtx, editor!);
         });
       }
@@ -850,9 +861,33 @@ const FxEditor: React.FC = () => {
     setContext,
   ]);
 
+  const refreshFxFormulaRangeHighlights = useCallback(() => {
+    const el = refs.fxInput.current;
+    if (!el) return;
+    setContext((draftCtx) => {
+      if (draftCtx.luckysheetCellUpdate.length === 0) return;
+      if (getFormulaEditorOwner(draftCtx) !== "fx") return;
+      if (!isAllowEdit(draftCtx, draftCtx.luckysheet_select_save)) return;
+      const t = el.innerText?.trim() ?? "";
+      if (!t.startsWith("=")) return;
+      if (
+        draftCtx.formulaCache.rangestart ||
+        draftCtx.formulaCache.rangedrag_column_start ||
+        draftCtx.formulaCache.rangedrag_row_start
+      ) {
+        rangeHightlightselected(draftCtx, el);
+        return;
+      }
+      draftCtx.formulaCache.selectingRangeIndex = -1;
+      createRangeHightlight(draftCtx, el.innerHTML);
+      rangeHightlightselected(draftCtx, el);
+    });
+  }, [refs.fxInput, setContext]);
+
   useRerenderOnFormulaCaret(
     refs.fxInput,
-    context.luckysheetCellUpdate.length > 0
+    context.luckysheetCellUpdate.length > 0,
+    refreshFxFormulaRangeHighlights
   );
 
   // Helper function to extract function name from input text

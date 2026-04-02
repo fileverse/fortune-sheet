@@ -66,6 +66,22 @@ import {
 import { isFormulaSegmentBoundaryKey } from "./formula-segment-boundary";
 import { LucideIcon } from "./LucideIcon";
 
+/** Extra right padding when content (+ this) is wider than the cell (see .luckysheet-input-box-inner base horizontal padding 2px). */
+const CELL_EDIT_INPUT_EXTRA_RIGHT_PX = 10;
+
+function measureCellEditorContentWidth(el: HTMLElement | null): number {
+  if (!el) return 0;
+  try {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const w = range.getBoundingClientRect().width;
+    range.detach?.();
+    return w;
+  } catch {
+    return el.scrollWidth;
+  }
+}
+
 const InputBox: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
   const inputRef = useRef<HTMLDivElement>(null);
@@ -93,6 +109,10 @@ const InputBox: React.FC = () => {
   const hideFormulaHintLocal = localStorage.getItem("formulaMore") === "true";
   const [showFormulaHint, setShowFormulaHint] = useState(!hideFormulaHintLocal);
   const [showSearchHint, setShowSearchHint] = useState(false);
+  /** Bumped on editor input so layout can re-check content vs cell width. */
+  const [editorLayoutTick, setEditorLayoutTick] = useState(0);
+  /** When true, add CELL_EDIT_INPUT_EXTRA_RIGHT_PX to the right padding (only if content+extra exceeds cell width). */
+  const [cellEditorExtendRight, setCellEditorExtendRight] = useState(false);
   const row_index = firstSelection?.row_focus!;
   const col_index = firstSelection?.column_focus!;
   const isComposingRef = useRef(false);
@@ -1186,6 +1206,30 @@ const InputBox: React.FC = () => {
     context.allowEdit === true
   );
 
+  /** Padding on `.luckysheet-input-box-inner` is outside the contenteditable; forward clicks into the editor. */
+  const onInputBoxInnerMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!edit || isHidenRC || context.luckysheetCellUpdate.length === 0) {
+        return;
+      }
+      const editor = refs.cellInput.current;
+      if (!editor) return;
+      if (editor.contains(e.target as Node)) return;
+      e.preventDefault();
+      moveCursorToEnd(editor);
+      setContext((draftCtx) => {
+        setFormulaEditorOwner(draftCtx, "cell");
+      });
+    },
+    [
+      edit,
+      isHidenRC,
+      context.luckysheetCellUpdate.length,
+      refs.cellInput,
+      setContext,
+    ]
+  );
+
   // Calculate input box position relative to viewport (screen) instead of canvas
   const getInputBoxPosition = useCallback(() => {
     if (!firstSelection || context.rangeDialog?.show) {
@@ -1374,6 +1418,33 @@ const InputBox: React.FC = () => {
     context.luckysheetCellUpdate,
   ]);
 
+  useLayoutEffect(() => {
+    if (context.luckysheetCellUpdate.length === 0) {
+      setCellEditorExtendRight(false);
+      return;
+    }
+    const baseSel =
+      isInputBoxActive && firstSelectionActiveCell
+        ? firstSelectionActiveCell
+        : firstSelection;
+    const cellW = baseSel?.width;
+    if (cellW == null || !inputRef.current) {
+      setCellEditorExtendRight(false);
+      return;
+    }
+    const contentW = measureCellEditorContentWidth(inputRef.current);
+    setCellEditorExtendRight(
+      contentW + CELL_EDIT_INPUT_EXTRA_RIGHT_PX > cellW
+    );
+  }, [
+    editorLayoutTick,
+    context.luckysheetCellUpdate.length,
+    isInputBoxActive,
+    firstSelectionActiveCell,
+    firstSelection,
+    context.zoomRatio,
+  ]);
+
   const wraperGetCell = () => {
     const cell = getCellAddress();
     if (activeRefCell !== cell) {
@@ -1382,7 +1453,34 @@ const InputBox: React.FC = () => {
     return activeCell || cell;
   };
 
-  useRerenderOnFormulaCaret(inputRef, context.luckysheetCellUpdate.length > 0);
+  const refreshCellFormulaRangeHighlights = useCallback(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    setContext((draftCtx) => {
+      if (draftCtx.luckysheetCellUpdate.length === 0) return;
+      if (getFormulaEditorOwner(draftCtx) !== "cell") return;
+      if (!isAllowEdit(draftCtx, draftCtx.luckysheet_select_save)) return;
+      const t = el.innerText?.trim() ?? "";
+      if (!t.startsWith("=")) return;
+      if (
+        draftCtx.formulaCache.rangestart ||
+        draftCtx.formulaCache.rangedrag_column_start ||
+        draftCtx.formulaCache.rangedrag_row_start
+      ) {
+        rangeHightlightselected(draftCtx, el);
+        return;
+      }
+      draftCtx.formulaCache.selectingRangeIndex = -1;
+      createRangeHightlight(draftCtx, el.innerHTML);
+      rangeHightlightselected(draftCtx, el);
+    });
+  }, [setContext]);
+
+  useRerenderOnFormulaCaret(
+    inputRef,
+    context.luckysheetCellUpdate.length > 0,
+    refreshCellFormulaRangeHighlights
+  );
 
   // Helper function to extract function name from input text
   const getFunctionNameFromInput = useCallback(() => {
@@ -1447,6 +1545,7 @@ const InputBox: React.FC = () => {
       <div
         ref={inputBoxInnerRef}
         className="luckysheet-input-box-inner"
+        onMouseDown={onInputBoxInnerMouseDown}
         style={
           inputBoxBaseSelection
             ? {
@@ -1454,6 +1553,9 @@ const InputBox: React.FC = () => {
                 minWidth: inputBoxBaseSelection.width,
                 minHeight: inputBoxBaseSelection.height,
                 ...inputBoxStyle,
+                ...(cellEditorExtendRight
+                  ? { paddingRight: 2 + CELL_EDIT_INPUT_EXTRA_RIGHT_PX }
+                  : {}),
               }
             : { position: "relative" }
         }
@@ -1472,6 +1574,7 @@ const InputBox: React.FC = () => {
             }
             ensureNotEmpty();
             isComposingRef.current = false;
+            setEditorLayoutTick((t) => t + 1);
           }}
           onMouseUp={() => {
             handleHideShowHint();

@@ -330,7 +330,7 @@
   max-height: 9900px;
   max-width: 9900px;
   border: 2px #efc703 solid;
-  padding: 0 2px;
+  padding: 2px 2px;
   margin: 0;
   resize: none;
   overflow: hidden;
@@ -361,6 +361,14 @@
 
 .luckysheet-formula-text-string {
   color: forestgreen;
+}
+
+.luckysheet-formula-text-calc,
+.luckysheet-formula-text-lpar,
+.luckysheet-formula-text-comma,
+.luckysheet-formula-text-rpar {
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
 .luckysheet-cell-flow {

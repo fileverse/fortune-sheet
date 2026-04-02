@@ -2,6 +2,8 @@ import { useCallback, useRef, type RefObject } from "react";
 import { type Context, escapeScriptTag } from "@fileverse-dev/fortune-core";
 import {
   getCursorPosition,
+  getSelectionOffsets,
+  setSelectionOffsets,
   setCursorPosition,
 } from "../components/SheetOverlay/helper";
 import type { SetContextOptions } from "../context";
@@ -35,6 +37,15 @@ function normalizeEditorHtmlSnapshot(html: string): string {
   return html ?? "";
 }
 
+function historyForLog(entries: FormulaHistoryEntry[], index: number) {
+  return entries.map((e, i) => ({
+    i,
+    active: i === index,
+    len: (e.html ?? "").length,
+    preview: (e.html ?? "").replace(/\s+/g, " ").slice(0, 24),
+  }));
+}
+
 /**
  * Custom undo/redo for the cell overlay and Fx bar — **one code path** for
  * formulas (=…) and plain/rich text (same snapshot shape: text, html, spans).
@@ -49,6 +60,7 @@ export function useFormulaEditorHistory(
   const preTextRef = useRef("");
   const preHtmlRef = useRef("");
   const preCaretRef = useRef<number>(0);
+  const startedFromEmptyRef = useRef<boolean>(true);
   const formulaHistoryRef = useRef<{
     active: boolean;
     entries: FormulaHistoryEntry[];
@@ -69,13 +81,21 @@ export function useFormulaEditorHistory(
     };
     preHtmlRef.current = "";
     preCaretRef.current = 0;
+    startedFromEmptyRef.current = true;
   }, []);
 
   const pushFormulaHistoryEntry = useCallback((entry: FormulaHistoryEntry) => {
     const history = formulaHistoryRef.current;
     const current = history.entries[history.index];
     // caret-only changes should not create new undo steps
-    if (current && current.html === entry.html) return;
+    if (current && current.html === entry.html) {
+      console.log("[Hist:pushSkipDuplicate]", {
+        currentHtmlLen: current.html.length,
+        entryHtmlLen: entry.html.length,
+        index: history.index,
+      });
+      return;
+    }
 
     const nextEntries = history.entries.slice(0, history.index + 1);
     nextEntries.push(entry);
@@ -84,10 +104,17 @@ export function useFormulaEditorHistory(
     history.entries = nextEntries;
     history.index = nextEntries.length - 1;
     history.active = true;
+    console.log("[Hist:push]", {
+      htmlLen: entry.html.length,
+      caret: entry.caret,
+      entriesLen: history.entries.length,
+      index: history.index,
+      entries: historyForLog(history.entries, history.index),
+    });
   }, []);
 
   const applyFormulaHistoryEntry = useCallback(
-    (entry: FormulaHistoryEntry) => {
+    (entry: FormulaHistoryEntry, preserveSelection?: { start: number; end: number }) => {
       const primaryEl = primaryRef.current;
       if (!primaryEl) return;
 
@@ -106,9 +133,24 @@ export function useFormulaEditorHistory(
         cell.innerHTML = html;
       }
 
-      // UX: after undo/redo, place caret at end of restored content.
       const textLen = primaryEl.innerText?.length ?? 0;
-      setCursorPosition(primaryEl, Math.max(0, textLen));
+      if (
+        preserveSelection &&
+        preserveSelection.end > preserveSelection.start &&
+        textLen > 0
+      ) {
+        const start = Math.max(0, Math.min(preserveSelection.start, textLen));
+        const end = Math.max(start, Math.min(preserveSelection.end, textLen));
+        setSelectionOffsets(primaryEl, start, end);
+      } else {
+        // Default UX: place caret at end.
+        setCursorPosition(primaryEl, Math.max(0, textLen));
+      }
+      console.log("[Hist:apply]", {
+        entryHtmlLen: (entry.html ?? "").length,
+        afterHtmlLen: (primaryEl.innerHTML ?? "").length,
+        afterTextLen: textLen,
+      });
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -128,17 +170,33 @@ export function useFormulaEditorHistory(
 
       const nextIndex = isRedo ? history.index + 1 : history.index - 1;
       if (nextIndex < 0 || nextIndex >= history.entries.length) {
-        // Fallback: when undo reaches stack start but editor still has visible
-        // content (placeholder/timing edge cases), force one extra undo step to
-        // an empty snapshot and keep redo chain intact.
-        if (!isRedo && nextIndex < 0) {
+        console.log("[Hist:undoRedoBoundary]", {
+          isRedo,
+          index: history.index,
+          entriesLen: history.entries.length,
+          nextIndex,
+          startedFromEmpty: startedFromEmptyRef.current,
+          liveHtmlLen: normalizeEditorHtmlSnapshot(
+            primaryRef.current?.innerHTML ?? ""
+          ).length,
+          entries: historyForLog(history.entries, history.index),
+        });
+        if (!isRedo && nextIndex < 0 && startedFromEmptyRef.current) {
           const liveHtml = normalizeEditorHtmlSnapshot(
             primaryRef.current?.innerHTML ?? ""
           );
           if (liveHtml !== "") {
             history.entries[0] = { html: "", caret: 0 };
             history.index = 0;
-            applyFormulaHistoryEntry(history.entries[0]);
+            const currentSelection = primaryRef.current
+              ? getSelectionOffsets(primaryRef.current)
+              : undefined;
+            applyFormulaHistoryEntry(history.entries[0], currentSelection);
+            console.log("[Hist:undoRedoForcedEmpty]", {
+              entriesLen: history.entries.length,
+              index: history.index,
+              entries: historyForLog(history.entries, history.index),
+            });
             return true;
           }
         }
@@ -146,7 +204,17 @@ export function useFormulaEditorHistory(
       }
       history.index = nextIndex;
       const entry = history.entries[nextIndex];
-      applyFormulaHistoryEntry(entry);
+      const currentSelection = primaryRef.current
+        ? getSelectionOffsets(primaryRef.current)
+        : undefined;
+      applyFormulaHistoryEntry(entry, currentSelection);
+      console.log("[Hist:undoRedoApplied]", {
+        isRedo,
+        nextIndex,
+        entriesLen: history.entries.length,
+        entryHtmlLen: entry.html.length,
+        entries: historyForLog(history.entries, history.index),
+      });
       return true;
     },
     [applyFormulaHistoryEntry, primaryRef]
@@ -159,6 +227,19 @@ export function useFormulaEditorHistory(
     preTextRef.current = el.innerText;
     preHtmlRef.current = el.innerHTML;
     preCaretRef.current = getCursorPosition(el);
+    if (!formulaHistoryRef.current.active) {
+      startedFromEmptyRef.current =
+        normalizeEditorHtmlSnapshot(preHtmlRef.current ?? "") === "";
+    }
+    console.log("[Hist:capturePre]", {
+      preHtmlLen: (preHtmlRef.current ?? "").length,
+      preTextLen: (preTextRef.current ?? "").length,
+      preCaret: preCaretRef.current,
+      startedFromEmpty: startedFromEmptyRef.current,
+      historyActive: formulaHistoryRef.current.active,
+      entriesLen: formulaHistoryRef.current.entries.length,
+      index: formulaHistoryRef.current.index,
+    });
   }, [primaryRef]);
 
   /**
@@ -188,8 +269,19 @@ export function useFormulaEditorHistory(
 
       const history = formulaHistoryRef.current;
       const wasInactive = !history.active || history.entries.length === 0;
+      console.log("[Hist:appendStart]", {
+        preHtmlLen: preHtmlSnapshot.length,
+        currentHtmlLen: snapshotHtml.length,
+        caret,
+        wasInactive,
+        historyActive: history.active,
+        entriesLen: history.entries.length,
+        index: history.index,
+        entries: historyForLog(history.entries, history.index),
+      });
 
       if (wasInactive) {
+        startedFromEmptyRef.current = preHtmlSnapshot === "";
         // Seed with the captured pre-state, then push the post-state.
         // If pre and post match (can happen on the first character due to
         // editor placeholder/DOM timing), force a truly empty seed so undo
@@ -199,6 +291,12 @@ export function useFormulaEditorHistory(
         pushFormulaHistoryEntry({
           html: seedHtml,
           caret: preCaretRef.current,
+        });
+      } else {
+        console.log("[Hist:seedSkippedAlreadyActive]", {
+          index: history.index,
+          entriesLen: history.entries.length,
+          entries: historyForLog(history.entries, history.index),
         });
       }
 

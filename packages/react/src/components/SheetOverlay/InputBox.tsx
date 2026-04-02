@@ -642,6 +642,27 @@ const InputBox: React.FC = () => {
       if (!isEditorUndoRedoKeyEvent(e.nativeEvent)) {
         capturePreEditorHistoryState();
       }
+      const isPotentialContentKey =
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        (e.key.length === 1 ||
+          e.key === "Backspace" ||
+          e.key === "Delete" ||
+          e.key === "Enter" ||
+          e.key === "Tab");
+      if (isPotentialContentKey) {
+        // Some first-character paths can miss contenteditable onChange/onInput.
+        // Snapshot from keydown as a fallback; duplicate HTML is ignored in hook.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (getFormulaEditorOwner(context) !== "cell") return;
+            appendEditorHistoryFromPrimaryEditor(() =>
+              getCursorPosition(inputRef.current!)
+            );
+          });
+        });
+      }
       const currentInputText = inputRef.current?.innerText?.trim() || "";
 
       if (

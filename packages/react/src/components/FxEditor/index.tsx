@@ -406,6 +406,25 @@ const FxEditor: React.FC = () => {
       if (!isEditorUndoRedoKeyEvent(e.nativeEvent)) {
         capturePreEditorHistoryState();
       }
+      const isPotentialContentKey =
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        (e.key.length === 1 ||
+          e.key === "Backspace" ||
+          e.key === "Delete" ||
+          e.key === "Enter" ||
+          e.key === "Tab");
+      if (isPotentialContentKey) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (getFormulaEditorOwner(context) !== "fx") return;
+            appendEditorHistoryFromPrimaryEditor(() =>
+              getCursorPosition(refs.fxInput.current!)
+            );
+          });
+        });
+      }
       recentText.current = refs.fxInput.current!.innerText;
       const { key } = e;
       const currentInputText = refs.fxInput.current?.innerText?.trim() || "";

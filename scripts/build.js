@@ -3,44 +3,19 @@ const { spawnSync } = require("child_process");
 
 const tsconfig = JSON.parse(fs.readFileSync("tsconfig.json"));
 
-const commonTsconfig = {
-  ...tsconfig,
-  include: ["./src"],
-  exclude: [
+delete tsconfig.compilerOptions.paths;
+tsconfig.include = ["./src"];
+tsconfig.exclude = [
   "node_modules",
   "**/*.test.ts",
   "**/*.spec.ts",
   "dist",
   "lib",
-  ],
-};
+];
 
-const coreTsconfig = {
-  ...commonTsconfig,
-  compilerOptions: {
-    ...commonTsconfig.compilerOptions,
-    baseUrl: "./",
-    paths: {
-      "@fileverse-dev/fortune-core": ["src"],
-    },
-  },
-};
-
-const reactTsconfig = {
-  ...commonTsconfig,
-  compilerOptions: {
-    ...commonTsconfig.compilerOptions,
-    baseUrl: "./",
-    rootDir: "..",
-    paths: {
-      "@fileverse-dev/fortune-core": ["../core/src"],
-      "@fortune-sheet/react": ["src"],
-    },
-  },
-};
-
-fs.writeFileSync("packages/core/tsconfig.json", JSON.stringify(coreTsconfig));
-fs.writeFileSync("packages/react/tsconfig.json", JSON.stringify(reactTsconfig));
+const tsconfigJson = JSON.stringify(tsconfig);
+fs.writeFileSync("packages/core/tsconfig.json", tsconfigJson);
+fs.writeFileSync("packages/react/tsconfig.json", tsconfigJson);
 
 spawnSync("father-build", { stdio: "inherit" });
 

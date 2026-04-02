@@ -114,7 +114,10 @@ export function useFormulaEditorHistory(
   }, []);
 
   const applyFormulaHistoryEntry = useCallback(
-    (entry: FormulaHistoryEntry, preserveSelection?: { start: number; end: number }) => {
+    (
+      entry: FormulaHistoryEntry,
+      preserveSelection?: { start: number; end: number }
+    ) => {
       const primaryEl = primaryRef.current;
       if (!primaryEl) return;
 

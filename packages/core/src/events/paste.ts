@@ -84,7 +84,6 @@ export function adjustFormulaForPaste(
       // cellRef = only group 1 when it's a cell reference (undefined for quoted strings)
 
       if (!cellRef) return m; // Inside quotes → DO NOT modify
-      if (cellRef.startsWith("$")) return m; // Absolute column → DO NOT modify
 
       // Now process your cell reference normally:
       return cellRef.replace(

@@ -93,6 +93,37 @@ const emitCellRangeToYdoc = (
   if (changes.length > 0) ctx.hooks.updateCellYdoc(changes);
 };
 
+const rewriteFormulasByScanningSheet = (
+  sheet: Sheet,
+  calcChain: any[] | null | undefined,
+  mode: "add" | "del",
+  rc: "row" | "col",
+  orient: "lefttop" | "rightbottom" | null,
+  stindex: number,
+  step: number
+) => {
+  const sheetData = sheet.data;
+  if (!sheetData) return;
+
+  const calcChainSet = new Set<string>();
+  (calcChain || []).forEach((item: any) => {
+    if (item && Number.isFinite(item.r) && Number.isFinite(item.c)) {
+      calcChainSet.add(`${item.r}_${item.c}`);
+    }
+  });
+
+  for (let r = 0; r < sheetData.length; r += 1) {
+    const row = sheetData[r];
+    if (!row) continue;
+    for (let c = 0; c < row.length; c += 1) {
+      const cell = row[c] as any;
+      if (!cell?.f) continue;
+      if (calcChainSet.has(`${r}_${c}`)) continue;
+      cell.f = `=${functionStrChange(cell.f, mode, rc, orient, stindex, step)}`;
+    }
+  }
+};
+
 /**
  * 增加行列
  * @param {string} type 行或列 ['row', 'column'] 之一
@@ -330,6 +361,15 @@ export function insertRowCol(
         }
       }
     }
+    rewriteFormulasByScanningSheet(
+      ctx.luckysheetfile[SheetIndex],
+      calcChain,
+      "add",
+      type === "row" ? "row" : "col",
+      direction,
+      index,
+      count
+    );
   }
 
   // 筛选配置变动
@@ -1503,6 +1543,15 @@ export function deleteRowCol(
         }
       }
     }
+    rewriteFormulasByScanningSheet(
+      ctx.luckysheetfile[SheetIndex],
+      calcChain,
+      "del",
+      type === "row" ? "row" : "col",
+      null,
+      start,
+      slen
+    );
   }
 
   // 筛选配置变动

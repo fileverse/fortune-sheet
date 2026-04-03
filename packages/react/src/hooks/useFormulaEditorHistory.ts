@@ -37,15 +37,6 @@ function normalizeEditorHtmlSnapshot(html: string): string {
   return html ?? "";
 }
 
-function historyForLog(entries: FormulaHistoryEntry[], index: number) {
-  return entries.map((e, i) => ({
-    i,
-    active: i === index,
-    len: (e.html ?? "").length,
-    preview: (e.html ?? "").replace(/\s+/g, " ").slice(0, 24),
-  }));
-}
-
 /**
  * Custom undo/redo for the cell overlay and Fx bar — **one code path** for
  * formulas (=…) and plain/rich text (same snapshot shape: text, html, spans).
@@ -89,11 +80,6 @@ export function useFormulaEditorHistory(
     const current = history.entries[history.index];
     // caret-only changes should not create new undo steps
     if (current && current.html === entry.html) {
-      console.log("[Hist:pushSkipDuplicate]", {
-        currentHtmlLen: current.html.length,
-        entryHtmlLen: entry.html.length,
-        index: history.index,
-      });
       return;
     }
 
@@ -104,13 +90,6 @@ export function useFormulaEditorHistory(
     history.entries = nextEntries;
     history.index = nextEntries.length - 1;
     history.active = true;
-    console.log("[Hist:push]", {
-      htmlLen: entry.html.length,
-      caret: entry.caret,
-      entriesLen: history.entries.length,
-      index: history.index,
-      entries: historyForLog(history.entries, history.index),
-    });
   }, []);
 
   const applyFormulaHistoryEntry = useCallback(
@@ -149,11 +128,6 @@ export function useFormulaEditorHistory(
         // Default UX: place caret at end.
         setCursorPosition(primaryEl, Math.max(0, textLen));
       }
-      console.log("[Hist:apply]", {
-        entryHtmlLen: (entry.html ?? "").length,
-        afterHtmlLen: (primaryEl.innerHTML ?? "").length,
-        afterTextLen: textLen,
-      });
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -173,17 +147,6 @@ export function useFormulaEditorHistory(
 
       const nextIndex = isRedo ? history.index + 1 : history.index - 1;
       if (nextIndex < 0 || nextIndex >= history.entries.length) {
-        console.log("[Hist:undoRedoBoundary]", {
-          isRedo,
-          index: history.index,
-          entriesLen: history.entries.length,
-          nextIndex,
-          startedFromEmpty: startedFromEmptyRef.current,
-          liveHtmlLen: normalizeEditorHtmlSnapshot(
-            primaryRef.current?.innerHTML ?? ""
-          ).length,
-          entries: historyForLog(history.entries, history.index),
-        });
         if (!isRedo && nextIndex < 0 && startedFromEmptyRef.current) {
           const liveHtml = normalizeEditorHtmlSnapshot(
             primaryRef.current?.innerHTML ?? ""
@@ -195,11 +158,6 @@ export function useFormulaEditorHistory(
               ? getSelectionOffsets(primaryRef.current)
               : undefined;
             applyFormulaHistoryEntry(history.entries[0], currentSelection);
-            console.log("[Hist:undoRedoForcedEmpty]", {
-              entriesLen: history.entries.length,
-              index: history.index,
-              entries: historyForLog(history.entries, history.index),
-            });
             return true;
           }
         }
@@ -211,13 +169,6 @@ export function useFormulaEditorHistory(
         ? getSelectionOffsets(primaryRef.current)
         : undefined;
       applyFormulaHistoryEntry(entry, currentSelection);
-      console.log("[Hist:undoRedoApplied]", {
-        isRedo,
-        nextIndex,
-        entriesLen: history.entries.length,
-        entryHtmlLen: entry.html.length,
-        entries: historyForLog(history.entries, history.index),
-      });
       return true;
     },
     [applyFormulaHistoryEntry, primaryRef]
@@ -234,15 +185,6 @@ export function useFormulaEditorHistory(
       startedFromEmptyRef.current =
         normalizeEditorHtmlSnapshot(preHtmlRef.current ?? "") === "";
     }
-    console.log("[Hist:capturePre]", {
-      preHtmlLen: (preHtmlRef.current ?? "").length,
-      preTextLen: (preTextRef.current ?? "").length,
-      preCaret: preCaretRef.current,
-      startedFromEmpty: startedFromEmptyRef.current,
-      historyActive: formulaHistoryRef.current.active,
-      entriesLen: formulaHistoryRef.current.entries.length,
-      index: formulaHistoryRef.current.index,
-    });
   }, [primaryRef]);
 
   /**
@@ -272,16 +214,6 @@ export function useFormulaEditorHistory(
 
       const history = formulaHistoryRef.current;
       const wasInactive = !history.active || history.entries.length === 0;
-      console.log("[Hist:appendStart]", {
-        preHtmlLen: preHtmlSnapshot.length,
-        currentHtmlLen: snapshotHtml.length,
-        caret,
-        wasInactive,
-        historyActive: history.active,
-        entriesLen: history.entries.length,
-        index: history.index,
-        entries: historyForLog(history.entries, history.index),
-      });
 
       if (wasInactive) {
         startedFromEmptyRef.current = preHtmlSnapshot === "";
@@ -294,12 +226,6 @@ export function useFormulaEditorHistory(
         pushFormulaHistoryEntry({
           html: seedHtml,
           caret: preCaretRef.current,
-        });
-      } else {
-        console.log("[Hist:seedSkippedAlreadyActive]", {
-          index: history.index,
-          entriesLen: history.entries.length,
-          entries: historyForLog(history.entries, history.index),
         });
       }
 

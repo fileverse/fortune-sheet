@@ -1433,9 +1433,7 @@ const InputBox: React.FC = () => {
       return;
     }
     const contentW = measureCellEditorContentWidth(inputRef.current);
-    setCellEditorExtendRight(
-      contentW + CELL_EDIT_INPUT_EXTRA_RIGHT_PX > cellW
-    );
+    setCellEditorExtendRight(contentW + CELL_EDIT_INPUT_EXTRA_RIGHT_PX > cellW);
   }, [
     editorLayoutTick,
     context.luckysheetCellUpdate.length,
@@ -1601,6 +1599,13 @@ const InputBox: React.FC = () => {
 
               if (clickedInsideManagedRange || !atValidInsertionPoint) {
                 markRangeSelectionDirty(draftCtx);
+                // markRangeSelectionDirty clears overlays; rebuild so caret clicks
+                // do not leave highlights blank until a second click (mouseup runs
+                // after selectionchange and was wiping a just-refreshed highlight).
+                if (editor.innerText?.trim().startsWith("=")) {
+                  createRangeHightlight(draftCtx, editor.innerHTML);
+                  rangeHightlightselected(draftCtx, editor);
+                }
               }
             });
           }}

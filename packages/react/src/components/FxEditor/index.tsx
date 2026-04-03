@@ -1024,6 +1024,10 @@ const FxEditor: React.FC = () => {
 
                 if (clickedInsideManagedRange || !atValidInsertionPoint) {
                   markRangeSelectionDirty(draftCtx);
+                  if (editor.innerText?.trim().startsWith("=")) {
+                    createRangeHightlight(draftCtx, editor.innerHTML);
+                    rangeHightlightselected(draftCtx, editor);
+                  }
                 }
               });
             }}

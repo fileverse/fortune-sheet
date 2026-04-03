@@ -145,12 +145,6 @@
   margin: 0px 0 0 0px;
 }
 
-.fortune-selection-copy .fortune-copy {
-  position: absolute;
-  z-index: 18;
-  background-color: transparent;
-}
-
 .fortune-selection-copy-hc {
   position: absolute;
   top: 0;
@@ -655,50 +649,6 @@
   cursor: se-resize;
 }
 
-.fortune-selection-copy-top {
-  left: 0;
-  right: 0;
-  height: 2px;
-  top: 0;
-  background-position: bottom;
-  /* background-image: url("EwaAntH.gif"); */
-}
-
-.fortune-selection-copy-right {
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  right: 0;
-  /* background-image: url("EwaAntV.gif"); */
-}
-
-.fortune-selection-copy-bottom {
-  left: 0;
-  right: 0;
-  height: 2px;
-  bottom: 0;
-  /* background-image: url("EwaAntH.gif"); */
-}
-
-.fortune-selection-copy-left {
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  left: 0;
-  background-position: right;
-  /* background-image: url("EwaAntV.gif"); */
-}
-
-.fortune-selection-copy-hc {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  border: 2px dashed #12a5ff;
-  z-index: 8;
-}
-
 .luckysheet-modal-dialog-resize {
   position: absolute;
   border: 2px solid #0188fb;
@@ -773,39 +723,8 @@
   cursor: se-resize;
 }
 
-.fortune-formula-functionrange-highlight .fortune-copy {
-  background-image: none;
-  background: #0188fb;
-  position: absolute;
-  z-index: 18;
+.fortune-formula-functionrange-highlight {
   cursor: move;
-  opacity: 0.9;
-  box-sizing: content-box;
-  /*border: 1px solid #fff;*/
-}
-
-.fortune-formula-functionrange-highlight .fortune-selection-copy-top {
-  top: -2px;
-  border-top: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-}
-
-.fortune-formula-functionrange-highlight .fortune-selection-copy-right {
-  right: -2px;
-  border-left: 2px solid #fff;
-  border-right: 2px solid #fff;
-}
-
-.fortune-formula-functionrange-highlight .fortune-selection-copy-bottom {
-  bottom: -2px;
-  border-top: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-}
-
-.fortune-formula-functionrange-highlight .fortune-selection-copy-left {
-  left: -2px;
-  border-left: 2px solid #fff;
-  border-right: 2px solid #fff;
 }
 
 .fortune-formula-functionrange-highlight .fortune-selection-copy-hc {

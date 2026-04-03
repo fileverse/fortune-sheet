@@ -42,7 +42,20 @@ export function getCellRowColumn(
 export function getCellHyperlink(ctx: Context, r: number, c: number) {
   const sheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
   if (sheetIndex != null) {
-    return ctx.luckysheetfile[sheetIndex].hyperlink?.[`${r}_${c}`];
+    const cellLink = ctx.luckysheetfile[sheetIndex].hyperlink?.[`${r}_${c}`];
+    if (cellLink) return cellLink;
+
+    // Fall back to the first inline segment link (ct.s[i].link)
+    const cell = getFlowdata(ctx)?.[r]?.[c];
+    if (cell?.ct?.t === "inlineStr" && Array.isArray(cell.ct.s)) {
+      const seg = (cell.ct.s as any[]).find((s) => s.link?.linkAddress);
+      if (seg) {
+        return {
+          linkType: seg.link.linkType as string,
+          linkAddress: seg.link.linkAddress as string,
+        };
+      }
+    }
   }
   return undefined;
 }
@@ -253,9 +266,8 @@ export function goToLink(
 ) {
   const currSheetIndex = getSheetIndex(ctx, ctx.currentSheetId);
   if (currSheetIndex == null) return;
-  if (ctx.luckysheetfile[currSheetIndex].hyperlink?.[`${r}_${c}`] == null) {
-    return;
-  }
+  const link = getCellHyperlink(ctx, r, c);
+  if (link == null) return;
   if (linkType === "webpage") {
     if (!/^http[s]?:\/\//.test(linkAddress)) {
       linkAddress = `https://${linkAddress}`;

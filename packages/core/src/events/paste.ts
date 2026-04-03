@@ -84,7 +84,6 @@ export function adjustFormulaForPaste(
       // cellRef = only group 1 when it's a cell reference (undefined for quoted strings)
 
       if (!cellRef) return m; // Inside quotes → DO NOT modify
-      if (cellRef.startsWith("$")) return m; // Absolute column → DO NOT modify
 
       // Now process your cell reference normally:
       return cellRef.replace(
@@ -612,16 +611,31 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
     // }
   } else {
     data = data.replace(/\r/g, "");
-    const dataChe = [];
-    const che = data.split("\n");
-    const colchelen = che[0].split("\t").length;
+    const dataChe: any[][] = [];
 
-    for (let i = 0; i < che.length; i += 1) {
-      if (che[i].split("\t").length < colchelen) {
-        continue;
+    // Detect a CSV-quoted single-cell multiline value written by fortune-sheet's
+    // clipboard writer: `"line1\nline2"`.  The quotes were added solely to make
+    // Excel treat the newlines as in-cell line breaks; they must NOT cause the
+    // value to be split across rows or show literal " characters.
+    // Only treat as a single quoted value when the content contains \n (the
+    // wrapping reason) and has no \t (which would indicate multi-column data).
+    if (data.startsWith('"') && data.endsWith('"') && data.length > 1) {
+      const inner = data.slice(1, -1);
+      if (inner.includes("\n") && !inner.includes("\t")) {
+        dataChe.push([inner.replace(/""/g, '"')]);
       }
+    }
 
-      dataChe.push(che[i].split("\t"));
+    if (dataChe.length === 0) {
+      const che = data.split("\n");
+      const colchelen = che[0].split("\t").length;
+
+      for (let i = 0; i < che.length; i += 1) {
+        if (che[i].split("\t").length < colchelen) {
+          continue;
+        }
+        dataChe.push(che[i].split("\t"));
+      }
     }
 
     const d = getFlowdata(ctx); // 取数据
@@ -677,6 +691,28 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
       return t.startsWith("http") ? t : `https://${t}`;
     };
 
+    const applyMultilineTextToCell = (cell: Cell, text: string) => {
+      const normalizedText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      const inlineStringSegment: Record<string, any> = { v: normalizedText };
+
+      ["fs", "fc", "ff", "bl", "it", "un", "cl"].forEach((key) => {
+        const typedKey = key as keyof Cell;
+        const currentValue = cell[typedKey];
+        if (currentValue != null) {
+          inlineStringSegment[typedKey] = currentValue;
+        }
+      });
+
+      cell.v = normalizedText;
+      cell.m = normalizedText;
+      cell.ct = {
+        fa: cell.ct?.fa === "@" ? "@" : "General",
+        t: "inlineStr",
+        s: [inlineStringSegment],
+      } as any;
+      cell.tb = "2";
+    };
+
     const changes: any = [];
     for (let r = 0; r < rlen; r += 1) {
       const x = d[r + curR];
@@ -684,12 +720,16 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
         const originCell = x[c + curC];
         let value = dataChe[r][c];
         const originalValueStr = String(value);
+        const normalizedValueStr = originalValueStr
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n");
+        const isMultilineValue = normalizedValueStr.includes("\n");
 
         // Check if the value is a URL first - if so, keep it as string and skip number conversion
-        const url = getUrlFromText(originalValueStr);
+        const url = getUrlFromText(normalizedValueStr);
         const isUrl = url !== null;
 
-        if (!isUrl && isRealNum(value)) {
+        if (!isUrl && !isMultilineValue && isRealNum(value)) {
           // 如果单元格设置了纯文本格式，那么就不要转成数值类型了，防止数值过大自动转成科学计数法
           if (originCell && originCell.ct && originCell.ct.fa === "@") {
             value = String(value);
@@ -699,7 +739,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
         }
 
         if (originCell) {
-          if (!isUrl) {
+          if (!isUrl && isMultilineValue) {
+            applyMultilineTextToCell(originCell, normalizedValueStr);
+          } else if (!isUrl) {
             const generated = genarate(originalValueStr);
             if (generated) {
               const [genM, genCt, genV] = generated;
@@ -780,6 +822,8 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
               fa: "@",
               t: "s",
             };
+          } else if (isMultilineValue) {
+            applyMultilineTextToCell(cell, normalizedValueStr);
           } else {
             // check if hex value to handle hex address
             if (/^0x?[a-fA-F0-9]+$/.test(value)) {
@@ -812,6 +856,9 @@ function pasteHandler(ctx: Context, data: any, borderInfo?: any) {
             cell.un = cell.un !== undefined ? cell.un : 1;
           }
 
+          if (cell.tb == null) {
+            cell.tb = "1"; // overflow
+          }
           x[c + curC] = cell;
         }
         changes.push({
@@ -1466,7 +1513,8 @@ function pasteHandlerOfCutPaste(
 
 function pasteHandlerOfCopyPaste(
   ctx: Context,
-  copyRange: Context["luckysheet_copy_save"]
+  copyRange: Context["luckysheet_copy_save"],
+  valuesOnly = false
 ) {
   // if (
   //   !checkProtectionLockedRangeList(
@@ -1541,6 +1589,31 @@ function pasteHandlerOfCopyPaste(
   }
 
   const copyData = _.cloneDeep(arr);
+
+  if (valuesOnly) {
+    for (let i = 0; i < copyData.length; i += 1) {
+      for (let j = 0; j < copyData[i].length; j += 1) {
+        const cell = copyData[i][j];
+        if (!cell) continue;
+        // Replace formula with its computed value
+        delete cell.f;
+        delete cell.spl;
+        // Strip all cell styling
+        delete cell.bl;
+        delete cell.it;
+        delete cell.ff;
+        delete cell.fs;
+        delete cell.fc;
+        delete cell.ht;
+        delete cell.vt;
+        delete cell.tb;
+        delete cell.cl;
+        delete cell.un;
+        delete cell.tr;
+        delete cell.bg;
+      }
+    }
+  }
 
   // 多重选择选择区域 单元格如果有函数 则只取值 不取函数
   if (copyRange.copyRange.length > 1) {
@@ -2130,6 +2203,190 @@ function resizePastedCellsToContent(ctx: Context) {
   updateSheetCellSizes(ctx, sheetIdx, rangeCellSize);
 }
 
+function shouldHandleNonTableHtml(html: string) {
+  if (!html || /<table[\s/>]/i.test(html)) return false;
+  return /<[a-z]/i.test(html);
+}
+
+function convertAnyHtmlToTable(html: string): string {
+  const container = document.createElement("div");
+  container.innerHTML = html;
+
+  const rows: string[] = [];
+  let currentParts: string[] = [];
+
+  const BLOCK_TAGS = new Set([
+    "P",
+    "DIV",
+    "SECTION",
+    "ARTICLE",
+    "ASIDE",
+    "HEADER",
+    "FOOTER",
+    "MAIN",
+    "NAV",
+    "BLOCKQUOTE",
+    "PRE",
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "H6",
+    "UL",
+    "OL",
+    "LI",
+    "DL",
+    "DT",
+    "DD",
+    "TABLE",
+    "THEAD",
+    "TBODY",
+    "TFOOT",
+    "TR",
+    "TD",
+    "TH",
+    "HR",
+  ]);
+
+  const SKIP_TAGS = new Set([
+    "SCRIPT",
+    "STYLE",
+    "NOSCRIPT",
+    "META",
+    "LINK",
+    "HEAD",
+    "SVG",
+    "CANVAS",
+    "IFRAME",
+    "OBJECT",
+  ]);
+
+  const escapeHtml = (text: string): string =>
+    text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  const normalizeText = (text: string): string =>
+    text.replace(/\u00A0/g, " ").replace(/\s+/g, " ");
+
+  const flushRow = () => {
+    const htmlContent = currentParts.join("").trim();
+    const textOnly = htmlContent
+      .replace(/<br\s*\/?>/gi, "")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (textOnly) {
+      rows.push(`<tr><td>${htmlContent}</td></tr>`);
+    }
+
+    currentParts = [];
+  };
+
+  const appendText = (text: string) => {
+    const normalized = normalizeText(text);
+    if (!normalized.trim()) return;
+
+    const prev = currentParts[currentParts.length - 1] || "";
+    const needsSpace =
+      prev &&
+      !prev.endsWith(" ") &&
+      !prev.endsWith("<br>") &&
+      !/>\s*$/.test(prev);
+
+    currentParts.push((needsSpace ? " " : "") + escapeHtml(normalized.trim()));
+  };
+
+  const isBlock = (node: Node): boolean =>
+    node.nodeType === Node.ELEMENT_NODE &&
+    BLOCK_TAGS.has((node as Element).tagName);
+
+  const walk = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      appendText(node.textContent || "");
+      return;
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+    const el = node as Element;
+    const tag = el.tagName;
+
+    if (SKIP_TAGS.has(tag)) return;
+
+    if (tag === "BR" || tag === "HR") {
+      flushRow();
+      return;
+    }
+
+    if (tag === "TABLE") {
+      flushRow();
+
+      const trs = el.querySelectorAll(
+        ":scope > tbody > tr, :scope > thead > tr, :scope > tfoot > tr, :scope > tr"
+      );
+      if (trs.length > 0) {
+        trs.forEach((tr) => {
+          const cells = Array.from(tr.children).filter((child) =>
+            /^(TD|TH)$/.test((child as Element).tagName)
+          ) as Element[];
+
+          if (!cells.length) return;
+
+          const rowHtml = cells
+            .map(
+              (cell) =>
+                `<td>${escapeHtml(
+                  (cell.textContent || "").replace(/\s+/g, " ").trim()
+                )}</td>`
+            )
+            .join("");
+
+          if (rowHtml.replace(/<[^>]+>/g, "").trim()) {
+            rows.push(`<tr>${rowHtml}</tr>`);
+          }
+        });
+      } else {
+        const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (text) rows.push(`<tr><td>${escapeHtml(text)}</td></tr>`);
+      }
+
+      return;
+    }
+
+    const block = isBlock(el);
+
+    if (block && currentParts.length > 0 && tag !== "LI") {
+      flushRow();
+    }
+
+    if (tag === "LI") {
+      flushRow();
+    }
+
+    Array.from(el.childNodes).forEach(walk);
+
+    if (block) {
+      flushRow();
+    }
+  };
+
+  Array.from(container.childNodes).forEach(walk);
+  flushRow();
+
+  if (!rows.length) {
+    const text = (container.textContent || "").replace(/\s+/g, " ").trim();
+    return `<table><tr><td>${escapeHtml(text)}</td></tr></table>`;
+  }
+
+  return `<table>${rows.join("")}</table>`;
+}
+
 export function handlePaste(ctx: Context, e: ClipboardEvent) {
   // if (isEditMode()) {
   //   // 此模式下禁用粘贴
@@ -2146,6 +2403,8 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     ctx.luckysheetCellUpdate = [];
     // $("#luckysheet-rich-text-editor").blur();
     selectionCache.isPasteAction = false;
+    const pasteValuesOnly = selectionCache.isPasteValuesOnly;
+    selectionCache.isPasteValuesOnly = false;
 
     let { clipboardData } = e;
     if (!clipboardData) {
@@ -2163,9 +2422,24 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     let txtdata =
       clipboardData.getData("text/html") || clipboardData.getData("text/plain");
 
+    // Paste values only: for external (non-fortune-sheet) content, use plain text to strip formatting
+    if (
+      pasteValuesOnly &&
+      txtdata.indexOf("fortune-copy-action-table") === -1 &&
+      txtdata.indexOf("fortune-copy-action-span") === -1
+    ) {
+      txtdata = clipboardData.getData("text/plain");
+    }
+
     // 如果标示是qksheet复制的内容，判断剪贴板内容是否是当前页面复制的内容
     let isEqual = true;
     if (
+      txtdata.indexOf("fortune-copy-action-span") > -1 &&
+      ctx.luckysheet_copy_save?.copyRange != null &&
+      ctx.luckysheet_copy_save.copyRange.length === 1
+    ) {
+      // single-cell span — no table to parse, isEqual stays true
+    } else if (
       txtdata.indexOf("fortune-copy-action-table") > -1 &&
       ctx.luckysheet_copy_save?.copyRange != null &&
       ctx.luckysheet_copy_save.copyRange.length > 0
@@ -2262,7 +2536,8 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
     }
 
     if (
-      txtdata.indexOf("fortune-copy-action-table") > -1 &&
+      (txtdata.indexOf("fortune-copy-action-table") > -1 ||
+        txtdata.indexOf("fortune-copy-action-span") > -1) &&
       ctx.luckysheet_copy_save?.copyRange != null &&
       ctx.luckysheet_copy_save.copyRange.length > 0 &&
       isEqual
@@ -2274,15 +2549,24 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
         ctx.luckysheet_selection_range = [];
         // selection.clearcopy(e);
       } else {
-        pasteHandlerOfCopyPaste(ctx, ctx.luckysheet_copy_save);
+        pasteHandlerOfCopyPaste(ctx, ctx.luckysheet_copy_save, pasteValuesOnly);
       }
       resizePastedCellsToContent(ctx);
     } else if (txtdata.indexOf("fortune-copy-action-image") > -1) {
       // imageCtrl.pasteImgItem();
     } else {
-      if (txtdata.indexOf("table") > -1) {
-        handlePastedTable(ctx, txtdata, pasteHandler);
-        // resizePastedCellsToContent(ctx);
+      const shouldHandleAsHtml =
+        /<table[\s/>]/i.test(txtdata) || shouldHandleNonTableHtml(txtdata);
+
+      if (shouldHandleAsHtml) {
+        const hasNativeTable = /<table[\s/>]/i.test(txtdata);
+        const converted = hasNativeTable
+          ? txtdata
+          : convertAnyHtmlToTable(txtdata);
+        handlePastedTable(ctx, converted, pasteHandler);
+        if (hasNativeTable) {
+          resizePastedCellsToContent(ctx);
+        }
       }
       // 复制的是图片
       else if (
@@ -2377,7 +2661,8 @@ export function handlePasteByClick(
   }
 
   if (
-    data.indexOf("fortune-copy-action-table") > -1 &&
+    (data.indexOf("fortune-copy-action-table") > -1 ||
+      data.indexOf("fortune-copy-action-span") > -1) &&
     ctx.luckysheet_copy_save?.copyRange != null &&
     ctx.luckysheet_copy_save.copyRange.length > 0
   ) {

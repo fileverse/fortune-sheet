@@ -17,8 +17,6 @@ const getColumnWidth = (colIndex: number, ctx: Context, sheetFile: Sheet) => {
   );
 };
 
-const isCellWrapped = (cell: Cell | null | undefined) => Number(cell?.tb) === 1;
-
 const getCellDisplayText = (cell: Cell | null | undefined) => {
   let text = cell?.m ?? cell?.v;
   if (text == null && cell?.ct?.t === "inlineStr") {
@@ -26,6 +24,11 @@ const getCellDisplayText = (cell: Cell | null | undefined) => {
   }
   return text == null ? "" : String(text);
 };
+
+const isCellWrapped = (cell: Cell | null | undefined) =>
+  Number(cell?.tb) === 2 ||
+  cell?.ct?.t === "inlineStr" ||
+  /[\r\n]/.test(getCellDisplayText(cell));
 
 const applyFontOnMeasurer = (
   cell: Cell | null | undefined,
@@ -117,7 +120,9 @@ export function calculateRangeCellSize(
           getColumnWidth(col, ctx, sheetFile),
           maxColumnWidths[col] || 0
         );
-        cellSizeMeasurer!.style.whiteSpace = "normal";
+        cellSizeMeasurer!.style.whiteSpace = /[\r\n]/.test(text)
+          ? "pre-wrap"
+          : "normal";
         cellSizeMeasurer!.style.width = `${Math.max(
           5,
           finalColumnWidth - 8

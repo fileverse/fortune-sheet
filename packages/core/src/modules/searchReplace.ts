@@ -14,6 +14,11 @@ import { setCellValue } from "./cell";
 import { valueShowEs } from "./format";
 import { normalizeSelection, scrollToHighlightCell } from "./selection";
 
+function isFormulaCell(flowdata: CellMatrix, r: number, c: number) {
+  const cell = flowdata?.[r]?.[c] as any;
+  return !!cell?.f;
+}
+
 export function getSearchIndexArr(
   searchText: string,
   range: {
@@ -459,6 +464,9 @@ export function replace(
   if (checkModes.wordCheck) {
     r = searchIndexArr[count].r;
     c = searchIndexArr[count].c;
+    if (isFormulaCell(d, r, c)) {
+      return null;
+    }
 
     const v = replaceText;
 
@@ -488,6 +496,9 @@ export function replace(
 
     r = searchIndexArr[count].r;
     c = searchIndexArr[count].c;
+    if (isFormulaCell(d, r, c)) {
+      return null;
+    }
 
     // if (!checkProtectionLocked(r, c, ctx.currentSheetId)) {
     //   return;
@@ -584,6 +595,7 @@ export function replaceAll(
     for (let i = 0; i < searchIndexArr.length; i += 1) {
       const { r } = searchIndexArr[i];
       const { c } = searchIndexArr[i];
+      if (isFormulaCell(d, r, c)) continue;
 
       // if (!checkProtectionLocked(r, c, ctx.currentSheetIndex, false)) {
       //   continue;
@@ -616,6 +628,7 @@ export function replaceAll(
     for (let i = 0; i < searchIndexArr.length; i += 1) {
       const { r } = searchIndexArr[i];
       const { c } = searchIndexArr[i];
+      if (isFormulaCell(d, r, c)) continue;
 
       // if (!checkProtectionLocked(r, c, ctx.currentSheetIndex, false)) {
       //   continue;

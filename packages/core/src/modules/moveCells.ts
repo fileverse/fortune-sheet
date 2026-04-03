@@ -18,6 +18,7 @@ import { cfSplitRange } from "./conditionalFormat";
 import { GlobalCache } from "../types";
 import { jfrefreshgrid } from "./refresh";
 import { CFSplitRange } from "./ConditionFormat";
+import { functionMoveReference } from "./formula";
 
 const dragCellThreshold = 8;
 
@@ -574,6 +575,59 @@ export function onCellsMoveEnd(
 
   if (cellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
     ctx.hooks.updateCellYdoc(cellChanges);
+  }
+
+  // Keep formula references stable after moving cells: any formula token
+  // pointing to the moved source rectangle is remapped to destination.
+  const sourceRect = {
+    rowStart: range[0].row[0],
+    rowEnd: range[0].row[1],
+    colStart: range[0].column[0],
+    colEnd: range[0].column[1],
+  };
+  const targetRowStart = row_s;
+  const targetColStart = col_s;
+  const movedSheet = ctx.luckysheetfile[index];
+  const movedSheetName = movedSheet?.name || "";
+  const refCellChanges: typeof cellChanges = [];
+
+  for (let si = 0; si < ctx.luckysheetfile.length; si += 1) {
+    const sheet = ctx.luckysheetfile[si];
+    const sheetData = sheet.data;
+    if (!sheetData || !sheet.name) continue;
+
+    for (let r = 0; r < sheetData.length; r += 1) {
+      const rowData = sheetData[r];
+      if (!rowData) continue;
+      for (let c = 0; c < rowData.length; c += 1) {
+        const cell = rowData[c];
+        if (!cell?.f) continue;
+
+        const nextF = `=${functionMoveReference(
+          cell.f,
+          sheet.name,
+          movedSheetName,
+          sourceRect,
+          targetRowStart,
+          targetColStart
+        )}`;
+
+        if (nextF !== cell.f) {
+          cell.f = nextF;
+          refCellChanges.push({
+            sheetId: sheet.id || ctx.currentSheetId,
+            path: ["celldata"],
+            value: { r, c, v: cell },
+            key: `${r}_${c}`,
+            type: "update",
+          });
+        }
+      }
+    }
+  }
+
+  if (refCellChanges.length > 0 && ctx?.hooks?.updateCellYdoc) {
+    ctx.hooks.updateCellYdoc(refCellChanges);
   }
 
   // const allParam = {

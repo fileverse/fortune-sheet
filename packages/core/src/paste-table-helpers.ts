@@ -7,8 +7,9 @@ import { Cell } from "./types";
 import { getSheetIndex } from "./utils";
 import { setRowHeight, setColumnWidth } from "./api";
 import { adjustFormulaForPaste } from "./events/paste";
+import { convertSpanToShareString } from "./modules/inline-string";
 
-export const DEFAULT_FONT_SIZE = 12;
+export const DEFAULT_FONT_SIZE = 10;
 
 const parseStylesheetPairs = (styleInner: string) => {
   const patternReg = /{([^}]*)}/g;
@@ -50,6 +51,120 @@ const mapFontFamilyToIndex = (ff: string, ctx: Context) => {
     });
   if (found != null) return locale_fontjson[found];
   return 0; // default font index
+};
+
+const BLOCK_TAGS = new Set([
+  "p",
+  "div",
+  "li",
+  "tr",
+  "blockquote",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+]);
+
+const getInlineStringSegmentsFromTd = (
+  td: HTMLTableCellElement,
+  cell: Cell,
+  defaultFontSize: number
+) => {
+  const segments: HTMLSpanElement[] = [];
+
+  function walk(
+    node: Node,
+    css: Record<string, string>,
+    link?: { type: string; address: string }
+  ) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent || "";
+      if (text) {
+        const span = document.createElement("span");
+        const cssText = Object.entries(css)
+          .map(([k, v]) => `${k}:${v}`)
+          .join(";");
+        if (cssText) span.setAttribute("style", cssText);
+        span.textContent = text;
+        if (link) {
+          span.dataset.linkType = link.type;
+          span.dataset.linkAddress = link.address;
+        }
+        segments.push(span);
+      }
+      return;
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+    const el = node as HTMLElement;
+    const tag = el.tagName.toLowerCase();
+
+    if (tag === "br") {
+      const span = document.createElement("span");
+      span.textContent = "\n";
+      segments.push(span);
+      return;
+    }
+
+    if (BLOCK_TAGS.has(tag) && segments.length > 0) {
+      const nl = document.createElement("span");
+      nl.textContent = "\n";
+      segments.push(nl);
+    }
+
+    const newCss = { ...css };
+    if (tag === "b" || tag === "strong") newCss["font-weight"] = "bold";
+    if (tag === "i" || tag === "em") newCss["font-style"] = "italic";
+    if (tag === "u") newCss["text-decoration"] = "underline";
+    if (tag === "s" || tag === "strike") {
+      newCss["text-decoration"] = "line-through";
+    }
+
+    if (el.style?.cssText) {
+      Array.from(el.style).forEach((prop) => {
+        if (prop === "font-size") return;
+        const val = el.style.getPropertyValue(prop);
+        if (val) newCss[prop] = val;
+      });
+    }
+
+    let newLink = link;
+    if (tag === "a") {
+      const href = el.getAttribute("href")?.trim() || "";
+      if (/^https?:\/\//i.test(href)) {
+        newLink = { type: "webpage", address: href };
+      }
+    }
+
+    Array.from(el.childNodes).forEach((child) => {
+      walk(child, newCss, newLink);
+    });
+  }
+
+  walk(td, {});
+
+  if (segments.length === 0) return [];
+
+  const base = {
+    fc: cell.fc || "#000000",
+    fs: cell.fs || defaultFontSize,
+    cl: cell.cl || 0,
+    un: cell.un || 0,
+    bl: cell.bl || 0,
+    it: cell.it || 0,
+    ff: cell.ff || 0,
+  };
+
+  const result = convertSpanToShareString(segments as any, base as Cell);
+
+  return result.map((seg: any) => ({
+    ...base,
+    ...seg,
+    fs: base.fs,
+  }));
 };
 
 function applyBordersAndMerges(
@@ -163,7 +278,10 @@ const detectHyperlink = (td: HTMLTableCellElement) => {
   if (anchor) {
     const href = anchor.getAttribute("href")?.trim() || "";
     const display = anchor.textContent?.trim() || href;
-    if (href && urlRegex.test(href)) return { href, display };
+    const cellText = (td.textContent || "").trim();
+    const anchorText = (anchor.textContent || "").trim();
+    if (href && urlRegex.test(href) && cellText === anchorText)
+      return { href, display };
   } else {
     const raw = (td.textContent || "").trim();
     if (urlRegex.test(raw)) return { href: raw, display: raw };
@@ -172,7 +290,7 @@ const detectHyperlink = (td: HTMLTableCellElement) => {
 };
 
 function brToNewline(str: string) {
-  return str.replace(/<br\s*\/?>/gi, "\n");
+  return str.replace(/<br\s*\/?>/gi, "\n").replace(/<\/(div|p|li)>/gi, "\n");
 }
 
 const buildCellFromTd = (
@@ -205,22 +323,35 @@ const buildCellFromTd = (
   }
 
   let cell: Cell = {};
-  const rawText = (td.innerText || td.innerHTML || "").trim();
-  const isLineBreak = rawText.includes("<br />");
+  const rawHtml = td.innerHTML || "";
+  const hasHtmlLineBreak = /<br\s*\/?>|<\/(div|p|li)>/i.test(rawHtml);
+  const domText = td.innerText || td.textContent || "";
+  const htmlText = brToNewline(rawHtml).replace(/<[^>]*>/g, "");
+  const rawText = (
+    hasHtmlLineBreak && !/[\r\n]/.test(domText)
+      ? htmlText
+      : domText || htmlText || rawHtml || ""
+  ).trim();
+  const normalizedText = rawText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const isLineBreak = hasHtmlLineBreak || normalizedText.includes("\n");
 
-  if (!rawText) {
+  if (!normalizedText) {
     cell.v = undefined;
     cell.m = "";
   } else if (isLineBreak) {
-    const value = brToNewline(rawText);
-    cell = { ...cell, ct: { ...cell.ct, t: "inlineStr", s: [{ v: value }] } };
+    cell.v = normalizedText;
+    cell.m = normalizedText;
+    cell = {
+      ...cell,
+      ct: { fa: "General", t: "inlineStr", s: [{ v: normalizedText }] },
+    };
   } else {
     // Store as plain text without auto-detecting date/currency/percentage formats,
     // matching the behaviour of the plain-text paste path in pasteHandler.
-    cell.v = rawText;
-    cell.m = rawText;
+    cell.v = normalizedText;
+    cell.m = normalizedText;
     cell.ct = { fa: "General", t: "g" };
-    if (HEX_REGEX.test(rawText)) {
+    if (HEX_REGEX.test(normalizedText)) {
       cell.ct = { fa: "@", t: "s" };
     }
   }
@@ -264,16 +395,30 @@ const buildCellFromTd = (
       : 1;
 
   // Underline / strike
-  cell.un = !_.includes(styles["text-decoration"], "underline") ? undefined : 1;
-  cell.cl = !_.includes(td.innerHTML, "<s>") ? undefined : 1;
+  const textDecoration = [
+    td.style.textDecoration,
+    // @ts-ignore
+    td.style.textDecorationLine,
+    styles["text-decoration"],
+    styles["text-decoration-line"],
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  cell.un = textDecoration.includes("underline") ? 1 : undefined;
+  cell.cl =
+    textDecoration.includes("line-through") || _.includes(td.innerHTML, "<s>")
+      ? 1
+      : undefined;
 
   // Font family / size / color
   const ff = td.style.fontFamily || styles["font-family"] || "";
   cell.ff = mapFontFamilyToIndex(ff, ctx);
+  const ctxDefaultFontSize = ctx.defaultFontSize ?? DEFAULT_FONT_SIZE;
   const fontSize = Math.round(
     styles["font-size"]
       ? parseInt(styles["font-size"].replace("pt", ""), 10)
-      : parseInt(td.style.fontSize || `${DEFAULT_FONT_SIZE}`, 10)
+      : parseInt(td.style.fontSize || `${ctxDefaultFontSize}`, 10)
   );
   cell.fs = fontSize;
   cell.fc = td.style.color || styles.color;
@@ -308,11 +453,33 @@ const buildCellFromTd = (
   if (td?.style?.["overflow-wrap"] === "anywhere") {
     cell.tb = "2";
   } else {
-    cell.tb = "2";
+    cell.tb = "1"; // overflow
   }
 
   // Rotation
   if ("mso-rotate" in styles) cell.rt = parseFloat(styles["mso-rotate"]);
+
+  const inlineSegments = getInlineStringSegmentsFromTd(
+    td,
+    cell,
+    ctxDefaultFontSize
+  );
+  const segmentsText = inlineSegments.map((s: any) => s.v ?? "").join("");
+  const shouldUseInlineString =
+    normalizedText.length > 0 &&
+    inlineSegments.length > 0 &&
+    segmentsText.trim().length > 0 &&
+    (isLineBreak ||
+      td.querySelector("[data-sheets-root]") != null ||
+      td.querySelector(
+        "span[style], b, strong, i, em, u, s, strike, a[href]"
+      ) != null);
+
+  if (shouldUseInlineString) {
+    cell.v = normalizedText;
+    cell.m = normalizedText;
+    cell.ct = { fa: "General", t: "inlineStr", s: inlineSegments };
+  }
 
   // Span
   let rowspan = parseInt(td.getAttribute("rowspan") || "1", 10);
@@ -328,7 +495,7 @@ export function handlePastedTable(
   html: string,
   pasteHandler: (context: Context, data: any, borderInfo?: any) => void
 ) {
-  if (!html.includes("table")) return;
+  if (!/<table[\s/>]/i.test(html)) return;
 
   const containerDiv = document.createElement("div");
   containerDiv.innerHTML = html;

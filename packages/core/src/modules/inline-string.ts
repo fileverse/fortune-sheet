@@ -107,8 +107,14 @@ export function convertCssToStyleList(cssText: string, originCell: Cell) {
       styleList.fc = value;
     }
 
-    if (key === "text-decoration") {
-      styleList.cl = 1;
+    if (key === "text-decoration" || key === "text-decoration-line") {
+      if (value.includes("underline")) {
+        styleList.un = 1;
+      }
+
+      if (value.includes("line-through")) {
+        styleList.cl = 1;
+      }
     }
 
     if (key === "border-bottom") {
@@ -291,10 +297,13 @@ function getCssText(cssText: string, attr: keyof Cell, value: any) {
     styleObj._color = fontColor;
   }
   const s = getFontStyleByCell(styleObj, undefined, undefined, false);
-  const ukey = _.kebabCase(Object.keys(s)[0]);
-  const uvalue = Object.values(s)[0];
   // let cssText = span.style.cssText;
   cssText = removeClassWidthCss(cssText, attr);
+  if (_.isEmpty(s)) {
+    return cssText;
+  }
+  const ukey = _.kebabCase(Object.keys(s)[0]);
+  const uvalue = Object.values(s)[0];
 
   cssText = upsetClassWithCss(cssText, ukey, uvalue);
 
@@ -389,6 +398,33 @@ export function updateInlineStringFormat(
   const range = w.getRangeAt(0);
 
   const $textEditor = cellInput;
+  const editorText = ($textEditor.innerText ?? $textEditor.textContent ?? "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
+  const selectedText = (range.toString() ?? "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
+
+  // Some browsers/contenteditable states produce element-based ranges for select-all
+  // in multiline empty-cell edits where none of the span/text branches below match.
+  // If the whole editor text is selected, apply formatting directly to all content.
+  if (
+    range.collapsed === false &&
+    editorText.length > 0 &&
+    selectedText === editorText
+  ) {
+    $textEditor.innerHTML = "";
+    const wrapper = document.createElement("span");
+    wrapper.setAttribute("style", getCssText("", attr, value));
+    wrapper.textContent = editorText;
+    $textEditor.appendChild(wrapper);
+
+    const newRange = document.createRange();
+    newRange.selectNodeContents($textEditor);
+    w.removeAllRanges();
+    w.addRange(newRange);
+    return;
+  }
 
   // Firefox (and sometimes other browsers) can produce element-based ranges
   // (e.g. Ctrl+A selects node contents: startContainer/endContainer are the editor DIV
@@ -404,12 +440,23 @@ export function updateInlineStringFormat(
     const end = range.endOffset;
 
     const children = Array.from($textEditor.childNodes).slice(start, end);
+    let hasUnsupportedElementSelection = false;
     children.forEach((node) => {
       if (node.nodeType === Node.ELEMENT_NODE) {
         const el = node as HTMLElement;
         if (el.tagName === "SPAN") {
           const cssText = getCssText(el.style.cssText, attr, value);
           el.setAttribute("style", cssText);
+        } else {
+          const nestedSpans = el.querySelectorAll("span");
+          if (nestedSpans.length > 0) {
+            nestedSpans.forEach((nestedSpan) => {
+              const cssText = getCssText(nestedSpan.style.cssText, attr, value);
+              nestedSpan.setAttribute("style", cssText);
+            });
+          } else {
+            hasUnsupportedElementSelection = true;
+          }
         }
       } else if (node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent ?? "";
@@ -421,6 +468,17 @@ export function updateInlineStringFormat(
         node.parentNode?.replaceChild(wrapper, node);
       }
     });
+
+    // Multiline typing in empty cells may create block nodes (div/br). Normalize
+    // those into a styled span so select-all formatting always applies.
+    if (hasUnsupportedElementSelection) {
+      const fullText = $textEditor.innerText ?? $textEditor.textContent ?? "";
+      $textEditor.innerHTML = "";
+      const wrapper = document.createElement("span");
+      wrapper.setAttribute("style", getCssText("", attr, value));
+      wrapper.textContent = fullText;
+      $textEditor.appendChild(wrapper);
+    }
 
     // Restore selection across the whole editor contents.
     const newRange = document.createRange();
@@ -457,8 +515,28 @@ export function updateInlineStringFormat(
         let mid = "";
         let right = "";
         const s1 = 0;
-        const s2 = startOffset;
-        const s3 = endOffset;
+        // startOffset/endOffset are character positions within the specific
+        // startContainer text node, but content is span.innerHTML which may
+        // include <br> tags (and other elements) before that text node when
+        // the cell has multiple lines. Compute the absolute HTML offset by
+        // summing the innerHTML contributions of all preceding sibling nodes.
+        let htmlPre = 0;
+        if (
+          startContainer.nodeType === Node.TEXT_NODE &&
+          span.childNodes.length > 1
+        ) {
+          for (let i = 0; i < span.childNodes.length; i += 1) {
+            const child = span.childNodes[i];
+            if (child === startContainer) break;
+            if (child.nodeType === Node.TEXT_NODE) {
+              htmlPre += (child.textContent || "").length;
+            } else if (child.nodeType === Node.ELEMENT_NODE) {
+              htmlPre += (child as HTMLElement).outerHTML.length;
+            }
+          }
+        }
+        const s2 = htmlPre + startOffset;
+        const s3 = htmlPre + endOffset;
         const s4 = content.length;
         left = content.substring(s1, s2);
         mid = content.substring(s2, s3);

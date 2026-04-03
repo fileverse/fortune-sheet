@@ -145,12 +145,6 @@
   margin: 0px 0 0 0px;
 }
 
-.fortune-selection-copy .fortune-copy {
-  position: absolute;
-  z-index: 18;
-  background-color: transparent;
-}
-
 .fortune-selection-copy-hc {
   position: absolute;
   top: 0;
@@ -330,15 +324,15 @@
   max-height: 9900px;
   max-width: 9900px;
   border: 2px #efc703 solid;
-  padding: 0 2px;
+  padding: 2px 2px;
   margin: 0;
   resize: none;
   overflow: hidden;
   white-space: pre-wrap;
   outline: none;
-  -webkit-box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
-  -moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-  box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
+  /* -webkit-box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
+  -moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); */
+  /* box-shadow: 0 2px 5px rgb(0 0 0 / 40%); */
   word-wrap: break-word;
   background-color: rgb(255, 255, 255);
   font-size: 13px;
@@ -356,11 +350,19 @@
 }
 
 .luckysheet-formula-text-color {
-  color: black;
+  color: darkred;
 }
 
 .luckysheet-formula-text-string {
   color: forestgreen;
+}
+
+.luckysheet-formula-text-calc,
+.luckysheet-formula-text-lpar,
+.luckysheet-formula-text-comma,
+.luckysheet-formula-text-rpar {
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
 .luckysheet-cell-flow {
@@ -647,50 +649,6 @@
   cursor: se-resize;
 }
 
-.fortune-selection-copy-top {
-  left: 0;
-  right: 0;
-  height: 2px;
-  top: 0;
-  background-position: bottom;
-  /* background-image: url("EwaAntH.gif"); */
-}
-
-.fortune-selection-copy-right {
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  right: 0;
-  /* background-image: url("EwaAntV.gif"); */
-}
-
-.fortune-selection-copy-bottom {
-  left: 0;
-  right: 0;
-  height: 2px;
-  bottom: 0;
-  /* background-image: url("EwaAntH.gif"); */
-}
-
-.fortune-selection-copy-left {
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  left: 0;
-  background-position: right;
-  /* background-image: url("EwaAntV.gif"); */
-}
-
-.fortune-selection-copy-hc {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  border: 2px dashed #12a5ff;
-  z-index: 8;
-}
-
 .luckysheet-modal-dialog-resize {
   position: absolute;
   border: 2px solid #0188fb;
@@ -765,84 +723,14 @@
   cursor: se-resize;
 }
 
-.fortune-formula-functionrange-highlight .fortune-copy {
-  background-image: none;
-  background: #0188fb;
-  position: absolute;
-  z-index: 18;
+.fortune-formula-functionrange-highlight {
   cursor: move;
-  opacity: 0.9;
-  box-sizing: content-box;
-  /*border: 1px solid #fff;*/
-}
-
-.fortune-formula-functionrange-highlight .fortune-selection-copy-top {
-  top: -2px;
-  border-top: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-}
-
-.fortune-formula-functionrange-highlight .fortune-selection-copy-right {
-  right: -2px;
-  border-left: 2px solid #fff;
-  border-right: 2px solid #fff;
-}
-
-.fortune-formula-functionrange-highlight .fortune-selection-copy-bottom {
-  bottom: -2px;
-  border-top: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-}
-
-.fortune-formula-functionrange-highlight .fortune-selection-copy-left {
-  left: -2px;
-  border-left: 2px solid #fff;
-  border-right: 2px solid #fff;
 }
 
 .fortune-formula-functionrange-highlight .fortune-selection-copy-hc {
-  border: 2px solid #5e5e5e;
-  opacity: 0.03;
+  border-width: 2px;
+  border-style: dotted;
   z-index: initial;
-}
-
-.fortune-selection-highlight-lt {
-  left: -3px;
-  top: -3px;
-  cursor: se-resize;
-}
-
-.fortune-selection-highlight-rt {
-  right: -3px;
-  top: -3px;
-  cursor: ne-resize;
-}
-
-.fortune-selection-highlight-lb {
-  left: -3px;
-  bottom: -3px;
-  cursor: ne-resize;
-}
-
-.fortune-selection-highlight-rb {
-  right: -3px;
-  bottom: -3px;
-  cursor: se-resize;
-}
-
-/* FLV: show blue dashed border for active selection while in edit mode */
-.luckysheet-cell-selected-edit-mode .luckysheet-cs-inner-border {
-  border: 2px dashed #12a5ff;
-  border-radius: 1px;
-}
-
-.fortune-formula-functionrange-highlight .luckysheet-highlight {
-  position: absolute;
-  z-index: 19;
-  border: 1px solid #fff;
-  background: #0188fb;
-  width: 6px;
-  height: 6px;
 }
 
 .fortune-presence-username {

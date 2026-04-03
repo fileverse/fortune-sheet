@@ -28,6 +28,63 @@ export function getCursorPosition(editableDiv: HTMLDivElement): number {
   return preRange.toString().length; // caret offset in characters
 }
 
+export function getSelectionOffsets(editableDiv: HTMLDivElement): {
+  start: number;
+  end: number;
+} {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) {
+    const caret = getCursorPosition(editableDiv);
+    return { start: caret, end: caret };
+  }
+  const range = selection.getRangeAt(0);
+  if (
+    !editableDiv.contains(range.startContainer) ||
+    !editableDiv.contains(range.endContainer)
+  ) {
+    const caret = getCursorPosition(editableDiv);
+    return { start: caret, end: caret };
+  }
+
+  const startRange = range.cloneRange();
+  startRange.selectNodeContents(editableDiv);
+  startRange.setEnd(range.startContainer, range.startOffset);
+  const start = startRange.toString().length;
+
+  const endRange = range.cloneRange();
+  endRange.selectNodeContents(editableDiv);
+  endRange.setEnd(range.endContainer, range.endOffset);
+  const end = endRange.toString().length;
+
+  return {
+    start: Math.max(0, Math.min(start, end)),
+    end: Math.max(start, end),
+  };
+}
+
+/**
+ * Cmd/Ctrl+Z / Shift+Cmd+Z / Ctrl+Y redo — `onChange` must not run
+ * `handleFormulaInput` or history append for these (Mac uses metaKey, not ctrlKey).
+ */
+export function isEditorUndoRedoKeyEvent(e: KeyboardEvent): boolean {
+  if (!e.metaKey && !e.ctrlKey) return false;
+  if (e.code === "KeyZ" || e.code === "KeyY") return true;
+  return e.keyCode === 90 || e.keyCode === 89;
+}
+
+/**
+ * Use the same rule for cell input and fx bar: custom stack when the line is a
+ * formula (=…) or the stack already has snapshots (plain/rich text edits).
+ */
+export function shouldUseCustomEditorHistory(
+  editorInnerTextTrimmed: string,
+  historyActive: boolean
+): boolean {
+  // Treat plain text + formatted content + formulas the same: once the
+  // editor has content, route undo/redo through the custom stack.
+  return historyActive || editorInnerTextTrimmed.length > 0;
+}
+
 export function setCursorPosition(
   editableDiv: HTMLDivElement,
   targetOffset: number
@@ -57,6 +114,50 @@ export function setCursorPosition(
 
   range.selectNodeContents(editableDiv);
   range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+export function setSelectionOffsets(
+  editableDiv: HTMLDivElement,
+  startOffset: number,
+  endOffset: number
+) {
+  editableDiv.focus();
+
+  const selection = window.getSelection();
+  if (!selection) return;
+
+  const startTarget = Math.max(0, Math.min(startOffset, endOffset));
+  const endTarget = Math.max(startTarget, endOffset);
+
+  const walker = document.createTreeWalker(editableDiv, NodeFilter.SHOW_TEXT);
+  const resolve = (target: number) => {
+    let remaining = target;
+    let node = walker.nextNode();
+    while (node) {
+      const len = node.textContent?.length ?? 0;
+      if (remaining <= len) return { node, offset: remaining };
+      remaining -= len;
+      node = walker.nextNode();
+    }
+    return null;
+  };
+
+  walker.currentNode = editableDiv;
+  const startPos = resolve(startTarget);
+  walker.currentNode = editableDiv;
+  const endPos = resolve(endTarget);
+
+  const range = document.createRange();
+  if (startPos && endPos) {
+    range.setStart(startPos.node, startPos.offset);
+    range.setEnd(endPos.node, endPos.offset);
+  } else {
+    range.selectNodeContents(editableDiv);
+    range.collapse(false);
+  }
+
   selection.removeAllRanges();
   selection.addRange(range);
 }

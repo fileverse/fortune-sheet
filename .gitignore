@@ -138,3 +138,5 @@ dist
 
 # storybook
 /storybook-static
+# Do not commit plain-JS duplicates of *.stories.tsx (duplicate story ids).
+stories/**/*.stories.js

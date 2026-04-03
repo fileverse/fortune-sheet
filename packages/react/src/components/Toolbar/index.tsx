@@ -35,6 +35,7 @@ import {
   clearFilter,
   applyLocation,
   insertDuneChart,
+  getFormulaEditorOwner,
   Cell,
   api,
   getSheetIndex,
@@ -449,6 +450,15 @@ const Toolbar: React.FC<{
 }) => {
   const { context, setContext, refs, settings, handleUndo, handleRedo } =
     useContext(WorkbookContext);
+  const restoreEditorFocusAfterToolbarAction = useCallback(() => {
+    if (context.luckysheetCellUpdate.length === 0) return;
+    requestAnimationFrame(() => {
+      const owner = getFormulaEditorOwner(context);
+      const target =
+        owner === "fx" ? refs.fxInput.current : refs.cellInput.current;
+      target?.focus();
+    });
+  }, [context, refs.cellInput, refs.fxInput]);
   const contextRef = useRef(context);
   const containerRef = useRef<HTMLDivElement>(null);
   const [toolbarWrapIndex, setToolbarWrapIndex] = useState(-1);
@@ -2049,6 +2059,7 @@ const Toolbar: React.FC<{
       ref={containerRef}
       className="fortune-toolbar"
       aria-label={toolbar.toolbar}
+      onMouseUpCapture={restoreEditorFocusAfterToolbarAction}
     >
       <DataVerificationPortal visible={showDataValidation} />
       <ConditionalFormatPortal

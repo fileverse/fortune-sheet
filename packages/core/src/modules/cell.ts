@@ -24,7 +24,6 @@ import {
   suppressFormulaRangeSelectionForInitialEdit,
 } from "./formula";
 import {
-  attrToCssName,
   convertSpanToShareString,
   isInlineStringCell,
   isInlineStringCT,
@@ -805,6 +804,7 @@ export function cancelNormalSelected(ctx: Context) {
   ctx.formulaCache.rangedrag_column_start = false;
   ctx.formulaCache.rangedrag_row_start = false;
   ctx.formulaCache.rangeSelectionActive = null;
+  ctx.formulaCache.keyboardRangeSelectionLock = false;
   ctx.formulaCache.formulaEditorOwner = null;
 }
 
@@ -1554,32 +1554,81 @@ export function isAllSelectedCellsInStatus(
     }
     const { endContainer } = range;
     const { startContainer } = range;
-    // @ts-ignore
-    const cssField = _.camelCase(attrToCssName[attr]);
-    if (startContainer === endContainer) {
-      return !_.isEmpty(
+    const toElement = (n: Node | null): HTMLElement | null => {
+      if (!n) return null;
+      if (n.nodeType === Node.ELEMENT_NODE) return n as HTMLElement;
+      return n.parentElement;
+    };
+    const startEl = toElement(startContainer);
+    const endEl = toElement(endContainer);
+    const editorRoot =
+      startEl?.closest("#luckysheet-rich-text-editor") ??
+      endEl?.closest("#luckysheet-rich-text-editor") ??
+      (toElement(range.commonAncestorContainer) as HTMLElement | null);
+
+    const isStyleActive = (element: HTMLElement) => {
+      const computed = window.getComputedStyle(element);
+      const fontWeight = (computed.fontWeight || "").toLowerCase();
+      const fontStyle = (computed.fontStyle || "").toLowerCase();
+      const textDecorationLine = // Safari support fallback
         // @ts-ignore
-        startContainer.parentElement?.style[cssField]
-      );
-    }
-    if (
-      startContainer.parentElement?.tagName === "SPAN" &&
-      endContainer.parentElement?.tagName === "SPAN"
-    ) {
-      const startSpan = startContainer.parentNode as HTMLElement | null;
-      const endSpan = endContainer.parentNode as HTMLElement | null;
-      const allSpans = startSpan?.parentNode?.querySelectorAll("span");
-      if (allSpans) {
-        const startSpanIndex = _.indexOf(allSpans, startSpan);
-        const endSpanIndex = _.indexOf(allSpans, endSpan);
-        const rangeSpans = [];
-        for (let i = startSpanIndex; i <= endSpanIndex; i += 1) {
-          rangeSpans.push(allSpans[i]);
+        (
+          computed.textDecorationLine ||
+          computed.textDecoration ||
+          ""
+        ).toLowerCase();
+      const borderBottomWidth = (
+        computed.borderBottomWidth || ""
+      ).toLowerCase();
+
+      if (status === 1) {
+        if (attr === "bl") {
+          if (fontWeight === "bold") return true;
+          const n = Number(fontWeight);
+          return !Number.isNaN(n) && n >= 600;
         }
-        // @ts-ignore
-        return _.every(rangeSpans, (s) => !_.isEmpty(s.style[cssField]));
+        if (attr === "it") {
+          return fontStyle === "italic" || fontStyle === "oblique";
+        }
+        if (attr === "cl") {
+          return textDecorationLine.includes("line-through");
+        }
+        if (attr === "un") {
+          return (
+            textDecorationLine.includes("underline") ||
+            (borderBottomWidth !== "" &&
+              borderBottomWidth !== "0px" &&
+              borderBottomWidth !== "0")
+          );
+        }
       }
+      return false;
+    };
+
+    const selectedElements: HTMLElement[] = [];
+    if (editorRoot) {
+      const spans = editorRoot.querySelectorAll("span");
+      spans.forEach((span) => {
+        if (
+          span.textContent &&
+          span.textContent.length > 0 &&
+          range.intersectsNode(span)
+        ) {
+          selectedElements.push(span);
+        }
+      });
     }
+
+    if (selectedElements.length === 0) {
+      if (startEl) selectedElements.push(startEl);
+      if (endEl && endEl !== startEl) selectedElements.push(endEl);
+    }
+
+    if (selectedElements.length === 0) {
+      return false;
+    }
+
+    return _.every(selectedElements, (el) => isStyleActive(el));
   }
   /* 获取选区内所有的单元格-扁平后的处理 */
   const cells = getFlattenedRange(ctx);
@@ -1798,6 +1847,7 @@ export function getInlineStringHTML(
   data: CellMatrix,
   options?: {
     useSemanticMarkup?: boolean;
+    isRichTextCopy?: boolean;
     inheritedStyle?: Record<string, string>;
   }
 ) {
@@ -1859,15 +1909,19 @@ export function getInlineStringHTML(
               )}'`
             : "";
 
-        if (options?.useSemanticMarkup) {
-          value += buildClipboardCompatibleInlineRuns(strObj.v, styleStr);
+        if (options?.isRichTextCopy) {
+          if (options?.useSemanticMarkup) {
+            value += buildClipboardCompatibleInlineRuns(strObj.v, styleStr);
+          } else {
+            // Convert newlines to <br> so apps that don't honour white-space:pre-wrap
+            // (e.g. Google Sheets clipboard parser) still see proper line breaks.
+            const segmentText = strObj.v
+              .replace(/\r\n/g, "<br>")
+              .replace(/\n/g, "<br>");
+            value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${segmentText}</span>`;
+          }
         } else {
-          // Convert newlines to <br> so apps that don't honour white-space:pre-wrap
-          // (e.g. Google Sheets clipboard parser) still see proper line breaks.
-          const segmentText = strObj.v
-            .replace(/\r\n/g, "<br>")
-            .replace(/\n/g, "<br>");
-          value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${segmentText}</span>`;
+          value += `<span class="luckysheet-input-span" index='${i}' style='${styleStr}'${dataAttrs}>${strObj.v}</span>`;
         }
       }
     }

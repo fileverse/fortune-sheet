@@ -297,10 +297,13 @@ function getCssText(cssText: string, attr: keyof Cell, value: any) {
     styleObj._color = fontColor;
   }
   const s = getFontStyleByCell(styleObj, undefined, undefined, false);
-  const ukey = _.kebabCase(Object.keys(s)[0]);
-  const uvalue = Object.values(s)[0];
   // let cssText = span.style.cssText;
   cssText = removeClassWidthCss(cssText, attr);
+  if (_.isEmpty(s)) {
+    return cssText;
+  }
+  const ukey = _.kebabCase(Object.keys(s)[0]);
+  const uvalue = Object.values(s)[0];
 
   cssText = upsetClassWithCss(cssText, ukey, uvalue);
 
@@ -395,6 +398,33 @@ export function updateInlineStringFormat(
   const range = w.getRangeAt(0);
 
   const $textEditor = cellInput;
+  const editorText = ($textEditor.innerText ?? $textEditor.textContent ?? "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
+  const selectedText = (range.toString() ?? "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
+
+  // Some browsers/contenteditable states produce element-based ranges for select-all
+  // in multiline empty-cell edits where none of the span/text branches below match.
+  // If the whole editor text is selected, apply formatting directly to all content.
+  if (
+    range.collapsed === false &&
+    editorText.length > 0 &&
+    selectedText === editorText
+  ) {
+    $textEditor.innerHTML = "";
+    const wrapper = document.createElement("span");
+    wrapper.setAttribute("style", getCssText("", attr, value));
+    wrapper.textContent = editorText;
+    $textEditor.appendChild(wrapper);
+
+    const newRange = document.createRange();
+    newRange.selectNodeContents($textEditor);
+    w.removeAllRanges();
+    w.addRange(newRange);
+    return;
+  }
 
   // Firefox (and sometimes other browsers) can produce element-based ranges
   // (e.g. Ctrl+A selects node contents: startContainer/endContainer are the editor DIV
@@ -410,12 +440,23 @@ export function updateInlineStringFormat(
     const end = range.endOffset;
 
     const children = Array.from($textEditor.childNodes).slice(start, end);
+    let hasUnsupportedElementSelection = false;
     children.forEach((node) => {
       if (node.nodeType === Node.ELEMENT_NODE) {
         const el = node as HTMLElement;
         if (el.tagName === "SPAN") {
           const cssText = getCssText(el.style.cssText, attr, value);
           el.setAttribute("style", cssText);
+        } else {
+          const nestedSpans = el.querySelectorAll("span");
+          if (nestedSpans.length > 0) {
+            nestedSpans.forEach((nestedSpan) => {
+              const cssText = getCssText(nestedSpan.style.cssText, attr, value);
+              nestedSpan.setAttribute("style", cssText);
+            });
+          } else {
+            hasUnsupportedElementSelection = true;
+          }
         }
       } else if (node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent ?? "";
@@ -427,6 +468,17 @@ export function updateInlineStringFormat(
         node.parentNode?.replaceChild(wrapper, node);
       }
     });
+
+    // Multiline typing in empty cells may create block nodes (div/br). Normalize
+    // those into a styled span so select-all formatting always applies.
+    if (hasUnsupportedElementSelection) {
+      const fullText = $textEditor.innerText ?? $textEditor.textContent ?? "";
+      $textEditor.innerHTML = "";
+      const wrapper = document.createElement("span");
+      wrapper.setAttribute("style", getCssText("", attr, value));
+      wrapper.textContent = fullText;
+      $textEditor.appendChild(wrapper);
+    }
 
     // Restore selection across the whole editor contents.
     const newRange = document.createRange();

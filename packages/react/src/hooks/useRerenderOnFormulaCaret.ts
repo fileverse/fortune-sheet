@@ -1,15 +1,21 @@
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
 /**
  * Subscribes to `selectionchange` while editing a formula so components that
  * derive UI from caret position (e.g. nested function hints) re-render when
  * the user only moves the caret without changing React state.
+ *
+ * `onAfterCaretMove` runs after the bump (e.g. refresh `formulaRangeHighlight`
+ * — `input` does not fire on caret-only clicks).
  */
 export function useRerenderOnFormulaCaret(
   editorRef: RefObject<HTMLDivElement | null>,
-  editSessionActive: boolean
+  editSessionActive: boolean,
+  onAfterCaretMove?: () => void
 ): void {
   const [, bump] = useState(0);
+  const onAfterCaretMoveRef = useRef(onAfterCaretMove);
+  onAfterCaretMoveRef.current = onAfterCaretMove;
 
   useEffect(() => {
     if (!editSessionActive) {
@@ -28,6 +34,7 @@ export function useRerenderOnFormulaCaret(
       }
 
       bump((n) => n + 1);
+      onAfterCaretMoveRef.current?.();
     };
 
     document.addEventListener("selectionchange", onSelectionChange);

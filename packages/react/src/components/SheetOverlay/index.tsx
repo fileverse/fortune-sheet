@@ -476,10 +476,6 @@ const SheetOverlay: React.FC = () => {
               className="fortune-selection-copy fortune-formula-functionrange-select"
               style={context.formulaRangeSelect}
             >
-              <div className="fortune-selection-copy-top fortune-copy" />
-              <div className="fortune-selection-copy-right fortune-copy" />
-              <div className="fortune-selection-copy-bottom fortune-copy" />
-              <div className="fortune-selection-copy-left fortune-copy" />
               <div className="fortune-selection-copy-hc" />
             </div>
           )}
@@ -492,14 +488,6 @@ const SheetOverlay: React.FC = () => {
                 className="fortune-selection-highlight fortune-formula-functionrange-highlight"
                 style={_.omit(v, "backgroundColor")}
               >
-                {["top", "right", "bottom", "left"].map((d) => (
-                  <div
-                    key={d}
-                    data-type={d}
-                    className={`fortune-selection-copy-${d} fortune-copy`}
-                    style={{ backgroundColor }}
-                  />
-                ))}
                 <div
                   className="fortune-selection-copy-hc"
                   style={formulaRangeHighlightHcStyle(backgroundColor)}
@@ -593,10 +581,6 @@ const SheetOverlay: React.FC = () => {
                       height: row - row_pre - 1,
                     }}
                   >
-                    <div className="fortune-selection-copy-top fortune-copy" />
-                    <div className="fortune-selection-copy-right fortune-copy" />
-                    <div className="fortune-selection-copy-bottom fortune-copy" />
-                    <div className="fortune-selection-copy-left fortune-copy" />
                     <div className="fortune-selection-copy-hc" />
                   </div>
                 );

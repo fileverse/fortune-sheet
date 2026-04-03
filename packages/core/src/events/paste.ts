@@ -2208,31 +2208,183 @@ function shouldHandleNonTableHtml(html: string) {
   return /<[a-z]/i.test(html);
 }
 
-function convertNonTableHtmlToTable(html: string): string {
+function convertAnyHtmlToTable(html: string): string {
   const container = document.createElement("div");
   container.innerHTML = html;
+
   const rows: string[] = [];
+  let currentParts: string[] = [];
 
-  // Each <p> element is one line (covers Notion/ProseMirror-style editors)
-  container.querySelectorAll("p").forEach((p) => {
-    if (p.textContent?.trim()) {
-      rows.push(`<tr><td>${p.innerHTML}</td></tr>`);
+  const BLOCK_TAGS = new Set([
+    "P",
+    "DIV",
+    "SECTION",
+    "ARTICLE",
+    "ASIDE",
+    "HEADER",
+    "FOOTER",
+    "MAIN",
+    "NAV",
+    "BLOCKQUOTE",
+    "PRE",
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "H6",
+    "UL",
+    "OL",
+    "LI",
+    "DL",
+    "DT",
+    "DD",
+    "TABLE",
+    "THEAD",
+    "TBODY",
+    "TFOOT",
+    "TR",
+    "TD",
+    "TH",
+    "HR",
+  ]);
+
+  const SKIP_TAGS = new Set([
+    "SCRIPT",
+    "STYLE",
+    "NOSCRIPT",
+    "META",
+    "LINK",
+    "HEAD",
+    "SVG",
+    "CANVAS",
+    "IFRAME",
+    "OBJECT",
+  ]);
+
+  const escapeHtml = (text: string): string =>
+    text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  const normalizeText = (text: string): string =>
+    text.replace(/\u00A0/g, " ").replace(/\s+/g, " ");
+
+  const flushRow = () => {
+    const htmlContent = currentParts.join("").trim();
+    const textOnly = htmlContent
+      .replace(/<br\s*\/?>/gi, "")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (textOnly) {
+      rows.push(`<tr><td>${htmlContent}</td></tr>`);
     }
-  });
 
-  if (rows.length === 0) {
-    // Fallback: <li> elements whose text is not already in a <p>
-    container.querySelectorAll("li").forEach((li) => {
-      if (!li.querySelector("p") && li.textContent?.trim()) {
-        rows.push(`<tr><td>${li.innerHTML}</td></tr>`);
+    currentParts = [];
+  };
+
+  const appendText = (text: string) => {
+    const normalized = normalizeText(text);
+    if (!normalized.trim()) return;
+
+    const prev = currentParts[currentParts.length - 1] || "";
+    const needsSpace =
+      prev &&
+      !prev.endsWith(" ") &&
+      !prev.endsWith("<br>") &&
+      !/>\s*$/.test(prev);
+
+    currentParts.push((needsSpace ? " " : "") + escapeHtml(normalized.trim()));
+  };
+
+  const isBlock = (node: Node): boolean =>
+    node.nodeType === Node.ELEMENT_NODE &&
+    BLOCK_TAGS.has((node as Element).tagName);
+
+  const walk = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      appendText(node.textContent || "");
+      return;
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+    const el = node as Element;
+    const tag = el.tagName;
+
+    if (SKIP_TAGS.has(tag)) return;
+
+    if (tag === "BR" || tag === "HR") {
+      flushRow();
+      return;
+    }
+
+    if (tag === "TABLE") {
+      flushRow();
+
+      const trs = el.querySelectorAll(
+        ":scope > tbody > tr, :scope > thead > tr, :scope > tfoot > tr, :scope > tr"
+      );
+      if (trs.length > 0) {
+        trs.forEach((tr) => {
+          const cells = Array.from(tr.children).filter((child) =>
+            /^(TD|TH)$/.test((child as Element).tagName)
+          ) as Element[];
+
+          if (!cells.length) return;
+
+          const rowHtml = cells
+            .map(
+              (cell) =>
+                `<td>${escapeHtml(
+                  (cell.textContent || "").replace(/\s+/g, " ").trim()
+                )}</td>`
+            )
+            .join("");
+
+          if (rowHtml.replace(/<[^>]+>/g, "").trim()) {
+            rows.push(`<tr>${rowHtml}</tr>`);
+          }
+        });
+      } else {
+        const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (text) rows.push(`<tr><td>${escapeHtml(text)}</td></tr>`);
       }
-    });
+
+      return;
+    }
+
+    const block = isBlock(el);
+
+    if (block && currentParts.length > 0 && tag !== "LI") {
+      flushRow();
+    }
+
+    if (tag === "LI") {
+      flushRow();
+    }
+
+    Array.from(el.childNodes).forEach(walk);
+
+    if (block) {
+      flushRow();
+    }
+  };
+
+  Array.from(container.childNodes).forEach(walk);
+  flushRow();
+
+  if (!rows.length) {
+    const text = (container.textContent || "").replace(/\s+/g, " ").trim();
+    return `<table><tr><td>${escapeHtml(text)}</td></tr></table>`;
   }
 
-  if (rows.length > 0) {
-    return `<table>${rows.join("")}</table>`;
-  }
-  return `<table><tr><td>${html}</td></tr></table>`;
+  return `<table>${rows.join("")}</table>`;
 }
 
 export function handlePaste(ctx: Context, e: ClipboardEvent) {
@@ -2410,7 +2562,7 @@ export function handlePaste(ctx: Context, e: ClipboardEvent) {
         const hasNativeTable = /<table[\s/>]/i.test(txtdata);
         const converted = hasNativeTable
           ? txtdata
-          : convertNonTableHtmlToTable(txtdata);
+          : convertAnyHtmlToTable(txtdata);
         handlePastedTable(ctx, converted, pasteHandler);
         if (hasNativeTable) {
           resizePastedCellsToContent(ctx);

@@ -48,6 +48,7 @@ import {
   countCommasBeforeCursor,
   getCursorPosition,
   getFunctionNameFromFormulaCaretSpans,
+  isEditorUndoRedoKeyEvent,
   isLetterNumberPattern,
   setCursorPosition,
   buildFormulaSuggestionText,
@@ -63,12 +64,11 @@ const FxEditor: React.FC = () => {
   const { context, setContext, refs } = useContext(WorkbookContext);
   const lastKeyDownEventRef = useRef<KeyboardEvent>(null);
   const {
-    formulaHistoryRef,
     preTextRef,
     resetFormulaHistory,
     handleFormulaHistoryUndoRedo,
-    capturePreFormulaState,
-    appendFormulaHistoryFromPrimaryEditor,
+    capturePreEditorHistoryState,
+    appendEditorHistoryFromPrimaryEditor,
   } = useFormulaEditorHistory(
     refs.fxInput,
     refs.cellInput,
@@ -403,7 +403,28 @@ const FxEditor: React.FC = () => {
       const currentCommaCount = countCommasBeforeCursor(refs.fxInput?.current!);
       setCommaCount(currentCommaCount);
       lastKeyDownEventRef.current = new KeyboardEvent(e.type, e.nativeEvent);
-      capturePreFormulaState();
+      if (!isEditorUndoRedoKeyEvent(e.nativeEvent)) {
+        capturePreEditorHistoryState();
+      }
+      const isPotentialContentKey =
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        (e.key.length === 1 ||
+          e.key === "Backspace" ||
+          e.key === "Delete" ||
+          e.key === "Enter" ||
+          e.key === "Tab");
+      if (isPotentialContentKey) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (getFormulaEditorOwner(context) !== "fx") return;
+            appendEditorHistoryFromPrimaryEditor(() =>
+              getCursorPosition(refs.fxInput.current!)
+            );
+          });
+        });
+      }
       recentText.current = refs.fxInput.current!.innerText;
       const { key } = e;
       const currentInputText = refs.fxInput.current?.innerText?.trim() || "";
@@ -490,18 +511,23 @@ const FxEditor: React.FC = () => {
 
       if ((e.metaKey || e.ctrlKey) && context.luckysheetCellUpdate.length > 0) {
         if (e.code === "KeyZ" || e.code === "KeyY") {
-          const shouldUseFormulaHistory =
-            currentInputText.startsWith("=") ||
-            formulaHistoryRef.current.active;
-          if (shouldUseFormulaHistory) {
-            const handledByFormulaHistory = handleFormulaHistoryUndoRedo(
-              e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey)
-            );
-            if (handledByFormulaHistory) {
-              e.preventDefault();
-            }
-          }
+          const isRedo =
+            e.code === "KeyY" || (e.code === "KeyZ" && (e as any).shiftKey);
+          // Always intercept undo/redo in-editor to avoid native browser
+          // history fighting our snapshot stack.
+          e.preventDefault();
           e.stopPropagation();
+
+          const attempt = (triesLeft: number) => {
+            const handled = handleFormulaHistoryUndoRedo(isRedo);
+            if (handled) return;
+            if (triesLeft <= 0) return;
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => attempt(triesLeft - 1));
+            });
+          };
+
+          attempt(2);
           return;
         }
       }
@@ -695,7 +721,7 @@ const FxEditor: React.FC = () => {
       });
     },
     [
-      capturePreFormulaState,
+      capturePreEditorHistoryState,
       context.allowEdit,
       context.luckysheetCellUpdate,
       handleFormulaHistoryUndoRedo,
@@ -772,17 +798,27 @@ const FxEditor: React.FC = () => {
       if (editor) {
         setContext((draftCtx) => {
           if (!isAllowEdit(draftCtx, draftCtx.luckysheet_select_save)) return;
+          if (getFormulaEditorOwner(draftCtx) !== "fx") return;
+          if (
+            draftCtx.formulaCache.rangestart ||
+            draftCtx.formulaCache.rangedrag_column_start ||
+            draftCtx.formulaCache.rangedrag_row_start
+          ) {
+            rangeHightlightselected(draftCtx, editor!);
+            return;
+          }
+          draftCtx.formulaCache.selectingRangeIndex = -1;
+          createRangeHightlight(draftCtx, editor!.innerHTML);
           rangeHightlightselected(draftCtx, editor!);
         });
       }
       return;
     }
+    if (isEditorUndoRedoKeyEvent(e)) {
+      return;
+    }
     const kcode = e.keyCode;
     if (!kcode) return;
-
-    appendFormulaHistoryFromPrimaryEditor(() =>
-      getCursorPosition(refs.fxInput.current!)
-    );
 
     if (
       !(
@@ -810,8 +846,14 @@ const FxEditor: React.FC = () => {
         );
       });
     }
+    requestAnimationFrame(() => {
+      if (getFormulaEditorOwner(context) !== "fx") return;
+      appendEditorHistoryFromPrimaryEditor(() =>
+        getCursorPosition(refs.fxInput.current!)
+      );
+    });
   }, [
-    appendFormulaHistoryFromPrimaryEditor,
+    appendEditorHistoryFromPrimaryEditor,
     context.isFlvReadOnly,
     context.luckysheetCellUpdate,
     refs.cellInput,
@@ -819,9 +861,33 @@ const FxEditor: React.FC = () => {
     setContext,
   ]);
 
+  const refreshFxFormulaRangeHighlights = useCallback(() => {
+    const el = refs.fxInput.current;
+    if (!el) return;
+    setContext((draftCtx) => {
+      if (draftCtx.luckysheetCellUpdate.length === 0) return;
+      if (getFormulaEditorOwner(draftCtx) !== "fx") return;
+      if (!isAllowEdit(draftCtx, draftCtx.luckysheet_select_save)) return;
+      const t = el.innerText?.trim() ?? "";
+      if (!t.startsWith("=")) return;
+      if (
+        draftCtx.formulaCache.rangestart ||
+        draftCtx.formulaCache.rangedrag_column_start ||
+        draftCtx.formulaCache.rangedrag_row_start
+      ) {
+        rangeHightlightselected(draftCtx, el);
+        return;
+      }
+      draftCtx.formulaCache.selectingRangeIndex = -1;
+      createRangeHightlight(draftCtx, el.innerHTML);
+      rangeHightlightselected(draftCtx, el);
+    });
+  }, [refs.fxInput, setContext]);
+
   useRerenderOnFormulaCaret(
     refs.fxInput,
-    context.luckysheetCellUpdate.length > 0
+    context.luckysheetCellUpdate.length > 0,
+    refreshFxFormulaRangeHighlights
   );
 
   // Helper function to extract function name from input text
@@ -958,6 +1024,10 @@ const FxEditor: React.FC = () => {
 
                 if (clickedInsideManagedRange || !atValidInsertionPoint) {
                   markRangeSelectionDirty(draftCtx);
+                  if (editor.innerText?.trim().startsWith("=")) {
+                    createRangeHightlight(draftCtx, editor.innerHTML);
+                    rangeHightlightselected(draftCtx, editor);
+                  }
                 }
               });
             }}
